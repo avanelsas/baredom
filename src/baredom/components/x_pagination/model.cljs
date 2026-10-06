@@ -79,8 +79,18 @@
      :label          (or label-raw default-label)}))
 
 ;; ── Page range algorithm ──────────────────────────────────────────────────
+(defn- page-key
+  "The key of the item for page `n`."
+  [n]
+  (str "page-" n))
+
+(defn- gap-key
+  "The key of the gap that ends before page `n`: the side of the current page it is on."
+  [current n]
+  (if (<= n current) "gap-before" "gap-after"))
+
 (defn build-page-items
-  "Returns a sequence of {:type :page :n N} and {:type :ellipsis} maps.
+  "Returns a sequence of {:type :page :n N} and {:type :ellipsis} maps, each with a distinct `:key`.
    current  — 1-indexed current page
    total    — total page count
    siblings — pages shown on each side of current
@@ -110,9 +120,9 @@
             (recur
              (cond-> result
                (and prev (> n (inc prev)))
-               (conj {:type :ellipsis})
+               (conj {:type :ellipsis :key (gap-key current n)})
                true
-               (conj {:type :page :n n}))
+               (conj {:type :page :n n :key (page-key n)}))
              (inc i))))))))
 
 ;; ── Derived predicates ────────────────────────────────────────────────────

@@ -267,8 +267,8 @@ See the [full component list](../README.md#components) in the project README.
 
 | Browser | Minimum version |
 |---------|----------------|
-| Chrome / Edge | 67+ |
-| Firefox | 63+ |
-| Safari | 14+ |
+| Chrome / Edge | 154+ |
+| Firefox | 157+ |
+| Safari | 26.5+ |
 
 No polyfills required.

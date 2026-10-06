@@ -150,3 +150,11 @@
            (model/highlight-match "Apple" "app"))))
   (testing "no match yields nil"
     (is (nil? (model/highlight-match "Apple" "xyz")))))
+
+;; ── chip-label ───────────────────────────────────────────────────────────
+(deftest chip-label-test
+  (let [options [{:value "apple" :label "Apple"}]]
+    (testing "a value with an option shows the label of the option"
+      (is (= "Apple" (model/chip-label options "apple"))))
+    (testing "a value with no option shows itself"
+      (is (= "kiwi" (model/chip-label options "kiwi"))))))

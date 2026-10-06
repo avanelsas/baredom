@@ -1,4 +1,4 @@
-{:paths ["src"]
+{:paths ["src" "baremirror/src"]
  :deps  {}
  :aliases
  {:build  {:deps       {io.github.clojure/tools.build {:mvn/version "0.10.5"}}

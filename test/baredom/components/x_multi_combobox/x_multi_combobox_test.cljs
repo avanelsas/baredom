@@ -273,3 +273,146 @@
     (is (true? (.. el -validity -customError))
         "error attribute drives customError")
     (is (= "Pick at least one" (.-validationMessage el)))))
+
+;; ── Chips keep their nodes ───────────────────────────────────────────────────
+(defn- chip [^js el value]
+  (shadow-part el (str "x-chip[value='" value "']")))
+
+(defn- chip-values [^js el]
+  (mapv (fn [^js node] (.getAttribute node "value")) (array-seq (shadow-parts el "x-chip"))))
+
+(defn- after-options
+  "Calls `f` with a mounted element once its options are read."
+  [f]
+  (let [^js el (append! (make-el))]
+    (js/setTimeout (fn [] (f el)) 50)))
+
+(deftest chips-that-stay-keep-their-nodes-test
+  (async done
+    (after-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value "apple,cherry")
+       (let [apple  (chip el "apple")
+             cherry (chip el "cherry")]
+         (.setAttribute el model/attr-value "apple,banana,cherry")
+         (is (= ["apple" "banana" "cherry"] (chip-values el)))
+         (is (identical? apple (chip el "apple")))
+         (is (identical? cherry (chip el "cherry")))
+         (.setAttribute el model/attr-value "cherry")
+         (is (= ["cherry"] (chip-values el)))
+         (is (identical? cherry (chip el "cherry")))
+         (is (false? (.-isConnected apple))))
+       (done)))))
+
+(deftest chips-sit-before-the-input-test
+  (async done
+    (after-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value "banana,apple")
+       (let [area (shadow-part el "[part=chip-area]")]
+         (is (= ["X-CHIP" "X-CHIP" "INPUT"]
+                (mapv (fn [^js node] (.-tagName node)) (array-seq (.-children area))))))
+       (done)))))
+
+(defn- press-remove! [^js chip-el]
+  (.click (.querySelector (.-shadowRoot chip-el) "[part=remove]")))
+
+(deftest removing-one-chip-leaves-the-others-untouched-test
+  (async done
+    (after-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value "apple,banana,cherry")
+       (let [apple  (chip el "apple")
+             cherry (chip el "cherry")]
+         (press-remove! (chip el "banana"))
+         (is (= "apple,cherry" (.getAttribute el model/attr-value)))
+         (is (identical? apple (shadow-part el "x-chip[data-x-key='apple']")))
+         (is (identical? cherry (shadow-part el "x-chip[data-x-key='cherry']"))))
+       (done)))))
+
+(defn- end-animation! [^js node]
+  (.dispatchEvent node (js/Event. "animationend")))
+
+(defn- press-backspace! [^js el]
+  (.dispatchEvent (shadow-part el "[part=input]")
+                  (js/KeyboardEvent. "keydown" #js {:key "Backspace" :bubbles true})))
+
+(deftest a-chip-the-user-removes-stays-to-fade-and-then-leaves-test
+  (async done
+    (after-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value "apple,banana")
+       (let [banana (chip el "banana")]
+         (press-remove! banana)
+         (is (= "apple" (.getAttribute el model/attr-value)))
+         (is (true? (.-isConnected banana)))
+         (is (true? (.hasAttribute banana "data-exiting")))
+         (is (nil? (shadow-part el "x-chip[data-x-key='banana']")))
+         (end-animation! banana)
+         (is (false? (.-isConnected banana)))
+         (is (= ["apple"] (chip-values el))))
+       (done)))))
+
+(deftest the-last-chip-removed-with-backspace-fades-too-test
+  (async done
+    (after-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value "apple,banana")
+       (let [banana (chip el "banana")]
+         (press-backspace! el)
+         (is (= "apple" (.getAttribute el model/attr-value)))
+         (is (true? (.-isConnected banana)))
+         (is (true? (.hasAttribute banana "data-exiting")))
+         (end-animation! banana)
+         (is (false? (.-isConnected banana)))
+         (is (= ["apple"] (chip-values el))))
+       (done)))))
+
+(deftest a-refused-backspace-keeps-the-chip-test
+  (async done
+    (after-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value "apple,banana")
+       (.addEventListener el model/event-change-request (fn [^js evt] (.preventDefault evt)))
+       (let [banana (chip el "banana")]
+         (press-backspace! el)
+         (is (= "apple,banana" (.getAttribute el model/attr-value)))
+         (is (identical? banana (shadow-part el "x-chip[data-x-key='banana']")))
+         (is (false? (.hasAttribute banana "data-exiting"))))
+       (done)))))
+
+(deftest a-chip-removed-from-outside-leaves-at-once-test
+  (async done
+    (after-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value "apple,banana")
+       (let [banana (chip el "banana")]
+         (.setAttribute el model/attr-value "apple")
+         (is (false? (.-isConnected banana))))
+       (done)))))
+
+(deftest a-refused-removal-keeps-the-chip-test
+  (async done
+    (after-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value "apple,banana")
+       (.addEventListener el model/event-change-request (fn [^js evt] (.preventDefault evt)))
+       (let [banana (chip el "banana")]
+         (press-remove! banana)
+         (is (= "apple,banana" (.getAttribute el model/attr-value)))
+         (is (identical? banana (shadow-part el "x-chip[data-x-key='banana']")))
+         (is (false? (.hasAttribute banana "data-exiting"))))
+       (done)))))
+
+(deftest disabled-reaches-chips-that-stay-test
+  (async done
+    (after-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value "apple")
+       (let [apple (chip el "apple")]
+         (.setAttribute el model/attr-disabled "")
+         (is (identical? apple (chip el "apple")))
+         (is (true? (.hasAttribute apple "disabled")))
+         (.removeAttribute el model/attr-disabled)
+         (is (false? (.hasAttribute apple "disabled"))))
+       (done)))))

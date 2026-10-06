@@ -157,6 +157,13 @@
   (when (some? value)
     (some (fn [opt] (when (= (:value opt) value) opt)) options)))
 
+(defn chip-label
+  "The label of the chip for `value`: the label of its option, or the value when it has none."
+  [options value]
+  (if-let [option (find-option-by-value options value)]
+    (:label option)
+    value))
+
 ;; ── Navigation helpers ───────────────────────────────────────────────────
 (defn next-active-idx
   "Advance active-idx forward, wrapping."

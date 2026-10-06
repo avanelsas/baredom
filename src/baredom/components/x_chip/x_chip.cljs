@@ -165,7 +165,7 @@
   [^js el m]
   (du/dispatch-cancelable! el model/event-remove (model/remove-detail m)))
 
-(defn- do-exit!
+(defn exit!
   "Starts exit animation. Removes element after animationend or 400ms fallback."
   [^js el]
   (let [timeout-id (js/setTimeout
@@ -195,7 +195,7 @@
   (let [m (current-model el)]
     (when (model/removal-eligible? m)
       (when (dispatch-remove! el m)
-        (do-exit! el)))))
+        (exit! el)))))
 
 ;; ── DOM patching ──────────────────────────────────────────────────────────
 (defn- apply-model! [^js el m]

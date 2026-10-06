@@ -217,3 +217,91 @@
              "page should NOT change when change-request is cancelled")
          (done))
        0))))
+
+;; ── Page items keep their nodes ───────────────────────────────────────────
+(defn- page-button [^js el n]
+  (.querySelector (.-shadowRoot el) (str "button[data-page='" n "']")))
+
+(defn- follow-page-change! [^js el]
+  (.addEventListener el model/event-page-change
+                     (fn [^js ev]
+                       (.setAttribute el "page" (str (.-page (.-detail ev)))))))
+
+(deftest clicked-page-button-keeps-its-node-and-focus-test
+  (let [^js el  (make-el {"page" "3" "total-pages" "10"})
+        ^js btn (page-button el 4)]
+    (follow-page-change! el)
+    (.focus btn)
+    (.click btn)
+    (is (= "4" (.getAttribute el "page")))
+    (is (identical? btn (page-button el 4)))
+    (is (true? (.-isConnected btn)))
+    (is (identical? btn (.-activeElement (.-shadowRoot el))))
+    (is (= "page" (.getAttribute btn "aria-current")))))
+
+(deftest page-items-that-stay-keep-their-nodes-test
+  (let [^js el (make-el {"page" "3" "total-pages" "10"})
+        before (mapv (partial page-button el) [1 3 4 10])]
+    (.setAttribute el "page" "4")
+    (is (every? true? (map identical? before (mapv (partial page-button el) [1 3 4 10]))))
+    (is (nil? (page-button el 2)))
+    (is (some? (page-button el 5)))))
+
+(deftest previous-current-page-loses-its-mark-test
+  (let [^js el (make-el {"page" "3" "total-pages" "10"})]
+    (.setAttribute el "page" "4")
+    (is (false? (.hasAttribute (page-button el 3) "aria-current")))
+    (is (false? (.hasAttribute (page-button el 3) "data-current")))
+    (is (= 1 (.-length (.querySelectorAll (.-shadowRoot el) "[aria-current='page']"))))))
+
+(defn- item-label
+  "What a list item shows: its page, a gap, or its own part name."
+  [^js li]
+  (or (.getAttribute li "data-page")
+      (when (.querySelector li "[part~='ellipsis']") "…")
+      (second (.split (.getAttribute li "part") " "))))
+
+(defn- item-labels [^js el]
+  (mapv item-label (array-seq (.-children (.querySelector (.-shadowRoot el) "[part~='list']")))))
+
+(deftest page-items-are-in-page-order-between-prev-and-next-test
+  (let [^js el (make-el {"page" "3" "total-pages" "10"})]
+    (.setAttribute el "page" "8")
+    (.setAttribute el "page" "2")
+    (is (= ["item-prev" "1" "2" "3" "…" "10" "item-next"] (item-labels el)))))
+
+(deftest fewer-total-pages-drops-items-and-keeps-the-rest-test
+  (let [^js el (make-el {"page" "2" "total-pages" "10"})
+        before (mapv (partial page-button el) [1 2 3])]
+    (.setAttribute el "total-pages" "3")
+    (is (= ["item-prev" "1" "2" "3" "item-next"] (item-labels el)))
+    (is (every? true? (map identical? before (mapv (partial page-button el) [1 2 3]))))))
+
+(defn- changes-while
+  "The mutation records of the shadow tree of `el` while `f` runs."
+  [^js el f]
+  (let [observer (js/MutationObserver. (fn [_ _]))]
+    (.observe observer (.-shadowRoot el) #js {:subtree true :attributes true :childList true :characterData true})
+    (f)
+    (let [records (array-seq (.takeRecords observer))]
+      (.disconnect observer)
+      records)))
+
+(defn- changed-page [^js record]
+  (.getAttribute (.-target record) "data-page"))
+
+(deftest attribute-write-that-leaves-the-model-equal-changes-nothing-test
+  (let [^js el (make-el {"page" "5" "total-pages" "5"})]
+    (is (empty? (changes-while el (fn [] (.setAttribute el "page" "99")))))))
+
+(deftest page-change-writes-only-the-buttons-whose-state-changed-test
+  (let [^js el  (make-el {"page" "1" "total-pages" "3"})
+        records (changes-while el (fn [] (.setAttribute el "page" "2")))]
+    (is (= #{"1" "2"} (set (keep changed-page records))))))
+
+(deftest disabled-reaches-page-buttons-that-stay-test
+  (let [^js el (make-el {"page" "3" "total-pages" "10"})]
+    (.setAttribute el "disabled" "")
+    (is (true? (.hasAttribute (page-button el 3) "disabled")))
+    (.removeAttribute el "disabled")
+    (is (false? (.hasAttribute (page-button el 3) "disabled")))))

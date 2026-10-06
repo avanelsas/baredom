@@ -31,6 +31,7 @@ Before adding a new utility function, check whether it already exists here. Add 
 | `set-attr!` | `[el attr-name value]` | Set an attribute value |
 | `remove-attr!` | `[el attr-name]` | Remove an attribute |
 | `set-bool-attr!` | `[el attr-name value]` | Set or remove a boolean attribute based on truthiness |
+| `set-attr-to!` | `[el attr-name value]` | Set an attribute to a value, or remove it for nil, only where it differs |
 
 ### Event dispatch
 

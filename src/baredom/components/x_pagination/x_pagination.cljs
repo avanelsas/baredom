@@ -1,12 +1,16 @@
 (ns baredom.components.x-pagination.x-pagination
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
+            [baremirror.core :as mirror]
             [goog.object :as gobj]
             [baredom.components.x-pagination.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
 (def ^:private k-refs     "__xPaginationRefs")
 (def ^:private k-handlers "__xPaginationHandlers")
+(def ^:private k-model    "__xPaginationModel")
+
+(def ^:private sel-page-button "[part~='button-page']")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -164,7 +168,7 @@
           (du/getv el k-refs))))
 
 ;; ── DOM item builders ─────────────────────────────────────────────────────
-(defn- make-page-button! [n current? disabled?]
+(defn- make-page-li! [n]
   (let [li  (.createElement js/document "li")
         btn (.createElement js/document "button")]
     (du/set-attr! li  "part"      "item item-page")
@@ -172,14 +176,17 @@
     (du/set-attr! btn "part"      "button button-page")
     (du/set-attr! btn "aria-label" (str "Page " n))
     (du/set-attr! btn "data-page" (str n))
-    (when current?
-      (du/set-attr! btn "aria-current" "page")
-      (du/set-attr! btn "data-current" ""))
-    (when disabled?
-      (du/set-attr! btn "disabled" ""))
     (set! (.-textContent btn) (str n))
     (.appendChild li btn)
     li))
+
+(defn- apply-page-state!
+  "Marks the button of a page item as current or not, and as disabled or not."
+  [^js li current? disabled?]
+  (let [btn (.querySelector li sel-page-button)]
+    (du/set-attr-to! btn "aria-current" (when current? "page"))
+    (du/set-attr-to! btn "data-current" (when current? ""))
+    (du/set-attr-to! btn "disabled" (when disabled? ""))))
 
 (defn- make-ellipsis-li! []
   (let [li   (.createElement js/document "li")
@@ -202,39 +209,45 @@
     :disabled-present?   (du/has-attr? el model/attr-disabled)
     :label-raw           (du/get-attr el model/attr-label)}))
 
+(defn- item-with-key [items k]
+  (first (filter (comp #{k} :key) items)))
+
+(defn- make-item!
+  "A new node for the item with key `k`."
+  [items k]
+  (let [{:keys [type n]} (item-with-key items k)]
+    (if (= :ellipsis type)
+      (make-ellipsis-li!)
+      (make-page-li! n))))
+
+(defn- apply-item! [nodes page disabled? {:keys [type n key]}]
+  (when (= :page type)
+    (apply-page-state! (nodes key) (= n page) disabled?)))
+
+(defn- render-items!
+  "Brings the page items of the list in step with `items`. An item that stays keeps its node."
+  [^js ol ^js next-li {:keys [page disabled]} items]
+  (let [nodes (mirror/sync! {:items {:parent ol :before next-li}}
+                            {:items (mapv :key items)}
+                            (partial make-item! items))]
+    (run! (partial apply-item! nodes page disabled) items)))
+
 ;; ── Render ────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
-  (let [refs     (ensure-refs! el)
-        ^js ol   (:ol refs)
-        ^js nav  (:nav refs)
-        prev-btn (:prev-btn refs)
-        next-btn (:next-btn refs)
-        prev-li  (:prev-li refs)
-        next-li  (:next-li refs)
-        m        (read-model el)
-        {:keys [page total-pages sibling-count boundary-count size label]} m
-        items    (model/build-page-items page total-pages sibling-count boundary-count)]
+(defn- apply-model!
+  [^js el {:keys [page total-pages sibling-count boundary-count size label] :as m}]
+  (let [{:keys [ol nav prev-btn next-btn next-li]} (ensure-refs! el)]
+    (du/set-attr-to! nav "aria-label" label)
+    (du/set-attr-to! el "data-size" size)
+    (du/set-attr-to! prev-btn "disabled" (when (model/prev-disabled? m) ""))
+    (du/set-attr-to! next-btn "disabled" (when (model/next-disabled? m) ""))
+    (render-items! ol next-li m (model/build-page-items page total-pages sibling-count boundary-count))
+    (du/setv! el k-model m)))
 
-    ;; Update nav aria-label and host data-size
-    (du/set-attr! nav "aria-label" label)
-    (du/set-attr! el  "data-size"  size)
-
-    ;; Update prev/next disabled state
-    (if (model/prev-disabled? m)
-      (du/set-attr! prev-btn "disabled" "")
-      (du/remove-attr! prev-btn "disabled"))
-    (if (model/next-disabled? m)
-      (du/set-attr! next-btn "disabled" "")
-      (du/remove-attr! next-btn "disabled"))
-
-    ;; Rebuild ol: clear, re-add prev, page items, next
-    (set! (.-innerHTML ol) "")
-    (.appendChild ol prev-li)
-    (doseq [item items]
-      (if (= :ellipsis (:type item))
-        (.appendChild ol (make-ellipsis-li!))
-        (.appendChild ol (make-page-button! (:n item) (= (:n item) page) (:disabled m)))))
-    (.appendChild ol next-li)))
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (du/getv el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el new-m))))
 
 ;; ── Event dispatch ────────────────────────────────────────────────────────
 (defn- dispatch-page-change! [^js el page]
@@ -321,14 +334,14 @@
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _attr-name old-val new-val]
   (when (not= old-val new-val)
-    (render! el)))
+    (update-from-attrs! el)))
 
 ;; ── Public API ────────────────────────────────────────────────────────────
 
