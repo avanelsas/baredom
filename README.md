@@ -186,13 +186,13 @@ Each component loads `base.js` once plus its own module. A typical page using 5-
 
 ## Browser Support
 
-BareDOM targets browsers that support Custom Elements v1 and Shadow DOM v1 natively:
+BareDOM is tested in the current versions of these browsers:
 
 | Browser | Minimum version |
 |---------|----------------|
-| Chrome / Edge | 67+ |
-| Firefox | 63+ |
-| Safari | 14+ |
+| Chrome / Edge | 154+ |
+| Firefox | 157+ |
+| Safari | 26.5+ |
 
 No polyfills are included or required for these targets.
 
