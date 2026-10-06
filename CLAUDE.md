@@ -117,6 +117,11 @@ Reference by name when discussing architecture:
   - **`[refs-key event handler-fn]`** — handler-fn is a top-level `defn-` of `[^js el ^js event]` that the install path wraps in `(fn [event] (handler el event))`. No handlers map, no remove path. Use only when listeners bind to shadow children whose lifetime is tied to the shadow DOM itself (so they get GC'd with the element). Reference: `x-button` (`listener-spec` + `install-listeners!`).
   - Don't invent a third shape — pick whichever matches the removability requirement.
 - **`form-validity`** — a form-associated control composes `baredom.utils.forms` for its ElementInternals constraint validation rather than hand-writing the `error → customError` / `required+empty → valueMissing` / `else → clear` decision. The decision is a pure function (`forms/validity`) split from its effect (`forms/set-validity!`/`forms/sync!`); the component supplies only its per-control variation (empty predicate, anchor, value, non-default message). The popup-selection controls additionally compose `forms/apply-error-display!` + the pure `forms/error-describedby` for the inline `[part=error]` / `data-invalid` / `aria-invalid` / `aria-describedby` recipe. Golden samples: `x-select` (`forms/sync!` + `forms/apply-error-display!`), `x-form-field` (`forms/set-validity!`; keeps its own labeled-field error display). A form-associated control also installs the instance-level validation API via `forms/install-validity-api!` — see the shared-utilities list below.
+- **`keyed-list`**: a list in a component whose items come and go. The model gives each item a
+  `:key`. The component hands the keys to `mirror/sync!` with a function that makes the node of
+  a new key, then brings each node to its item with `du/set-attr-to!`. A node that stays is never
+  made again, so it keeps focus and state. References: `x-pagination` (`render-items!`),
+  `x-multi-combobox` (`render-chips!`).
 
 ## Writing style
 
@@ -162,7 +167,7 @@ Use `component/register!` with a declarative options map. **Do not create `eleme
 
 - Only add manual `.defineProperty` for properties with custom getter/setter logic
 - Use `this-as` inside property setter bodies — never reference `this` directly
-- **Forbidden:** manual `element-class` with `js*`, `js/Reflect.construct` with atoms, manual prototype composition
+- **Forbidden:** manual `element-class` with `js*`, `js/Reflect.construct` with atoms, manual prototype composition. The one exception is `mirror/define-element!`, see _BareMirror_.
 
 See [`docs/REGISTRATION.md`](docs/REGISTRATION.md) for the full template and rules.
 
@@ -279,6 +284,47 @@ Tests run in a real browser environment (headless Chrome via shadow-cljs). Do no
 **Async tests need map-style fixtures.** `cljs.test/async` rejects function-style `use-fixtures` with "Async tests require fixtures to be specified as maps." If any test in a namespace is async, switch the file to `(use-fixtures :each {:after (fn [] ...)})` (or `:before`) — even the synchronous tests in that namespace must use the map form.
 
 **Custom-element tests with ResizeObserver dependencies need explicit dimensions.** An empty custom element has zero size in the headless test page; `ResizeObserver` callbacks gate on `width > 0 && height > 0` and won't fire. Set `width` / `height` inline on the host before appending if the test exercises code triggered by resize observers (palette extraction, canvas sizing, etc.).
+
+## BareMirror
+
+`baremirror/` is a package of its own. It brings a document to what an application wants: the
+places of keyed nodes, the nodes of templates, and the attributes and text of their parts.
+
+**The boundary.** BareMirror requires nothing from `baredom.*`. `bb scripts/check_baremirror_boundary.bb`
+enforces it in CI. BareDOM may require BareMirror.
+
+**The words.** Use these and no others:
+
+- **Key**: text in `data-x-key`. **Container**: a parent with an optional `:before` anchor.
+  **Places**: a map from a container to its keys, in order. **Plan**: what turns the current
+  places into the wanted places.
+- **Template**: a vector of a tag, an optional map of attributes, and children. **Hole**: a
+  keyword or a function of the item, in a template. **Fixed template**: a template with no hole
+  and no `:on` entry. **Split template**: what `split` returns, as data.
+- **Part**: a node marked with `data-x-part`. **Message**: what the application receives.
+  "Event" means a DOM event only.
+
+**Holes yes, logic no.** A template says where a value goes. It never says when something
+exists. No loop, no condition, no sequence as a child. A list is a container, and its keys go
+to `sync!`. This is why a BareMirror template is not one of the forbidden template DSLs: it is
+data, and it holds no logic.
+
+**In a template, a fixed value is text, a number or a boolean.** A keyword is always a hole.
+`make-node!` refuses a template that is not fixed.
+
+**A component keeps its own writer.** A BareDOM component uses `mirror/sync!` for places and
+`du/set-attr-to!` for attributes, so its writes reach the trace recorder. It does not call
+`mirror/set-attrs!`, which is for applications.
+
+**A component keeps `component/register!`.** `mirror/define-element!` makes an element class by
+hand, because BareMirror cannot require BareDOM. It is the one place that may. It is for an
+application's own elements with no state, never for a BareDOM component.
+
+**A component's shadow builders stay as they are.** Do not move one onto templates unless that
+component is already being changed for another reason.
+
+**Inside `baremirror/`:** no `aget` or `aset` on an object (use `unchecked-get` and
+`unchecked-set`), and no local named after a namespace alias.
 
 ## Development Pipeline for New Components
 
