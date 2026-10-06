@@ -1,6 +1,7 @@
 (ns baremirror.core
-  "The functions that read and change the places of keyed nodes.
-   A key is a string, and a container is a parent with an optional `:before` anchor."
+  "The functions that bring the document to what an application wants: the places of keyed nodes,
+   attributes and text. A key is a string, and a container is a parent with an optional `:before`
+   anchor."
   (:require [baremirror.plan :as plan]))
 
 (def attr-key "data-x-key")
@@ -91,4 +92,50 @@
   (if-some [hold (unchecked-get el hold-key)]
     (.call hold el (partial f el))
     (f el))
+  nil)
+
+(defn- attr-text
+  "The text of an attribute for `v`, or nil when `v` asks for no attribute."
+  [v]
+  (cond
+    (true? v)                ""
+    (or (false? v) (nil? v)) nil
+    (keyword? v)             (name v)
+    :else                    (str v)))
+
+(defn- set-attr!
+  "Brings one attribute of `el` to `v`, where it differs."
+  [^js el [k v]]
+  (let [attr (name k)
+        text (attr-text v)]
+    (when (not= text (.getAttribute el attr))
+      (if (some? text)
+        (.setAttribute el attr text)
+        (.removeAttribute el attr)))))
+
+(defn- set-each-attr! [attrs ^js el]
+  (run! (partial set-attr! el) attrs))
+
+(defn set-attrs!
+  "Brings the attributes that `attrs` names to their values, where they differ: true sets an empty
+   attribute, false and nil remove it, a keyword gives its name. `attrs` is a map or a sequence
+   of pairs, written in its order."
+  [^js el attrs]
+  (with-one-render! el (partial set-each-attr! attrs)))
+
+(defn- only-text-node
+  "The text node of `el`, when it is the only child."
+  [^js el]
+  (when-some [^js node (.-firstChild el)]
+    (when (and (= (.-TEXT_NODE js/Node) (.-nodeType node)) (nil? (.-nextSibling node)))
+      node)))
+
+(defn set-text!
+  "Makes `text` the whole content of `el`, and writes only where it differs."
+  [^js el text]
+  (let [wanted (str text)]
+    (if-some [^js node (only-text-node el)]
+      (when (not= wanted (.-data node))
+        (set! (.-data node) wanted))
+      (set! (.-textContent el) wanted)))
   nil)

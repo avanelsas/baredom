@@ -241,3 +241,120 @@
     (is (nil? (mirror/with-one-render! (element! "div") identity))))
   (testing "on an element whose hold returns a value"
     (is (nil? (mirror/with-one-render! (holding-element! (atom [])) identity)))))
+
+(defn- element-with!
+  "An element of `tag` with the attributes `attrs`."
+  [tag attrs]
+  (let [el (element! tag)]
+    (run! (fn [[k v]] (.setAttribute el k v)) attrs)
+    el))
+
+(defn- records-of!
+  "The mutation records of `el` and its descendants that `f` causes."
+  [^js el f]
+  (let [observer (js/MutationObserver. identity)]
+    (.observe observer el #js {:attributes true :characterData true :childList true :subtree true})
+    (f)
+    (let [records (vec (array-seq (.takeRecords observer)))]
+      (.disconnect observer)
+      records)))
+
+(defn- record-type [^js record]
+  (.-type record))
+
+(defn- attribute-name [^js record]
+  (.-attributeName record))
+
+(defn- attr-logging-element!
+  "An element that offers a hold.
+   The hold adds the value of `attr` before and after the work to `log`."
+  [log attr]
+  (doto (element! "div")
+    (unchecked-set mirror/hold-key (fn [f]
+                                     (this-as ^js this
+                                       (swap! log conj (.getAttribute this attr))
+                                       (f)
+                                       (swap! log conj (.getAttribute this attr)))))))
+
+(deftest set-attrs-writes-only-the-attributes-that-differ
+  (let [el      (element-with! "div" {"a" "1" "b" "2" "kept" "x"})
+        records (records-of! el (fn [] (mirror/set-attrs! el (array-map :a "1" :b "3" :c "4"))))]
+    (testing "an equal value is not written"
+      (is (= ["b" "c"] (mapv attribute-name records))))
+    (testing "the named attributes have their values"
+      (is (= ["1" "3" "4"] (mapv (fn [k] (.getAttribute el k)) ["a" "b" "c"]))))
+    (testing "an attribute that is not named stays"
+      (is (= "x" (.getAttribute el "kept"))))))
+
+(deftest set-attrs-gives-true-false-and-nil-their-meaning
+  (let [el (element-with! "div" {"off" "" "gone" "1"})]
+    (mirror/set-attrs! el {:on true :off false :gone nil :count 5 :variant :primary})
+    (testing "true sets an empty attribute"
+      (is (= "" (.getAttribute el "on"))))
+    (testing "false and nil remove the attribute"
+      (is (not (.hasAttribute el "off")))
+      (is (not (.hasAttribute el "gone"))))
+    (testing "a keyword is written as its name"
+      (is (= "primary" (.getAttribute el "variant"))))
+    (testing "another value is written as its text"
+      (is (= "5" (.getAttribute el "count"))))))
+
+(deftest set-attrs-writes-nothing-when-nothing-differs
+  (let [el (element-with! "div" {"on" "" "count" "5"})]
+    (is (= [] (records-of! el (fn [] (mirror/set-attrs! el {:on true :off false :count 5})))))))
+
+(deftest set-attrs-writes-a-sequence-of-pairs-in-its-order
+  (let [el (element! "div")]
+    (is (= ["b" "a"]
+           (mapv attribute-name
+                 (records-of! el (fn [] (mirror/set-attrs! el [[:b "1"] [:a "2"]]))))))))
+
+(deftest set-attrs-takes-a-name-as-a-string
+  (let [el (element! "div")]
+    (mirror/set-attrs! el {"data-state" "open"})
+    (is (= "open" (.getAttribute el "data-state")))))
+
+(deftest set-attrs-writes-inside-the-hold-of-the-element
+  (let [log (atom [])
+        el  (attr-logging-element! log "a")]
+    (mirror/set-attrs! el {:a "1"})
+    (is (= [nil "1"] @log))))
+
+(deftest set-attrs-returns-nothing
+  (is (nil? (mirror/set-attrs! (element! "div") {:a "1"}))))
+
+(deftest set-text-writes-into-the-text-node-of-the-element
+  (let [el      (doto (element! "span") (.append "old"))
+        node    (.-firstChild el)
+        records (records-of! el (fn [] (mirror/set-text! el "new")))]
+    (testing "the text node stays and holds the text"
+      (is (identical? node (.-firstChild el)))
+      (is (= "new" (.-data node))))
+    (testing "no child is added or removed"
+      (is (= ["characterData"] (mapv record-type records))))))
+
+(deftest set-text-writes-nothing-when-the-text-is-equal
+  (let [el (doto (element! "span") (.append "5"))]
+    (testing "equal text"
+      (is (= [] (records-of! el (fn [] (mirror/set-text! el "5"))))))
+    (testing "a number equal to the text"
+      (is (= [] (records-of! el (fn [] (mirror/set-text! el 5))))))))
+
+(deftest set-text-of-nil-leaves-the-element-with-no-text
+  (let [el (doto (element! "span") (.append "old"))]
+    (mirror/set-text! el nil)
+    (is (= "" (.-textContent el)))))
+
+(deftest set-text-gives-an-empty-element-its-text
+  (let [el (element! "span")]
+    (mirror/set-text! el "new")
+    (is (= "new" (.-textContent el)))))
+
+(deftest set-text-replaces-the-children-of-an-element-with-more-than-text
+  (let [el (doto (element! "span") (.append (element! "b") "old"))]
+    (mirror/set-text! el "new")
+    (is (= 1 (.. el -childNodes -length)))
+    (is (= "new" (.-textContent el)))))
+
+(deftest set-text-returns-nothing
+  (is (nil? (mirror/set-text! (element! "span") "new"))))
