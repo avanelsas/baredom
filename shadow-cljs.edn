@@ -1,5 +1,8 @@
 {:source-paths
- ["src" "test"]
+ ["src" "test" "baremirror/src" "baremirror/test"]
+
+ :dependencies
+ [[org.clojure/test.check "1.1.1"]]
 
  :dev-http
  {8000 "public"
