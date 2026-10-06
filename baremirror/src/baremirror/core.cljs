@@ -7,8 +7,6 @@
 
 (def attr-key "data-x-key")
 
-(def attr-part "data-x-part")
-
 (def hold-key
   "The key under which an element offers the hold of its render."
   (js/Symbol.for "x-render-hold"))
@@ -150,10 +148,19 @@
   [^js el child]
   (.append el (if (vector? child) (make-node! child) (str child))))
 
-(defn make-node!
-  "Makes one detached HTML element from `shell`. The shell holds no holes."
+(defn- fixed-pieces
+  "The pieces of `shell`. Throws when its element is not fixed."
   [shell]
-  (let [[tag attrs children] (unit/pieces shell)
+  (if (unit/fixed? shell)
+    (unit/pieces shell)
+    (throw (ex-info "make-node!: the shell is not fixed. split takes holes and :on out of a shell."
+                    {:tag (first shell)}))))
+
+(defn make-node!
+  "Makes one detached HTML element from `shell`.
+   Throws when the shell is not fixed, as `unit/fixed?` defines it."
+  [shell]
+  (let [[tag attrs children] (fixed-pieces shell)
         el                   (.createElement js/document (name tag))]
     (set-attrs! el attrs)
     (run! (partial append-child! el) children)
@@ -162,7 +169,7 @@
 (defn- part
   "The part name of `node` and the node, when it is a part."
   [^js node]
-  (when-some [part-name (.getAttribute node attr-part)]
+  (when-some [part-name (.getAttribute node unit/attr-part)]
     [part-name node]))
 
 (defn- unkeyed-children [^js node]

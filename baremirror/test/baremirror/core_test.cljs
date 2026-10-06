@@ -2,6 +2,7 @@
   (:require [baremirror.core :as mirror]
             [baremirror.generators :as generators]
             [baremirror.plan :as plan]
+            [baremirror.unit :as unit]
             [clojure.test :refer [deftest is testing use-fixtures]]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.properties :as prop]))
@@ -386,6 +387,22 @@
 (deftest make-node-makes-a-new-element-on-each-call
   (let [shell [:li "text"]]
     (is (not (identical? (mirror/make-node! shell) (mirror/make-node! shell))))))
+
+(deftest make-node-refuses-a-shell-that-split-has-not-seen
+  (testing "a keyword as an attribute value"
+    (is (thrown? ExceptionInfo (mirror/make-node! [:x-button {:variant :primary}]))))
+  (testing "a hole as a child"
+    (is (thrown? ExceptionInfo (mirror/make-node! [:span :text]))))
+  (testing "an :on entry"
+    (is (thrown? ExceptionInfo (mirror/make-node! [:x-button {:on {"press" :remove}}]))))
+  (testing "a sequence as a child"
+    (is (thrown? ExceptionInfo (mirror/make-node! [:ul (map (partial vector :li) ["a" "b"])]))))
+  (testing "a hole in a shell below"
+    (is (thrown? ExceptionInfo (mirror/make-node! [:li [:span :text]])))))
+
+(deftest make-node-makes-the-shell-of-a-unit
+  (let [node (mirror/make-node! (:shell (unit/split :row [:li [:span :text]])))]
+    (is (= "row.0" (.getAttribute (.-firstElementChild node) "data-x-part")))))
 
 (deftest make-node-takes-a-shell-of-a-tag-alone
   (is (= "li" (.-localName (mirror/make-node! [:li])))))
