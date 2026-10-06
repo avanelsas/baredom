@@ -140,3 +140,21 @@
 
 (deftest next-disabled-when-disabled-test
   (is (true? (model/next-disabled? {:page 3 :total-pages 5 :disabled true}))))
+
+;; ── item keys ─────────────────────────────────────────────────────────────
+(deftest build-page-items-keys-test
+  (let [items (model/build-page-items 10 20 1 1)]
+    (is (= ["page-1" "gap-before" "page-9" "page-10" "page-11" "gap-after" "page-20"]
+           (mapv :key items)))))
+
+(deftest build-page-items-one-gap-is-named-by-its-side-test
+  (is (= ["page-1" "page-2" "gap-after" "page-20"]
+         (mapv :key (model/build-page-items 1 20 1 1))))
+  (is (= ["page-1" "gap-before" "page-19" "page-20"]
+         (mapv :key (model/build-page-items 20 20 1 1)))))
+
+(deftest build-page-items-keys-are-distinct-test
+  (doseq [total   (range 1 30)
+          current (range 1 (inc total))
+          :let    [ks (map :key (model/build-page-items current total 1 1))]]
+    (is (= (count ks) (count (set ks))))))

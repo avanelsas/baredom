@@ -140,6 +140,14 @@
     (set-attr! el attr-name "")
     (remove-attr! el attr-name)))
 
+(defn set-attr-to!
+  "Sets `attr-name` on `el` to `value`, or removes it for nil, only where it differs."
+  [^js el attr-name value]
+  (when (not= value (get-attr el attr-name))
+    (if (some? value)
+      (set-attr! el attr-name value)
+      (remove-attr! el attr-name))))
+
 ;; ---------------------------------------------------------------------------
 ;; Event dispatch
 ;; ---------------------------------------------------------------------------

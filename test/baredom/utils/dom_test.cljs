@@ -57,6 +57,31 @@
     (du/set-bool-attr! el "disabled" false)
     (is (not (.hasAttribute el "disabled")))))
 
+(defn- attribute-writes
+  "The number of attribute changes on `el` while `f` runs."
+  [^js el f]
+  (let [observer (js/MutationObserver. (fn [_ _]))]
+    (.observe observer el #js {:attributes true})
+    (f)
+    (let [n (.-length (.takeRecords observer))]
+      (.disconnect observer)
+      n)))
+
+(deftest set-attr-to-test
+  (let [el (make-el)]
+    (du/set-attr-to! el "value" "a")
+    (is (= "a" (.getAttribute el "value")))
+    (du/set-attr-to! el "value" nil)
+    (is (not (.hasAttribute el "value")))))
+
+(deftest set-attr-to-writes-only-where-the-value-differs-test
+  (let [el (make-el)]
+    (du/set-attr-to! el "value" "a")
+    (is (= 0 (attribute-writes el (fn [] (du/set-attr-to! el "value" "a")))))
+    (is (= 1 (attribute-writes el (fn [] (du/set-attr-to! el "value" "b")))))
+    (du/set-attr-to! el "value" nil)
+    (is (= 0 (attribute-writes el (fn [] (du/set-attr-to! el "value" nil)))))))
+
 ;; ── Instance-field access ───────────────────────────────────────────────────
 
 (deftest getv-setv-test

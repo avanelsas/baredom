@@ -17,7 +17,7 @@
                 :lib       lib
                 :version   version
                 :basis     @basis
-                :src-dirs  ["src"]
+                :src-dirs  ["src" "baremirror/src"]
                 :scm       {:url                "https://github.com/avanelsas/baredom"
                             :connection          "scm:git:git://github.com/avanelsas/baredom.git"
                             :developerConnection "scm:git:ssh://git@github.com/avanelsas/baredom.git"
@@ -31,7 +31,7 @@
                             [:developers
                              [:developer
                               [:name "Alexander van Elsas"]]]]})
-  (b/copy-dir {:src-dirs   ["src"]
+  (b/copy-dir {:src-dirs   ["src" "baremirror/src"]
                :target-dir class-dir})
   (b/jar {:class-dir class-dir
           :jar-file  jar-file})
