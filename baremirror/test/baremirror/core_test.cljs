@@ -358,3 +358,71 @@
 
 (deftest set-text-returns-nothing
   (is (nil? (mirror/set-text! (element! "span") "new"))))
+
+(defn- child-tags [^js node]
+  (mapv (fn [^js child] (.-localName child)) (array-seq (.-children node))))
+
+(deftest make-node-makes-one-detached-element-from-a-shell
+  (let [node (mirror/make-node! [:li {:class "row"} "Buy " [:b "milk"] [:x-button {:size "sm"}]])]
+    (testing "the element has the tag and the attributes of the shell"
+      (is (= "li" (.-localName node)))
+      (is (= "row" (.getAttribute node "class"))))
+    (testing "the children are in the order of the shell"
+      (is (= ["b" "x-button"] (child-tags node)))
+      (is (= "Buy milk" (.-textContent node)))
+      (is (= "sm" (.getAttribute (.-lastElementChild node) "size"))))
+    (testing "the element is in no document"
+      (is (not (.-isConnected node))))))
+
+(deftest make-node-writes-a-fixed-value-as-set-attrs-does
+  (let [node (mirror/make-node! [:x-checkbox {:checked true :disabled false :tabindex 0}])]
+    (is (= "" (.getAttribute node "checked")))
+    (is (not (.hasAttribute node "disabled")))
+    (is (= "0" (.getAttribute node "tabindex")))))
+
+(deftest make-node-writes-a-child-that-is-a-number-as-its-text
+  (is (= "3 left" (.-textContent (mirror/make-node! [:span 3 " left"])))))
+
+(deftest make-node-makes-a-new-element-on-each-call
+  (let [shell [:li "text"]]
+    (is (not (identical? (mirror/make-node! shell) (mirror/make-node! shell))))))
+
+(deftest make-node-takes-a-shell-of-a-tag-alone
+  (is (= "li" (.-localName (mirror/make-node! [:li])))))
+
+(defn- part-names [^js node]
+  (set (keys (mirror/read-parts node))))
+
+(deftest read-parts-finds-the-parts-below-a-node
+  (let [node  (mirror/make-node! [:div
+                                  [:header {:data-x-part "top"}
+                                   [:span {:data-x-part "title"}]]
+                                  [:ul [:li [:b {:data-x-part "deep"}]]]])
+        parts (mirror/read-parts node)]
+    (testing "a part is found at any depth"
+      (is (= #{"top" "title" "deep"} (set (keys parts)))))
+    (testing "a name maps to its node"
+      (is (identical? (.-firstElementChild node) (parts "top"))))))
+
+(deftest read-parts-includes-the-node-it-is-given
+  (is (= #{"row" "label"}
+         (part-names (mirror/make-node! [:li {:data-x-part "row"}
+                                         [:span {:data-x-part "label"}]])))))
+
+(deftest read-parts-leaves-out-a-keyed-node-below
+  (let [node (mirror/make-node! [:ul {:data-x-part "list"}
+                                 [:li {:data-x-key "1" :data-x-part "row"}
+                                  [:span {:data-x-part "label"}]]])]
+    (testing "the keyed node and its parts are not in the map of the node around it"
+      (is (= #{"list"} (part-names node))))
+    (testing "the keyed node gives its own parts when it is the node given"
+      (is (= #{"row" "label"} (part-names (.-firstElementChild node)))))))
+
+(deftest read-parts-gives-the-last-node-of-a-name-that-occurs-twice
+  (let [node (mirror/make-node! [:div
+                                 [:span {:data-x-part "label"}]
+                                 [:b {:data-x-part "label"}]])]
+    (is (identical? (.-lastElementChild node) ((mirror/read-parts node) "label")))))
+
+(deftest read-parts-of-a-node-with-no-parts-is-empty
+  (is (= {} (mirror/read-parts (mirror/make-node! [:div [:span]])))))

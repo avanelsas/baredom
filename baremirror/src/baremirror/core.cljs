@@ -2,9 +2,12 @@
   "The functions that bring the document to what an application wants: the places of keyed nodes,
    attributes and text. A key is a string, and a container is a parent with an optional `:before`
    anchor."
-  (:require [baremirror.plan :as plan]))
+  (:require [baremirror.plan :as plan]
+            [baremirror.unit :as unit]))
 
 (def attr-key "data-x-key")
+
+(def attr-part "data-x-part")
 
 (def hold-key
   "The key under which an element offers the hold of its render."
@@ -139,3 +142,34 @@
         (set! (.-data node) wanted))
       (set! (.-textContent el) wanted)))
   nil)
+
+(declare make-node!)
+
+(defn- append-child!
+  "Appends one child of a shell to `el`: a node for a shell, text for anything else."
+  [^js el child]
+  (.append el (if (vector? child) (make-node! child) (str child))))
+
+(defn make-node!
+  "Makes one detached HTML element from `shell`. The shell holds no holes."
+  [shell]
+  (let [[tag attrs children] (unit/pieces shell)
+        el                   (.createElement js/document (name tag))]
+    (set-attrs! el attrs)
+    (run! (partial append-child! el) children)
+    el))
+
+(defn- part
+  "The part name of `node` and the node, when it is a part."
+  [^js node]
+  (when-some [part-name (.getAttribute node attr-part)]
+    [part-name node]))
+
+(defn- unkeyed-children [^js node]
+  (remove keyed (array-seq (.-children node))))
+
+(defn read-parts
+  "The parts of `node` by name: `node` itself and the parts below it.
+   A keyed node below `node` is left out with everything in it."
+  [^js node]
+  (into {} (keep part) (tree-seq (constantly true) unkeyed-children node)))
