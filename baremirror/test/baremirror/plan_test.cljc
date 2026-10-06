@@ -139,9 +139,9 @@
          (count placements)))))
 
 (deftest perform-of-small-cases
-  (testing "a released key leaves the places as a removed key does"
+  (testing "a removed key leaves the places"
     (is (= {:todo ["a"]}
-           (plan/perform {:todo ["a" "b"]} {:release ["b"]}))))
+           (plan/perform {:todo ["a" "b"]} {:remove ["b"]}))))
   (testing "a placement into a container the places do not name adds it"
     (is (= {:todo [] :done ["a"]}
            (plan/perform {:todo ["a"]} {:place [{:key "a" :in :done :before nil}]})))))

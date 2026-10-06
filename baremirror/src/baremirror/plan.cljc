@@ -97,7 +97,7 @@
 
 (defn perform
   "The places after `plan` is performed on `places`."
-  [places {removed :remove released :release placements :place}]
+  [places {removed :remove placements :place}]
   (reduce with-placement
-          (without-keys places (concat removed released))
+          (without-keys places removed)
           placements))

@@ -6,6 +6,7 @@
             [baredom.utils.dom :as du]
             [baredom.utils.forms :as forms]
             [baredom.utils.overlay :as overlay]
+            [baremirror.core :as mirror]
             [clojure.string :as str]))
 
 ;; ---------------------------------------------------------------------------
@@ -457,30 +458,34 @@
 ;; ---------------------------------------------------------------------------
 ;; Chip rendering
 ;; ---------------------------------------------------------------------------
-(defn- render-chips! [^js el value-set disabled?]
+(defn- chip-containers [refs]
+  {:chips {:parent (gobj/get refs "chipArea")
+           :before (gobj/get refs "input")}})
+
+(defn- chip-of
+  "The chip that shows `value`."
+  [^js el value]
+  (get-in (mirror/read-places (chip-containers (du/getv el k-refs))) [:nodes value]))
+
+(defn- make-chip! [value]
+  (doto (.createElement js/document "x-chip")
+    (du/set-attr! "removable" "")
+    (du/set-attr! "value" value)))
+
+(defn- apply-chip!
+  "Brings the chip for `value` in step with its option and with `disabled?`."
+  [options disabled? nodes value]
+  (let [chip (nodes value)]
+    (du/set-attr-to! chip "label" (model/chip-label options value))
+    (du/set-attr-to! chip "disabled" (when disabled? ""))))
+
+(defn- render-chips!
+  "Brings the chips in step with `value-set`. A chip that stays keeps its node."
+  [^js el value-set disabled?]
   (when-let [refs (du/getv el k-refs)]
-    (let [^js chip-area (gobj/get refs "chipArea")
-          ^js input-el  (gobj/get refs "input")
-          options       (du/getv el k-options)]
-
-      ;; Remove existing chips (keep input)
-      (loop []
-        (let [^js first-child (.-firstChild chip-area)]
-          (when (and first-child (not (identical? first-child input-el)))
-            (.removeChild chip-area first-child)
-            (recur))))
-
-      ;; Create x-chip for each selected value
-      (doseq [v (sort value-set)]
-        (let [opt   (model/find-option-by-value options v)
-              label (if opt (:label opt) v)
-              ^js chip (.createElement js/document "x-chip")]
-          (du/set-attr! chip "label" label)
-          (du/set-attr! chip "value" v)
-          (du/set-attr! chip "removable" "")
-          (when disabled?
-            (du/set-attr! chip "disabled" ""))
-          (.insertBefore chip-area chip input-el))))))
+    (let [values (vec (sort value-set))
+          nodes  (mirror/sync! (chip-containers refs) {:chips values} make-chip!)]
+      (run! (partial apply-chip! (du/getv el k-options) disabled? nodes) values))))
 
 ;; ---------------------------------------------------------------------------
 ;; Panel rendering — render-orchestrator pattern
@@ -633,6 +638,14 @@
 ;; ---------------------------------------------------------------------------
 ;; Add / Remove items
 ;; ---------------------------------------------------------------------------
+(defn- commit-values!
+  "Writes `value-set` to the host and reports the change."
+  [^js el value-set]
+  (if (empty? value-set)
+    (du/remove-attr! el model/attr-value)
+    (du/set-attr! el model/attr-value (model/serialize-value value-set)))
+  (du/dispatch! el model/event-change #js {:value (sorted-value-array value-set)}))
+
 (defn- add-item! [^js el item-value]
   (let [m         (read-model el)
         value-set (:value m)
@@ -651,22 +664,34 @@
           (du/setv! el k-active-idx 0)
           (when-let [refs (du/getv el k-refs)]
             (set! (.-value (gobj/get refs "input")) ""))
-          (du/set-attr! el model/attr-value (model/serialize-value new-set))
-          (du/dispatch! el model/event-change #js {:value new-arr}))))))
+          (commit-values! el new-set))))))
 
-(defn- remove-item! [^js el item-value]
-  (let [value-set (:value (read-model el))]
-    (when (contains? value-set item-value)
-      (let [new-set  (disj value-set item-value)
-            new-arr  (sorted-value-array new-set)
-            allowed? (du/dispatch-cancelable!
-                      el model/event-change-request
-                      #js {:value new-arr :action "remove" :item item-value})]
-        (when allowed?
-          (if (empty? new-set)
-            (du/remove-attr! el model/attr-value)
-            (du/set-attr! el model/attr-value (model/serialize-value new-set)))
-          (du/dispatch! el model/event-change #js {:value new-arr}))))))
+(defn- selected? [^js el item-value]
+  (contains? (:value (read-model el)) item-value))
+
+(defn- request-removal!
+  "Asks to remove the selected `item-value`. Returns the values that remain, or nil when refused."
+  [^js el item-value]
+  (let [remaining (disj (:value (read-model el)) item-value)]
+    (when (du/dispatch-cancelable!
+           el model/event-change-request
+           #js {:value (sorted-value-array remaining) :action "remove" :item item-value})
+      remaining)))
+
+(defn- let-chip-leave!
+  "Gives `chip` up and writes the values that remain. The chip stays in the page to fade."
+  [^js el ^js chip remaining]
+  (mirror/release! chip)
+  (commit-values! el remaining))
+
+(defn- remove-item!
+  "Removes the selected `item-value` and makes its chip fade, unless the request is refused."
+  [^js el item-value]
+  (when (selected? el item-value)
+    (when-some [remaining (request-removal! el item-value)]
+      (let [chip (chip-of el item-value)]
+        (let-chip-leave! el chip remaining)
+        (x-chip/exit! chip)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Keyboard navigation
@@ -809,8 +834,10 @@
   (fn [^js evt]
     (let [^js detail (.-detail evt)
           chip-value (gobj/get detail "value")]
-      (when chip-value
-        (remove-item! el chip-value)))))
+      (when (and chip-value (selected? el chip-value))
+        (if-some [remaining (request-removal! el chip-value)]
+          (let-chip-leave! el (.-target evt) remaining)
+          (.preventDefault evt))))))
 
 (defn- on-focusout [^js el]
   (fn [^js evt]

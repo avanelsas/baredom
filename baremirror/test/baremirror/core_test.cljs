@@ -154,22 +154,30 @@
     (let [{:keys [nodes after]} (sync-case! current wanted)]
       (= nodes (:nodes after)))))
 
-(deftest perform-removes-and-releases
-  (let [containers (mount! {:list ["a" "b" "c"]})
+(deftest perform-removes-the-nodes-of-removed-keys
+  (let [containers (mount! {:list ["a" "b"]})
         reading    (mirror/read-places containers)
         a          (get-in reading [:nodes "a"])
-        b          (get-in reading [:nodes "b"])
-        nodes      (mirror/perform! reading {:remove ["a"] :release ["b"] :place []} make-item!)]
+        nodes      (mirror/perform! reading {:remove ["a"] :place []} make-item!)]
     (testing "a removed node leaves the document and loses its key"
       (is (false? (.-isConnected a)))
       (is (false? (.hasAttribute a mirror/attr-key))))
-    (testing "a released node stays in the document and loses its key"
-      (is (true? (.-isConnected b)))
-      (is (false? (.hasAttribute b mirror/attr-key))))
     (testing "the returned nodes are those of the keys that remain"
-      (is (= #{"c"} (set (keys nodes)))))
-    (testing "the places no longer hold the removed and the released key"
-      (is (= {:list ["c"]} (:places (mirror/read-places containers)))))))
+      (is (= #{"b"} (set (keys nodes)))))
+    (testing "the places no longer hold the removed key"
+      (is (= {:list ["b"]} (:places (mirror/read-places containers)))))))
+
+(deftest release-gives-a-node-up
+  (let [containers (mount! {:list ["a" "b"]})
+        a          (get-in (mirror/read-places containers) [:nodes "a"])]
+    (mirror/release! a)
+    (testing "the node stays in the document and loses its key"
+      (is (true? (.-isConnected a)))
+      (is (false? (.hasAttribute a mirror/attr-key))))
+    (testing "the places no longer hold its key"
+      (is (= {:list ["b"]} (:places (mirror/read-places containers)))))
+    (testing "a later sync for the same key makes a new node"
+      (is (not (identical? a (get (mirror/sync! containers {:list ["a" "b"]} make-item!) "a")))))))
 
 (defn- key-or-tag [^js node]
   (or (.getAttribute node mirror/attr-key) (.-tagName node)))

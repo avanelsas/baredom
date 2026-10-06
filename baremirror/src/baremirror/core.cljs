@@ -25,11 +25,13 @@
      :places     (update-vals children (partial mapv first))
      :nodes      (into {} cat (vals children))}))
 
-(defn- release-node! [^js node]
+(defn release!
+  "Gives `node` up: it keeps its place in the document and loses its key."
+  [^js node]
   (.removeAttribute node attr-key))
 
 (defn- remove-node! [^js node]
-  (release-node! node)
+  (release! node)
   (.remove node))
 
 (defn- keyed-node!
@@ -66,12 +68,9 @@
 (defn perform!
   "Performs `plan` on what `read-places` returned, with `make-node` making the node of a new key.
    Returns the node of each key that remains."
-  [{:keys [containers nodes]} {removed :remove released :release placements :place} make-node]
-  (let [remaining (with-new-nodes! make-node
-                                   (apply dissoc nodes (concat removed released))
-                                   placements)]
+  [{:keys [containers nodes]} {removed :remove placements :place} make-node]
+  (let [remaining (with-new-nodes! make-node (apply dissoc nodes removed) placements)]
     (run! (comp remove-node! nodes) removed)
-    (run! (comp release-node! nodes) released)
     (run! (partial place! containers remaining) placements)
     remaining))
 
