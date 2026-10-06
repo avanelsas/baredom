@@ -48,7 +48,7 @@ jobs:
           bb --version
 
       - name: Lint with clj-kondo
-        run: clj-kondo --lint src test --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
+        run: clj-kondo --lint src test baremirror --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
 
       - name: Check method-api drift
         run: bb scripts/check_method_api.bb
@@ -58,6 +58,9 @@ jobs:
 
       - name: Check du discipline (no gobj on host, no make-el shim)
         run: bb scripts/check_du_discipline.bb
+
+      - name: Check that BareMirror names no baredom namespace
+        run: bb scripts/check_baremirror_boundary.bb
 
       - name: Check the css api the manifest publishes
         run: bb scripts/check_css_api.bb

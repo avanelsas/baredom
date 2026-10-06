@@ -29,7 +29,7 @@ npm run pack:local
 
 **Lint (clj-kondo):**
 ```
-clj-kondo --lint src test
+clj-kondo --lint src test baremirror
 ```
 Code must have **zero lint warnings and errors** before pushing to GitHub. Always run the linter and fix any issues before `git push`.
 
@@ -296,7 +296,7 @@ Follow these stages in order. **Do not skip or merge stages.**
    - `docs/components.md` — add a row in the appropriate category table (Form / Feedback / Navigation / Layout / Data / Overlay / Display / Animation / Effects / Scroll / Utility). If no existing category fits, flag the gap to the user before inventing a new one — taxonomy decisions affect the README overview too.
    - `README.md` — bump the count in the Components overview table for that category and, if the new component is a flagship for its category, add it to the Examples column.
 4. **Verification** — run these checks:
-   - `clj-kondo --lint src test` — zero warnings/errors
+   - `clj-kondo --lint src test baremirror` — zero warnings/errors
    - `npx shadow-cljs release lib` — confirms Closure Advanced passes
    - `grep -r "deftype\|atom\|volatile!" src/baredom/components/x-<name>/` — must return nothing
    - Visually check: architecture conformance, API contract, stateless rendering, theming, motion, a11y, mobile readiness
