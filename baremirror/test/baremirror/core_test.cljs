@@ -493,3 +493,77 @@
 
 (deftest write-returns-nothing
   (is (nil? (mirror/write! {} {}))))
+
+(defn- staged!
+  "The node of the fixed template `fixed`, in the document."
+  [fixed]
+  (let [node (mirror/make-node! fixed)]
+    (.append (stage!) node)
+    node))
+
+(defn- origin-of!
+  "The origin of an event of `event-type` sent from `target`, as a listener on `root` reads it."
+  [^js root ^js target event-type]
+  (let [origin (atom nil)]
+    (.addEventListener root event-type (comp (partial reset! origin) mirror/read-origin)
+                       #js {:once true})
+    (.dispatchEvent target (js/Event. event-type #js {:bubbles true :composed true}))
+    @origin))
+
+(defn- find-one [^js root selector]
+  (.querySelector root selector))
+
+(def ^:private page
+  [:div {:data-x-part "app"}
+   [:ul {:data-x-part "list"}
+    [:li {:data-x-key "t1"}
+     [:span "Buy milk"]
+     [:button {:data-x-part "remove"} [:i "x"]]
+     [:ul
+      [:li {:data-x-key "s1" :data-x-part "step"} [:b {:data-x-part "name"}]]]]]
+   [:button {:data-x-part "add"}]
+   [:p "No part here"]])
+
+(deftest read-origin-gives-the-keys-and-the-nearest-part
+  (let [root (staged! page)]
+    (testing "an event from inside a part of a keyed node"
+      (is (= {:key-path ["t1"] :part "remove" :node (find-one root "[data-x-part=remove]")}
+             (origin-of! root (find-one root "i") "press"))))
+    (testing "the keys of nested keyed nodes come outermost first"
+      (is (= {:key-path ["t1" "s1"] :part "name" :node (find-one root "b")}
+             (origin-of! root (find-one root "b") "press"))))
+    (testing "a keyed node that is a part is the nearest part of its own event"
+      (is (= {:key-path ["t1" "s1"] :part "step" :node (find-one root "[data-x-key=s1]")}
+             (origin-of! root (find-one root "[data-x-key=s1]") "press"))))
+    (testing "an event from a part outside every keyed node has no keys"
+      (is (= {:key-path [] :part "add" :node (find-one root "[data-x-part=add]")}
+             (origin-of! root (find-one root "[data-x-part=add]") "press"))))))
+
+(deftest read-origin-does-not-look-for-a-part-beyond-the-nearest-keyed-node
+  (let [root (staged! page)]
+    (is (= {:key-path ["t1"] :part nil :node nil}
+           (origin-of! root (find-one root "span") "press")))))
+
+(deftest read-origin-takes-the-node-that-listens-as-a-part
+  (let [root (staged! page)]
+    (is (= {:key-path [] :part "app" :node root}
+           (origin-of! root (find-one root "p") "press")))))
+
+(deftest read-origin-takes-the-key-of-the-node-that-listens
+  (let [root (staged! [:li {:data-x-key "t1"} [:ul [:li {:data-x-key "s1"} [:b]]]])]
+    (is (= ["t1" "s1"] (:key-path (origin-of! root (find-one root "b") "press"))))))
+
+(deftest read-origin-reads-the-path-through-a-shadow-root
+  (let [root   (staged! [:ul [:li {:data-x-key "t1"} [:div {:data-x-part "host"}]]])
+        host   (find-one root "div")
+        inside (element! "button")]
+    (.append (.attachShadow host #js {:mode "open"}) inside)
+    (is (= {:key-path ["t1"] :part "host" :node host}
+           (origin-of! root inside "press")))))
+
+(deftest read-origin-of-an-event-that-is-no-longer-handled-is-empty
+  (let [root  (staged! page)
+        event (atom nil)]
+    (.addEventListener root "press" (partial reset! event))
+    (.dispatchEvent (find-one root "i") (js/Event. "press" #js {:bubbles true}))
+    (is (= {:key-path [] :part nil :node nil} (mirror/read-origin @event)))))

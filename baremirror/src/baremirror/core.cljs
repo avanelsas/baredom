@@ -203,3 +203,30 @@
   (when-some [missing (seq (missing-parts parts writes))]
     (throw (ex-info "write!: no node has these part names." {:parts (vec missing)})))
   (run! (partial write-part! parts) writes))
+
+(defn- up-to-first
+  "The items of `xs` up to and with the first that passes `pred`."
+  [pred xs]
+  (let [[before after] (split-with (complement pred) xs)]
+    (concat before (take 1 after))))
+
+(defn- element? [node]
+  (instance? js/Element node))
+
+(defn- path-to-listener
+  "The elements on the path of `e`, from its target up to and with the node that listens."
+  [^js e]
+  (->> (array-seq (.composedPath e))
+       (up-to-first (partial identical? (.-currentTarget e)))
+       (filter element?)))
+
+(defn read-origin
+  "The origin of the event `e`: the keys on its path, outermost first, and the nearest part with
+   its node. A part is looked for no further than the nearest keyed node, and the path exists
+   only while the event is handled."
+  [^js e]
+  (let [nodes            (path-to-listener e)
+        [part-name node] (some part (up-to-first keyed nodes))]
+    {:key-path (into [] (keep (comp first keyed)) (reverse nodes))
+     :part     part-name
+     :node     node}))
