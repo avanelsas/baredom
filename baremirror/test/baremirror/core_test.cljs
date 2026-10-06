@@ -621,3 +621,98 @@
     (reset! dispatch! (mirror/dispatcher (atom 0) + view-of render!))
     (@dispatch! 1)
     (is (= 2 @renders))))
+
+(def ^:private task-page
+  [:div
+   [:ul
+    [:li {:data-x-key "t1"}
+     [:span {:data-x-part "check" :aria-checked "false"}]
+     [:span {:data-x-part "note"}]
+     [:button {:data-x-part "remove"} [:i "x"]]]]
+   [:input {:data-x-part "draft"}]
+   [:button {:data-x-part "add"}]])
+
+(defn- send!
+  "Sends a cancelable event of `event-type` from `target`, and returns it."
+  [^js target event-type detail]
+  (let [event (js/CustomEvent. event-type
+                               #js {:bubbles true :composed true :cancelable true :detail detail})]
+    (.dispatchEvent target event)
+    event))
+
+(defn- detail-value [_origin ^js e]
+  (.. e -detail -value))
+
+(defn- messages-of!
+  "The messages that `listen!` dispatches for `events` when `send-events!` runs on a page."
+  [events send-events!]
+  (let [root     (staged! task-page)
+        messages (atom [])]
+    (mirror/listen! root {:dispatch! (partial swap! messages conj) :events events})
+    (send-events! root)
+    @messages))
+
+(deftest listen-dispatches-the-meaning-of-an-event
+  (testing "the argument is the nearest key"
+    (is (= [[:remove "t1"]]
+           (messages-of! {["press" "remove"] :remove}
+                         (fn [root] (send! (find-one root "i") "press" nil))))))
+  (testing "an event outside every keyed node has no argument"
+    (is (= [[:add]]
+           (messages-of! {["press" "add"] :add}
+                         (fn [root] (send! (find-one root "[data-x-part=add]") "press" nil))))))
+  (testing "a function in the entry gives the argument"
+    (is (= [[:draft "milk"]]
+           (messages-of! {["input" "draft"] [:draft detail-value]}
+                         (fn [root] (send! (find-one root "input") "input" #js {:value "milk"})))))))
+
+(deftest listen-does-nothing-for-an-event-with-no-entry
+  (testing "another part"
+    (is (= [] (messages-of! {["press" "remove"] :remove}
+                            (fn [root] (send! (find-one root "[data-x-part=add]") "press" nil))))))
+  (testing "another event type"
+    (is (= [] (messages-of! {["press" "remove"] :remove}
+                            (fn [root] (send! (find-one root "i") "click" nil)))))))
+
+(deftest listen-adds-one-listener-for-an-event-type
+  (is (= [[:remove "t1"]]
+         (messages-of! {["press" "remove"] :remove ["press" "add"] :add}
+                       (fn [root] (send! (find-one root "i") "press" nil))))))
+
+(defn- answer-with!
+  "A dispatch function that brings the part named `part-name` of `root` to `attrs`."
+  [^js root part-name attrs]
+  (fn [_message]
+    (mirror/set-attrs! (find-one root (str "[data-x-part=" part-name "]")) attrs)))
+
+(defn- cancelled?
+  "True when `listen!` cancels a `toggle` from the check of a page whose dispatch is `answer!`."
+  [requests answer!]
+  (let [root (staged! task-page)]
+    (mirror/listen! root {:dispatch! (answer! root)
+                          :requests  requests
+                          :events    {["toggle" "check"] :toggle}})
+    (.-defaultPrevented (send! (find-one root "[data-x-part=check]") "toggle" nil))))
+
+(defn- leave-as-it-is [_root]
+  (constantly nil))
+
+(def ^:private toggle-request
+  {"toggle" ["aria-checked"]})
+
+(deftest listen-cancels-a-request-that-did-not-change-the-attributes-it-asks-for
+  (testing "the dispatch changes nothing"
+    (is (true? (cancelled? toggle-request leave-as-it-is))))
+  (testing "the dispatch changes another part"
+    (is (true? (cancelled? toggle-request
+                           (fn [root] (answer-with! root "note" {:data-error "refused"}))))))
+  (testing "the dispatch changes another attribute of the same part"
+    (is (true? (cancelled? toggle-request
+                           (fn [root] (answer-with! root "check" {:data-error "refused"})))))))
+
+(deftest listen-does-not-cancel-a-request-that-changed-an-attribute-it-asks-for
+  (is (false? (cancelled? toggle-request
+                          (fn [root] (answer-with! root "check" {:aria-checked "true"}))))))
+
+(deftest listen-does-not-cancel-an-event-that-is-not-named-as-a-request
+  (is (false? (cancelled? {} leave-as-it-is))))
