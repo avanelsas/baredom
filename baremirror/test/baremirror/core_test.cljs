@@ -134,6 +134,26 @@
     (let [{:keys [placements added]} (perform-case! current wanted)]
       (= (count placements) added))))
 
+(defn- sync-case!
+  "The places and the nodes after `current` is mounted and brought to `wanted`. The page is cleaned."
+  [current wanted]
+  (let [containers (mount! current)
+        nodes      (mirror/sync! containers wanted make-item!)
+        after      (mirror/read-places containers)]
+    (remove-stages!)
+    {:nodes nodes :after after}))
+
+(defspec sync-brings-the-document-to-the-wanted-places 100
+  (prop/for-all [current gen-board
+                 wanted  gen-board]
+    (= wanted (get-in (sync-case! current wanted) [:after :places]))))
+
+(defspec sync-returns-the-nodes-that-are-in-the-document 100
+  (prop/for-all [current gen-board
+                 wanted  gen-board]
+    (let [{:keys [nodes after]} (sync-case! current wanted)]
+      (= nodes (:nodes after)))))
+
 (deftest perform-removes-and-releases
   (let [containers (mount! {:list ["a" "b" "c"]})
         reading    (mirror/read-places containers)

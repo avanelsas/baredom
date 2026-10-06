@@ -1,6 +1,7 @@
 (ns baremirror.core
   "The functions that read and change the places of keyed nodes.
-   A key is a string, and a container is a parent with an optional `:before` anchor.")
+   A key is a string, and a container is a parent with an optional `:before` anchor."
+  (:require [baremirror.plan :as plan]))
 
 (def attr-key "data-x-key")
 
@@ -73,3 +74,10 @@
     (run! (comp release-node! nodes) released)
     (run! (partial place! containers remaining) placements)
     remaining))
+
+(defn sync!
+  "Brings `containers` to the `wanted` places, with `make-node` making the node of a new key.
+   Returns the node of each key that remains."
+  [containers wanted make-node]
+  (let [reading (read-places containers)]
+    (perform! reading (plan/plan (:places reading) wanted) make-node)))
