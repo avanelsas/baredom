@@ -166,3 +166,47 @@
         ^js f  (.-files el)]
     (is (= 0 (.-length f)))
     (is (array? f))))
+
+;; ── File rows keep their nodes ───────────────────────────────────────────────
+(defn- drop-files!
+  "Drops `files` onto the drop zone of `el`."
+  [^js el files]
+  (let [transfer (js/DataTransfer.)]
+    (run! (fn [f] (.add (.-items transfer) f)) files)
+    (.dispatchEvent (shadow-part el "[part=drop-zone]")
+                    (js/DragEvent. "drop" #js {:bubbles true :cancelable true
+                                               :dataTransfer transfer}))))
+
+(defn- upload! [files]
+  (doto (append! (doto (make-el) (.setAttribute model/attr-multiple "")))
+    (drop-files! files)))
+
+(defn- rows [^js el]
+  (vec (array-seq (.querySelectorAll (shadow-part el "[part=file-list]") "[part=file-item]"))))
+
+(defn- thumbnail-src [^js row]
+  (.-src (.querySelector row "[part=thumbnail]")))
+
+(deftest a-file-that-stays-keeps-its-row-and-its-thumbnail
+  (let [el            (upload! [(mock-file "a.png" "image/png" 10) (mock-file "b.png" "image/png" 20)])
+        [row-a row-b] (rows el)
+        src-b         (thumbnail-src row-b)]
+    (is (= 2 (count (rows el))))
+    (drop-files! el [(mock-file "c.txt" "text/plain" 5)])
+    (is (= [row-a row-b] (subvec (rows el) 0 2)) "the two rows are the same nodes")
+    (is (= src-b (thumbnail-src row-b)) "the thumbnail keeps its url")
+    (.click (.querySelector row-a "[part=remove]"))
+    (is (= row-b (first (rows el))) "the row that stays is the same node")
+    (is (= src-b (thumbnail-src row-b)))
+    (is (= "0" (.getAttribute (.querySelector row-b "[part=remove]") "data-index"))
+        "its remove button names its new position")
+    (is (= "2 files selected" (.-textContent (shadow-part el "[part=live-region]"))))))
+
+(deftest the-rows-come-back-with-a-thumbnail-after-a-reconnect
+  (let [el (upload! [(mock-file "a.png" "image/png" 10)])]
+    (.remove el)
+    (is (= 0 (count (rows el))) "no row, and so no blob url, while the element is out")
+    (append! el)
+    (is (= 1 (count (rows el))))
+    (is (some? (thumbnail-src (first (rows el)))))))
+

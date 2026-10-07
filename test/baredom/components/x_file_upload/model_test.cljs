@@ -127,3 +127,31 @@
 (deftest file-is-image-false-test
   (is (false? (model/file-is-image? (mock-file "a.pdf" "application/pdf" 100))))
   (is (false? (model/file-is-image? (mock-file "a.txt" "text/plain" 100)))))
+
+;; ── shown-files ─────────────────────────────────────────────────────────────
+(defn- file [file-name size]
+  (js/File. #js [(js/ArrayBuffer. size)] file-name #js {:type "text/plain" :lastModified 7}))
+
+(deftest shown-files-gives-each-row-what-it-shows-test
+  (let [notes (file "notes.txt" 2048)
+        row   (first (model/shown-files [notes]))]
+    (is (= {:key "notes.txt|2048|7|0" :index "0" :name "notes.txt" :size "2.0 KB"
+            :remove-label "Remove notes.txt"}
+           row))))
+
+(deftest shown-files-gives-the-same-file-twice-two-keys-test
+  (is (= ["a.txt|1|7|0" "b.txt|1|7|0" "a.txt|1|7|1"]
+         (mapv :key (model/shown-files [(file "a.txt" 1) (file "b.txt" 1) (file "a.txt" 1)])))))
+
+(deftest shown-files-keeps-the-key-of-a-file-when-another-leaves-test
+  (let [a (file "a.txt" 1)
+        b (file "b.txt" 1)]
+    (is (= (:key (second (model/shown-files [a b])))
+           (:key (first (model/shown-files [b])))))
+    (is (= "0" (:index (first (model/shown-files [b])))) "its index is its new position")))
+
+(deftest selection-message-test
+  (is (= "" (model/selection-message 0)))
+  (is (= "1 file selected" (model/selection-message 1)))
+  (is (= "3 files selected" (model/selection-message 3))))
+
