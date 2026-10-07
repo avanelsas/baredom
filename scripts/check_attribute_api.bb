@@ -28,6 +28,10 @@
 ;; from the model's data, with a call that names the property and the attribute, or
 ;; in a hand-written block. A link that no install agrees with is reported.
 ;;
+;; Every public attribute has a type. An attribute that no property reflects is
+;; reported, unless it is `role` or an `aria-` attribute, or the model names it in
+;; `internal-attributes`.
+;;
 ;; Usage: bb scripts/check_attribute_api.bb
 
 (load-file "scripts/metadata.bb")
@@ -205,10 +209,12 @@
       (str tag-name " declares " attr " as " (pr-str d)
            " and the manifest publishes " (pr-str p)))))
 
-(defn- untyped
-  "The attributes of a component to which its model gives no type."
-  [model]
-  (keep (fn [[attr {:keys [type]}]] (when-not type attr)) (declared-attributes model)))
+(defn- untyped-problems
+  "The public attributes of a component to which its model gives no type."
+  [{:keys [tag-name] :as model}]
+  (for [[attr {:keys [type]}] (sort (declared-attributes model))
+        :when (not type)]
+    (str tag-name " observes " attr ", which has no type: no property reflects it")))
 
 (let [models   (discover-models)
       links    (mapcat links models)
@@ -217,6 +223,7 @@
                        (mapcat name-problems models)
                        (mapcat internal-problems models)
                        (keep link-problem links)
+                       (mapcat untyped-problems models)
                        (mapcat #(manifest-problems % manifest) models))
       total    (reduce + (map (comp count :attributes) models))
       how      (frequencies (map :how links))]
@@ -227,6 +234,4 @@
     (do (println (format "%d attributes across %d components agree with their model"
                          total (count models)))
         (println (format "%d reflect a property: %d by data, %d by an install call, %d in a hand-written block"
-                         (count links) (:data how 0) (:call how 0) (:block how 0)))
-        (println (format "%d attributes have no type"
-                         (count (mapcat untyped models)))))))
+                         (count links) (:data how 0) (:call how 0) (:block how 0))))))
