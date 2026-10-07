@@ -178,12 +178,29 @@
   [value]
   (filter own? (re-seq #"--x-[a-z0-9-]+" value)))
 
+(defn- depth-after
+  "The depth of parentheses after the character `c`, from `depth` before it."
+  [depth c]
+  (case c \( (inc depth) \) (dec depth) depth))
+
+(defn- closing
+  "The index of the parenthesis that closes the one opened just before `from` in `text`."
+  [text from]
+  (some->> (rest (reductions depth-after 1 (subs text from)))
+           (keep-indexed (fn [at depth] (when (zero? depth) at)))
+           first
+           (+ from)))
+
 (defn- fallbacks
-  "The fallback of each own property that `value` reads with one, as a map."
+  "The fallback of each own property that `value` reads with one, as a map. A property that
+   `value` reads twice has the fallback of its first reading."
   [value]
   (into {}
-        (keep (fn [[_ prop fallback]] (when (own? prop) [prop fallback])))
-        (re-seq #"var\(\s*(--x-[a-z0-9-]+)\s*,\s*((?:[^()]|\([^()]*\))*)\)" value)))
+        (for [[opening prop] (re-seq #"var\(\s*(--x-[a-z0-9-]+)\s*," value)
+              :let  [from (+ (str/index-of value opening) (count opening))
+                     end  (closing value from)]
+              :when (and end (own? prop))]
+          [prop (str/trim (subs value from end))])))
 
 (defn- value-kind
   "How a value that names no own property relates to the tokens of x-theme."
@@ -277,6 +294,16 @@
     (doseq [[value n] (sort-by (comp - val) (frequencies (map :value found)))]
       (println (format "  %4d  %s" n value)))))
 
+(defn- unknown-names
+  "The `--x-` names a component reads that are neither a token of x-theme nor a property of a
+   component, as a message for each."
+  [tags {:keys [tag-name dir-name]}]
+  (let [source (component-source (io/file components-dir dir-name))]
+    (for [prop (sort (distinct (map second (re-seq #"var\(\s*(--x-[a-z0-9-]*[a-z0-9])\s*[,)]" source))))
+          :when (not (or (catalogue prop)
+                         (some #(str/starts-with? prop (str "--" % "-")) tags)))]
+      (str tag-name " reads " prop ", which x-theme does not define"))))
+
 (defn- not-read
   "The components whose CSS was not read, or not in full, with the definitions concerned."
   [components]
@@ -330,13 +357,18 @@
   (spit doc-file (coverage-doc components))
   (println "Wrote" doc-file))
 
-(let [components (map audited (remove #(= "x-theme" (:tag-name %)) (discover-models)))
+(let [models     (remove #(= "x-theme" (:tag-name %)) (discover-models))
+      components (map audited models)
+      unknown    (mapcat (partial unknown-names (all-tag-names)) models)
       rows       (mapcat :rows components)
       missing    (not-read components)
       report     (get {"summary" summary "literals" literals "doc" write-doc!}
                       (first *command-line-args*))]
   (when-not report
     (println "Usage: bb scripts/audit_tokens.bb summary|literals|doc")
+    (System/exit 1))
+  (when (seq unknown)
+    (run! println unknown)
     (System/exit 1))
   (report components)
   (println (format "\n%d values in %d components. Not read, or not in full: %s"

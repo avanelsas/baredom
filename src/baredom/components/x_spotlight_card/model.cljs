@@ -51,8 +51,8 @@
    "success"   "var(--x-color-success, #16a34a)"
    "warning"   "var(--x-color-warning, #f59e0b)"
    "danger"    "var(--x-color-danger, #dc2626)"
-   "info"      "var(--x-color-info, #0ea5e9)"
-   "accent"    "var(--x-color-accent, #8b5cf6)"
+   "info"      "#0ea5e9"
+   "accent"    "#8b5cf6"
    "neutral"   "var(--x-color-text, #111827)"})
 
 (def property-api
@@ -80,7 +80,7 @@
 (defn normalize-size      [v] (valid-enum v size-values      default-size))
 
 (defn color-css-value
-  "Resolve a normalized color token to a `var(--x-color-…, fallback)` CSS string."
+  "The CSS colour of a normalized colour name."
   [color]
   (get color->css color (get color->css default-color)))
 
