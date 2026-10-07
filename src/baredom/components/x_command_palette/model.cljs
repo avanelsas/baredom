@@ -108,6 +108,49 @@
         {:visible visible
          :groups (into #{} (keep :group visible))}))))
 
+;; ── Shown list ───────────────────────────────────────────────────────────────
+(def ^:private item-id-prefix "x-cp-item-")
+(def ^:private header-key-prefix "group-")
+
+(defn header-key?
+  "True when `entry-key` is the key of a group header."
+  [entry-key]
+  (str/starts-with? entry-key header-key-prefix))
+
+(defn- last-group [previous group]
+  (or group previous))
+
+(defn- shown-item
+  "What the item at `position` among the visible ones shows."
+  [active-idx position {item-key :key :keys [id label disabled?]}]
+  {:key           (str "item-" item-key)
+   :id            (str item-id-prefix position)
+   :data-id       (str id)
+   :position      (str position)
+   :text          label
+   :aria-disabled (when disabled? "true")
+   :aria-selected (when (= position active-idx) "true")})
+
+(defn- shown-entries
+  "The entries of one item: the item, led by the header of its group when that group differs
+   from the group before it."
+  [active-idx position {item-key :key :keys [group] :as item} group-before]
+  (cond->> [(shown-item active-idx position item)]
+    (and group (not= group group-before))
+    (cons {:key (str header-key-prefix item-key) :text group})))
+
+(defn shown-list
+  "What the list shows for the normalized `items` that match `query`: `:entries`, the group
+   headers and the items in order, each with its key and the text of what it shows, and
+   `:active-id`, the id of the active item, or nil for an empty list. The key of an item is
+   made of its id, and the key of a header of the id of the item it leads."
+  [items query active-idx]
+  (let [{:keys [visible]} (filter-items (mu/with-unique-keys :id items) query)
+        groups-before     (reductions last-group nil (map :group visible))]
+    {:entries   (into [] cat (map (partial shown-entries active-idx)
+                                  (range) visible groups-before))
+     :active-id (when (seq visible) (str item-id-prefix active-idx))}))
+
 (defn- find-next-enabled
   "Walk forward (or backward) from start-idx in visible, wrapping,
   returning the index of the next non-disabled item. Returns nil if all disabled."

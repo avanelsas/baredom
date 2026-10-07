@@ -202,3 +202,55 @@
          (is (= "hello" @fired) "query-change event carries query string")
          (done))
        0))))
+
+;; ---------------------------------------------------------------------------
+;; Items keep their nodes
+;; ---------------------------------------------------------------------------
+
+(defn- palette! []
+  (let [el (append! (make-el))]
+    (set! (.-items el) #js [#js {:id "new"  :label "New file"  :group "File"}
+                            #js {:id "open" :label "Open file" :group "File"}
+                            #js {:id "copy" :label "Copy"      :group "Edit"}])
+    el))
+
+(defn- item-nodes [^js el]
+  (vec (array-seq (.querySelectorAll (shadow-part el "[part=list]") "[part=item]"))))
+
+(defn- header-texts [^js el]
+  (mapv (fn [^js node] (.-textContent node))
+        (array-seq (.querySelectorAll (shadow-part el "[part=list]") "[part=group-header]"))))
+
+(defn- type! [^js el text]
+  (let [^js input (shadow-part el "[part=input]")]
+    (set! (.-value input) text)
+    (.dispatchEvent input (js/Event. "input" #js {:bubbles true}))))
+
+(deftest an-item-that-still-matches-keeps-its-node-test
+  (let [el              (palette!)
+        [new-file open copy] (item-nodes el)]
+    (is (= ["File" "Edit"] (header-texts el)))
+    (type! el "file")
+    (is (= [new-file open] (item-nodes el)) "the two that match are the same nodes")
+    (is (= ["File"] (header-texts el)) "the header of a group with no match is gone")
+    (is (not (.-isConnected copy)))
+    (type! el "")
+    (is (= [new-file open] (subvec (item-nodes el) 0 2)) "they stay when the query is cleared")
+    (is (= ["File" "Edit"] (header-texts el)))))
+
+(deftest the-empty-part-shows-when-nothing-matches-test
+  (let [el (palette!)]
+    (is (.hasAttribute (shadow-part el "[part=empty]") "hidden"))
+    (type! el "zzz")
+    (is (= 0 (count (item-nodes el))))
+    (is (not (.hasAttribute (shadow-part el "[part=empty]") "hidden")))))
+
+(deftest an-item-keeps-its-node-when-the-items-come-in-another-order-test
+  (let [el   (palette!)
+        copy (nth (item-nodes el) 2)]
+    (set! (.-items el) #js [#js {:id "copy" :label "Copy" :group "Edit"}
+                            #js {:id "new"  :label "New file" :group "File"}])
+    (is (identical? copy (first (item-nodes el))) "the node follows the id of its item")
+    (is (= "Copy" (.-textContent copy)))
+    (is (= ["Edit" "File"] (header-texts el)))))
+
