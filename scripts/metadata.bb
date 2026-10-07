@@ -125,11 +125,11 @@
         (str/trim result)))))
 
 (defn parse-def-value
-  "Extract and parse a def value from file text as EDN."
+  "Extract and parse a def value from file text as EDN. A docstring before the value is skipped."
   [text def-name]
   (when-let [raw (extract-def text def-name)]
     (try
-      (edn/read-string (preprocess-cljs raw))
+      (last (edn/read-string (str "[" (preprocess-cljs raw) "]")))
       (catch Exception _e))))
 
 (defn extract-tag-name
@@ -162,6 +162,15 @@
   [text]
   (into {} (map (fn [[_ k v]] [(symbol k) v])
                 (re-seq #"\(def\s+(?:\^:private\s+)?(\S+)\s+\"([^\"]+)\"\)" text))))
+
+(defn extract-internal-attributes
+  "The names in a model's `internal-attributes`: the attributes it observes that are not part
+   of the public API."
+  [text]
+  (let [string-defs (extract-string-defs text)]
+    (into #{}
+          (map #(get string-defs % (str %)))
+          (parse-def-value text "internal-attributes"))))
 
 ;; ── CSS API ─────────────────────────────────────────────────────────────────
 ;; A component's styling surface lives in its implementation, not its model: the
@@ -304,6 +313,8 @@
                          :events         (parse-def-value text "event-schema")
                          :methods        (parse-def-value text "method-api")
                          :attributes     (extract-observed-attributes text)
+                         :internal-attributes
+                         (extract-internal-attributes text)
                          :slots          (extract-slots text)
                          :css-properties (extract-css-properties tag tags source)
                          :css-parts      (extract-css-parts source)

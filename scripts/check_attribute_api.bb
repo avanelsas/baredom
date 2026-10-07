@@ -136,6 +136,12 @@
               (seq others)                                              :wrong
               :else                                                     :missing)})))
 
+(defn- internal-problems
+  "The internal attributes of a component that it does not observe."
+  [{:keys [tag-name attributes internal-attributes]}]
+  (for [attr (sort (remove (set attributes) internal-attributes))]
+    (str tag-name " declares " attr " as internal, and does not observe it")))
+
 (defn- name-problems
   "The properties of a component whose name has a dash. A JavaScript property is in camel case."
   [{:keys [tag-name properties]}]
@@ -154,9 +160,10 @@
   (str/starts-with? attr-name "aria-"))
 
 (defn- declared-attributes
-  "A map from each attribute of a component to the type and the field name its model gives it.
-   A reflecting property gives both. An `aria-` attribute is text. Any other has neither."
-  [{:keys [attributes properties string-defs]}]
+  "A map from each public attribute of a component to the type and the field name its model
+   gives it. A reflecting property gives both. An `aria-` attribute is text. Any other has
+   neither. An attribute in the model's `internal-attributes` is not public."
+  [{:keys [attributes internal-attributes properties string-defs]}]
   (let [reflected (into {}
                         (keep (fn [[k {:keys [type reflects-attribute]}]]
                                 (when reflects-attribute
@@ -164,7 +171,8 @@
                                    {:type (cljs-type->ts type) :field (name k)}])))
                         properties)]
     (into {}
-          (map (fn [attr] [attr (or (reflected attr) (when (aria? attr) {:type "string"}) {})]))
+          (comp (remove (set internal-attributes))
+                (map (fn [attr] [attr (or (reflected attr) (when (aria? attr) {:type "string"}) {})])))
           attributes)))
 
 (defn- manifest-attributes
@@ -202,6 +210,7 @@
       manifest (manifest-attributes)
       found    (concat (mapcat problems models)
                        (mapcat name-problems models)
+                       (mapcat internal-problems models)
                        (keep link-problem links)
                        (mapcat #(manifest-problems % manifest) models))
       total    (reduce + (map (comp count :attributes) models))

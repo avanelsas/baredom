@@ -7053,14 +7053,6 @@
         "type" : {
           "text" : "boolean"
         }
-      }, {
-        "name" : "data-last"
-      }, {
-        "name" : "data-index"
-      }, {
-        "name" : "data-position"
-      }, {
-        "name" : "data-striped"
       } ],
       "events" : [ {
         "name" : "x-timeline-item-connected",
@@ -9045,14 +9037,6 @@
         "type" : {
           "text" : "boolean"
         }
-      }, {
-        "name" : "data-last"
-      }, {
-        "name" : "data-index"
-      }, {
-        "name" : "data-position"
-      }, {
-        "name" : "data-striped"
       } ],
       "events" : [ {
         "name" : "x-timeline-item-connected",

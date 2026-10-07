@@ -139,7 +139,7 @@
 
 (defn generate-cem-module
   "Generate a CEM module entry for a component."
-  [{:keys [tag-name properties attributes events methods slots string-defs
+  [{:keys [tag-name properties attributes internal-attributes events methods slots string-defs
            css-properties css-parts]}]
   (let [interface-name (tag->interface-name tag-name)
         sdefs (or string-defs {})
@@ -195,7 +195,8 @@
                      :tagName       tag-name
                      :superclass    {:name "HTMLElement"}
                      :members       members
-                     :attributes    (cem-attributes attributes properties sdefs)
+                     :attributes    (cem-attributes (remove (set internal-attributes) attributes)
+                                                    properties sdefs)
                      :events        (or cem-events [])
                      :slots         cem-slots
                      :cssProperties (or css-properties [])

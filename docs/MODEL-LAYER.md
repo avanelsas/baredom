@@ -74,6 +74,7 @@ Args entries: `{:name "param" :type 'number}`. This metadata drives automatic Ty
 
 ## Optional definitions
 
+- **`internal-attributes`**: a set of observed attributes that are not public API, such as the ones a parent component writes onto its children. The manifest leaves them out.
 - **Slot names** — string constants for named slots
 - **CSS custom property names** — `--x-<component>-<property>` constants
 - **Enum values** — sets or vectors of allowed values for constrained attributes
