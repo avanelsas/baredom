@@ -7,6 +7,7 @@
             [baredom.utils.dom :as du]
             [baredom.utils.dates :as dates]
             [baredom.components.x-calendar.model :as model]
+            [baremirror.core :as mirror]
             [goog.object :as gobj]))
 
 ;; ── Instance-field keys ──────────────────────────────────────────────────────
@@ -320,89 +321,64 @@
         (set! (.-textContent cell) nm)
         (.appendChild wd cell)))))
 
-(defn- row-thursday
-  "The Thursday Date in a 7-cell calendar row. ISO week numbers are
-   Monday-anchored, so numbering a row from its Thursday is correct for any
-   `first-day-of-week` — numbering from the first cell is off by one whenever
-   the week does not start on Monday."
-  [row-cells]
-  (some (fn [{:keys [^js date]}]
-          (when (= 4 (.getUTCDay date)) date))
-        row-cells))
+(defn- bool-attr [v] (if v val-true val-false))
 
-(defn- make-weeknum-cell! [^js d]
+(defn- make-weeknum-cell! []
   (let [^js cell (.createElement js/document tag-div)]
     (du/set-attr! cell attr-part "weeknum")
     (du/set-attr! cell attr-aria-hidden val-true)
-    (set! (.-textContent cell) (str (dates/iso-week-number d)))
     cell))
 
-(defn- bool-attr [v] (if v val-true val-false))
-
-(defn- make-day-cell!
-  [^js d {:keys [iso in-month? today? disabled? selected? in-range? range-edge?]}
-   ^js day-fmt]
+(defn- make-day-cell! []
   (let [^js btn (.createElement js/document tag-button)]
     (du/set-attr! btn attr-type tag-button)
     (du/set-attr! btn attr-part "day")
     (du/set-attr! btn attr-role "gridcell")
-    (du/set-attr! btn attr-data-iso iso)
-    (du/set-attr! btn "data-outside"    (bool-attr (not in-month?)))
-    (du/set-attr! btn "data-today"      (bool-attr today?))
-    (du/set-attr! btn "data-disabled"   (bool-attr disabled?))
-    (du/set-attr! btn "data-selected"   (bool-attr selected?))
-    (du/set-attr! btn "data-in-range"   (bool-attr in-range?))
-    (du/set-attr! btn "data-range-edge" (bool-attr range-edge?))
-    (du/set-attr! btn attr-aria-selected (bool-attr selected?))
-    (du/set-attr! btn attr-aria-disabled (bool-attr disabled?))
-    (du/set-attr! btn attr-aria-label (.format day-fmt d))
-    (when today? (du/set-attr! btn attr-aria-current "date"))
-    (du/set-attr! btn attr-tabindex "-1")
-    (set! (.-textContent btn) (str (.getUTCDate d)))
     btn))
 
-(defn- resolve-grid-focus!
-  "Pick the single cell that carries tabindex=0 (roving tabindex). Prefers the
-   remembered focus cell, then the selection, then today, then the 1st."
-  [^js el ^js grid m today-iso]
-  (let [present? (fn [iso]
-                   (when (and iso
-                              (.querySelector grid
-                                              (str "[" attr-data-iso "=\"" iso "\"]")))
-                     iso))
-        iso (or (present? (du/getv el k-grid-focus))
-                (present? (:value m))
-                (present? (:start m))
-                (present? today-iso)
-                (:view-iso m))]
-    (du/setv! el k-grid-focus iso)
-    ;; A disabled calendar exposes no tab-reachable cell — every cell keeps
-    ;; the tabindex=-1 set in `make-day-cell!`.
-    (when-not (:disabled? m)
-      (when-let [^js btn (.querySelector grid
-                                         (str "[" attr-data-iso "=\"" iso "\"]"))]
-        (du/set-attr! btn attr-tabindex "0")))))
+(defn- make-grid-cell!
+  "The node of a grid cell: its fixed structure. `apply-grid-cell!` gives it its values."
+  [cell-key]
+  (if (model/week-key? cell-key)
+    (make-weeknum-cell!)
+    (make-day-cell!)))
 
-(defn- apply-grid! [^js el m]
+(def ^:private day-attrs
+  "The attributes of a day cell, each with the key of what the model's cell shows for it."
+  [[attr-data-iso      :iso]
+   ["data-outside"     :outside]
+   ["data-today"       :today]
+   ["data-disabled"    :disabled]
+   ["data-selected"    :selected]
+   ["data-in-range"    :in-range]
+   ["data-range-edge"  :range-edge]
+   [attr-aria-selected :selected]
+   [attr-aria-disabled :disabled]
+   [attr-aria-label    :aria-label]
+   [attr-aria-current  :aria-current]
+   [attr-tabindex      :tabindex]])
+
+(defn- apply-day-attr! [^js btn cell [attr-name shown-key]]
+  (du/set-attr-to! btn attr-name (get cell shown-key)))
+
+(defn- apply-grid-cell!
+  "Writes what `cell` shows onto its node in `nodes`."
+  [nodes {cell-key :key :keys [text] :as cell}]
+  (let [^js node (nodes cell-key)]
+    (du/set-text-to! node text)
+    (when-not (model/week-key? cell-key)
+      (run! (partial apply-day-attr! node cell) day-attrs))))
+
+(defn- apply-grid!
+  "Brings the day grid to the model. A day that stays in view keeps its node."
+  [^js el m]
   (let [^js grid  (gobj/get (du/getv el k-refs) rk-grid)
-        view      (dates/iso->date (:view-iso m))
-        cells     (dates/month-grid view (:fdow m))
         today-iso (dates/date->iso (js/Date. (js/Date.now)))
-        wk?       (:show-week-numbers? m)
-        day-fmt   (js/Intl.DateTimeFormat.
-                   (or (:locale m) "default")
-                   #js {:weekday "long" :year "numeric" :month "long"
-                        :day "numeric" :timeZone "UTC"})]
-    (set! (.-textContent grid) "")
-    (dotimes [row 6]
-      (let [row-cells (subvec cells (* row 7) (+ (* row 7) 7))]
-        (when wk?
-          (.appendChild grid (make-weeknum-cell! (row-thursday row-cells))))
-        (doseq [{:keys [^js date in-month?]} row-cells]
-          (let [iso   (dates/date->iso date)
-                flags (model/compute-cell-flags m iso in-month? today-iso)]
-            (.appendChild grid (make-day-cell! date flags day-fmt))))))
-    (resolve-grid-focus! el grid m today-iso)))
+        {:keys [cells focus-iso]} (model/shown-grid m today-iso (du/getv el k-grid-focus))
+        nodes     (mirror/sync! {:cells {:parent grid}} {:cells (mapv :key cells)}
+                                make-grid-cell!)]
+    (run! (partial apply-grid-cell! nodes) cells)
+    (du/setv! el k-grid-focus focus-iso)))
 
 (defn- apply-jump-contents! [^js el m ^js refs]
   (let [^js ylabel  (gobj/get refs rk-jump-year-lbl)

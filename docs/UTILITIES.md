@@ -45,6 +45,7 @@ returns, so work that `f` starts and does not finish is not held.
 | `remove-attr!` | `[el attr-name]` | Remove an attribute |
 | `set-bool-attr!` | `[el attr-name value]` | Set or remove a boolean attribute based on truthiness |
 | `set-attr-to!` | `[el attr-name value]` | Set an attribute to a value, or remove it for nil, only where it differs |
+| `set-text-to!` | `[node text]` | Set the text of a node, only where it differs |
 
 ### Event dispatch
 

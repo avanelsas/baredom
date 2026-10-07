@@ -265,3 +265,11 @@
 (deftest loop-detail-test
   (let [d (model/loop-detail "backward")]
     (is (= "backward" (:direction d)))))
+
+(deftest shown-indicators-gives-each-dot-what-it-shows-test
+  (is (= [{:key "0" :aria-label "Slide 1" :aria-selected "false"}
+          {:key "1" :aria-label "Slide 2" :aria-selected "true"}]
+         (model/shown-indicators true 2 1)))
+  (is (= [] (model/shown-indicators false 2 1)) "no dots when the indicators are not shown")
+  (is (= [] (model/shown-indicators true 0 0)) "no dots for no slides"))
+

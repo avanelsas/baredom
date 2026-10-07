@@ -602,3 +602,39 @@
          (done))
        0))))
 
+;; ---------------------------------------------------------------------------
+;; The day grid keeps its nodes
+;; ---------------------------------------------------------------------------
+
+(defn- day-nodes [^js el]
+  (vec (array-seq (.querySelectorAll (shadow-part el "[part=grid]") "[part=day]"))))
+
+(defn- open-picker!
+  "An open picker in the document that had `value` before it was connected, so it shows that month."
+  [value]
+  (doto (append! (doto (make-el) (.setAttribute "value" value)))
+    (.setAttribute "open" "")))
+
+(defn- day-of [^js el iso]
+  (.querySelector (shadow-part el "[part=grid]") (str "[data-iso=\"" iso "\"]")))
+
+(deftest a-day-in-both-months-keeps-its-cell-when-the-month-changes-test
+  (let [el       (open-picker! "2024-06-15")
+        ^js july (day-of el "2024-07-01")
+        ^js june (day-of el "2024-06-15")]
+    (.click (shadow-part el "[part=navbtn][data-nav=next]"))
+    (is (= 42 (count (day-nodes el))))
+    (is (identical? july (day-of el "2024-07-01")) "a day in both grids keeps its node")
+    (is (= "false" (.getAttribute july "data-outside")) "and shows that it is now in the month")
+    (is (not (.-isConnected june)) "a day that left the grid is gone")))
+
+(deftest a-write-of-the-value-keeps-the-cells-test
+  (let [el     (open-picker! "2024-06-15")
+        before (day-nodes el)]
+    (.setAttribute el "value" "2024-06-20")
+    (is (= before (day-nodes el)) "every cell is the same node")
+    (is (= ["2024-06-20"]
+           (mapv (fn [^js day] (.getAttribute day "data-iso"))
+                 (filter (fn [^js day] (= "true" (.getAttribute day "data-selected")))
+                         (day-nodes el)))))))
+

@@ -74,6 +74,24 @@
     (du/set-attr-to! el "value" nil)
     (is (not (.hasAttribute el "value")))))
 
+(defn- child-changes
+  "The number of changes to the children of `el` while `f` runs."
+  [^js el f]
+  (let [observer (js/MutationObserver. (fn [_ _]))]
+    (.observe observer el #js {:childList true})
+    (f)
+    (let [n (.-length (.takeRecords observer))]
+      (.disconnect observer)
+      n)))
+
+(deftest set-text-to-writes-only-where-the-text-differs-test
+  (let [el (make-el)]
+    (du/set-text-to! el "a")
+    (is (= "a" (.-textContent el)))
+    (is (= 0 (child-changes el (fn [] (du/set-text-to! el "a")))))
+    (is (= 1 (child-changes el (fn [] (du/set-text-to! el "b")))))
+    (is (= "b" (.-textContent el)))))
+
 (deftest set-attr-to-writes-only-where-the-value-differs-test
   (let [el (make-el)]
     (du/set-attr-to! el "value" "a")

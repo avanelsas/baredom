@@ -235,3 +235,49 @@
    :clear  {:args [] :returns 'void}
    :checkValidity  {:args [] :returns 'boolean}
    :reportValidity {:args [] :returns 'boolean}})
+
+;; ---------------------------------------------------------------------------
+;; Shown days
+;; ---------------------------------------------------------------------------
+
+(defn day-out-of-range?
+  "True when the Date `d` is before the minimum or after the maximum of `canon`."
+  [^js d canon]
+  (boolean (or (and (:min-d canon) (neg? (dates/compare-date d (:min-d canon))))
+               (and (:max-d canon) (pos? (dates/compare-date d (:max-d canon)))))))
+
+(defn- same-day? [^js d ^js other]
+  (boolean (and other (= 0 (dates/compare-date d other)))))
+
+(defn day-flags
+  "What the selection of `canon` makes of the Date `d`: selected, in the range, an edge of it."
+  [^js d {:keys [mode value-d start-d end-d]}]
+  (if (= mode :single)
+    {:selected? (same-day? d value-d) :in-range? false :edge? false}
+    (let [edge? (or (same-day? d start-d) (same-day? d end-d))]
+      {:selected? edge?
+       :in-range? (boolean (and start-d end-d (dates/in-range? d start-d end-d)))
+       :edge?     edge?})))
+
+(defn- shown-day
+  "What the cell of a day shows, as the text of each attribute and of the cell.
+   The key of a day cell is its iso date."
+  [canon focus-iso {:keys [^js date in-month?]}]
+  (let [iso (dates/date->iso date)
+        {:keys [selected? in-range? edge?]} (day-flags date canon)]
+    {:key        iso
+     :iso        iso
+     :text       (str (.getUTCDate date))
+     :outside    (str (not in-month?))
+     :disabled   (str (day-out-of-range? date canon))
+     :selected   (str selected?)
+     :in-range   (str in-range?)
+     :range-edge (str edge?)
+     :tabindex   (if (= iso focus-iso) "0" "-1")}))
+
+(defn shown-days
+  "What each of the 42 cells of the day grid shows for the month of the Date `month`, or none
+   with no month. Only the cell of `focus-iso` can be reached by Tab."
+  [^js month canon focus-iso]
+  (into [] (map (partial shown-day canon focus-iso)) (dates/month-grid month)))
+

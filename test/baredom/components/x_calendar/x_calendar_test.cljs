@@ -308,3 +308,59 @@
     (is (some? cell) "today's cell is in the default view")
     (is (= "true" (.getAttribute cell "data-today"))
         "today's cell is flagged")))
+
+;; ---------------------------------------------------------------------------
+;; The day grid keeps its nodes
+;; ---------------------------------------------------------------------------
+
+(defn- day-nodes [^js el]
+  (vec (array-seq (shadow-all el "[part=day]"))))
+
+(defn- calendar! [attrs]
+  (let [^js el (make-el)]
+    (doseq [[k v] attrs]
+      (.setAttribute el k v))
+    (append! el)))
+
+(deftest a-click-on-a-day-keeps-the-cell-and-its-focus
+  (let [el          (calendar! {model/attr-month "2026-05"})
+        before      (day-nodes el)
+        ^js clicked (day-cell el "2026-05-14")]
+    (.focus clicked)
+    (.click clicked)
+    (is (= "2026-05-14" (.getAttribute el model/attr-value)) "the click selected the day")
+    (is (= before (day-nodes el)) "every cell is the same node")
+    (is (identical? clicked (.-activeElement (.-shadowRoot el))) "the cell still has focus")
+    (is (= "true" (.getAttribute clicked "data-selected")))))
+
+(deftest a-day-in-both-months-keeps-its-cell-when-the-month-changes
+  (let [el       (calendar! {model/attr-month "2026-05"})
+        ^js june (day-cell el "2026-06-01")
+        ^js may  (day-cell el "2026-05-14")]
+    (.setAttribute el model/attr-month "2026-06")
+    (is (= 42 (count (day-nodes el))))
+    (is (identical? june (day-cell el "2026-06-01")) "a day in both grids keeps its node")
+    (is (= "false" (.getAttribute june "data-outside")) "and shows that it is now in the month")
+    (is (not (.-isConnected may)) "a day that left the grid is gone")
+    (is (= 1 (.-length (shadow-all el "[part=day][tabindex=\"0\"]"))) "one cell can be reached")))
+
+(deftest a-click-on-a-day-of-the-next-month-keeps-the-focus-on-that-day
+  (let [el          (calendar! {model/attr-value "2026-05-14"})
+        ^js clicked (day-cell el "2026-06-01")]
+    (.focus clicked)
+    (.click clicked)
+    (is (= "2026-06-01" (.getAttribute el model/attr-value)) "the click selected the day")
+    (is (some? (day-cell el "2026-06-30")) "the calendar shows June")
+    (is (identical? clicked (day-cell el "2026-06-01")) "the day is the same node")
+    (is (identical? clicked (.-activeElement (.-shadowRoot el))) "the focus is on the day")))
+
+(deftest week-numbers-come-and-go-and-the-days-keep-their-cells
+  (let [el     (calendar! {model/attr-month "2026-05"})
+        before (day-nodes el)]
+    (.setAttribute el model/attr-show-week-numbers "")
+    (is (= 6 (count (week-num-texts el))))
+    (is (= before (day-nodes el)))
+    (.removeAttribute el model/attr-show-week-numbers)
+    (is (= 0 (count (week-num-texts el))))
+    (is (= before (day-nodes el)))))
+

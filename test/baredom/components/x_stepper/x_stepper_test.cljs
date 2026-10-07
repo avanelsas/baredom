@@ -264,3 +264,61 @@
           ^js btn (step-part (aget steps 1) "[part=step-indicator]")]
       (.click btn)
       (is (= 1 (count @events))))))
+
+;; ── Steps keep their nodes ────────────────────────────────────────────────────
+(defn- step-buttons [^js el]
+  (vec (array-seq (shadow-parts el "[part=step-indicator]"))))
+
+(defn- stepper! [n]
+  (let [^js el (append! (make-el))]
+    (.setAttribute el model/attr-steps (str n))
+    el))
+
+(deftest a-click-on-a-step-keeps-its-button-and-its-focus
+  (let [el          (stepper! 3)
+        ^js clicked (nth (step-buttons el) 2)]
+    (.focus clicked)
+    (.click clicked)
+    (is (= "2" (.getAttribute el model/attr-current)) "the click made the step current")
+    (is (identical? clicked (nth (step-buttons el) 2)) "the button is the same node")
+    (is (identical? clicked (.-activeElement (.-shadowRoot el))) "the button still has focus")))
+
+(deftest a-step-that-stays-keeps-its-node-when-current-changes
+  (let [el     (stepper! 3)
+        before (step-buttons el)]
+    (.setAttribute el model/attr-current "1")
+    (is (= before (step-buttons el)))
+    (is (= "step" (.getAttribute (nth (step-buttons el) 1) "aria-current")))
+    (is (nil? (.getAttribute (nth (step-buttons el) 0) "aria-current")))))
+
+(deftest steps-are-added-and-removed-at-the-end
+  (let [el     (stepper! 3)
+        before (step-buttons el)]
+    (.setAttribute el model/attr-steps "4")
+    (is (= 4 (count (step-buttons el))))
+    (is (= before (subvec (step-buttons el) 0 3)) "the first three keep their nodes")
+    (.setAttribute el model/attr-steps "2")
+    (is (= (subvec before 0 2) (step-buttons el)) "the first two keep their nodes")))
+
+(deftest a-stepper-that-is-enabled-again-has-reachable-steps
+  (let [el         (stepper! 2)
+        ^js button (first (step-buttons el))]
+    (.setAttribute el model/attr-disabled "")
+    (is (= "true" (.getAttribute button "aria-disabled")))
+    (is (= "-1" (.getAttribute button "tabindex")))
+    (.removeAttribute el model/attr-disabled)
+    (is (not (.hasAttribute button "aria-disabled")))
+    (is (= "0" (.getAttribute button "tabindex")))))
+
+(deftest a-step-that-stays-shows-the-new-values-of-its-position
+  (let [el       (append! (make-el))
+        _        (.setAttribute el model/attr-steps (steps-json "One" "Two"))
+        ^js step (shadow-part el "[part=step]")]
+    (.setAttribute el model/attr-steps
+                   (js/JSON.stringify (clj->js [{:label "First" :description "Start here"}
+                                                {:label "Two"}])))
+    (is (identical? step (shadow-part el "[part=step]")) "the node is the same")
+    (is (= "First" (.-textContent (step-part step "[part=step-label]"))))
+    (is (= "Start here" (.-textContent (step-part step "[part=step-description]"))))
+    (is (= "block" (.. (step-part step "[part=step-description]") -style -display)))))
+

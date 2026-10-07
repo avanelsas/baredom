@@ -1,6 +1,7 @@
 (ns baredom.components.x-stepper.x-stepper
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
+            [baremirror.core :as mirror]
             [goog.object :as gobj]
             [baredom.components.x-stepper.model :as model]))
 
@@ -254,94 +255,95 @@
     :disabled?       (du/has-attr? el model/attr-disabled)}))
 
 ;; ── Step node construction ───────────────────────────────────────────────────
-(defn- step-aria-label [idx label state]
-  (str "Step " (inc idx) ": " label
-       " ("
-       (case state
-         :complete "completed"
-         :current  "current"
-         :upcoming "upcoming")
-       ")"))
-
 (defn- make-step-indicator!
-  "Build the clickable button + number badge for a single step."
-  [idx label-str state disabled?]
+  "The button of a step with its number badge, with no values."
+  []
   (let [btn-el (.createElement js/document "button")
         num-el (.createElement js/document "span")]
     (du/set-attr! btn-el "part" "step-indicator")
     (du/set-attr! btn-el "type" "button")
-    (du/set-attr! btn-el "aria-label" (step-aria-label idx label-str state))
-    (if (= state :current)
-      (du/set-attr! btn-el "aria-current" "step")
-      (du/remove-attr! btn-el "aria-current"))
-    (du/set-attr! btn-el "tabindex" (if disabled? "-1" "0"))
-    (when disabled?
-      (du/set-attr! btn-el "aria-disabled" "true"))
-
     (du/set-attr! num-el "part" "step-number")
     (du/set-attr! num-el "aria-hidden" "true")
-    (set! (.-textContent num-el) (if (= state :complete) "✓" (str (inc idx))))
-
     (.appendChild btn-el num-el)
     btn-el))
 
 (defn- make-step-track!
-  "Build the track wrapper containing the indicator and the connector line."
-  [idx label-str state disabled?]
+  "The track of a step: its indicator and its connector line."
+  []
   (let [track-el (.createElement js/document "div")
-        btn-el   (make-step-indicator! idx label-str state disabled?)
         conn-el  (.createElement js/document "div")]
     (du/set-attr! track-el "part" "step-track")
     (du/set-attr! conn-el  "part" "step-connector")
     (du/set-attr! conn-el  "aria-hidden" "true")
-    (.appendChild track-el btn-el)
+    (.appendChild track-el (make-step-indicator!))
     (.appendChild track-el conn-el)
     track-el))
 
 (defn- make-step-content!
-  "Build the label/description column for a single step."
-  [label-str description]
+  "The label and description column of a step, with no values."
+  []
   (let [content-el (.createElement js/document "div")
         label-el   (.createElement js/document "span")
         desc-el    (.createElement js/document "span")]
     (du/set-attr! content-el "part" "step-content")
     (du/set-attr! label-el   "part" "step-label")
-    (set! (.-textContent label-el) label-str)
-    (du/set-attr! desc-el "part" "step-description")
-    (if (and description (not= description ""))
-      (do (set! (.-textContent desc-el) description)
-          (set! (.. desc-el -style -display) "block"))
-      (set! (.. desc-el -style -display) "none"))
+    (du/set-attr! desc-el    "part" "step-description")
     (.appendChild content-el label-el)
     (.appendChild content-el desc-el)
     content-el))
 
 (defn- make-step-node!
-  "Compose a step (track + content) from its named DOM builders."
-  [idx {:keys [label description]} state disabled?]
-  (let [step-el   (.createElement js/document "div")
-        label-str (or label "")
-        state-str (model/state->attr state)]
+  "The node of a step: its fixed structure. `apply-step!` gives it its values."
+  [_key]
+  (let [step-el (.createElement js/document "div")]
     (du/set-attr! step-el "part" "step")
     (du/set-attr! step-el "role" "listitem")
-    (du/set-attr! step-el "data-index" (str idx))
-    (du/set-attr! step-el "data-state" state-str)
-    (.appendChild step-el (make-step-track! idx label-str state disabled?))
-    (.appendChild step-el (make-step-content! label-str description))
+    (.appendChild step-el (make-step-track!))
+    (.appendChild step-el (make-step-content!))
     step-el))
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
-(defn- apply-model! [^js el {:keys [steps current orientation size disabled?] :as m}]
-  (let [{:keys [container]} (ensure-refs! el)
-        ^js container container]
+(defn- step-part [^js step-el part]
+  (.querySelector step-el (str "[part=" part "]")))
+
+(defn- apply-step-indicator!
+  [^js step-el {:keys [aria-label aria-current tabindex aria-disabled number]}]
+  (let [btn-el (step-part step-el "step-indicator")]
+    (du/set-attr-to! btn-el "aria-label" aria-label)
+    (du/set-attr-to! btn-el "aria-current" aria-current)
+    (du/set-attr-to! btn-el "tabindex" tabindex)
+    (du/set-attr-to! btn-el "aria-disabled" aria-disabled)
+    (du/set-text-to! (step-part step-el "step-number") number)))
+
+(defn- apply-step-content! [^js step-el {:keys [label description described?]}]
+  (let [^js desc-el (step-part step-el "step-description")]
+    (du/set-text-to! (step-part step-el "step-label") label)
+    (du/set-text-to! desc-el description)
+    (set! (.. desc-el -style -display) (if described? "block" "none"))))
+
+(defn- apply-step!
+  "Writes what `step` shows onto its node in `nodes`."
+  [nodes {step-key :key :keys [index state] :as step}]
+  (let [^js step-el (nodes step-key)]
+    (du/set-attr-to! step-el "data-index" index)
+    (du/set-attr-to! step-el "data-state" state)
+    (apply-step-indicator! step-el step)
+    (apply-step-content! step-el step)))
+
+(defn- render-steps!
+  "Brings the steps in `container` to the model. A step that stays keeps its node."
+  [^js container m]
+  (let [steps (model/shown-steps m)
+        nodes (mirror/sync! {:steps {:parent container}} {:steps (mapv :key steps)}
+                            make-step-node!)]
+    (run! (partial apply-step! nodes) steps)))
+
+(defn- apply-model! [^js el {:keys [orientation size] :as m}]
+  (let [{:keys [container]} (ensure-refs! el)]
     ;; data-* attributes drive CSS — not in observed-attributes, safe to set here
     (du/set-attr! el "data-orientation" (model/orientation->attr orientation))
     (du/set-attr! el "data-size" (model/size->attr size))
-    ;; Rebuild step nodes (clear + append)
-    (set! (.-innerHTML container) "")
-    (doseq [[idx step] (map-indexed vector steps)]
-      (let [state (model/step-state idx current)]
-        (.appendChild container (make-step-node! idx step state disabled?))))
+    (render-steps! container m)
     (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
