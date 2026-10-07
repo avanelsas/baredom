@@ -244,10 +244,10 @@
             row-index    (gobj/get (.-detail e) detail-row-index)
             currently?   (.hasAttribute row selected-attr)
             will-select? (not currently?)]
-        (dispatch-row-select! el row-index will-select? selectable)
-        (cond
-          (= selectable select-single) (handle-single-select! el row)
-          (= selectable select-multi)  (handle-multi-select! el row))))))
+        (when (dispatch-row-select! el row-index will-select? selectable)
+          (cond
+            (= selectable select-single) (handle-single-select! el row)
+            (= selectable select-multi)  (handle-multi-select! el row)))))))
 
 (defn- on-row-connected [^js el ^js _e]
   ;; Re-compute stripe attributes whenever a new row connects.
