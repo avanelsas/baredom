@@ -100,7 +100,7 @@
    "color:var(--x-dropdown-chevron-color);"
    "font-style:normal;"
    "flex-shrink:0;"
-   "transition:transform 200ms ease;"
+   "transition:transform var(--x-transition-duration,200ms) var(--x-transition-easing,ease);"
    "}"
    ":host([open]) [part=chevron]{"
    "transform:rotate(180deg);"

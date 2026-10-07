@@ -117,7 +117,7 @@
    "all:unset;cursor:pointer;box-sizing:border-box;"
    "display:flex;align-items:center;justify-content:center;"
    "aspect-ratio:1;min-width:1.75rem;border-radius:6px;"
-   "transition:background-color 0.12s ease;"
+   "transition:background-color var(--x-transition-duration,0.12s) var(--x-transition-easing,ease);"
    "}"
    "[part=day]:hover:not([data-disabled=true]){background:var(--x-calendar-hover,#f1f5f9);}"
    "[part=day]:focus-visible{outline:2px solid var(--x-calendar-focus,#60a5fa);}"

@@ -40,7 +40,7 @@
    "--x-scroll-timeline-entry-gap:2rem;"
    "--x-scroll-timeline-date-color:rgba(0,0,0,0.5);"
    "--x-scroll-timeline-date-font-size:0.8125rem;"
-   "--x-scroll-timeline-transition-duration:300ms;"
+   "--x-scroll-timeline-transition-duration:var(--x-transition-duration,300ms);"
    "--x-scroll-timeline-curve-amplitude:60;"
    "--x-scroll-timeline-disabled-opacity:0.55;}"
    du/hidden-rule

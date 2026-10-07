@@ -426,7 +426,7 @@
    "[part='material-overlay']{"
    "position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;"
    "background:radial-gradient(circle at var(--_mx,50%) var(--_my,50%),rgba(255,255,255,0.12) 0%,transparent 60%);"
-   "opacity:0;transition:opacity 200ms ease;"
+   "opacity:0;transition:opacity var(--x-transition-duration,200ms) var(--x-transition-easing,ease);"
    "}"
    "button[data-hover='true']:not([disabled]) [part='material-overlay']{opacity:1;}"
    "button[data-active='true']:not([disabled]) [part='material-overlay']{opacity:0.7;}"
@@ -461,7 +461,8 @@
    "[part='canvas']{position:absolute;inset:-24px;inline-size:calc(100% + 48px);block-size:calc(100% + 48px);pointer-events:none;z-index:3;}"
 
    ;; Disperse mode: slight inner content fade during burst
-   "button[data-mode='disperse'][data-phase='press-burst'] [part='inner']{opacity:0.85;transition:opacity 200ms ease;}"
+   "button[data-mode='disperse'][data-phase='press-burst'] [part='inner']{opacity:0.85;"
+   "transition:opacity var(--x-transition-duration,200ms) var(--x-transition-easing,ease);}"
 
    ;; Surface destabilization — button distorts when emitting particles
    ;; hover-emit blur is driven by JS (ramps over time via inline style)

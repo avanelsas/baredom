@@ -56,7 +56,7 @@
    "--x-modal-footer-padding:0.75rem 1.25rem;"
    "--x-modal-border:var(--x-color-border,color-mix(in srgb,currentColor 12%,transparent));"
    "--x-modal-duration:var(--x-transition-duration,180ms);"
-   "--x-modal-easing:ease;"
+   "--x-modal-easing:var(--x-transition-easing,ease);"
    "--x-modal-z:1000;"
    "}"
    du/hidden-rule

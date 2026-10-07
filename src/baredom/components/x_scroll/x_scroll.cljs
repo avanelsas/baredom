@@ -93,7 +93,8 @@
    "font-size:calc(var(--x-scroll-control-size) * 0.5);"
    "line-height:1;"
    "transform:translateY(-50%);"
-   "transition:background 120ms ease,opacity 120ms ease;}"
+   "transition:background var(--x-transition-duration,120ms) var(--x-transition-easing,ease),"
+   "opacity var(--x-transition-duration,120ms) var(--x-transition-easing,ease);}"
 
    "[part=prev]{left:8px;}"
    "[part=next]{right:8px;}"
@@ -125,7 +126,7 @@
    "appearance:none;border:0;margin:0;padding:0;"
    "width:var(--x-scroll-indicator-size);height:var(--x-scroll-indicator-size);"
    "border-radius:50%;background:var(--x-scroll-indicator-color);"
-   "cursor:pointer;transition:background 120ms ease;}"
+   "cursor:pointer;transition:background var(--x-transition-duration,120ms) var(--x-transition-easing,ease);}"
    "[part=indicator]:focus{outline:none;}"
    "[part=indicator]:focus-visible{"
    "outline:2px solid var(--x-scroll-focus-ring);outline-offset:2px;}"

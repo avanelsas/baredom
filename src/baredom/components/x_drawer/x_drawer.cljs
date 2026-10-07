@@ -25,7 +25,7 @@
    "--x-drawer-backdrop:rgb(0 0 0/0.4);"
    "--x-drawer-shadow:var(--x-shadow-lg,0 8px 24px rgb(0 0 0/0.18));"
    "--x-drawer-duration:var(--x-transition-duration,200ms);"
-   "--x-drawer-easing:ease;"
+   "--x-drawer-easing:var(--x-transition-easing,ease);"
    "--x-drawer-z:1000;"
    "--x-drawer-header-padding:1rem 1.25rem;"
    "--x-drawer-body-padding:1rem 1.25rem;"

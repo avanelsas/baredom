@@ -34,7 +34,7 @@
    "--x-timeline-item-stripe-bg:var(--x-color-surface,rgba(0,0,0,0.025));"
    "--x-timeline-item-motion:var(--x-transition-duration,150ms);"
    "--x-timeline-item-motion-ease:var(--x-transition-easing,cubic-bezier(0.2,0,0,1));"
-   "--x-timeline-item-enter-duration:160ms;"
+   "--x-timeline-item-enter-duration:var(--x-transition-duration,160ms);"
    "--x-timeline-item-disabled-opacity:0.45;}"
    du/hidden-rule
 

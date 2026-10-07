@@ -108,15 +108,15 @@
    "line-height"  #"^line-height$"
    "radius"       #"^border(-[a-z]+-[a-z]+)?-radius$"
    "shadow"       #"^box-shadow$"
-   "transition"   #"^(transition|transition-duration|transition-timing-function)$"
+   "transition"   #"^(transition|animation)(-duration|-timing-function)?$"
    "space"        #"^(padding|margin|gap|row-gap|column-gap)(-[a-z]+)*$"
    "z"            #"^z-index$"
    "border-width" #"^border(-[a-z]+)?-width$"))
 
 (def ^:private structural
   "Values that state structure and no design default, so no theme answers for them."
-  (re-pattern (str "(?i)^(0|0px|0ms|0s|none|inherit|initial|unset|auto|normal|transparent|currentcolor"
-                   "|100%|50%|1|-1|[0-9]|infinite)\\s*(!important)?$")))
+  (re-pattern (str "(?i)^(0|0px|0ms|0s|none|inherit|initial|unset|auto|normal|transparent"
+                   "|currentcolor|100%|50%|1|-1|[0-9]|infinite)\\s*(!important)?$")))
 
 (defn- family-of [prop]
   (some (fn [[family re]] (when (re-find re prop) family)) families))
@@ -255,17 +255,28 @@
   "The values that follow no token on purpose: pairs of a reason and its values, each value a
    component, a property and the value."
   [["A loop that runs by itself. It is not a transition."
-    [["x-image"              "--x-image-shimmer-duration"           "1.5s"]
-     ["x-kinetic-typography" "--x-kinetic-typography-duration"      "10s"]
-     ["x-organic-divider"    "--x-organic-divider-animate-duration" "6s"]
-     ["x-organic-shape"      "--x-organic-shape-animate-duration"   "8s"]
-     ["x-skeleton"           "--x-skeleton-duration"                "1.5s"]
-     ["x-spinner"            "--x-spinner-duration"                 "0.75s"]
-     ["x-splash"             "--x-splash-spinner-duration"          "0.75s"]]]
+    [["x-button" "animation" "x-button-spin 0.7s linear infinite"]
+     ["x-chart" "animation" "x-chart-shimmer 1.4s ease infinite"]
+     ["x-drop-zone" "animation" "x-drop-zone-pulse 1.1s ease-in-out infinite"]
+     ["x-image" "--x-image-shimmer-duration" "1.5s"]
+     ["x-kinetic-typography" "--x-kinetic-typography-duration" "10s"]
+     ["x-organic-divider" "--x-organic-divider-animate-duration" "6s"]
+     ["x-organic-divider" "--x-organic-divider-animate-timing" "ease-in-out"]
+     ["x-organic-shape" "--x-organic-shape-animate-duration" "8s"]
+     ["x-organic-shape" "--x-organic-shape-animate-timing" "ease-in-out"]
+     ["x-particle-button" "animation" "x-particle-button-spin 0.7s linear infinite"]
+     ["x-progress" "animation" "x-progress-indeterminate 1.5s ease infinite"]
+     ["x-progress-circle" "animation" "x-progress-circle-spin 1.2s linear infinite"]
+     ["x-skeleton" "--x-skeleton-duration" "1.5s"]
+     ["x-skeleton" "animation" "1.5s"]
+     ["x-spinner" "--x-spinner-duration" "0.75s"]
+     ["x-splash" "--x-splash-spinner-duration" "0.75s"]]]
+   ["An effect that plays once. Its length is part of the effect."
+    [["x-particle-button" "animation" "x-pb-glow-pulse 400ms ease-out"]]]
    ["Smoothing tied to scrolling. It follows the pointer and no design default."
     [["x-scroll-parallax" "--x-scroll-parallax-smooth-duration" "80ms"]
-     ["x-scroll-stack"    "transition"                          "transform 60ms linear"]
-     ["x-scroll-timeline" "transition"                          "height 60ms linear"]
+     ["x-scroll-stack" "transition" "transform 60ms linear"]
+     ["x-scroll-timeline" "transition" "height 60ms linear"]
      ["x-scroll-timeline" "transition"                          "stroke-dashoffset 60ms linear"]]]])
 
 (def ^:private exempt
@@ -320,12 +331,14 @@
     (doseq [[value n] (sort-by (comp - val) (frequencies (map :value found)))]
       (println (format "  %4d  %s" n value)))))
 
+(def ^:private read-name #"var\(\s*(--x-[a-z0-9-]*[a-z0-9])\s*[,)]")
+
 (defn- unknown-names
   "The `--x-` names a component reads that are neither a token of x-theme nor a property of a
    component, as a message for each."
   [tags {:keys [tag-name dir-name]}]
   (let [source (component-source (io/file components-dir dir-name))]
-    (for [prop (sort (distinct (map second (re-seq #"var\(\s*(--x-[a-z0-9-]*[a-z0-9])\s*[,)]" source))))
+    (for [prop (sort (distinct (map second (re-seq read-name source))))
           :when (not (or (catalogue prop)
                          (some #(str/starts-with? prop (str "--" % "-")) tags)))]
       (str tag-name " reads " prop ", which x-theme does not define"))))
@@ -336,7 +349,8 @@
   (let [found (set (map (juxt :tag :prop :value) rows))]
     (for [[tag prop value :as listed] (sort exempt)
           :when (not (found listed))]
-      (str tag " is listed as not themed by design for " prop ": " value ", which it does not have"))))
+      (str tag " is listed as not themed by design for " prop ": " value
+           ", which it does not have"))))
 
 (defn- not-read
   "The components whose CSS was not read, or not in full, with the definitions concerned."

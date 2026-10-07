@@ -124,7 +124,7 @@
    "box-shadow:var(--x-slider-thumb-shadow);"
    "margin-top:calc(var(--_x-slider-track-h,6px)/2 - var(--_x-slider-thumb-sz,18px)/2);"
    "cursor:pointer;"
-   "transition:box-shadow 100ms ease;}"
+   "transition:box-shadow var(--x-transition-duration,100ms) var(--x-transition-easing,ease);}"
 
    ;; Firefox thumb — separate rule block
    "[part=input]::-moz-range-thumb{"
@@ -135,7 +135,7 @@
    "border:var(--x-slider-thumb-border);"
    "box-shadow:var(--x-slider-thumb-shadow);"
    "cursor:pointer;"
-   "transition:box-shadow 100ms ease;}"
+   "transition:box-shadow var(--x-transition-duration,100ms) var(--x-transition-easing,ease);}"
 
    ;; WebKit focus ring — must be its own rule block
    "[part=input]:focus-visible::-webkit-slider-thumb{"

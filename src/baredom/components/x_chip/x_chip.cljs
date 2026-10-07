@@ -53,7 +53,7 @@
    "--x-chip-padding-x:0.625rem;"
    "--x-chip-padding-y:0.25rem;"
    "--x-chip-remove-size:1rem;"
-   "--x-chip-exit-duration:300ms;"
+   "--x-chip-exit-duration:var(--x-transition-duration,300ms);"
    "display:inline-flex;"
    "align-items:center;"
    "vertical-align:middle;"

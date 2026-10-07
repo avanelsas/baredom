@@ -30,7 +30,7 @@
    "--x-scroll-story-step-padding:2rem;"
    "--x-scroll-story-active-opacity:1;"
    "--x-scroll-story-inactive-opacity:0.3;"
-   "--x-scroll-story-transition-duration:300ms;"
+   "--x-scroll-story-transition-duration:var(--x-transition-duration,300ms);"
    "--x-scroll-story-disabled-opacity:0.55;"
    "--x-scroll-story-media-top:0;}"
    du/hidden-rule

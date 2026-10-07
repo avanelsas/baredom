@@ -120,7 +120,8 @@
    "border-radius:var(--x-radius-md,6px);"
    "font-family:inherit;font-size:var(--x-font-size-sm,0.8125rem);"
    "font-weight:var(--x-font-weight-medium,500);"
-   "min-height:32px;transition:background 120ms ease,color 120ms ease;}"
+   "min-height:32px;transition:background var(--x-transition-duration,120ms) var(--x-transition-easing,ease),"
+   "color var(--x-transition-duration,120ms) var(--x-transition-easing,ease);}"
 
    "@media (pointer:coarse){"
    "[part=prev-button],[part=next-button]{min-height:44px;padding:var(--x-space-sm,8px) var(--x-space-md,12px);}}"
@@ -151,7 +152,7 @@
    "[part=dot]{"
    "width:8px;height:8px;border-radius:var(--x-radius-full,9999px);"
    "background:var(--x-welcome-tour-dot-color,var(--x-color-border,#e2e8f0));"
-   "transition:background 150ms ease;}"
+   "transition:background var(--x-transition-duration,150ms) var(--x-transition-easing,ease);}"
    "[part=dot][data-active]{"
    "background:var(--x-welcome-tour-dot-active,var(--x-color-primary,#3b82f6));}"
 

@@ -77,7 +77,7 @@
    "border-radius:50%;"
    "background:var(--x-radio-checked-color);"
    "opacity:0;"
-   "transition:opacity 100ms ease;"
+   "transition:opacity var(--x-transition-duration,100ms) var(--x-transition-easing,ease);"
    "}"
    ":host([data-checked]) [part=dot]{"
    "opacity:1;"

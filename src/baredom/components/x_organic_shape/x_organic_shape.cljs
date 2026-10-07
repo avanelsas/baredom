@@ -42,7 +42,8 @@
    "opacity:var(--x-organic-shape-opacity);"
    "filter:var(--x-organic-shape-shadow);"
    "display:flex;align-items:center;justify-content:center;"
-   "transition:clip-path 0.3s ease,opacity 0.3s ease;}"
+   "transition:clip-path var(--x-transition-duration,0.3s) var(--x-transition-easing,ease),"
+   "opacity var(--x-transition-duration,0.3s) var(--x-transition-easing,ease);}"
 
    ;; ── Animation keyframes ──────────────────────────────────────────────
 
