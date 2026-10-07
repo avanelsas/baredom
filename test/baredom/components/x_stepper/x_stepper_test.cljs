@@ -287,7 +287,7 @@
   (let [el     (stepper! 3)
         before (step-buttons el)]
     (.setAttribute el model/attr-current "1")
-    (is (every? true? (map identical? before (step-buttons el))))
+    (is (= before (step-buttons el)))
     (is (= "step" (.getAttribute (nth (step-buttons el) 1) "aria-current")))
     (is (nil? (.getAttribute (nth (step-buttons el) 0) "aria-current")))))
 
@@ -296,10 +296,9 @@
         before (step-buttons el)]
     (.setAttribute el model/attr-steps "4")
     (is (= 4 (count (step-buttons el))))
-    (is (every? true? (map identical? before (step-buttons el))) "the first three keep their nodes")
+    (is (= before (subvec (step-buttons el) 0 3)) "the first three keep their nodes")
     (.setAttribute el model/attr-steps "2")
-    (is (= 2 (count (step-buttons el))))
-    (is (every? true? (map identical? before (step-buttons el))) "the first two keep their nodes")))
+    (is (= (subvec before 0 2) (step-buttons el)) "the first two keep their nodes")))
 
 (deftest a-stepper-that-is-enabled-again-has-reachable-steps
   (let [el         (stepper! 2)
