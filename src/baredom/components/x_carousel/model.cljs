@@ -54,7 +54,8 @@
 
 (def event-schema
   {event-change {:detail     {:index 'number :previousIndex 'number :reason 'string}
-                 :cancelable true}})
+                 :cancelable true
+                 :requests   {attr-current :index}}})
 
 ;; ── Defaults ────────────────────────────────────────────────────────────────
 (def default-interval 5000)

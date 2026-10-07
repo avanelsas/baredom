@@ -49,8 +49,8 @@
    :dividerLabel {:type 'string  :reflects-attribute attr-divider-label  :default default-divider-label}})
 
 (def event-schema
-  {event-resize     {:detail {:position 'number :orientation 'string}}
-   event-resize-end {:detail {:position 'number :orientation 'string}}})
+  {event-resize     {:cancelable false :detail {:position 'number :orientation 'string}}
+   event-resize-end {:cancelable false :detail {:position 'number :orientation 'string}}})
 
 (def method-api {})
 

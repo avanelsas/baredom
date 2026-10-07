@@ -193,7 +193,9 @@
 
 (def event-schema
   {event-toggle          {:cancelable false :detail {:open 'boolean}}
-   event-dismiss-request {:cancelable true  :detail {:reason 'string}}
+   event-dismiss-request {:cancelable true
+                          :requests   {attr-open false}
+                          :detail     {:reason 'string}}
    event-move            {:cancelable false :detail {:x      'number
                                                      :y      'number
                                                      :source 'string}}})

@@ -59,8 +59,8 @@
                :reflects-attribute attr-collapsed}})
 
 (def event-schema
-  {event-toggle {:detail {:open 'boolean}}
-   event-dismiss {:detail {:reason 'string}}})
+  {event-toggle {:cancelable false :detail {:open 'boolean}}
+   event-dismiss {:cancelable false :detail {:reason 'string}}})
 
 
 (defn trim-or-nil

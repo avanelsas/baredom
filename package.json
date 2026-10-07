@@ -560,6 +560,11 @@
       "types": "./dist/x-trace-history.d.ts",
       "import": "./dist/x-trace-history.js",
       "default": "./dist/x-trace-history.js"
+    },
+    "./requests": {
+      "types": "./dist/requests.d.ts",
+      "import": "./dist/requests.js",
+      "default": "./dist/requests.js"
     }
   },
   "homepage": "https://github.com/avanelsas/baredom#readme",

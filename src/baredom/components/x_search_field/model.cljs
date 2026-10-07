@@ -61,7 +61,9 @@
    :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
-  {event-change-request {:cancelable true  :detail {:name 'string :value 'string :previousValue 'string}}
+  {event-change-request {:cancelable true
+                         :requests   {attr-value :value}
+                         :detail     {:name 'string :value 'string :previousValue 'string}}
    event-input          {:cancelable false :detail {:name 'string :value 'string}}
    event-change         {:cancelable false :detail {:name 'string :value 'string}}
    event-search         {:cancelable true  :detail {:name 'string :value 'string}}

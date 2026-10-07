@@ -84,9 +84,10 @@
 
 (def event-schema
   {event-change-request {:cancelable true
+                         :requests {attr-value :value}
                          :detail {:value 'number :previousValue 'number :max 'number}}
-   event-change         {:detail {:value 'number :max 'number}}
-   event-hover          {:detail {:value 'number :max 'number}}})
+   event-change         {:cancelable false :detail {:value 'number :max 'number}}
+   event-hover          {:cancelable false :detail {:value 'number :max 'number}}})
 
 (def method-api
   {:checkValidity  {:args [] :returns 'boolean}

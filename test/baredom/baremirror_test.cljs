@@ -1,6 +1,7 @@
 (ns baredom.baremirror-test
   (:require [baredom.components.x-checkbox.model :as checkbox-model]
             [baredom.components.x-checkbox.x-checkbox :as x-checkbox]
+            [baredom.requests :as requests]
             [baremirror.core :as mirror]
             [cljs.test :refer-macros [deftest is testing use-fixtures]]))
 
@@ -38,9 +39,7 @@
         state    (atom {:checked? false})]
     (mirror/listen! page {:dispatch! (mirror/dispatcher state step identity
                                                         (partial render-check! checkbox))
-                          :requests  {checkbox-model/event-change-request
-                                      [checkbox-model/attr-checked
-                                       checkbox-model/attr-indeterminate]}
+                          :requests  requests/requests
                           :events    {[checkbox-model/event-change-request "check"] :toggle}})
     (.click (.querySelector (.-shadowRoot checkbox) "[part=control]"))
     {:checked? (.hasAttribute checkbox checkbox-model/attr-checked)

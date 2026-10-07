@@ -145,7 +145,9 @@
    :label          {:type 'string}})
 
 (def event-schema
-  {event-change-request {:cancelable true :detail {:page 'number :previousPage 'number}}
-   event-page-change    {:detail {:page 'number}}})
+  {event-change-request {:cancelable true
+                         :requests   {attr-page :page}
+                         :detail     {:page 'number :previousPage 'number}}
+   event-page-change    {:cancelable false :detail {:page 'number}}})
 
 (def method-api {})

@@ -22,7 +22,7 @@
    :type     {:type 'string  :reflects-attribute attr-type}})
 
 (def event-schema
-  {event-item-select {:detail {:value 'string}}})
+  {event-item-select {:cancelable false :detail {:value 'string}}})
 
 (defn valid-enum [v allowed fallback]
   (if (contains? allowed v) v fallback))

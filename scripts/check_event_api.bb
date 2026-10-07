@@ -134,7 +134,7 @@
    The union rather than each site alone, because a detail may vary by mode and
    no one call sends every key."
   [forms env]
-  (let [acc (atom {}) blind (atom [])]
+  (let [acc (atom {}) blind (atom []) how (atom {})]
     (walk/postwalk
      (fn [form]
        (when (seq? form)
@@ -146,14 +146,42 @@
                          #{})]                      ; the no-detail arity sends none
              (when (symbol? event)
                (let [nm (str/replace (str event) "model/" "")]
+                 (swap! how update nm (fnil conj #{}) (= 'du/dispatch-cancelable! (first form)))
                  (if (= unresolved ks)
                    (swap! blind conj nm)
                    (swap! acc update nm (fnil into #{}) ks)))))))
        form)
      forms)
-    {:sent @acc :blind (set @blind)}))
+    {:sent @acc :blind (set @blind) :how @how}))
 
 ;; ── the comparison ──────────────────────────────────────────────────────────
+
+(defn- cancelable-problems
+  "Where the dispatch call of an event does not agree with its `:cancelable`."
+  [tag-name events how]
+  (for [[event spec] events
+        :let  [sites (get how event)]
+        :when (and sites (not= sites #{(true? (:cancelable spec))}))]
+    (str tag-name " declares " event " as "
+         (if (:cancelable spec) "cancelable" "not cancelable")
+         ", and a dispatch site sends it the other way")))
+
+(defn- request-problems
+  "Where the `:requests` of an event names what the component does not have."
+  [tag-name attributes string-defs event {:keys [cancelable requests detail]}]
+  (concat
+   (when (and requests (not (true? cancelable)))
+     [(str tag-name " declares requests for " event ", which is not cancelable")])
+   (for [[attr _] requests
+         :let  [attr-name (resolve-sym attr string-defs)]
+         :when (not (contains? (set attributes) attr-name))]
+     (str tag-name " declares that " event " asks for " attr-name
+          ", which is not an observed attribute"))
+   (for [[_ value] requests
+         :when (not (or (boolean? value)
+                        (and (keyword? value) (contains? detail value))))]
+     (str tag-name " declares that " event " takes a new value from " (pr-str value)
+          ", which is not a boolean and not a key of its detail"))))
 
 (defn- read-component [dir-name]
   (let [dir (io/file components-dir dir-name)]
@@ -164,11 +192,13 @@
 
 (defn- checked
   "One component's declared events against what it sends."
-  [{:keys [tag-name dir-name events string-defs]}]
+  [{:keys [tag-name dir-name events attributes string-defs]}]
   (let [forms          (read-component dir-name)
         env            (bindings-in forms)
-        {:keys [sent blind]} (sent forms env)
+        {:keys [sent blind how]} (sent forms env)
         resolve-name   (fn [s] (resolve-sym (symbol s) string-defs))
+        how-by-name    (into {} (map (fn [[s sites]] [(resolve-name s) sites])) how)
+        events-by-name (into {} (map (fn [[k v]] [(resolve-sym k string-defs) v])) events)
         sent-by-name   (into {} (map (fn [[s ks]] [(resolve-name s) ks])) sent)
         blind-by-name  (into #{} (map resolve-name) blind)
         declared       (into {} (map (fn [[k v]] [(resolve-sym k string-defs)
@@ -183,6 +213,9 @@
                           (set (remove (some-fn sent-by-name blind-by-name) (keys declared))))
      :problems
      (concat
+      (cancelable-problems tag-name events-by-name how-by-name)
+      (mapcat (fn [[event spec]] (request-problems tag-name attributes string-defs event spec))
+              events-by-name)
       (for [[event _] sent-by-name
             :when (and (not (contains? declared event))
                        (not (blind-by-name event)))]
@@ -220,15 +253,24 @@
                     (into (sorted-map)
                           (map (fn [[k v]] [(name k) (cljs-type->ts v)]))
                           (when (map? detail) detail)))
+        asked     (fn [requests]
+                    (into (sorted-map)
+                          (map (fn [[attr value]]
+                                 [(resolve-sym attr string-defs)
+                                  (if (keyword? value) (name value) value)]))
+                          requests))
         declared  (into {} (map (fn [[k v]] [(resolve-sym k string-defs)
-                                             (fields (:detail v))]))
+                                             {:detail     (fields (:detail v))
+                                              :cancelable (true? (:cancelable v))
+                                              :requests   (asked (:requests v))}]))
                         events)
         ;; The manifest is read with keywordised keys, so a detail field arrives as
         ;; `:press-x` and is named back.
+        named     (fn [m] (into (sorted-map) (map (juxt (comp name key) val)) m))
         emitted   (into {} (map (fn [e] [(:name e)
-                                         (into (sorted-map)
-                                               (map (juxt (comp name key) val))
-                                               (:detail e))]))
+                                         {:detail     (named (:detail e))
+                                          :cancelable (:cancelable e)
+                                          :requests   (named (:requests e))}]))
                         (get manifest tag-name))]
     (for [event (sort (set/union (set (keys declared)) (set (keys emitted))))
           :let  [d (get declared event) e (get emitted event)]
@@ -248,11 +290,29 @@
               :when (:tagName d)]
           [(:tagName d) (:events d)])))
 
+(defn- requests-ns-problems
+  "Where the `requests` of `baredom.requests` differs from what the models declare."
+  [models]
+  (let [declared (into {}
+                       (for [{:keys [events string-defs]} models
+                             [event {:keys [requests]}] events
+                             :when requests]
+                         [(resolve-sym event string-defs)
+                          (mapv #(resolve-sym % string-defs) (keys requests))]))
+        written  (->> (edamame/parse-string-all (slurp "src/baredom/requests.cljs") parse-opts)
+                      (some (fn [form] (when (= 'requests (second form)) (last form)))))]
+    (for [event (sort (set/union (set (keys declared)) (set (keys written))))
+          :let  [d (get declared event) w (get written event)]
+          :when (not= d w)]
+      (str "baredom.requests has " event " as " (pr-str w)
+           " and its model declares " (pr-str d)))))
+
 (let [models  (filter (comp seq :events) (discover-models))
       manifest (manifest-events)
       results (map checked models)
       found   (concat (mapcat :problems results)
-                      (mapcat #(published % manifest) models))
+                      (mapcat #(published % manifest) models)
+                      (requests-ns-problems models))
       n-cmp   (reduce + (map (comp count :compared) results))
       n-unr   (reduce + (map (comp count :unread) results))]
   (doseq [p found] (println "  " p))

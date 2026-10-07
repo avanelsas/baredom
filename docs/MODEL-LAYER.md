@@ -41,6 +41,26 @@ Map of event constant symbol to descriptor:
 
 Use `{}` for empty detail. This metadata drives TypeScript `.d.ts` generation.
 
+Every event states `:cancelable`. An event is one of three kinds:
+
+- **A notification** is not cancelable. It reports what happened.
+- **An attribute request** is cancelable and has `:requests`. It asks to change attributes of the component.
+- **An action** is cancelable and has no `:requests`. It asks for something that is not an attribute of the component, such as a copy or a removal.
+
+`:requests` maps each attribute the event asks to change to its new value. A keyword is a key of the detail. `true` or `false` is a value that the event fixes.
+
+```clojure
+(def event-schema
+  {evt-change-request {:cancelable true
+                       :requests   {attr-checked :nextChecked}
+                       :detail     {:previousChecked 'boolean :nextChecked 'boolean}}
+   evt-close-request  {:cancelable true
+                       :requests   {attr-open false}
+                       :detail     {:reason 'string}}})
+```
+
+`bb scripts/generate_types.bb` writes `:cancelable` and `:requests` into `custom-elements.json`. It also writes the requests of every component as one map, to `dist/requests.js` and to `src/baredom/requests.cljs`. `bb scripts/check_event_api.bb` checks each entry against the component and against the generated files.
+
 ### `method-api`
 Map of method name to descriptor. **Always include this def**, even as `(def method-api nil)` when the component has no public methods.
 

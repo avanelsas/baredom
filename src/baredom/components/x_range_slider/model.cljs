@@ -83,11 +83,12 @@
 
 (def event-schema
   {event-change-request {:cancelable true
+                         :requests {attr-start :start attr-end :end}
                          :detail {:start         'number :end         'number
                                   :previousStart 'number :previousEnd 'number
                                   :min           'number :max         'number}}
-   event-input          {:detail {:start 'number :end 'number :min 'number :max 'number}}
-   event-change         {:detail {:start 'number :end 'number :min 'number :max 'number}}})
+   event-input          {:cancelable false :detail {:start 'number :end 'number :min 'number :max 'number}}
+   event-change         {:cancelable false :detail {:start 'number :end 'number :min 'number :max 'number}}})
 
 (def method-api
   {:checkValidity  {:args [] :returns 'boolean}

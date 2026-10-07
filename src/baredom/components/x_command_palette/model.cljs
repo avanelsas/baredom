@@ -39,9 +39,13 @@
               :reflects-attribute attr-disabled}})
 
 (def event-schema
-  {event-open-request {:cancelable true :detail {}}
+  {event-open-request {:cancelable true
+                       :requests   {attr-open true}
+                       :detail     {}}
    event-open {:cancelable false :detail {}}
-   event-close-request {:cancelable true :detail {}}
+   event-close-request {:cancelable true
+                        :requests   {attr-open false}
+                        :detail     {}}
    event-close {:cancelable false :detail {}}
    event-select-request {:cancelable true :detail {:item 'object}}
    event-select {:cancelable false :detail {:item 'object}}

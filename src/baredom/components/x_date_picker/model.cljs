@@ -216,12 +216,14 @@
 ;; testing for a key that was never there.
 (def event-schema
   {event-input          {:cancelable false :detail {:value 'string :mode 'string}}
-   event-change-request {:cancelable true  :detail {:value  'NullableString
-                                                    :date   'NullableString
-                                                    :start  'NullableString
-                                                    :end    'NullableString
-                                                    :mode   'string
-                                                    :reason 'string}}
+   event-change-request {:cancelable true
+                         :requests   {attr-value :value attr-start :start attr-end :end}
+                         :detail     {:value  'NullableString
+                                      :date   'NullableString
+                                      :start  'NullableString
+                                      :end    'NullableString
+                                      :mode   'string
+                                      :reason 'string}}
    event-change         {:cancelable false :detail {:value  'NullableString
                                                     :date   'NullableString
                                                     :start  'NullableString

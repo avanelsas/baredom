@@ -28,6 +28,7 @@
 
 (def event-schema
   {event-toggle {:cancelable true
+                 :requests   {attr-open :open}
                  :detail     {:open   'boolean
                               :source 'string}}
    event-change {:cancelable false

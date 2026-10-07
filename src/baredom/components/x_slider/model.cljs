@@ -77,9 +77,10 @@
 
 (def event-schema
   {event-change-request {:cancelable true
+                         :requests {attr-value :value}
                          :detail {:value 'number :previousValue 'number :min 'number :max 'number}}
-   event-input          {:detail {:value 'number :min 'number :max 'number}}
-   event-change         {:detail {:value 'number :min 'number :max 'number}}})
+   event-input          {:cancelable false :detail {:value 'number :min 'number :max 'number}}
+   event-change         {:cancelable false :detail {:value 'number :min 'number :max 'number}}})
 
 ;; ---------------------------------------------------------------------------
 ;; Normalization helpers
