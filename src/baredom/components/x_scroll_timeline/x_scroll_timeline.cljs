@@ -164,7 +164,8 @@
    ".tl-marker[data-active]{"
    "background:var(--x-scroll-timeline-marker-active-color);"
    "border-color:var(--x-scroll-timeline-marker-active-color);"
-   "box-shadow:0 0 0 3px rgba(59,130,246,0.25);}"
+   "box-shadow:0 0 0 3px color-mix(in srgb,"
+   "var(--x-scroll-timeline-marker-active-color) 25%,transparent);}"
 
    ;; Ring style markers
    ":host([data-marker=ring]) .tl-marker{"

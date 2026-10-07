@@ -155,13 +155,11 @@ A ring or a dot. Its roundness is its shape.
 - `x-particle-button`: `border-radius: 999px`
 - `x-timeline-item`: `border-radius: 999px`
 
-A ring, an outline or an edge drawn with a shadow. It is not an elevation.
+An outline or an edge drawn with a shadow. It is not an elevation.
 
 - `x-color-picker`: `box-shadow: 0 0 0 1px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(0,0,0,0.3)`
-- `x-date-picker`: `box-shadow: 0 0 0 3px rgba(96,165,250,0.25)`
 - `x-kbd`: `--x-kbd-shadow: inset 0 -1px 0 rgba(0,0,0,0.08)`
 - `x-kbd`: `--x-kbd-shadow: inset 0 -1px 0 rgba(0,0,0,0.4)`
-- `x-scroll-timeline`: `box-shadow: 0 0 0 3px rgba(59,130,246,0.25)`
 
 The shape of a mark. It is not a corner.
 
