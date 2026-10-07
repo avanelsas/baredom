@@ -3253,7 +3253,7 @@
         "default" : "1.125rem"
       }, {
         "name" : "--x-avatar-radius",
-        "default" : "10px"
+        "default" : "var(--x-radius-md,10px)"
       }, {
         "name" : "--x-avatar-ring",
         "default" : "var(--x-color-bg, #0b0c0f)"
@@ -5897,7 +5897,7 @@
         "default" : "0 0.25rem"
       }, {
         "name" : "--x-badge-radius",
-        "default" : "0.1875rem"
+        "default" : "var(--x-radius-sm,0.1875rem)"
       } ],
       "cssParts" : [ {
         "name" : "base"
@@ -8048,6 +8048,8 @@
       }, {
         "name" : "--x-radius-sm"
       }, {
+        "name" : "--x-radius-xl"
+      }, {
         "name" : "--x-shadow-lg"
       }, {
         "name" : "--x-shadow-md"
@@ -9618,7 +9620,7 @@
         "default" : "var(--x-color-text,#e2e8f0)"
       }, {
         "name" : "--x-popover-close-radius",
-        "default" : "4px"
+        "default" : "var(--x-radius-sm,4px)"
       }, {
         "name" : "--x-popover-close-size",
         "default" : "1.5rem"
@@ -17865,7 +17867,7 @@
         "default" : "6px 12px"
       }, {
         "name" : "--x-tab-radius",
-        "default" : "8px"
+        "default" : "var(--x-radius-md,8px)"
       }, {
         "name" : "--x-tab-selected-background",
         "default" : "rgba(59,130,246,0.18)"
@@ -18342,7 +18344,7 @@
         "default" : "var(--x-radius-sm, 0.375rem)"
       }, {
         "name" : "--x-card-radius-xl",
-        "default" : "1.5rem"
+        "default" : "var(--x-radius-xl,1.5rem)"
       }, {
         "name" : "--x-card-shadow",
         "default" : "var(--x-shadow-md, 0 16px 32px rgba(0, 0, 0, 0.32))"
@@ -19465,7 +19467,7 @@
         "default" : "var(--x-color-primary,#3b82f6)"
       }, {
         "name" : "--x-checkbox-border-radius",
-        "default" : "4px"
+        "default" : "var(--x-radius-sm,4px)"
       }, {
         "name" : "--x-checkbox-border-width",
         "default" : "2px"
@@ -20938,7 +20940,7 @@
         "default" : "6px 12px"
       }, {
         "name" : "--x-tab-radius",
-        "default" : "8px"
+        "default" : "var(--x-radius-md,8px)"
       }, {
         "name" : "--x-tab-selected-background",
         "default" : "rgba(59,130,246,0.18)"
@@ -21381,7 +21383,7 @@
         "default" : "var(--x-radius-sm, 0.375rem)"
       }, {
         "name" : "--x-spotlight-card-radius-xl",
-        "default" : "1.5rem"
+        "default" : "var(--x-radius-xl,1.5rem)"
       }, {
         "name" : "--x-spotlight-card-shadow",
         "default" : "var(--x-shadow-md, 0 16px 32px rgba(0, 0, 0, 0.32))"

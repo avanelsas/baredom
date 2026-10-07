@@ -67,7 +67,7 @@
    ;; Track
    "[part=track]{"
    "height:var(--x-progress-height,8px);"
-   "border-radius:var(--x-progress-border-radius,9999px);"
+   "border-radius:var(--x-progress-border-radius);"
    "background:var(--x-progress-track-color);"
    "overflow:hidden;"
    "position:relative;}"
@@ -76,7 +76,7 @@
    "[part=fill]{"
    "height:100%;"
    "background:var(--x-progress-fill-color);"
-   "border-radius:var(--x-progress-border-radius,9999px);"
+   "border-radius:var(--x-progress-border-radius);"
    "transition:width var(--x-transition-duration,0.3s) var(--x-transition-easing,ease);"
    "width:0%;}"
 

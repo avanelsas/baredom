@@ -50,7 +50,7 @@
     --x-spotlight-card-radius-sm: var(--x-radius-sm, 0.375rem);
     --x-spotlight-card-radius-md: var(--x-radius-md, 0.75rem);
     --x-spotlight-card-radius-lg: var(--x-radius-lg, 1rem);
-    --x-spotlight-card-radius-xl: 1.5rem;
+    --x-spotlight-card-radius-xl: var(--x-radius-xl,1.5rem);
 
     --x-spotlight-card-transition-duration: var(--x-transition-duration, 200ms);
     --x-spotlight-card-transition-timing: var(--x-transition-easing,ease);

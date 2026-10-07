@@ -129,7 +129,7 @@
 
    "[part=caret]{"
    "position:absolute;"
-   "border-radius:999px;"
+   "border-radius:var(--x-radius-full,999px);"
    "background:var(" css-caret-color ",var(--x-color-primary,#3b82f6));"
    "pointer-events:none;}"
 

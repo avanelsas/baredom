@@ -65,7 +65,7 @@
    "--x-checkbox-size:16px;"
    "--x-checkbox-border-width:2px;"
    "--x-checkbox-border-color:var(--x-color-border,#6b7280);"
-   "--x-checkbox-border-radius:4px;"
+   "--x-checkbox-border-radius:var(--x-radius-sm,4px);"
    "--x-checkbox-bg:var(--x-color-surface,#ffffff);"
    "--x-checkbox-bg-checked:var(--x-color-primary,#2563eb);"
    "--x-checkbox-bg-indeterminate:var(--x-color-primary,#2563eb);"

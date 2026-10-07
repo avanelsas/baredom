@@ -157,7 +157,7 @@
    "flex:0 0 auto;appearance:none;border:0;background:transparent;"
    "color:var(--x-alert-dismiss-color);"
    "width:1.5em;height:1.5em;padding:0;margin:0;"
-   "border-radius:999px;cursor:pointer;"
+   "border-radius:var(--x-radius-full,999px);cursor:pointer;"
    "display:inline-flex;align-items:center;justify-content:center;"
    "transition:"
    "background var(--x-alert-motion-fast) var(--x-alert-motion-ease),"

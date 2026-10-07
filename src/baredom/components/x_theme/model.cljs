@@ -45,6 +45,7 @@
 (def tk-radius-sm              "--x-radius-sm")
 (def tk-radius-md              "--x-radius-md")
 (def tk-radius-lg              "--x-radius-lg")
+(def tk-radius-xl              "--x-radius-xl")
 (def tk-radius-full            "--x-radius-full")
 
 (def tk-shadow-sm              "--x-shadow-sm")
@@ -94,6 +95,7 @@
   {tk-radius-sm    "0.375rem"
    tk-radius-md    "0.75rem"
    tk-radius-lg    "1rem"
+   tk-radius-xl    "1.5rem"
    tk-radius-full  "9999px"
    tk-border-width "1px"})
 
@@ -335,6 +337,7 @@
                   tk-radius-sm              "0"
                   tk-radius-md              "0"
                   tk-radius-lg              "0"
+                  tk-radius-xl              "0"
                   tk-radius-full            "0"
                   tk-shadow-sm              "3px 3px 0 #000000"
                   tk-shadow-md              "5px 5px 0 #000000"

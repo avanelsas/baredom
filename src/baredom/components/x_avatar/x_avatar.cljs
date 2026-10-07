@@ -59,7 +59,7 @@
    "--x-avatar-size-md:32px;"
    "--x-avatar-size-lg:40px;"
    "--x-avatar-size-xl:48px;"
-   "--x-avatar-radius:10px;"
+   "--x-avatar-radius:var(--x-radius-md,10px);"
    "--x-avatar-disabled-opacity:0.55;"
    "--x-avatar-bg:var(--x-color-surface, rgba(0,0,0,0.06));"
    "--x-avatar-border:var(--x-color-border, rgba(0,0,0,0.14));"
@@ -127,7 +127,7 @@
    "font-weight:600;"
    "line-height:1;"
    "user-select:none;"
-   "border-radius:999px;}"
+   "border-radius:var(--x-radius-full,999px);}"
 
    ":host([data-shape='square']) [part=root]{border-radius:0;}"
    ":host([data-shape='rounded']) [part=root]{border-radius:var(--x-avatar-radius);}"

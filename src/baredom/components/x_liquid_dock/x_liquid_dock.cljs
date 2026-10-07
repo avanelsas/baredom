@@ -63,7 +63,7 @@
    "align-items:center;"
    "gap:var(" model/css-gap ",8px);"
    "padding:var(" model/css-padding ",8px);"
-   "border-radius:var(" model/css-radius ",20px);"
+   "border-radius:var(" model/css-radius ",var(--x-radius-xl,20px));"
    "background:var(" model/css-bg ",rgba(255,255,255,0.88));"
    "border:1px solid var(" model/css-border ",rgba(148,163,184,0.22));"
    "box-shadow:var(" model/css-shadow ",0 8px 24px rgba(15,23,42,0.12));"

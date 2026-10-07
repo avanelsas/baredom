@@ -61,7 +61,7 @@
   --x-card-radius-sm: var(--x-radius-sm, 0.375rem);
   --x-card-radius-md: var(--x-radius-md, 0.75rem);
   --x-card-radius-lg: var(--x-radius-lg, 1rem);
-  --x-card-radius-xl: 1.5rem;
+  --x-card-radius-xl: var(--x-radius-xl,1.5rem);
 
   --x-card-transition-duration: var(--x-transition-duration, 140ms);
   --x-card-transition-timing: var(--x-transition-easing,ease);

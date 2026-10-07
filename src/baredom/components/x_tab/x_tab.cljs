@@ -42,7 +42,7 @@
    "--x-tab-selected-border-color:var(--x-color-focus-ring,#60a5fa);}}"
    ".base{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;"
    "cursor:pointer;user-select:none;"
-   "padding:var(--x-tab-padding-md,10px 16px);border-radius:var(--x-tab-radius,8px);"
+   "padding:var(--x-tab-padding-md,10px 16px);border-radius:var(--x-tab-radius,var(--x-radius-md,8px));"
    "color:var(--x-tab-color);background:var(--x-tab-background,transparent);"
    "border:1px solid var(--x-tab-border-color,transparent);"
    "transition:background " duration " " timing ","

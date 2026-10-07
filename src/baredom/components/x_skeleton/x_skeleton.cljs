@@ -38,7 +38,7 @@
    ;; Text variant: line height, tighter radius
    "[part=base][data-variant='text']{"
    "height:1em;"
-   "border-radius:3px;}"
+   "border-radius:var(--x-radius-sm,3px);}"
 
    ;; Circle variant: square block that becomes a circle
    "[part=base][data-variant='circle']{"
