@@ -115,7 +115,7 @@
 
 (def ^:private structural
   "Values that state structure and no design default, so no theme answers for them."
-  (re-pattern (str "(?i)^(0|0px|none|inherit|initial|unset|auto|normal|transparent|currentcolor"
+  (re-pattern (str "(?i)^(0|0px|0ms|0s|none|inherit|initial|unset|auto|normal|transparent|currentcolor"
                    "|100%|50%|1|-1|[0-9]|infinite)\\s*(!important)?$")))
 
 (defn- family-of [prop]
@@ -251,6 +251,32 @@
                 [{:value value :kind (value-kind value)}])]
     (merge {:tag tag :family family :prop prop} row)))
 
+(def ^:private by-design
+  "The values that follow no token on purpose: pairs of a reason and its values, each value a
+   component, a property and the value."
+  [["A loop that runs by itself. It is not a transition."
+    [["x-image"              "--x-image-shimmer-duration"           "1.5s"]
+     ["x-kinetic-typography" "--x-kinetic-typography-duration"      "10s"]
+     ["x-organic-divider"    "--x-organic-divider-animate-duration" "6s"]
+     ["x-organic-shape"      "--x-organic-shape-animate-duration"   "8s"]
+     ["x-skeleton"           "--x-skeleton-duration"                "1.5s"]
+     ["x-spinner"            "--x-spinner-duration"                 "0.75s"]
+     ["x-splash"             "--x-splash-spinner-duration"          "0.75s"]]]
+   ["Smoothing tied to scrolling. It follows the pointer and no design default."
+    [["x-scroll-parallax" "--x-scroll-parallax-smooth-duration" "80ms"]
+     ["x-scroll-stack"    "transition"                          "transform 60ms linear"]
+     ["x-scroll-timeline" "transition"                          "height 60ms linear"]
+     ["x-scroll-timeline" "transition"                          "stroke-dashoffset 60ms linear"]]]])
+
+(def ^:private exempt
+  "Every value that is not themed by design."
+  (set (mapcat second by-design)))
+
+(defn- marked
+  "`row` with the kind `:by-design` when it is not themed on purpose."
+  [{:keys [tag prop value] :as row}]
+  (cond-> row (exempt [tag prop value]) (assoc :kind :by-design)))
+
 (defn- audited
   "A component with every value of its CSS that a token family answers for."
   [{:keys [tag-name dir-name]}]
@@ -259,11 +285,11 @@
     {:tag    tag-name
      :read?  (boolean (seq texts))
      :unread unread
-     :rows   (concat (declared-rows tag-name decls) (used-rows tag-name decls))}))
+     :rows   (map marked (concat (declared-rows tag-name decls) (used-rows tag-name decls)))}))
 
 ;; ── the report ──────────────────────────────────────────────────────────────
 
-(def ^:private kinds [:token :own-token :own-literal :literal :structural :unread])
+(def ^:private kinds [:token :own-token :own-literal :literal :by-design :structural :unread])
 
 (def ^:private themed
   "The kinds of value that follow the theme."
@@ -278,14 +304,14 @@
 
 (defn- summary [components]
   (let [rows (mapcat :rows components)]
-    (println (format "%-13s %6s %9s %11s %7s %10s %6s   %s"
-                     "family" "token" "own-token" "own-literal" "literal" "structural" "unread"
-                     "components with an open value"))
+    (println (format "%-13s %6s %9s %11s %7s %9s %10s %6s   %s"
+                     "family" "token" "own-token" "own-literal" "literal" "by-design" "structural"
+                     "unread" "components with an open value"))
     (doseq [family (keys families)
             :let [found  (in-family family rows)
                   counts (frequencies (map :kind found))
                   tags   (distinct (map :tag (filter (comp open :kind) found)))]]
-      (println (apply format "%-13s %6d %9d %11d %7d %10d %6d   %d"
+      (println (apply format "%-13s %6d %9d %11d %7d %9d %10d %6d   %d"
                       family (concat (map #(get counts % 0) kinds) [(count tags)]))))))
 
 (defn- literals [components]
@@ -304,6 +330,14 @@
                          (some #(str/starts-with? prop (str "--" % "-")) tags)))]
       (str tag-name " reads " prop ", which x-theme does not define"))))
 
+(defn- stale
+  "The values listed as not themed by design that no component has, as a message for each."
+  [rows]
+  (let [found (set (map (juxt :tag :prop :value) rows))]
+    (for [[tag prop value :as listed] (sort exempt)
+          :when (not (found listed))]
+      (str tag " is listed as not themed by design for " prop ": " value ", which it does not have"))))
+
 (defn- not-read
   "The components whose CSS was not read, or not in full, with the definitions concerned."
   [components]
@@ -321,9 +355,20 @@
    "Each cell says how many values of that family follow a token of `x-theme`, out of all the"
    "values of that family in the component's CSS. A value follows the theme when it is a token,"
    "or the component's own property whose default is a token. Structural values such as `0`,"
-   "`none` and `inherit` are not counted. An empty cell means the component has no value of"
-   "that family."
+   "`none` and `inherit` are not counted, and neither are the values listed at the end as not"
+   "themed by design. An empty cell means the component has no value of that family."
    ""])
+
+(def ^:private by-design-lines
+  "The values that are not themed by design, as lines of Markdown."
+  (concat
+   ["## Not themed by design" ""]
+   (mapcat (fn [[reason values]]
+             (concat [reason ""]
+                     (for [[tag prop value] values]
+                       (str "- `" tag "`: `" prop ": " value "`"))
+                     [""]))
+           by-design)))
 
 (defn- cell
   "How many of `rows` follow the theme, as `themed/all`, or nothing when there are none."
@@ -351,7 +396,8 @@
       [(table-row "**All**" (mapcat :rows components))
        ""
        (str "CSS not read, or not in full: " (if (seq missing) (str/join ", " missing) "none") ".")
-       ""]))))
+       ""]
+      by-design-lines))))
 
 (defn- write-doc! [components]
   (spit doc-file (coverage-doc components))
@@ -367,8 +413,8 @@
   (when-not report
     (println "Usage: bb scripts/audit_tokens.bb summary|literals|doc")
     (System/exit 1))
-  (when (seq unknown)
-    (run! println unknown)
+  (when-let [faults (seq (concat unknown (stale rows)))]
+    (run! println faults)
     (System/exit 1))
   (report components)
   (println (format "\n%d values in %d components. Not read, or not in full: %s"
