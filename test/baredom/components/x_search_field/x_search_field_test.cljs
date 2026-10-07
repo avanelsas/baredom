@@ -324,3 +324,29 @@
         "checkValidity must be a function on the instance")
     (is (fn? (.-reportValidity el))
         "reportValidity must be a function on the instance")))
+
+;; ---------------------------------------------------------------------------
+;; A write of the value attribute and typed text
+;; ---------------------------------------------------------------------------
+
+(defn- typed!
+  "An element in the document whose value attribute is empty and whose input holds `text`."
+  [text]
+  (let [el (append! (doto (make-el) (.setAttribute model/attr-value "")))]
+    (set! (.-value (shadow-part el "[part=input]")) text)
+    el))
+
+(deftest a-write-of-the-same-value-attribute-keeps-typed-text
+  (let [el (typed! "abc")]
+    (.setAttribute el model/attr-value "")
+    (is (= "abc" (.-value (shadow-part el "[part=input]"))))))
+
+(deftest a-write-of-a-new-value-attribute-reaches-the-input
+  (let [el (typed! "abc")]
+    (.setAttribute el model/attr-value "xyz")
+    (is (= "xyz" (.-value (shadow-part el "[part=input]"))))))
+
+(deftest the-value-property-empties-the-input-when-the-attribute-is-empty
+  (let [el (typed! "abc")]
+    (set! (.-value el) "")
+    (is (= "" (.-value (shadow-part el "[part=input]"))))))

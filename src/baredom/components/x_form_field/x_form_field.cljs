@@ -338,9 +338,10 @@
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el attr-name _old new-val]
-  ;; For value attr: sync to input.value only if it differs (avoids cursor jump on typing)
-  (when (= attr-name model/attr-value)
+(defn- attribute-changed! [^js el attr-name old new-val]
+  ;; A value attr that changed goes to input.value, where the two differ. A write of the value
+  ;; the attr already has leaves typed text as it is.
+  (when (and (= attr-name model/attr-value) (not= old new-val))
     (when-let [refs (du/getv el k-refs)]
       (let [^js input-el (gobj/get refs rk-input)]
         (when (not= (.-value input-el) new-val)
