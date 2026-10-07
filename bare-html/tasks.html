@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BareMirror task list</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { margin: 0; padding: 2rem 1rem; }
+    main { max-width: 40rem; margin: 0 auto; display: grid; gap: 1rem; }
+    h1 { margin: 0; font-size: 1.5rem; }
+    .bar { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
+    .bar x-form-field { flex: 1 1 14rem; }
+    .mode { display: inline-flex; gap: 0.5rem; align-items: center; }
+    ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+    li { display: flex; gap: 0.75rem; align-items: center; }
+    .text { flex: 1; }
+    .note { color: var(--x-color-danger, #dc2626); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <main id="app">
+    <h1>Tasks</h1>
+    <p data-x-part="counter" aria-live="polite"></p>
+
+    <div class="bar">
+      <x-form-field data-x-part="draft" name="draft" label="New task"
+                    placeholder="What needs doing?"></x-form-field>
+      <x-button data-x-part="add" variant="primary">Add</x-button>
+    </div>
+
+    <div class="bar">
+      <x-select data-x-part="filter" value="all" aria-label="Show">
+        <option value="all">All</option>
+        <option value="active">Active</option>
+        <option value="done">Done</option>
+      </x-select>
+      <x-button data-x-part="rotate" variant="ghost">Move the first task to the end</x-button>
+      <label class="mode">
+        <x-switch data-x-part="refusing" aria-label="The server says no"></x-switch>
+        The server says no
+      </label>
+    </div>
+
+    <ul data-x-part="tasks"></ul>
+    <p data-x-part="empty" hidden>Nothing to show.</p>
+  </main>
+
+  <script type="module">
+    import { init as initButton }    from '../dist/x-button.js';
+    import { init as initCheckbox }  from '../dist/x-checkbox.js';
+    import { init as initFormField } from '../dist/x-form-field.js';
+    import { init as initSelect }    from '../dist/x-select.js';
+    import { init as initSwitch }    from '../dist/x-switch.js';
+    import { split, makeNode, readParts, sync, write, listen, dispatcher }
+      from '../dist/baremirror.js';
+
+    [initButton, initCheckbox, initFormField, initSelect, initSwitch].forEach(init => init());
+
+    // 1. The state, and what a message does to it.
+
+    const initial = {
+      tasks: [
+        { id: '1', text: 'Read the thread', done: true },
+        { id: '2', text: 'Write the task list', done: false },
+        { id: '3', text: 'Ship it', done: false },
+      ],
+      nextId: 4,
+      draft: '',
+      showing: 'all',
+      refusing: false,
+      refused: null,
+    };
+
+    const toggled = (id, task) => (task.id === id ? { ...task, done: !task.done } : task);
+
+    function added(state) {
+      const text = state.draft.trim();
+      if (text === '') return state;
+      const task = { id: String(state.nextId), text, done: false };
+      return { ...state, draft: '', nextId: state.nextId + 1, tasks: [...state.tasks, task] };
+    }
+
+    function step(state, [meaning, arg]) {
+      const cleared = { ...state, refused: null };
+      const { tasks, refusing } = cleared;
+      switch (meaning) {
+        case 'draft':    return { ...cleared, draft: arg };
+        case 'add':      return added(cleared);
+        case 'key':      return arg === 'Enter' ? added(cleared) : state;
+        case 'toggle':   return refusing
+                           ? { ...cleared, refused: arg }
+                           : { ...cleared, tasks: tasks.map(task => toggled(arg, task)) };
+        case 'remove':   return { ...cleared, tasks: tasks.filter(task => task.id !== arg) };
+        case 'show':     return { ...cleared, showing: arg };
+        case 'rotate':   return { ...cleared, tasks: [...tasks.slice(1), ...tasks.slice(0, 1)] };
+        case 'refusing': return { ...cleared, refusing: !refusing };
+        default:         return state;
+      }
+    }
+
+    // 2. One template for a row: its shape, its holes and what its events mean.
+
+    const row = split('row',
+      ['li',
+        ['x-checkbox', { checked: task => task.done, 'aria-label': task => task.text,
+                         on: { 'x-checkbox-change-request': 'toggle' } }],
+        ['span', { class: 'text' }, task => task.text],
+        ['span', { class: 'note' }, task => task.note],
+        ['x-button', { size: 'sm', variant: 'danger', on: { press: 'remove' } }, 'Remove']]);
+
+    // 3. What the screen shows, as a value.
+
+    const shows = { all: () => true, active: task => !task.done, done: task => task.done };
+
+    const shown = (state, task) =>
+      ({ ...task, note: state.refused === task.id ? 'Not allowed' : '' });
+
+    function view(state) {
+      const rows = state.tasks.filter(shows[state.showing]);
+      const remaining = state.tasks.filter(task => !task.done).length;
+      return {
+        fixed: {
+          counter:  { text: `${remaining} remaining` },
+          draft:    { attrs: { value: state.draft } },
+          filter:   { attrs: { value: state.showing } },
+          refusing: { attrs: { checked: state.refusing } },
+          empty:    { attrs: { hidden: rows.length > 0 } },
+        },
+        order: rows.map(task => task.id),
+        rows: Object.fromEntries(rows.map(task => [task.id, row.writes(shown(state, task))])),
+      };
+    }
+
+    // 4. The effect. It decides nothing and knows nothing about tasks.
+
+    const page = document.getElementById('app');
+    const makeRow = () => makeNode(row.fixed);
+
+    function render(vm) {
+      const parts = readParts(page);
+      const nodes = sync({ tasks: { parent: parts.tasks } }, { tasks: vm.order }, makeRow);
+      write(parts, vm.fixed);
+      vm.order.forEach(key => write(readParts(nodes[key]), vm.rows[key]));
+    }
+
+    // The wiring: one place for the state, one table of events.
+
+    const store = { value: initial };
+    const dispatch = dispatcher(store, step, view, render);
+    const detailValue = (origin, event) => event.detail.value;
+    const pressedKey = (origin, event) => event.key;
+
+    listen(page, {
+      dispatch,
+      requests: {
+        'x-checkbox-change-request': ['checked'],
+        'x-switch-change-request':   ['checked'],
+        'x-select-change-request':   ['value'],
+      },
+      events: [
+        ...row.events,
+        [['x-form-field-input', 'draft'],         ['draft', detailValue]],
+        [['keydown', 'draft'],                    ['key', pressedKey]],
+        [['press', 'add'],                        'add'],
+        [['x-select-change-request', 'filter'],   ['show', detailValue]],
+        [['press', 'rotate'],                     'rotate'],
+        [['x-switch-change-request', 'refusing'], 'refusing'],
+      ],
+    });
+
+    render(view(store.value));
+  </script>
+</body>
+</html>

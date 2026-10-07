@@ -174,11 +174,32 @@ Each log entry records a timestamp, event type, and source tag name. Entries are
 | Dependencies | shadow-cljs, ClojureScript | None |
 | Port / URL | `http://localhost:8001` | `http://localhost:8000/bare-html/demo.html` |
 
+## The task list with BareMirror
+
+`tasks.html` is a task list in plain JavaScript on BareDOM components. It imports the functions of
+BareMirror from `dist/baremirror.js`, with no build step. Serve the project root as above and open
+[http://localhost:8000/bare-html/tasks.html](http://localhost:8000/bare-html/tasks.html).
+
+The script has four parts and a few lines of wiring:
+
+| Part | What it is |
+|---|---|
+| `step` | What a message does to the state. A pure function. |
+| `row` | One template for a row: its shape, its holes and what its events mean. |
+| `view` | What the screen shows, as a value. A pure function. |
+| `render` | The effect. It places the rows with `sync` and writes the values with `write`. |
+| The wiring | `dispatcher` ties the four together, and `listen` turns events into messages. |
+
+Nothing in the script compares the old screen with the new one. A row that stays on the screen
+keeps its node, so it keeps focus when it moves. With "The server says no" switched on, a tick
+on a checkbox is refused and the checkbox stays as it was.
+
 ## Project structure
 
 ```
 bare-html/
-└── demo.html    # Everything in one file: CSS, HTML markup, JS wiring, event log
+├── demo.html    # Everything in one file: CSS, HTML markup, JS wiring, event log
+└── tasks.html   # The task list with BareMirror, in one file
 ```
 
 All CSS, HTML, and JavaScript live in a single self-contained file. There is no `package.json`, no `node_modules`, and no build output to manage.
