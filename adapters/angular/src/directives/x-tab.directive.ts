@@ -20,6 +20,11 @@ export class BaredomTab implements OnInit, OnDestroy {
   @Input() set selected(v: boolean) { this.el.selected = v as any; }
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
   @Input() set value(v: string) { this.el.value = v as any; }
+  @Input() set orientation(v: string) { this.el.orientation = v as any; }
+  @Input() set size(v: string) { this.el.size = v as any; }
+  @Input() set variant(v: string) { this.el.variant = v as any; }
+  @Input() set label(v: string) { this.el.label = v as any; }
+  @Input() set controls(v: string) { this.el.controls = v as any; }
 
   @Output() tabSelect = new EventEmitter<CustomEvent<{ value: string }>>();
 

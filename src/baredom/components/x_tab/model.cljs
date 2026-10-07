@@ -27,10 +27,19 @@
 
 (def event-tab-select "tab-select")
 
+(def default-orientation "horizontal")
+(def default-size "md")
+(def default-variant "default")
+
 (def property-api
-  {:selected {:type 'boolean :reflects-attribute attr-selected}
-   :disabled {:type 'boolean :reflects-attribute attr-disabled}
-   :value    {:type 'string  :reflects-attribute attr-value}})
+  {:selected    {:type 'boolean :reflects-attribute attr-selected}
+   :disabled    {:type 'boolean :reflects-attribute attr-disabled}
+   :value       {:type 'string  :reflects-attribute attr-value}
+   :orientation {:type 'string  :reflects-attribute attr-orientation :default default-orientation}
+   :size        {:type 'string  :reflects-attribute attr-size        :default default-size}
+   :variant     {:type 'string  :reflects-attribute attr-variant     :default default-variant}
+   :label       {:type 'string  :reflects-attribute attr-label       :default ""}
+   :controls    {:type 'string  :reflects-attribute attr-controls    :default ""}})
 
 (def event-schema
   {event-tab-select {:cancelable false :detail {:value 'string}}})
@@ -39,13 +48,13 @@
   (if (contains? allowed v) v fallback))
 
 (defn normalize-orientation [v]
-  (valid-enum v orientation-values "horizontal"))
+  (valid-enum v orientation-values default-orientation))
 
 (defn normalize-size [v]
-  (valid-enum v size-values "md"))
+  (valid-enum v size-values default-size))
 
 (defn normalize-variant [v]
-  (valid-enum v variant-values "default"))
+  (valid-enum v variant-values default-variant))
 
 (defn normalize
   [{:keys [selected disabled orientation size variant label controls]}]

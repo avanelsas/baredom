@@ -19,6 +19,10 @@ export class BaredomSidebar implements OnInit, OnDestroy {
 
   @Input() set open(v: boolean) { this.el.open = v as any; }
   @Input() set collapsed(v: boolean) { this.el.collapsed = v as any; }
+  @Input() set placement(v: string) { this.el.placement = v as any; }
+  @Input() set variant(v: string) { this.el.variant = v as any; }
+  @Input() set breakpoint(v: number) { this.el.breakpoint = v as any; }
+  @Input() set label(v: string) { this.el.label = v as any; }
 
   @Output() toggle = new EventEmitter<CustomEvent<{ open: boolean }>>();
   @Output() dismiss = new EventEmitter<CustomEvent<{ reason: string }>>();

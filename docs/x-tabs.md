@@ -65,6 +65,10 @@ init();
 | Property | Type   | Description                |
 | -------- | ------ | -------------------------- |
 | `value`  | string | Current selected tab value |
+| `orientation` | string | Reflects `orientation`, default `"horizontal"` |
+| `activation` | string | Reflects `activation`, default `"auto"` |
+| `label`  | string | Reflects `label`, default `""` |
+| `loop`   | boolean | Reflects `loop` |
 
 Example:
 

@@ -16,6 +16,10 @@ export const XTabs = defineComponent({
   inheritAttrs: false,
   props: {
     value: { type: String as PropType<string | undefined>, default: undefined },
+    orientation: { type: String as PropType<string | undefined>, default: undefined },
+    activation: { type: String as PropType<string | undefined>, default: undefined },
+    label: { type: String as PropType<string | undefined>, default: undefined },
+    loop: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     modelValue: { type: String as PropType<string | undefined>, default: undefined },
   },
   emits: {

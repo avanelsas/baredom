@@ -72,12 +72,22 @@
 
 ;; --- Property API ---
 (def property-api
-  {:disabled {:type 'boolean
-              :reflects-attribute attr-disabled}
-   :loading {:type 'boolean
-             :reflects-attribute attr-loading}
-   :pressed {:type 'boolean
-             :reflects-attribute attr-pressed}})
+  {:disabled        {:type 'boolean :reflects-attribute attr-disabled}
+   :loading         {:type 'boolean :reflects-attribute attr-loading}
+   :pressed         {:type 'boolean :reflects-attribute attr-pressed}
+   :type            {:type 'string  :reflects-attribute attr-type    :default default-type}
+   :variant         {:type 'string  :reflects-attribute attr-variant :default default-variant}
+   :size            {:type 'string  :reflects-attribute attr-size    :default default-size}
+   :label           {:type 'string  :reflects-attribute attr-label   :default ""}
+   :mode            {:type 'string  :reflects-attribute attr-mode    :default default-mode}
+   :particleCount   {:type 'number  :reflects-attribute attr-particle-count
+                     :default default-particle-count}
+   :intensity       {:type 'number  :reflects-attribute attr-intensity
+                     :default default-intensity}
+   :particleSize    {:type 'number  :reflects-attribute attr-particle-size
+                     :default default-particle-size}
+   :reassembleSpeed {:type 'number  :reflects-attribute attr-reassemble-speed
+                     :default default-reassemble-speed}})
 
 ;; --- Event schema ---
 (def event-schema

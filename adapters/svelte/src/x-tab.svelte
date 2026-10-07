@@ -8,6 +8,11 @@
     selected?: boolean;
     disabled?: boolean;
     value?: string;
+    orientation?: string;
+    size?: string;
+    variant?: string;
+    label?: string;
+    controls?: string;
     ontabselect?: (e: CustomEvent<{ value: string }>) => void;
     el?: XTabElement | null;
     children?: import("svelte").Snippet;
@@ -22,6 +27,11 @@
     selected,
     disabled,
     value,
+    orientation,
+    size,
+    variant,
+    label,
+    controls,
     ontabselect,
     el = $bindable(null),
     children,
@@ -46,6 +56,11 @@
   {selected}
   {disabled}
   {value}
+  {orientation}
+  {size}
+  {variant}
+  {label}
+  {controls}
   class={className}
   {id}
   {...rest}

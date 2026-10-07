@@ -9,6 +9,10 @@ init();
 export interface XSidebarProps {
   open?: boolean;
   collapsed?: boolean;
+  placement?: string;
+  variant?: string;
+  breakpoint?: number;
+  label?: string;
   onToggle?: (e: CustomEvent<{ open: boolean }>) => void;
   onDismiss?: (e: CustomEvent<{ reason: string }>) => void;
   ref?: XSidebarElement | ((el: XSidebarElement) => void);

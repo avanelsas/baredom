@@ -5,6 +5,10 @@
   init();
   export type { XTabsElement };
   export interface XTabsProps {
+    orientation?: string;
+    activation?: string;
+    label?: string;
+    loop?: boolean;
     /** Two-way bindable form value — `bind:value={...}`. */
     value?: string;
     onvaluechangerequest?: (e: CustomEvent<{ value: string; previousValue: string }>) => void;
@@ -19,6 +23,10 @@
 
 <script lang="ts">
   let {
+    orientation,
+    activation,
+    label,
+    loop,
     value = $bindable(undefined),
     onvaluechangerequest,
     onvaluechange,
@@ -56,6 +64,10 @@
 
 <x-tabs
   bind:this={el}
+  {orientation}
+  {activation}
+  {label}
+  {loop}
   class={className}
   {id}
   {...rest}

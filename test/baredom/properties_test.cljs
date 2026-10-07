@@ -3,21 +3,36 @@
             [baredom.components.x-bento-grid.x-bento-grid :as x-bento-grid]
             [baredom.components.x-bento-item.model :as bento-item-model]
             [baredom.components.x-bento-item.x-bento-item :as x-bento-item]
+            [baredom.components.x-button.model :as button-model]
+            [baredom.components.x-button.x-button :as x-button]
             [baredom.components.x-card.model :as card-model]
             [baredom.components.x-card.x-card :as x-card]
             [baredom.components.x-container.model :as container-model]
             [baredom.components.x-container.x-container :as x-container]
             [baredom.components.x-grid.model :as grid-model]
             [baredom.components.x-grid.x-grid :as x-grid]
+            [baredom.components.x-particle-button.model :as particle-button-model]
+            [baredom.components.x-particle-button.x-particle-button :as x-particle-button]
+            [baredom.components.x-sidebar.model :as sidebar-model]
+            [baredom.components.x-sidebar.x-sidebar :as x-sidebar]
+            [baredom.components.x-tab.model :as tab-model]
+            [baredom.components.x-tab.x-tab :as x-tab]
+            [baredom.components.x-tabs.model :as tabs-model]
+            [baredom.components.x-tabs.x-tabs :as x-tabs]
             [cljs.test :refer-macros [deftest is testing use-fixtures]]))
 
 (def ^:private cases
   "One component for each row: how to register it, its tag and the properties its model declares."
-  [{:init! x-bento-grid/init! :tag bento-grid-model/tag-name :api bento-grid-model/property-api}
-   {:init! x-bento-item/init! :tag bento-item-model/tag-name :api bento-item-model/property-api}
-   {:init! x-card/init!       :tag card-model/tag-name       :api card-model/property-api}
-   {:init! x-container/init!  :tag container-model/tag-name  :api container-model/property-api}
-   {:init! x-grid/init!       :tag grid-model/tag-name       :api grid-model/property-api}])
+  [[x-bento-grid/init!      bento-grid-model/tag-name      bento-grid-model/property-api]
+   [x-bento-item/init!      bento-item-model/tag-name      bento-item-model/property-api]
+   [x-button/init!          button-model/tag-name          button-model/property-api]
+   [x-card/init!            card-model/tag-name            card-model/property-api]
+   [x-container/init!       container-model/tag-name       container-model/property-api]
+   [x-grid/init!            grid-model/tag-name            grid-model/property-api]
+   [x-particle-button/init! particle-button-model/tag-name particle-button-model/property-api]
+   [x-sidebar/init!         sidebar-model/tag-name         sidebar-model/property-api]
+   [x-tab/init!             tab-model/tag-name             tab-model/property-api]
+   [x-tabs/init!            tabs-model/tag-name            tabs-model/property-api]])
 
 (def ^:private samples
   "For each type of property, two values that differ."
@@ -55,7 +70,7 @@
     {:prop (name k) :attr reflects-attribute :type type :values (get samples type)}))
 
 (deftest every-reflected-property-writes-its-attribute-and-reads-it-back
-  (doseq [{:keys [init! tag api]} cases]
+  (doseq [[init! tag api] cases]
     (init!)
     (doseq [{:keys [prop attr type values]} (reflected api)]
       (testing (str tag " " prop)

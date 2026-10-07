@@ -18,6 +18,10 @@ export class BaredomTabs implements OnInit, OnDestroy {
   }
 
   @Input() set value(v: string) { this.el.value = v as any; }
+  @Input() set orientation(v: string) { this.el.orientation = v as any; }
+  @Input() set activation(v: string) { this.el.activation = v as any; }
+  @Input() set label(v: string) { this.el.label = v as any; }
+  @Input() set loop(v: boolean) { this.el.loop = v as any; }
 
   @Output() valueChangeRequest = new EventEmitter<CustomEvent<{ value: string; previousValue: string }>>();
   @Output() valueChange = new EventEmitter<CustomEvent<{ value: string }>>();

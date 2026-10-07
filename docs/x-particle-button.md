@@ -67,6 +67,15 @@ Color is sampled from the button's computed background: 60% fill, 25% lighter hi
 | `disabled` | boolean | `disabled` attribute |
 | `loading` | boolean | `loading` attribute |
 | `pressed` | boolean | `pressed` attribute |
+| `type` | string | `type` attribute, default `"button"` |
+| `variant` | string | `variant` attribute, default `"primary"` |
+| `size` | string | `size` attribute, default `"md"` |
+| `label` | string | `label` attribute, default `""` |
+| `mode` | string | `mode` attribute, default `"dust"` |
+| `particleCount` | number | `particle-count` attribute, default `40` |
+| `intensity` | number | `intensity` attribute, default `50` |
+| `particleSize` | number | `particle-size` attribute, default `3` |
+| `reassembleSpeed` | number | `reassemble-speed` attribute, default `500` |
 
 ## Events
 

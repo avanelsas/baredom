@@ -7,6 +7,10 @@
   export interface XSidebarProps {
     open?: boolean;
     collapsed?: boolean;
+    placement?: string;
+    variant?: string;
+    breakpoint?: number;
+    label?: string;
     ontoggle?: (e: CustomEvent<{ open: boolean }>) => void;
     ondismiss?: (e: CustomEvent<{ reason: string }>) => void;
     el?: XSidebarElement | null;
@@ -21,6 +25,10 @@
   let {
     open,
     collapsed,
+    placement,
+    variant,
+    breakpoint,
+    label,
     ontoggle,
     ondismiss,
     el = $bindable(null),
@@ -48,6 +56,10 @@
   bind:this={el}
   {open}
   {collapsed}
+  {placement}
+  {variant}
+  {breakpoint}
+  {label}
   class={className}
   {id}
   {...rest}

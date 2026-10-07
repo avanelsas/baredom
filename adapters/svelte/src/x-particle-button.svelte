@@ -5,9 +5,18 @@
   init();
   export type { XParticleButtonElement };
   export interface XParticleButtonProps {
+    particleCount?: number;
     disabled?: boolean;
+    variant?: string;
+    mode?: string;
+    type?: string;
+    intensity?: number;
+    size?: string;
+    reassembleSpeed?: number;
     loading?: boolean;
+    label?: string;
     pressed?: boolean;
+    particleSize?: number;
     onpress?: (e: CustomEvent<{ source: string }>) => void;
     onpressstart?: (e: CustomEvent<{ source: string }>) => void;
     onpressend?: (e: CustomEvent<{ source: string }>) => void;
@@ -26,9 +35,18 @@
 
 <script lang="ts">
   let {
+    particleCount,
     disabled,
+    variant,
+    mode,
+    type,
+    intensity,
+    size,
+    reassembleSpeed,
     loading,
+    label,
     pressed,
+    particleSize,
     onpress,
     onpressstart,
     onpressend,
@@ -78,9 +96,18 @@
 
 <x-particle-button
   bind:this={el}
+  {particleCount}
   {disabled}
+  {variant}
+  {mode}
+  {type}
+  {intensity}
+  {size}
+  {reassembleSpeed}
   {loading}
+  {label}
   {pressed}
+  {particleSize}
   class={className}
   {id}
   {...rest}

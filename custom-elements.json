@@ -649,6 +649,30 @@
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "attributes" : [ {
         "name" : "disabled",
@@ -669,13 +693,29 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "type"
+        "name" : "type",
+        "fieldName" : "type",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "variant"
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "size"
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "label"
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "press",
@@ -16285,9 +16325,51 @@
       },
       "members" : [ {
         "kind" : "field",
+        "name" : "particleCount",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
         "name" : "disabled",
         "type" : {
           "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "intensity",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "reassembleSpeed",
+        "type" : {
+          "text" : "number"
         }
       }, {
         "kind" : "field",
@@ -16297,9 +16379,21 @@
         }
       }, {
         "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "pressed",
         "type" : {
           "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "particleSize",
+        "type" : {
+          "text" : "number"
         }
       } ],
       "attributes" : [ {
@@ -16321,23 +16415,59 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "type"
+        "name" : "type",
+        "fieldName" : "type",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "variant"
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "size"
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "label"
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "mode"
+        "name" : "mode",
+        "fieldName" : "mode",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "particle-count"
+        "name" : "particle-count",
+        "fieldName" : "particleCount",
+        "type" : {
+          "text" : "number"
+        }
       }, {
-        "name" : "intensity"
+        "name" : "intensity",
+        "fieldName" : "intensity",
+        "type" : {
+          "text" : "number"
+        }
       }, {
-        "name" : "particle-size"
+        "name" : "particle-size",
+        "fieldName" : "particleSize",
+        "type" : {
+          "text" : "number"
+        }
       }, {
-        "name" : "reassemble-speed"
+        "name" : "reassemble-speed",
+        "fieldName" : "reassembleSpeed",
+        "type" : {
+          "text" : "number"
+        }
       } ],
       "events" : [ {
         "name" : "press",
@@ -17423,6 +17553,36 @@
         "type" : {
           "text" : "string"
         }
+      }, {
+        "kind" : "field",
+        "name" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "controls",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "attributes" : [ {
         "name" : "value",
@@ -17443,15 +17603,35 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "orientation"
+        "name" : "orientation",
+        "fieldName" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "size"
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "variant"
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "label"
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "controls"
+        "name" : "controls",
+        "fieldName" : "controls",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "tab-select",
@@ -19854,6 +20034,30 @@
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "breakpoint",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "attributes" : [ {
         "name" : "open",
@@ -19868,13 +20072,29 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "placement"
+        "name" : "placement",
+        "fieldName" : "placement",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "variant"
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "breakpoint"
+        "name" : "breakpoint",
+        "fieldName" : "breakpoint",
+        "type" : {
+          "text" : "number"
+        }
       }, {
-        "name" : "label"
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "toggle",
@@ -20255,6 +20475,30 @@
         "type" : {
           "text" : "string"
         }
+      }, {
+        "kind" : "field",
+        "name" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "activation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "loop",
+        "type" : {
+          "text" : "boolean"
+        }
       } ],
       "attributes" : [ {
         "name" : "value",
@@ -20263,13 +20507,29 @@
           "text" : "string"
         }
       }, {
-        "name" : "orientation"
+        "name" : "orientation",
+        "fieldName" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "activation"
+        "name" : "activation",
+        "fieldName" : "activation",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "label"
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "loop"
+        "name" : "loop",
+        "fieldName" : "loop",
+        "type" : {
+          "text" : "boolean"
+        }
       } ],
       "events" : [ {
         "name" : "value-change-request",
@@ -20346,6 +20606,36 @@
         "type" : {
           "text" : "string"
         }
+      }, {
+        "kind" : "field",
+        "name" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "controls",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "attributes" : [ {
         "name" : "value",
@@ -20366,15 +20656,35 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "orientation"
+        "name" : "orientation",
+        "fieldName" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "size"
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "variant"
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "label"
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "controls"
+        "name" : "controls",
+        "fieldName" : "controls",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "tab-select",

@@ -11,6 +11,10 @@ export interface XButtonProps {
   disabled?: boolean;
   loading?: boolean;
   pressed?: boolean;
+  type?: string;
+  variant?: string;
+  size?: string;
+  label?: string;
   onPress?: (e: CustomEvent<{ source: string }>) => void;
   onPressStart?: (e: CustomEvent<{ source: string }>) => void;
   onPressEnd?: (e: CustomEvent<{ source: string }>) => void;

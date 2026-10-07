@@ -8,9 +8,18 @@ import { init } from "@vanelsas/baredom/x-particle-button";
 init();
 
 export interface XParticleButtonProps {
+  particleCount?: number;
   disabled?: boolean;
+  variant?: string;
+  mode?: string;
+  type?: string;
+  intensity?: number;
+  size?: string;
+  reassembleSpeed?: number;
   loading?: boolean;
+  label?: string;
   pressed?: boolean;
+  particleSize?: number;
   onPress?: (e: CustomEvent<{ source: string }>) => void;
   onPressStart?: (e: CustomEvent<{ source: string }>) => void;
   onPressEnd?: (e: CustomEvent<{ source: string }>) => void;
