@@ -53,7 +53,7 @@
    "--x-tooltip-bg:var(--x-color-bg,#1e293b);"
    "--x-tooltip-text:var(--x-color-text,#e2e8f0);"
    "--x-tooltip-border:1px solid var(--x-color-border,#334155);"
-   "--x-tooltip-shadow:0 4px 24px rgba(0,0,0,0.4);"
+   "--x-tooltip-shadow:var(--x-shadow-md,0 4px 24px rgba(0,0,0,0.4));"
    "}"
    "}"
    "[part=trigger]{"

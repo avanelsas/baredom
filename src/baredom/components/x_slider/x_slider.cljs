@@ -30,7 +30,7 @@
    "--x-slider-fill-color:var(--x-color-primary,#3b82f6);"
    "--x-slider-thumb-color:var(--x-color-surface,#ffffff);"
    "--x-slider-thumb-border:2px solid var(--x-color-primary,#3b82f6);"
-   "--x-slider-thumb-shadow:0 1px 4px rgba(0,0,0,0.20);"
+   "--x-slider-thumb-shadow:var(--x-shadow-sm,0 1px 4px rgba(0,0,0,0.20));"
    "--x-slider-focus-ring:var(--x-color-focus-ring,#60a5fa);"
    "--x-slider-disabled-opacity:0.45;"
    "--x-slider-label-color:rgba(0,0,0,0.60);"

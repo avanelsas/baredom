@@ -98,7 +98,7 @@
    "--x-cancel-dialogue-bg:var(--x-color-bg,#1e293b);"
    "--x-cancel-dialogue-fg:var(--x-color-text,#f1f5f9);"
    "--x-cancel-dialogue-backdrop-bg:rgba(0,0,0,0.60);"
-   "--x-cancel-dialogue-shadow:0 20px 60px rgba(0,0,0,0.55),0 4px 12px rgba(0,0,0,0.30);"
+   "--x-cancel-dialogue-shadow:var(--x-shadow-lg,0 20px 60px rgba(0,0,0,0.55),0 4px 12px rgba(0,0,0,0.30));"
    "--x-cancel-dialogue-cancel-bg:var(--x-color-text-muted,#334155);"
    "--x-cancel-dialogue-cancel-fg:var(--x-color-text,#f1f5f9);"
    "--x-cancel-dialogue-cancel-bg-hover:var(--x-color-border,#475569);"

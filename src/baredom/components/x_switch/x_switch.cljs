@@ -85,7 +85,7 @@
    "height:var(--x-switch-thumb-size);"
    "border-radius:50%;"
    "background:var(--x-switch-thumb-bg);"
-   "box-shadow:0 1px 3px rgba(0,0,0,0.25);"
+   "box-shadow:var(--x-shadow-sm,0 1px 3px rgba(0,0,0,0.25));"
    "transition:transform var(--x-transition-duration,150ms) var(--x-transition-easing,ease);"
    "}"
 

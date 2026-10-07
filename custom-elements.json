@@ -1988,7 +1988,7 @@
         "default" : "var(--x-color-surface,#ffffff)"
       }, {
         "name" : "--x-range-slider-thumb-shadow",
-        "default" : "0 1px 4px rgba(0,0,0,0.20)"
+        "default" : "var(--x-shadow-sm,0 1px 4px rgba(0,0,0,0.20))"
       }, {
         "name" : "--x-range-slider-track-color",
         "default" : "rgba(255,255,255,0.15)"
@@ -4741,7 +4741,7 @@
         "default" : "var(--x-radius-lg,12px)"
       }, {
         "name" : "--x-cancel-dialogue-shadow",
-        "default" : "0 20px 60px rgba(0,0,0,0.55),0 4px 12px rgba(0,0,0,0.30)"
+        "default" : "var(--x-shadow-lg,0 20px 60px rgba(0,0,0,0.55),0 4px 12px rgba(0,0,0,0.30))"
       }, {
         "name" : "--x-cancel-dialogue-z-base",
         "default" : "1000"
@@ -9671,7 +9671,7 @@
         "default" : "var(--x-radius-md,8px)"
       }, {
         "name" : "--x-popover-panel-shadow",
-        "default" : "0 4px 24px rgba(0,0,0,0.4)"
+        "default" : "var(--x-shadow-md,0 4px 24px rgba(0,0,0,0.4))"
       }, {
         "name" : "--x-popover-panel-z",
         "default" : "1000"
@@ -21104,7 +21104,7 @@
         "default" : "var(--x-radius-md,6px)"
       }, {
         "name" : "--x-tooltip-shadow",
-        "default" : "0 4px 24px rgba(0,0,0,0.4)"
+        "default" : "var(--x-shadow-md,0 4px 24px rgba(0,0,0,0.4))"
       }, {
         "name" : "--x-tooltip-text",
         "default" : "var(--x-color-text,#e2e8f0)"
@@ -22281,7 +22281,7 @@
         "default" : "var(--x-color-surface,#ffffff)"
       }, {
         "name" : "--x-slider-thumb-shadow",
-        "default" : "0 1px 4px rgba(0,0,0,0.20)"
+        "default" : "var(--x-shadow-sm,0 1px 4px rgba(0,0,0,0.20))"
       }, {
         "name" : "--x-slider-track-color",
         "default" : "rgba(255,255,255,0.15)"

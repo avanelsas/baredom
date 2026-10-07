@@ -239,15 +239,18 @@
 
 (defn- used-rows
   "One row for each declaration of a family: its own value, or the fallback of each own
-   property it reads. An own property read with no fallback is left to its declaration."
+   property it reads, in the family that the name of that property says. An own property read
+   with no fallback is left to its declaration."
   [tag decls]
   (for [[prop value] decls
         :let  [family (family-of prop)]
         :when family
         row   (if (seq (own-in value))
-                (for [[_ fallback] (fallbacks value)
+                (for [[own fallback] (fallbacks value)
                       :when (empty? (own-in fallback))]
-                  {:value fallback :kind (own-kind fallback)})
+                  {:family (or (family-by-name own) family)
+                   :value  fallback
+                   :kind   (own-kind fallback)})
                 [{:value value :kind (value-kind value)}])]
     (merge {:tag tag :family family :prop prop} row)))
 
@@ -278,6 +281,11 @@
      ["x-button" "border-radius" "999px"]
      ["x-particle-button" "border-radius" "999px"]
      ["x-timeline-item" "border-radius" "999px"]]]
+   ["An outline or an edge drawn with a shadow. It is not an elevation."
+    [["x-color-picker" "box-shadow"
+      "0 0 0 1px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(0,0,0,0.3)"]
+     ["x-kbd" "--x-kbd-shadow" "inset 0 -1px 0 rgba(0,0,0,0.08)"]
+     ["x-kbd" "--x-kbd-shadow" "inset 0 -1px 0 rgba(0,0,0,0.4)"]]]
    ["The shape of a mark. It is not a corner."
     [["x-checkbox" "border-radius" "1px"]]]
    ["Smoothing tied to scrolling. It follows the pointer and no design default."
@@ -361,7 +369,7 @@
 
 (def ^:private closed
   "The families in which every value follows the theme or is listed as not themed by design."
-  #{"radius" "transition"})
+  #{"radius" "shadow" "transition"})
 
 (defn- reopened
   "The values of a closed family that follow no token, as a message for each."

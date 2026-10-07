@@ -130,7 +130,7 @@
    "color:var(" css-color ",var(--x-color-text,#111));"
    "border:var(" css-border ",1px solid var(--x-color-border,#d8d8d8));"
    "border-radius:var(" css-radius ",var(--x-radius-md,8px));"
-   "box-shadow:var(" css-shadow ",0 1px 2px rgba(0,0,0,.06));"
+   "box-shadow:var(" css-shadow ",var(--x-shadow-sm,0 1px 2px rgba(0,0,0,.06)));"
    "transition:var(" css-transition ",box-shadow var(--x-transition-duration,.16s) var(--x-transition-easing,ease),"
    "transform var(--x-transition-duration,.16s) var(--x-transition-easing,ease));}"
 
@@ -168,7 +168,7 @@
    "z-index:1000;"
    "pointer-events:none;"
    "cursor:grabbing;"
-   "box-shadow:var(" css-lift-shadow ",0 12px 32px rgba(0,0,0,.22));"
+   "box-shadow:var(" css-lift-shadow ",var(--x-shadow-lg,0 12px 32px rgba(0,0,0,.22)));"
    "background:var(" css-bg ",var(--x-color-bg,#fff));"
    "transition:none;}"
 
