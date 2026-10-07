@@ -20,6 +20,8 @@ A linear progress bar web component with variant colors, optional value label, i
 | `show-value`    | boolean | absent    | Shows computed percentage text            |
 | `indeterminate` | boolean | absent    | Animated shimmer; ignores `value`         |
 
+**Attributes that belong together.** This component acts at the moment an attribute is written: it sends `x-progress-complete`. It uses the other attributes as they are at that moment. When you change several attributes that belong together, write them in one step, so the component sees one state. See "The hold of a render" in [`UTILITIES.md`](UTILITIES.md).
+
 ## Properties
 
 | Property        | Type    | Reflects attribute  |

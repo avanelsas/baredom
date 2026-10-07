@@ -25,6 +25,8 @@ A disclosure widget that shows or hides a content panel via an animated toggle. 
 
 ---
 
+**Attributes that belong together.** This component acts at the moment an attribute is written: it starts its animation. It uses the other attributes as they are at that moment. When you change several attributes that belong together, write them in one step, so the component sees one state. See "The hold of a render" in [`UTILITIES.md`](UTILITIES.md).
+
 ## Properties
 
 | Property | Type | Reflects attribute |

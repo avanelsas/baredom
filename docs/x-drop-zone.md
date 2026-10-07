@@ -111,6 +111,8 @@ counting it would refuse a second drop the server may well accept.
 One valued attribute rather than two booleans, because the states are mutually
 exclusive.
 
+**Attributes that belong together.** This component acts at the moment an attribute is written: it makes its announcement. It uses the other attributes as they are at that moment. When you change several attributes that belong together, write them in one step, so the component sees one state. See "The hold of a render" in [`UTILITIES.md`](UTILITIES.md).
+
 ## Properties
 
 | Property | Type | Reflects |
