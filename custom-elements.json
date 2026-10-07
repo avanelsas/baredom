@@ -16743,7 +16743,11 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "current"
+        "name" : "current",
+        "fieldName" : "currentSlide",
+        "type" : {
+          "text" : "number"
+        }
       }, {
         "name" : "transition",
         "fieldName" : "transition",
@@ -18492,7 +18496,25 @@
       },
       "members" : [ {
         "kind" : "field",
-        "name" : "separator",
+        "name" : "itemsAfter",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "wrap",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
         "type" : {
           "text" : "string"
         }
@@ -18504,15 +18526,15 @@
         }
       }, {
         "kind" : "field",
-        "name" : "variant",
+        "name" : "preserveAriaCurrent",
         "type" : {
-          "text" : "string"
+          "text" : "boolean"
         }
       }, {
         "kind" : "field",
-        "name" : "wrap",
+        "name" : "separator",
         "type" : {
-          "text" : "boolean"
+          "text" : "string"
         }
       }, {
         "kind" : "field",
@@ -18525,18 +18547,6 @@
         "name" : "itemsBefore",
         "type" : {
           "text" : "number"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "itemsAfter",
-        "type" : {
-          "text" : "number"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "disabled",
-        "type" : {
-          "text" : "boolean"
         }
       } ],
       "attributes" : [ {
@@ -18588,7 +18598,11 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "preserve-aria-current"
+        "name" : "preserve-aria-current",
+        "fieldName" : "preserveAriaCurrent",
+        "type" : {
+          "text" : "boolean"
+        }
       }, {
         "name" : "aria-label",
         "type" : {

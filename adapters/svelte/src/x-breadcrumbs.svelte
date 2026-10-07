@@ -5,14 +5,15 @@
   init();
   export type { XBreadcrumbsElement };
   export interface XBreadcrumbsProps {
-    separator?: string;
-    size?: string;
-    variant?: string;
+    itemsAfter?: number;
     wrap?: boolean;
+    disabled?: boolean;
+    variant?: string;
+    size?: string;
+    preserveAriaCurrent?: boolean;
+    separator?: string;
     maxItems?: number;
     itemsBefore?: number;
-    itemsAfter?: number;
-    disabled?: boolean;
     el?: XBreadcrumbsElement | null;
     children?: import("svelte").Snippet;
     class?: string;
@@ -23,14 +24,15 @@
 
 <script lang="ts">
   let {
-    separator,
-    size,
-    variant,
+    itemsAfter,
     wrap,
+    disabled,
+    variant,
+    size,
+    preserveAriaCurrent,
+    separator,
     maxItems,
     itemsBefore,
-    itemsAfter,
-    disabled,
     el = $bindable(null),
     children,
     class: className,
@@ -41,14 +43,15 @@
 
 <x-breadcrumbs
   bind:this={el}
-  {separator}
-  {size}
-  {variant}
+  {itemsAfter}
   {wrap}
+  {disabled}
+  {variant}
+  {size}
+  {preserveAriaCurrent}
+  {separator}
   {maxItems}
   {itemsBefore}
-  {itemsAfter}
-  {disabled}
   class={className}
   {id}
   {...rest}

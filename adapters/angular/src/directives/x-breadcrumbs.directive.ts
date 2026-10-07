@@ -14,13 +14,14 @@ export class BaredomBreadcrumbs {
     this.el = elRef.nativeElement;
   }
 
-  @Input() set separator(v: string) { this.el.separator = v as any; }
-  @Input() set size(v: string) { this.el.size = v as any; }
-  @Input() set variant(v: string) { this.el.variant = v as any; }
+  @Input() set itemsAfter(v: number) { this.el.itemsAfter = v as any; }
   @Input() set wrap(v: boolean) { this.el.wrap = v as any; }
+  @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
+  @Input() set variant(v: string) { this.el.variant = v as any; }
+  @Input() set size(v: string) { this.el.size = v as any; }
+  @Input() set preserveAriaCurrent(v: boolean) { this.el.preserveAriaCurrent = v as any; }
+  @Input() set separator(v: string) { this.el.separator = v as any; }
   @Input() set maxItems(v: number) { this.el.maxItems = v as any; }
   @Input() set itemsBefore(v: number) { this.el.itemsBefore = v as any; }
-  @Input() set itemsAfter(v: number) { this.el.itemsAfter = v as any; }
-  @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
 
 }
