@@ -531,7 +531,7 @@
    "background:var(--x-date-picker-popover-bg,#fff);"
    "border:1px solid var(--x-date-picker-border,#e2e8f0);"
    "border-radius:var(--x-date-picker-popover-radius);"
-   "box-shadow:0 8px 32px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.06);"
+   "box-shadow:var(--x-shadow-md,0 8px 32px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.06));"
    "padding:16px;"
    "width:var(--x-date-picker-popover-width,304px);"
    "max-width:calc(100vw - 1rem);"
