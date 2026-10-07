@@ -58,7 +58,8 @@
            :when (not (contains? declared a))]
        (str tag-name " publishes " (pr-str a) ", which its model never declares")))))
 
-(require '[edamame.core :as edamame])
+(require '[clojure.walk :as walk]
+         '[edamame.core :as edamame])
 
 (defn- component-forms [dir-name]
   (mapcat (fn [^java.io.File f]
@@ -68,21 +69,37 @@
                   (.listFiles (io/file components-dir dir-name)))))
 
 (defn- text-of
-  "The text a literal or a `model/` symbol stands for, or nil."
+  "The text a literal or a symbol for an attribute or a property stands for, or nil."
   [x string-defs]
   (cond
     (string? x) x
-    (symbol? x) (get string-defs (symbol (name x)))))
+    (and (symbol? x) (re-find #"^(attr|prop)-" (name x))) (get string-defs (symbol (name x)))))
 
-(defn- subforms [forms]
-  (filter seq? (tree-seq coll? seq forms)))
+(defn- unrolled
+  "The body of a `doseq` over a literal vector, once for each item, or nil."
+  [[head bindings & body]]
+  (when (and (= 'doseq head) (vector? bindings))
+    (let [[sym items] bindings]
+      (when (and (symbol? sym) (vector? items))
+        (mapcat #(walk/postwalk-replace {sym %} body) items)))))
+
+(defn- subforms
+  "Every list in `forms`, with the body of each loop over a literal vector written out."
+  [forms]
+  (let [lists (filter seq? (tree-seq coll? seq forms))]
+    (concat lists (filter seq? (tree-seq coll? seq (mapcat unrolled lists))))))
+
+(def ^:private writers
+  "Calls that take `proto` and a name and do not install a reflecting property."
+  '#{aset gobj/set unchecked-set .defineProperty})
 
 (defn- install-pair
-  "The two texts an install call names, as a set, or nil. An install call takes `proto` and
-   then a property and an attribute, in either order."
+  "The texts an install call names, as a set, or nil. An install call takes `proto` and then
+   a property and an attribute in either order, or one name that serves as both."
   [[head proto a b] string-defs]
   (let [texts (keep #(text-of % string-defs) [a b])]
-    (when (and (symbol? head) (= 'proto proto) (= 2 (count texts)))
+    (when (and (symbol? head) (not (writers head)) (= 'proto proto)
+               (text-of a string-defs))
       (set texts))))
 
 (defn- defines?
@@ -119,6 +136,12 @@
               (seq others)                                              :wrong
               :else                                                     :missing)})))
 
+(defn- name-problems
+  "The properties of a component whose name has a dash. A JavaScript property is in camel case."
+  [{:keys [tag-name properties]}]
+  (for [k (keys properties) :when (str/includes? (name k) "-")]
+    (str tag-name " declares the property " (name k) ", which has a dash in its name")))
+
 (defn- link-problem [{:keys [tag prop attr others how]}]
   (case how
     :wrong   (str tag " declares that " prop " reflects " (pr-str attr)
@@ -137,7 +160,9 @@
 
 (let [models (discover-models)
       links  (mapcat links models)
-      found  (concat (mapcat problems models) (keep link-problem links))
+      found  (concat (mapcat problems models)
+                     (mapcat name-problems models)
+                     (keep link-problem links))
       total  (reduce + (map (comp count :attributes) models))
       how    (frequencies (map :how links))]
   (if (seq found)

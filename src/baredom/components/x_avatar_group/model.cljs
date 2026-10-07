@@ -67,12 +67,12 @@
 
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api
-  {:size      {:type 'string}
-   :overlap   {:type 'string}
-   :max       {:type 'number}
-   :direction {:type 'string}
-   :disabled  {:type 'boolean}
-   :label     {:type 'string}})
+  {:size      {:type 'string  :reflects-attribute attr-size}
+   :overlap   {:type 'string  :reflects-attribute attr-overlap}
+   :max       {:type 'number  :reflects-attribute attr-max}
+   :direction {:type 'string  :reflects-attribute attr-direction}
+   :disabled  {:type 'boolean :reflects-attribute attr-disabled}
+   :label     {:type 'string  :reflects-attribute attr-label}})
 
 (def event-schema {})
 

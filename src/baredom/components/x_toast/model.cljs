@@ -19,14 +19,14 @@
 (def event-dismiss "x-toast-dismiss")
 
 (def property-api
-  {:type         {:type 'string}
-   :heading      {:type 'string}
-   :message      {:type 'string}
-   :icon         {:type 'string}
-   :dismissible  {:type 'boolean}
-   :disabled     {:type 'boolean}
-   :timeoutMs    {:type 'number}
-   :showProgress {:type 'boolean}})
+  {:type         {:type 'string  :reflects-attribute attr-type}
+   :heading      {:type 'string  :reflects-attribute attr-heading}
+   :message      {:type 'string  :reflects-attribute attr-message}
+   :icon         {:type 'string  :reflects-attribute attr-icon}
+   :dismissible  {:type 'boolean :reflects-attribute attr-dismissible}
+   :disabled     {:type 'boolean :reflects-attribute attr-disabled}
+   :timeoutMs    {:type 'number  :reflects-attribute attr-timeout-ms}
+   :showProgress {:type 'boolean :reflects-attribute attr-show-progress}})
 
 (def event-schema
   {event-dismiss {:detail     {:type 'string :reason 'string

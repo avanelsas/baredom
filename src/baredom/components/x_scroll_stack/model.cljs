@@ -20,11 +20,11 @@
 
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:peek           {:type 'number}
-   :rotation       {:type 'number}
-   :scrollDistance  {:type 'number}
-   :align          {:type 'string}
-   :disabled       {:type 'boolean}
+  {:peek           {:type 'number  :reflects-attribute attr-peek}
+   :rotation       {:type 'number  :reflects-attribute attr-rotation}
+   :scrollDistance  {:type 'number  :reflects-attribute attr-scroll-distance}
+   :align          {:type 'string  :reflects-attribute attr-align}
+   :disabled       {:type 'boolean :reflects-attribute attr-disabled}
    :stackedCount   {:type 'number  :read-only true}
    :progress       {:type 'number  :read-only true}})
 

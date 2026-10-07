@@ -18,13 +18,13 @@
 (def event-error "x-image-error")
 
 (def property-api
-  {:src           {:type 'string}
-   :alt           {:type 'string}
-   :decorative    {:type 'boolean}
-   :ratio         {:type 'string}
-   :fit           {:type 'string}
-   :position      {:type 'string}
-   :loading       {:type 'string}
+  {:src           {:type 'string  :reflects-attribute attr-src}
+   :alt           {:type 'string  :reflects-attribute attr-alt}
+   :decorative    {:type 'boolean :reflects-attribute attr-decorative}
+   :ratio         {:type 'string  :reflects-attribute attr-ratio}
+   :fit           {:type 'string  :reflects-attribute attr-fit}
+   :position      {:type 'string  :reflects-attribute attr-position}
+   :loading       {:type 'string  :reflects-attribute attr-loading}
    :naturalWidth  {:type 'number :readonly true}
    :naturalHeight {:type 'number :readonly true}
    :state         {:type 'string :readonly true}})

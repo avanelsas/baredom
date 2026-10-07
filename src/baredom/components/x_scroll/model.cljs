@@ -30,17 +30,17 @@
 
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:mode           {:type 'string}
-   :snap           {:type 'string}
-   :loop           {:type 'boolean}
-   :autoPlay       {:type 'boolean}
-   :interval       {:type 'number}
-   :showControls   {:type 'boolean}
-   :showIndicators {:type 'boolean}
-   :activeIndex    {:type 'number}
-   :gap            {:type 'number}
-   :disabled       {:type 'boolean}
-   :label          {:type 'string}})
+  {:mode           {:type 'string  :reflects-attribute attr-mode}
+   :snap           {:type 'string  :reflects-attribute attr-snap}
+   :loop           {:type 'boolean :reflects-attribute attr-loop}
+   :autoPlay       {:type 'boolean :reflects-attribute attr-auto-play}
+   :interval       {:type 'number  :reflects-attribute attr-interval}
+   :showControls   {:type 'boolean :reflects-attribute attr-show-controls}
+   :showIndicators {:type 'boolean :reflects-attribute attr-show-indicators}
+   :activeIndex    {:type 'number  :reflects-attribute attr-active-index}
+   :gap            {:type 'number  :reflects-attribute attr-gap}
+   :disabled       {:type 'boolean :reflects-attribute attr-disabled}
+   :label          {:type 'string  :reflects-attribute attr-label}})
 
 ;; ── Event schema ────────────────────────────────────────────────────────────
 (def event-schema

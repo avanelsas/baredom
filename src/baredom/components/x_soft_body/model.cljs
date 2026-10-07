@@ -28,12 +28,12 @@
 
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:stiffness  {:type 'number}
-   :damping    {:type 'number}
-   :radius     {:type 'number}
-   :intensity  {:type 'number}
-   :grabRadius {:type 'number}
-   :disabled   {:type 'boolean}})
+  {:stiffness  {:type 'number  :reflects-attribute attr-stiffness}
+   :damping    {:type 'number  :reflects-attribute attr-damping}
+   :radius     {:type 'number  :reflects-attribute attr-radius}
+   :intensity  {:type 'number  :reflects-attribute attr-intensity}
+   :grabRadius {:type 'number  :reflects-attribute attr-grab-radius}
+   :disabled   {:type 'boolean :reflects-attribute attr-disabled}})
 
 ;; ── Event schema ────────────────────────────────────────────────────────────
 (def event-schema

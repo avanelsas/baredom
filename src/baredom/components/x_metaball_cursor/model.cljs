@@ -30,16 +30,16 @@
 
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:blobCount      {:type 'number}
-   :blobSize       {:type 'number}
-   :color          {:type 'string}
-   :noise          {:type 'boolean}
-   :noiseScale     {:type 'number}
-   :noiseSpeed     {:type 'number}
-   :noiseIntensity {:type 'number}
-   :blur           {:type 'number}
-   :threshold      {:type 'string}
-   :palette        {:type 'string}})
+  {:blobCount      {:type 'number  :reflects-attribute attr-blob-count}
+   :blobSize       {:type 'number  :reflects-attribute attr-blob-size}
+   :color          {:type 'string  :reflects-attribute attr-color}
+   :noise          {:type 'boolean :reflects-attribute attr-noise}
+   :noiseScale     {:type 'number  :reflects-attribute attr-noise-scale}
+   :noiseSpeed     {:type 'number  :reflects-attribute attr-noise-speed}
+   :noiseIntensity {:type 'number  :reflects-attribute attr-noise-intensity}
+   :blur           {:type 'number  :reflects-attribute attr-blur}
+   :threshold      {:type 'string  :reflects-attribute attr-threshold}
+   :palette        {:type 'string  :reflects-attribute attr-palette}})
 
 (def event-schema {})
 

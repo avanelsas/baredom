@@ -34,14 +34,14 @@
 
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:target          {:type 'string}
-   :orientation     {:type 'string}
-   :mode            {:type 'string}
-   :theme           {:type 'string}
-   :waveIntensity   {:type 'number}
-   :splashIntensity {:type 'number}
-   :layers          {:type 'number}
-   :disabled        {:type 'boolean}
+  {:target          {:type 'string  :reflects-attribute attr-target}
+   :orientation     {:type 'string  :reflects-attribute attr-orientation}
+   :mode            {:type 'string  :reflects-attribute attr-mode}
+   :theme           {:type 'string  :reflects-attribute attr-theme}
+   :waveIntensity   {:type 'number  :reflects-attribute attr-wave-intensity}
+   :splashIntensity {:type 'number  :reflects-attribute attr-splash-intensity}
+   :layers          {:type 'number  :reflects-attribute attr-layers}
+   :disabled        {:type 'boolean :reflects-attribute attr-disabled}
    :progress        {:type 'number :read-only true}})
 
 ;; ── Event schema ────────────────────────────────────────────────────────────

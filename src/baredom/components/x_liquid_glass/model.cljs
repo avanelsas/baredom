@@ -39,20 +39,20 @@
 
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:blobs            {:type 'number}
-   :speed            {:type 'number}
-   :amplitude        {:type 'number}
-   :blur             {:type 'number}
-   :goo              {:type 'number}
-   :tint             {:type 'string}
-   :specular         {:type 'boolean}
-   :specularSize     {:type 'number}
-   :specularIntensity {:type 'number}
-   :disabled         {:type 'boolean}
-   :mode             {:type 'string}
-   :frost            {:type 'number}
-   :color1           {:type 'string}
-   :color2           {:type 'string}})
+  {:blobs            {:type 'number  :reflects-attribute attr-blobs}
+   :speed            {:type 'number  :reflects-attribute attr-speed}
+   :amplitude        {:type 'number  :reflects-attribute attr-amplitude}
+   :blur             {:type 'number  :reflects-attribute attr-blur}
+   :goo              {:type 'number  :reflects-attribute attr-goo}
+   :tint             {:type 'string  :reflects-attribute attr-tint}
+   :specular         {:type 'boolean :reflects-attribute attr-specular}
+   :specularSize     {:type 'number  :reflects-attribute attr-specular-size}
+   :specularIntensity {:type 'number  :reflects-attribute attr-specular-intensity}
+   :disabled         {:type 'boolean :reflects-attribute attr-disabled}
+   :mode             {:type 'string  :reflects-attribute attr-mode}
+   :frost            {:type 'number  :reflects-attribute attr-frost}
+   :color1           {:type 'string  :reflects-attribute attr-color-1}
+   :color2           {:type 'string  :reflects-attribute attr-color-2}})
 
 ;; ── Event schema ────────────────────────────────────────────────────────────
 (def event-schema {})

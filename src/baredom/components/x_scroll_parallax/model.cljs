@@ -27,11 +27,11 @@
 
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:direction {:type 'string}
-   :source    {:type 'string}
-   :easing    {:type 'string}
-   :disabled  {:type 'boolean}
-   :label     {:type 'string}
+  {:direction {:type 'string  :reflects-attribute attr-direction}
+   :source    {:type 'string  :reflects-attribute attr-source}
+   :easing    {:type 'string  :reflects-attribute attr-easing}
+   :disabled  {:type 'boolean :reflects-attribute attr-disabled}
+   :label     {:type 'string  :reflects-attribute attr-label}
    :progress  {:type 'number :read-only true}})
 
 ;; ── Event schema ────────────────────────────────────────────────────────────

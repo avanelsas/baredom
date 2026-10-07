@@ -32,13 +32,13 @@
 
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:progress {:type 'string}
-   :variant  {:type 'string}
-   :color    {:type 'string}
-   :bloom    {:type 'boolean}
-   :density  {:type 'string}
-   :seed     {:type 'number}
-   :label    {:type 'string}})
+  {:progress {:type 'string  :reflects-attribute attr-progress}
+   :variant  {:type 'string  :reflects-attribute attr-variant}
+   :color    {:type 'string  :reflects-attribute attr-color}
+   :bloom    {:type 'boolean :reflects-attribute attr-bloom}
+   :density  {:type 'string  :reflects-attribute attr-density}
+   :seed     {:type 'number  :reflects-attribute attr-seed}
+   :label    {:type 'string  :reflects-attribute attr-label}})
 
 ;; ── Event schema ────────────────────────────────────────────────────────────
 (def event-schema

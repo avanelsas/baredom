@@ -24,13 +24,13 @@
 
 ;; ── Public API metadata ─────────────────────────────────────────────────────
 (def property-api
-  {:target        {:type 'string}
-   :title         {:type 'string}
-   :placement     {:type 'string}
-   :connector     {:type 'string}
-   :cutoutPadding {:type 'number}
-   :cutoutRadius  {:type 'number}
-   :scrollTo      {:type 'boolean}})
+  {:target        {:type 'string  :reflects-attribute attr-target}
+   :title         {:type 'string  :reflects-attribute attr-title}
+   :placement     {:type 'string  :reflects-attribute attr-placement}
+   :connector     {:type 'string  :reflects-attribute attr-connector}
+   :cutoutPadding {:type 'number  :reflects-attribute attr-cutout-padding}
+   :cutoutRadius  {:type 'number  :reflects-attribute attr-cutout-radius}
+   :scrollTo      {:type 'boolean :reflects-attribute attr-scroll-to}})
 
 (def event-schema
   {event-connected    {:detail {} :cancelable false}

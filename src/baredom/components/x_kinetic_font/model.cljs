@@ -40,16 +40,16 @@
 
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:text       {:type 'string}
-   :trigger    {:type 'string}
-   :mode       {:type 'string}
-   :perChar    {:type 'boolean}
-   :mass       {:type 'number}
-   :tension    {:type 'number}
-   :friction   {:type 'number}
-   :intensity  {:type 'number}
-   :radius     {:type 'number}
-   :fontFamily {:type 'string}})
+  {:text       {:type 'string  :reflects-attribute attr-text}
+   :trigger    {:type 'string  :reflects-attribute attr-trigger}
+   :mode       {:type 'string  :reflects-attribute attr-mode}
+   :perChar    {:type 'boolean :reflects-attribute attr-per-char}
+   :mass       {:type 'number  :reflects-attribute attr-mass}
+   :tension    {:type 'number  :reflects-attribute attr-tension}
+   :friction   {:type 'number  :reflects-attribute attr-friction}
+   :intensity  {:type 'number  :reflects-attribute attr-intensity}
+   :radius     {:type 'number  :reflects-attribute attr-radius}
+   :fontFamily {:type 'string  :reflects-attribute attr-font-family}})
 
 ;; ── Event schema ────────────────────────────────────────────────────────────
 (def event-schema

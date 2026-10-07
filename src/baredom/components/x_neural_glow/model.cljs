@@ -29,16 +29,16 @@
 
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:orbCount           {:type 'number}
-   :colorPrimary       {:type 'string}
-   :colorSecondary     {:type 'string}
-   :colorBackground    {:type 'string}
-   :pulseSpeed         {:type 'number}
-   :restRate           {:type 'number}
-   :connectionDistance  {:type 'number}
-   :orbSize            {:type 'number}
-   :opacity            {:type 'number}
-   :interactive        {:type 'boolean}})
+  {:orbCount           {:type 'number  :reflects-attribute attr-orb-count}
+   :colorPrimary       {:type 'string  :reflects-attribute attr-color-primary}
+   :colorSecondary     {:type 'string  :reflects-attribute attr-color-secondary}
+   :colorBackground    {:type 'string  :reflects-attribute attr-color-background}
+   :pulseSpeed         {:type 'number  :reflects-attribute attr-pulse-speed}
+   :restRate           {:type 'number  :reflects-attribute attr-rest-rate}
+   :connectionDistance  {:type 'number  :reflects-attribute attr-connection-distance}
+   :orbSize            {:type 'number  :reflects-attribute attr-orb-size}
+   :opacity            {:type 'number  :reflects-attribute attr-opacity}
+   :interactive        {:type 'boolean :reflects-attribute attr-interactive}})
 
 (def event-schema {})
 
