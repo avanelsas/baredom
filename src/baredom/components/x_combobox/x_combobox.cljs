@@ -3,6 +3,7 @@
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
    [baredom.utils.forms :as forms]
+   [baremirror.core :as mirror]
    [goog.object :as gobj]
    [baredom.components.x-combobox.model :as model]))
 
@@ -109,7 +110,6 @@
 (def ^:private key-home       "Home")
 (def ^:private key-end        "End")
 
-(def ^:private opt-id-prefix "x-cb-opt-")
 (def ^:private listbox-id-prefix "x-cb-lb-")
 
 (def ^:private chevron-svg
@@ -407,60 +407,60 @@
     :error-raw         (du/get-attr el model/attr-error)}))
 
 ;; ── Panel rendering ────────────────────────────────────────────────────────
-(defn- append-option!
-  [^js panel-el ^js div idx active-idx value highlight label]
-  (du/set-attr! div attr-part       part-option)
-  (du/set-attr! div attr-role       val-option)
-  (du/set-attr! div attr-id         (str opt-id-prefix idx))
-  (du/set-attr! div attr-data-value value)
-  (when (= idx active-idx)
-    (du/set-attr! div attr-data-active ""))
-  (if highlight
-    (do
-      (.appendChild div (.createTextNode js/document (:before highlight)))
-      (let [^js b (.createElement js/document "b")]
-        (set! (.-textContent b) (:match highlight))
-        (.appendChild div b))
-      (.appendChild div (.createTextNode js/document (:after highlight))))
-    (set! (.-textContent div) label))
-  (.appendChild panel-el div))
-
-(defn- render-empty! [^js panel-el ^js input-el]
+(defn- make-empty-msg! []
   (let [^js msg (.createElement js/document "div")]
     (du/set-attr! msg attr-part part-empty-msg)
-    (set! (.-textContent msg) model/empty-message)
-    (.appendChild panel-el msg)
-    (du/remove-attr! input-el attr-aria-activedescendant)))
+    msg))
 
-(defn- render-option-list! [^js panel-el ^js input-el visible active-idx selected-value]
-  (doseq [[idx opt] (map-indexed vector visible)]
-    (let [^js div    (.createElement js/document "div")
-          highlight  (model/highlight-match (:label opt) (or (du/getv panel-el "_query") ""))]
-      (append-option! panel-el div idx active-idx (:value opt) highlight (:label opt))
-      (when (= (:value opt) selected-value)
-        (du/set-attr! div attr-aria-selected val-true))))
-  (if (>= active-idx 0)
-    (du/set-attr! input-el attr-aria-activedescendant (str opt-id-prefix active-idx))
-    (du/remove-attr! input-el attr-aria-activedescendant)))
+(defn- make-option!
+  "The node of an option: its label as text, a bold match and text, with no values."
+  []
+  (let [^js div (.createElement js/document "div")]
+    (du/set-attr! div attr-part part-option)
+    (du/set-attr! div attr-role val-option)
+    (.append div "" (.createElement js/document "b") "")
+    div))
 
-(defn- render-panel! [^js el]
+(defn- make-panel-item!
+  "The node of a panel item: its fixed structure. `apply-panel-item!` gives it its values."
+  [item-key]
+  (if (= item-key model/empty-key)
+    (make-empty-msg!)
+    (make-option!)))
+
+(defn- apply-option! [^js div {:keys [id value active selected before match after]}]
+  (du/set-attr-to! div attr-id id)
+  (du/set-attr-to! div attr-data-value value)
+  (du/set-attr-to! div attr-data-active active)
+  (du/set-attr-to! div attr-aria-selected selected)
+  (du/set-text-to! (.-firstChild div) before)
+  (du/set-text-to! (.-firstElementChild div) match)
+  (du/set-text-to! (.-lastChild div) after))
+
+(defn- apply-panel-item!
+  "Writes what `item` shows onto its node in `nodes`."
+  [nodes {item-key :key :keys [text] :as item}]
+  (let [^js node (nodes item-key)]
+    (if (= item-key model/empty-key)
+      (du/set-text-to! node text)
+      (apply-option! node item))))
+
+(defn- render-panel!
+  "Brings the panel to the options that match the query. An option that stays keeps its node."
+  [^js el]
   (when-let [refs (du/getv el k-refs)]
     (let [^js panel-el (gobj/get refs rk-panel)
           ^js input-el (gobj/get refs rk-input)
-          options      (du/getv el k-options)
-          query        (or (du/getv el k-query) "")
-          visible      (model/filter-options options query)
-          raw-idx      (or (du/getv el k-active-idx) 0)
-          active-idx   (if (empty? visible) -1 (min raw-idx (dec (count visible))))
-          value        (or (du/get-attr el model/attr-value) "")]
-      (set! (.-textContent panel-el) "")
-      ;; Stash the query on the panel for append-option!'s highlight lookup.
-      (du/setv! panel-el "_query" query)
-      (if (empty? visible)
-        (render-empty!       panel-el input-el)
-        (render-option-list! panel-el input-el visible active-idx value)))))
+          {:keys [items active-id]}
+          (model/shown-panel (du/getv el k-options)
+                             (or (du/getv el k-query) "")
+                             (or (du/getv el k-active-idx) 0)
+                             (or (du/get-attr el model/attr-value) ""))
+          nodes (mirror/sync! {:panel {:parent panel-el}} {:panel (mapv :key items)}
+                              make-panel-item!)]
+      (run! (partial apply-panel-item! nodes) items)
+      (du/set-attr-to! input-el attr-aria-activedescendant active-id))))
 
-;; ── DOM patching ───────────────────────────────────────────────────────────
 (defn- apply-input-state! [^js input-el {:keys [placeholder disabled? open?]}]
   (set! (.-placeholder input-el) placeholder)
   (set! (.-disabled input-el)    disabled?)
