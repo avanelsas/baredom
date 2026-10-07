@@ -2,14 +2,14 @@
   "DOM + lifecycle layer for x-code — a code-display component.
 
    The component is stateless: DOM = f(attributes, properties). Source code is
-   read from the element's light-DOM textContent (or the `code` property /
-   attribute), tokenized by the pure model layer, and rendered escaped into
+   read from the `code` attribute or else the element's light-DOM textContent,
+   tokenized by the pure model layer, and rendered escaped into
    the shadow `<code>`. A MutationObserver re-renders when the light-DOM text
    changes. The expand/collapse state lives in the observed `expanded`
    attribute, so it too is a value, never a mutable field.
 
-   Instance fields hold only the refs map, the cached model, the
-   MutationObserver, and the `code` property override."
+   Instance fields hold only the refs map, the cached model and the
+   MutationObserver."
   (:require
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
@@ -22,7 +22,6 @@
 (def ^:private k-refs     "__xCodeRefs")
 (def ^:private k-model    "__xCodeModel")
 (def ^:private k-observer "__xCodeObserver")
-(def ^:private k-code-val "__xCodeCodeValue")
 
 ;; ── Refs-object keys (set on the JS refs map) ────────────────────────────────
 (def ^:private rk-filename  "filename")
@@ -355,14 +354,9 @@
 
 ;; ── Code resolution ──────────────────────────────────────────────────────────
 (defn- resolve-code
-  "Resolve the raw code string. The `code` property override wins, then the
-   `code` attribute, then the element's light-DOM textContent."
+  "The raw code of `el`: its `code` attribute, or else its light-DOM textContent."
   [^js el]
-  (let [cv (du/getv el k-code-val)]
-    (cond
-      (string? cv)                      cv
-      (du/has-attr? el model/attr-code) (or (du/get-attr el model/attr-code) "")
-      :else                             (or (.-textContent el) ""))))
+  (or (du/get-attr el model/attr-code) (.-textContent el) ""))
 
 ;; ── Attribute reader ─────────────────────────────────────────────────────────
 (defn- read-model
@@ -558,9 +552,7 @@
   (du/define-bool-prop!   proto "expanded"    model/attr-expanded)
   (du/define-number-prop! proto "maxLines"    model/attr-max-lines   0)
 
-  ;; code — property-only override stored in an instance field. The getter
-  ;; reports the effective code (override / attribute / textContent); the
-  ;; setter triggers a re-render.
+  ;; code — the getter reports the effective code (attribute / textContent).
   (.defineProperty
    js/Object proto "code"
    #js {:configurable true
@@ -568,10 +560,9 @@
         :get (fn [] (this-as ^js this (resolve-code this)))
         :set (fn [v]
                (this-as ^js this
-                 (if (string? v)
-                   (du/setv! this k-code-val v)
-                   (du/setv! this k-code-val js/undefined))
-                 (update-from-attrs! this)))})
+                 (if (some? v)
+                   (du/set-attr! this model/attr-code (str v))
+                   (du/remove-attr! this model/attr-code))))})
 
   ;; expand() / collapse() — drive the observed `expanded` attribute, the
   ;; same path the expander button click takes.

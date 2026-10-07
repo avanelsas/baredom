@@ -69,8 +69,7 @@
    :wrap        {:type 'boolean :reflects-attribute attr-wrap}
    :maxLines    {:type 'number  :reflects-attribute attr-max-lines    :default 0}
    :expanded    {:type 'boolean :reflects-attribute attr-expanded}
-   :code        {:type 'string  :reflects-attribute nil
-                  :note "property-only override; falls back to light-DOM textContent"}})
+   :code        {:type 'string  :reflects-attribute attr-code}})
 
 (def event-schema
   {event-copy   {:cancelable false :detail {:code 'string}}
@@ -288,7 +287,7 @@
   "Normalise raw inputs into the render-ready view-model.
 
    Input keys:
-     :code-raw       string | nil   (already resolved from property/attr/text)
+     :code-raw       string | nil   (already resolved from attr/text)
      :language-raw   string | nil
      :filename-raw   string | nil
      :show-copy?     boolean

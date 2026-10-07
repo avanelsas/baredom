@@ -12512,7 +12512,11 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "code"
+        "name" : "code",
+        "fieldName" : "code",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "x-code-copy",
