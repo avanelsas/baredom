@@ -13,10 +13,11 @@
 (def attr-debounce     "debounce")
 
 ;; Event name constants
-(def event-input  "x-search-field-input")
-(def event-change "x-search-field-change")
-(def event-search "x-search-field-search")
-(def event-clear  "x-search-field-clear")
+(def event-change-request "x-search-field-change-request")
+(def event-input          "x-search-field-input")
+(def event-change         "x-search-field-change")
+(def event-search         "x-search-field-search")
+(def event-clear          "x-search-field-clear")
 
 (def observed-attributes
   #js [attr-name
@@ -60,10 +61,11 @@
    :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
-  {event-input  {:cancelable false :detail {:name 'string :value 'string}}
-   event-change {:cancelable false :detail {:name 'string :value 'string}}
-   event-search {:cancelable true  :detail {:name 'string :value 'string}}
-   event-clear  {:cancelable false :detail {:name 'string}}})
+  {event-change-request {:cancelable true  :detail {:name 'string :value 'string :previousValue 'string}}
+   event-input          {:cancelable false :detail {:name 'string :value 'string}}
+   event-change         {:cancelable false :detail {:name 'string :value 'string}}
+   event-search         {:cancelable true  :detail {:name 'string :value 'string}}
+   event-clear          {:cancelable false :detail {:name 'string}}})
 
 (defn normalize
   "Derives a complete view-model map from raw attribute values."

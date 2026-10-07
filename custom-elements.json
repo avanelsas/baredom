@@ -956,6 +956,16 @@
         }
       } ],
       "events" : [ {
+        "name" : "x-search-field-change-request",
+        "type" : {
+          "text" : "CustomEvent<{ name: string; value: string; previousValue: string }>"
+        },
+        "detail" : {
+          "name" : "string",
+          "value" : "string",
+          "previousValue" : "string"
+        }
+      }, {
         "name" : "x-search-field-input",
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string }>"

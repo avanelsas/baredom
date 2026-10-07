@@ -6,7 +6,7 @@
 (x/init!)
 
 (defn cleanup-dom! []
-  (doseq [^js node (.querySelectorAll js/document model/tag-name)]
+  (doseq [^js node (.querySelectorAll js/document (str model/tag-name ", form"))]
     (.remove node)))
 
 (use-fixtures :each {:before cleanup-dom! :after cleanup-dom!})
@@ -323,6 +323,147 @@
         "checkValidity must be a function on the instance")
     (is (fn? (.-reportValidity el))
         "reportValidity must be a function on the instance")))
+
+;; ---------------------------------------------------------------------------
+;; The change request
+;; ---------------------------------------------------------------------------
+
+(defn- enter-text!
+  "Puts `text` in the input of `el` and sends a native input event."
+  [^js el text]
+  (let [input-el (shadow-part el "[part=input]")]
+    (set! (.-value input-el) text)
+    (.dispatchEvent input-el (js/Event. "input" #js {:bubbles true}))))
+
+(defn- click-clear! [^js el]
+  (.click (shadow-part el "[part=clear]")))
+
+(defn- heard!
+  "An atom that collects the detail of each `event-name` event on `el`, as data."
+  [^js el event-name]
+  (let [details (atom [])]
+    (.addEventListener el event-name (fn [^js e] (swap! details conj (js->clj (.-detail e)))))
+    details))
+
+(defn- refuse! [^js e] (.preventDefault e))
+
+(defn- field-in-form!
+  "A field named q in a form in the document, with `attrs` as its attributes."
+  [attrs]
+  (let [form (.createElement js/document "form")
+        el   (make-el)]
+    (.setAttribute el model/attr-name "q")
+    (doseq [[attr-name value] attrs] (.setAttribute el attr-name value))
+    (.appendChild form el)
+    (append! form)
+    el))
+
+(defn- shown-and-submitted
+  "The text in the input of `el` and the value its form submits."
+  [^js el]
+  [(.-value (shadow-part el "[part=input]"))
+   (.get (js/FormData. (.-form el)) "q")])
+
+(deftest typing-sends-a-change-request-with-the-new-and-the-previous-value
+  (let [el       (field-in-form! {model/attr-value "old"})
+        requests (heard! el model/event-change-request)]
+    (enter-text! el "new")
+    (is (= [{"name" "q" "value" "new" "previousValue" "old"}] @requests))))
+
+(deftest the-change-request-is-cancelable-bubbles-and-is-composed
+  (let [el      (field-in-form! {})
+        request (atom nil)]
+    (.addEventListener el model/event-change-request (fn [^js e] (reset! request e)))
+    (enter-text! el "new")
+    (is (= [true true true]
+           (when-let [^js e @request] [(.-cancelable e) (.-bubbles e) (.-composed e)])))))
+
+(deftest the-change-request-comes-before-the-input-event
+  (let [el    (field-in-form! {})
+        order (atom [])]
+    (.addEventListener el model/event-change-request (fn [_] (swap! order conj :request)))
+    (.addEventListener el model/event-input (fn [_] (swap! order conj :input)))
+    (enter-text! el "new")
+    (is (= [:request :input] @order))))
+
+(deftest an-accepted-change-request-sets-the-form-value
+  (let [el (field-in-form! {model/attr-value "old"})]
+    (enter-text! el "new")
+    (is (= ["new" "new"] (shown-and-submitted el)))))
+
+(defn- write-capitals! [^js e]
+  (.setAttribute (.-currentTarget e) model/attr-value "NEW"))
+
+(deftest the-input-event-carries-a-value-that-a-listener-wrote-during-the-request
+  (let [el     (field-in-form! {})
+        inputs (heard! el model/event-input)]
+    (.addEventListener el model/event-change-request write-capitals!)
+    (enter-text! el "new")
+    (is (= [{"name" "q" "value" "NEW"}] @inputs))))
+
+(deftest a-refused-change-request-sends-no-input-event
+  (let [el     (field-in-form! {model/attr-value "old"})
+        inputs (heard! el model/event-input)]
+    (.addEventListener el model/event-change-request refuse!)
+    (enter-text! el "new")
+    (is (empty? @inputs))))
+
+(deftest a-refused-change-request-puts-the-input-and-the-form-value-back-to-the-attribute
+  (let [el (field-in-form! {model/attr-value "old"})]
+    (enter-text! el "accepted")
+    (.addEventListener el model/event-change-request refuse!)
+    (enter-text! el "refused")
+    (is (= ["old" "old"] (shown-and-submitted el)))))
+
+(deftest a-refused-change-request-makes-a-required-field-with-no-value-invalid
+  (let [el (field-in-form! {model/attr-required ""})]
+    (enter-text! el "accepted")
+    (.addEventListener el model/event-change-request refuse!)
+    (enter-text! el "refused")
+    (is (.-valueMissing (.-validity el)))))
+
+(deftest a-refused-change-request-hides-the-clear-button-of-a-field-with-no-value
+  (let [el (field-in-form! {})]
+    (enter-text! el "accepted")
+    (.addEventListener el model/event-change-request refuse!)
+    (enter-text! el "refused")
+    (is (.contains (.-classList (shadow-part el "[part=clear]")) "clear-hidden"))))
+
+(deftest a-pending-input-event-after-a-refused-change-request-carries-the-attribute
+  (async done
+    (let [el     (field-in-form! {model/attr-value "old" model/attr-debounce "20"})
+          inputs (heard! el model/event-input)]
+      (enter-text! el "accepted")
+      (.addEventListener el model/event-change-request refuse!)
+      (enter-text! el "refused")
+      (js/setTimeout
+       (fn []
+         (is (= [{"name" "q" "value" "old"}] @inputs))
+         (done))
+       80))))
+
+(deftest the-clear-button-sends-a-change-request-with-an-empty-value
+  (let [el       (field-in-form! {model/attr-value "old"})
+        requests (heard! el model/event-change-request)]
+    (click-clear! el)
+    (is (= [{"name" "q" "value" "" "previousValue" "old"}] @requests))))
+
+(deftest an-accepted-clear-empties-the-input-and-the-form-value
+  (let [el     (field-in-form! {})
+        clears (heard! el model/event-clear)]
+    (enter-text! el "text")
+    (click-clear! el)
+    (is (= ["" ""] (shown-and-submitted el)))
+    (is (= [{"name" "q"}] @clears))))
+
+(deftest a-refused-clear-keeps-the-text-and-sends-no-clear-event
+  (let [el     (field-in-form! {})
+        clears (heard! el model/event-clear)]
+    (enter-text! el "text")
+    (.addEventListener el model/event-change-request refuse!)
+    (click-clear! el)
+    (is (= ["text" "text"] (shown-and-submitted el)))
+    (is (empty? @clears))))
 
 ;; ---------------------------------------------------------------------------
 ;; A write of the value attribute and typed text

@@ -189,6 +189,30 @@
       (.setValidity internals #js {:valueMissing true} "Please fill in this field." input-el)
       (.setValidity internals #js {} "" input-el))))
 
+(defn- sync-form! [^js el ^js input-el]
+  (when-let [^js internals (du/getv el k-internals)]
+    (.setFormValue internals (.-value input-el))
+    (sync-validity! el internals input-el)))
+
+(defn- sync-field! [^js el ^js refs]
+  (let [^js input-el (gobj/get refs "input")]
+    (sync-form! el input-el)
+    (toggle-clear-visibility! input-el (gobj/get refs "clear") el)))
+
+(defn- show-value! [^js el ^js refs value]
+  (set! (.-value (gobj/get refs "input")) value)
+  (sync-field! el refs))
+
+(defn- committed-value [^js el]
+  (or (du/get-attr el model/attr-value) ""))
+
+(defn- field-name [^js el]
+  (or (du/get-attr el model/attr-name) ""))
+
+(defn- change-allowed! [^js el name value]
+  (du/dispatch-cancelable! el model/event-change-request
+                           #js {:name name :value value :previousValue (committed-value el)}))
+
 ;; ---------------------------------------------------------------------------
 ;; Render
 ;; ---------------------------------------------------------------------------
@@ -265,24 +289,19 @@
   (fn [^js _evt]
     (when-let [refs (du/getv el k-refs)]
       (let [^js input-el (gobj/get refs "input")
-            ^js clear-el (gobj/get refs "clear")
-            value        (.-value input-el)
-            name         (or (du/get-attr el model/attr-name) "")]
-        (when-let [^js internals (du/getv el k-internals)]
-          (.setFormValue internals value)
-          (sync-validity! el internals input-el))
-        (toggle-clear-visibility! input-el clear-el el)
-        (schedule-input-dispatch! el name value)))))
+            name         (field-name el)]
+        (if (change-allowed! el name (.-value input-el))
+          (do (sync-field! el refs)
+              (schedule-input-dispatch! el name (.-value input-el)))
+          (show-value! el refs (committed-value el)))))))
 
 (defn- make-change-handler [^js el]
   (fn [^js _evt]
     (when-let [refs (du/getv el k-refs)]
       (let [^js input-el (gobj/get refs "input")
             value        (.-value input-el)
-            name         (or (du/get-attr el model/attr-name) "")]
-        (when-let [^js internals (du/getv el k-internals)]
-          (.setFormValue internals value)
-          (sync-validity! el internals input-el))
+            name         (field-name el)]
+        (sync-form! el input-el)
         (du/dispatch! el model/event-change #js {:name name :value value})))))
 
 (defn- make-keydown-handler [^js el]
@@ -292,7 +311,7 @@
       (when-let [refs (du/getv el k-refs)]
         (let [^js input-el (gobj/get refs "input")
               value        (.-value input-el)
-              name         (or (du/get-attr el model/attr-name) "")]
+              name         (field-name el)]
           (if (and (du/has-attr? el model/attr-required) (= value ""))
             (when-let [^js internals (du/getv el k-internals)]
               (.reportValidity internals))
@@ -302,16 +321,12 @@
   (fn [^js _evt]
     (when-let [refs (du/getv el k-refs)]
       (let [^js input-el (gobj/get refs "input")
-            ^js clear-el (gobj/get refs "clear")
-            name         (or (du/get-attr el model/attr-name) "")]
-        (set! (.-value input-el) "")
-        (clear-pending-debounce! el)
-        (when-let [^js internals (du/getv el k-internals)]
-          (.setFormValue internals "")
-          (sync-validity! el internals input-el))
-        (toggle-clear-visibility! input-el clear-el el)
-        (du/dispatch! el model/event-clear #js {:name name})
-        (.focus input-el)))))
+            name         (field-name el)]
+        (when (change-allowed! el name "")
+          (show-value! el refs "")
+          (clear-pending-debounce! el)
+          (du/dispatch! el model/event-clear #js {:name name})
+          (.focus input-el))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Listener management

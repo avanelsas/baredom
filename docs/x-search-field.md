@@ -40,12 +40,17 @@ Reading `value` returns the live `input.value` (not the attribute). Setting `val
 
 ## Events
 
-| Event                    | Bubbles | Composed | Cancelable | Detail               |
-|--------------------------|---------|----------|------------|----------------------|
-| `x-search-field-input`   | yes     | yes      | no         | `{name, value}`      |
-| `x-search-field-change`  | yes     | yes      | no         | `{name, value}`      |
-| `x-search-field-search`  | yes     | yes      | **yes**    | `{name, value}`      |
-| `x-search-field-clear`   | yes     | yes      | no         | `{name}`             |
+| Event                           | Bubbles | Composed | Cancelable | Detail                         |
+|---------------------------------|---------|----------|------------|--------------------------------|
+| `x-search-field-change-request` | yes     | yes      | yes        | `{name, value, previousValue}` |
+| `x-search-field-input`          | yes     | yes      | no         | `{name, value}`                |
+| `x-search-field-change`         | yes     | yes      | no         | `{name, value}`                |
+| `x-search-field-search`         | yes     | yes      | yes        | `{name, value}`                |
+| `x-search-field-clear`          | yes     | yes      | no         | `{name}`                       |
+
+`x-search-field-change-request` fires on every keystroke, before the form value changes and before `x-search-field-input`. Call `preventDefault()` to refuse the change. The input, the form value and the validity then go back to the `value` attribute. `previousValue` is the `value` attribute. An application that refuses requests writes each value it accepts to `value`.
+
+The clear button sends the same request with an empty `value`. A refused request leaves the text as it is, and `x-search-field-clear` does not fire.
 
 `x-search-field-search` is dispatched when the user presses Enter. It is cancelable but does **not** auto-submit a parent form.
 
@@ -55,7 +60,7 @@ Set the `debounce` attribute (or `.debounce` property) to a positive millisecond
 
 Only the **outward** `x-search-field-input` event is delayed. Local UI feedback (the clear button, form value, and validity) stays synchronous with each keystroke, so the field never feels laggy. The coalesced event carries the field's **final** value. A pending debounced dispatch is cancelled when the field is cleared, the parent form is reset, or the element is disconnected — so a stale event never lands after the value is gone.
 
-`x-search-field-change` (blur), `x-search-field-search` (Enter), and `x-search-field-clear` are never debounced.
+`x-search-field-change` (blur), `x-search-field-search` (Enter), and `x-search-field-clear` are never debounced. `x-search-field-change-request` is never debounced. A refused request does not cancel a pending dispatch, which then carries the value of the `value` attribute.
 
 ```html
 <!-- Fire x-search-field-input at most once per 300ms of quiet typing -->

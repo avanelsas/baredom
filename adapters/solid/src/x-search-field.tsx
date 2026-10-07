@@ -15,6 +15,7 @@ export interface XSearchFieldProps {
   label?: string;
   autocomplete?: string;
   required?: boolean;
+  onChangeRequest?: (e: CustomEvent<{ name: string; value: string; previousValue: string }>) => void;
   onInput?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onChange?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onSearch?: (e: CustomEvent<{ name: string; value: string }>) => void;
@@ -28,7 +29,7 @@ export interface XSearchFieldProps {
 }
 
 export function XSearchField(props: XSearchFieldProps): JSX.Element {
-  const [local, others] = splitProps(props, ["onInput", "onChange", "onSearch", "onClear", "ref", "children"]);
+  const [local, others] = splitProps(props, ["onChangeRequest", "onInput", "onChange", "onSearch", "onClear", "ref", "children"]);
   let el!: XSearchFieldElement;
 
   const setRef = (r: XSearchFieldElement) => {
@@ -38,6 +39,11 @@ export function XSearchField(props: XSearchFieldProps): JSX.Element {
 
   onMount(() => {
     if (!el) return;
+    {
+      const handler = (e: Event) => local.onChangeRequest?.(e as CustomEvent<{ name: string; value: string; previousValue: string }>);
+      el.addEventListener("x-search-field-change-request", handler);
+      onCleanup(() => el.removeEventListener("x-search-field-change-request", handler));
+    }
     {
       const handler = (e: Event) => local.onInput?.(e as CustomEvent<{ name: string; value: string }>);
       el.addEventListener("x-search-field-input", handler);
