@@ -74,6 +74,11 @@ jobs:
       - name: Check the event details the manifest publishes
         run: bb scripts/check_event_api.bb
 
+      - name: Check the token coverage doc is current
+        run: |
+          bb scripts/audit_tokens.bb doc
+          git diff --exit-code docs/TOKEN-COVERAGE.md || (echo "docs/TOKEN-COVERAGE.md is out of date. Run: bb scripts/audit_tokens.bb doc" && exit 1)
+
       - name: Build ESM library
         run: npm run build
 

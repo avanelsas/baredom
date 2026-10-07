@@ -8,6 +8,7 @@
 ;;
 ;; Usage: bb scripts/audit_tokens.bb summary    the kinds of value, per family
 ;;        bb scripts/audit_tokens.bb literals   every literal value, by family
+;;        bb scripts/audit_tokens.bb doc        write docs/TOKEN-COVERAGE.md
 
 (load-file "scripts/metadata.bb")
 (require '[edamame.core :as edamame])
@@ -65,6 +66,8 @@
   "The definitions of the shared DOM utilities, which a style text may name."
   (definitions {} (forms-of (io/file "src/baredom/utils/dom.cljs"))))
 
+(def ^:private rule #"\{[^{}]*:[^{}]*\}")
+
 (defn- model-file? [^java.io.File file]
   (= "model.cljs" (.getName file)))
 
@@ -78,9 +81,9 @@
         own   (apply dissoc
                      (definitions model (mapcat forms-of (remove model-file? files)))
                      (keys shared))]
-    {:texts  (filter #(re-find #"\{[^{}]*:[^{}]*\}" %) (distinct (vals own)))
+    {:texts  (filter #(re-find rule %) (distinct (vals own)))
      :unread (sort (for [[sym text] own
-                         :when (and (re-find #"\{[^{}]*:[^{}]*\}" text) (str/includes? text unread))]
+                         :when (and (re-find rule text) (str/includes? text unread))]
                      (name sym)))}))
 
 ;; ── declarations ────────────────────────────────────────────────────────────
@@ -97,7 +100,8 @@
 (def ^:private families
   "The token families of x-theme and the CSS properties each one answers for."
   (array-map
-   "color"        #"^(color|background|background-color|border-color|outline-color|fill|stroke|caret-color)$"
+   "color"        (re-pattern (str "^(color|background|background-color|border-color"
+                                   "|outline-color|fill|stroke|caret-color)$"))
    "font-family"  #"^font-family$"
    "font-size"    #"^font-size$"
    "font-weight"  #"^font-weight$"
@@ -111,7 +115,8 @@
 
 (def ^:private structural
   "Values that state structure and no design default, so no theme answers for them."
-  #"(?i)^(0|0px|none|inherit|initial|unset|auto|normal|transparent|currentcolor|100%|50%|1|-1|[0-9]|infinite)\s*(!important)?$")
+  (re-pattern (str "(?i)^(0|0px|none|inherit|initial|unset|auto|normal|transparent|currentcolor"
+                   "|100%|50%|1|-1|[0-9]|infinite)\\s*(!important)?$")))
 
 (defn- family-of [prop]
   (some (fn [[family re]] (when (re-find re prop) family)) families))
@@ -140,14 +145,16 @@
   [value]
   (re-seq #"(?:[^\s()]+|\((?:[^()]|\([^()]*\))*\))+" value))
 
+(def ^:private width-part #"^(\d|\.\d|thin|medium|thick|var\(--x-[a-z0-9-]*width)")
+(def ^:private colour-part #"(?i)^(#|rgb|hsl|var\(|currentcolor|transparent)")
+
 (defn- longhand
   "The declarations a border or an outline shorthand stands for: its width and its colour."
   [[prop value]]
   (if (re-find shorthand prop)
     (let [ps     (parts value)
-          width  (first (filter #(re-find #"^(\d|\.\d|thin|medium|thick|var\(--x-[a-z0-9-]*width)" %) ps))
-          colour (first (filter #(re-find #"^(#|rgb|hsl|var\(|currentcolor|transparent)" (str/lower-case %))
-                                (remove #{width} ps)))]
+          width  (first (filter #(re-find width-part %) ps))
+          colour (first (filter #(re-find colour-part %) (remove #{width} ps)))]
       (cond-> []
         (and width (str/starts-with? prop "border")) (conj ["border-width" width])
         colour                                       (conj ["border-color" colour])
@@ -241,22 +248,33 @@
 
 (def ^:private kinds [:token :own-token :own-literal :literal :structural :unread])
 
-(defn- summary [rows]
-  (println (format "%-13s %6s %9s %11s %7s %10s %6s   %s"
-                   "family" "token" "own-token" "own-literal" "literal" "structural" "unread"
-                   "components with a literal"))
-  (doseq [family (keys families)
-          :let [in-family (filter #(= family (:family %)) rows)
-                counts    (frequencies (map :kind in-family))
-                open      (count (distinct (map :tag (filter #(#{:literal :own-literal} (:kind %))
-                                                             in-family))))]]
-    (println (apply format "%-13s %6d %9d %11d %7d %10d %6d   %d"
-                    family (concat (map #(get counts % 0) kinds) [open])))))
+(def ^:private themed
+  "The kinds of value that follow the theme."
+  #{:token :own-token})
 
-(defn- literals [rows]
-  (doseq [[family in-family] (group-by :family (filter #(#{:literal :own-literal} (:kind %)) rows))]
+(def ^:private open
+  "The kinds of value that do not follow the theme and could."
+  #{:own-literal :literal})
+
+(defn- in-family [family rows]
+  (filter #(= family (:family %)) rows))
+
+(defn- summary [components]
+  (let [rows (mapcat :rows components)]
+    (println (format "%-13s %6s %9s %11s %7s %10s %6s   %s"
+                     "family" "token" "own-token" "own-literal" "literal" "structural" "unread"
+                     "components with an open value"))
+    (doseq [family (keys families)
+            :let [found  (in-family family rows)
+                  counts (frequencies (map :kind found))
+                  tags   (distinct (map :tag (filter (comp open :kind) found)))]]
+      (println (apply format "%-13s %6d %9d %11d %7d %10d %6d   %d"
+                      family (concat (map #(get counts % 0) kinds) [(count tags)]))))))
+
+(defn- literals [components]
+  (doseq [[family found] (group-by :family (filter (comp open :kind) (mapcat :rows components)))]
     (println (str "\n" family))
-    (doseq [[value n] (sort-by (comp - val) (frequencies (map :value in-family)))]
+    (doseq [[value n] (sort-by (comp - val) (frequencies (map :value found)))]
       (println (format "  %4d  %s" n value)))))
 
 (defn- not-read
@@ -266,13 +284,61 @@
         :when (or (not read?) (seq unread))]
     (str tag (when (seq unread) (str " (" (str/join ", " unread) ")")))))
 
+(def ^:private doc-file "docs/TOKEN-COVERAGE.md")
+
+(def ^:private intro
+  ["# Token coverage"
+   ""
+   "Generated by `bb scripts/audit_tokens.bb doc`. Do not edit."
+   ""
+   "Each cell says how many values of that family follow a token of `x-theme`, out of all the"
+   "values of that family in the component's CSS. A value follows the theme when it is a token,"
+   "or the component's own property whose default is a token. Structural values such as `0`,"
+   "`none` and `inherit` are not counted. An empty cell means the component has no value of"
+   "that family."
+   ""])
+
+(defn- cell
+  "How many of `rows` follow the theme, as `themed/all`, or nothing when there are none."
+  [rows]
+  (let [found (filter (some-fn themed open) (map :kind rows))]
+    (if (seq found)
+      (str (count (filter themed found)) "/" (count found))
+      "")))
+
+(defn- table-row [label rows]
+  (str "| " (str/join " | " (cons label (map #(cell (in-family % rows)) (keys families)))) " |"))
+
+(defn- coverage-doc
+  "The coverage of every component as a Markdown document."
+  [components]
+  (let [missing (not-read components)]
+    (str/join
+     "\n"
+     (concat
+      intro
+      [(str "| " (str/join " | " (cons "Component" (keys families))) " |")
+       (str "| " (str/join " | " (repeat (inc (count families)) "---")) " |")]
+      (for [{:keys [tag rows]} (sort-by :tag components)]
+        (table-row (str "`" tag "`") rows))
+      [(table-row "**All**" (mapcat :rows components))
+       ""
+       (str "CSS not read, or not in full: " (if (seq missing) (str/join ", " missing) "none") ".")
+       ""]))))
+
+(defn- write-doc! [components]
+  (spit doc-file (coverage-doc components))
+  (println "Wrote" doc-file))
+
 (let [components (map audited (remove #(= "x-theme" (:tag-name %)) (discover-models)))
       rows       (mapcat :rows components)
-      report     (get {"summary" summary "literals" literals} (first *command-line-args*))]
+      missing    (not-read components)
+      report     (get {"summary" summary "literals" literals "doc" write-doc!}
+                      (first *command-line-args*))]
   (when-not report
-    (println "Usage: bb scripts/audit_tokens.bb summary|literals")
+    (println "Usage: bb scripts/audit_tokens.bb summary|literals|doc")
     (System/exit 1))
-  (report rows)
+  (report components)
   (println (format "\n%d values in %d components. Not read, or not in full: %s"
                    (count rows) (count (distinct (map :tag rows)))
-                   (if-let [names (seq (not-read components))] (str/join ", " names) "none"))))
+                   (if (seq missing) (str/join ", " missing) "none"))))
