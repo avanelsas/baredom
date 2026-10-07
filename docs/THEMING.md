@@ -10,6 +10,8 @@ All components must consume the shared design tokens defined by `x-theme` (`src/
 --x-foo-bg: #ffffff;
 ```
 
+[`TOKEN-COVERAGE.md`](TOKEN-COVERAGE.md) shows, for each component, how many values of each token family follow the theme. It is generated: run `bb scripts/audit_tokens.bb doc` after a change to a component's CSS. CI fails when it is out of date.
+
 ## Token Catalogue
 
 ### Colors

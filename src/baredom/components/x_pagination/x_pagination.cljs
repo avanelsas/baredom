@@ -32,6 +32,7 @@
    "--x-pagination-disabled-opacity:0.4;"
    "--x-pagination-font-size:var(--x-font-size-sm,0.875rem);"
    "--x-pagination-ellipsis-color:rgba(0,0,0,0.45);}"
+   du/control-font-rule
    du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"

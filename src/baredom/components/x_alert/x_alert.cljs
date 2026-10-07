@@ -91,6 +91,7 @@
    "--x-alert-bg:transparent;"
    "--x-alert-border-color:transparent;"
    "--x-alert-color:inherit;}"
+   du/control-font-rule
    du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"

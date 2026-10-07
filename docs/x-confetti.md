@@ -115,7 +115,7 @@ x-confetti {
 |-------------------------|---------|--------------------------------------------------|
 | `--x-confetti-z-index`  | `9999`  | Stacking context for `mode="overlay"`.           |
 
-Confetti color comes from the `colors` attribute (or its default theme palette: `--x-color-primary`, `--x-color-accent`, `--x-color-success`, `--x-color-warning`, `--x-color-info`).
+Confetti color comes from the `colors` attribute (or its default palette: `--x-color-primary`, `--x-color-success` and `--x-color-warning` from the theme, and a fixed violet `#8b5cf6` and sky blue `#0ea5e9`).
 
 ## Examples
 

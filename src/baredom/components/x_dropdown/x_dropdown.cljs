@@ -43,6 +43,7 @@
    "--x-dropdown-transition-duration:var(--x-transition-duration,150ms);"
    "--x-dropdown-transition-easing:var(--x-transition-easing,ease);"
    "}"
+   du/control-font-rule
    du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"

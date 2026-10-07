@@ -145,7 +145,7 @@
    "user-select:none;}"
 
    "[part=handle]:focus-visible{"
-   "outline:2px solid var(--x-color-focus,#3b82f6);"
+   "outline:2px solid var(--x-color-focus-ring,#3b82f6);"
    "outline-offset:-2px;}"
 
    "[part=grip]{"

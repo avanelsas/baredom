@@ -85,6 +85,14 @@
 (def ^:private css-busy-bg        "--x-drop-zone-busy-bg")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
+(def ^:private primary-tint
+  (str "color-mix(in srgb,var(--x-color-primary,#3b82f6) 8%,"
+       "var(--x-color-surface,#fafafa))"))
+
+(def ^:private danger-tint
+  (str "color-mix(in srgb,var(--x-color-danger,#dc2626) 8%,"
+       "var(--x-color-surface,#fafafa))"))
+
 (def ^:private style-text
   (str
    ":host{display:block;box-sizing:border-box;}"
@@ -108,20 +116,20 @@
    "transition:background .16s ease,border-color .16s ease;}"
 
    ":host([data-drag-state=over]) [part=zone]{"
-   "background:var(" css-over-bg ",var(--x-color-accent-soft,#eef4ff));"
-   "border-color:var(" css-over-border ",var(--x-color-accent,#3b82f6));}"
+   "background:var(" css-over-bg "," primary-tint ");"
+   "border-color:var(" css-over-border ",var(--x-color-primary,#3b82f6));}"
 
    ":host([data-drag-state=reject]) [part=zone]{"
-   "background:var(" css-reject-bg ",var(--x-color-danger-soft,#fdeeee));"
+   "background:var(" css-reject-bg "," danger-tint ");"
    "border-color:var(" css-reject-border ",var(--x-color-danger,#dc2626));}"
 
    ":host([pending]) [part=zone]{"
-   "background:var(" css-busy-bg ",var(--x-color-accent-soft,#eef4ff));}"
+   "background:var(" css-busy-bg "," primary-tint ");}"
 
    "[part=caret]{"
    "position:absolute;"
    "border-radius:999px;"
-   "background:var(" css-caret-color ",var(--x-color-accent,#3b82f6));"
+   "background:var(" css-caret-color ",var(--x-color-primary,#3b82f6));"
    "pointer-events:none;}"
 
    "[part=caret][hidden]{display:none;}"

@@ -77,6 +77,7 @@
    "--x-select-shadow:var(--x-shadow-sm,0 1px 2px rgba(15,23,42,0.06));"
    "--x-select-transition-duration:var(--x-transition-duration,140ms);"
    "}"
+   du/control-font-rule
    du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"

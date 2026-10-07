@@ -78,6 +78,7 @@
    "--x-form-field-hint-color:var(--x-color-text-muted,#6b7280);"
    "--x-form-field-disabled-opacity:0.45;"
    "}"
+   du/control-font-rule
    du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"

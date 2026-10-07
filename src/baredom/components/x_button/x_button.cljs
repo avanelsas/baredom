@@ -141,6 +141,7 @@
    "--x-button-transition-duration:var(--x-transition-duration,140ms);"
    "--x-button-transition-easing:var(--x-transition-easing,cubic-bezier(0.2,0,0,1));"
    "}"
+   du/control-font-rule
    du/hidden-rule
    "@media (prefers-color-scheme: dark){"
    ":host{"

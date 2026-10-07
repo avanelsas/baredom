@@ -61,10 +61,10 @@
 ;; Used when the `colors` attribute is empty or invalid.
 (def default-palette
   ["var(--x-color-primary,#2563eb)"
-   "var(--x-color-accent,#8b5cf6)"
+   "#8b5cf6"
    "var(--x-color-success,#16a34a)"
    "var(--x-color-warning,#f59e0b)"
-   "var(--x-color-info,#0ea5e9)"])
+   "#0ea5e9"])
 
 ;; ── Property API (Tier 0) ────────────────────────────────────────────────────
 (def property-api

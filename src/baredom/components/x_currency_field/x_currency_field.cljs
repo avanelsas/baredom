@@ -87,6 +87,7 @@
    "--x-currency-field-error-color:var(--x-color-danger,#dc2626);"
    "--x-currency-field-disabled-opacity:0.45;"
    "}"
+   du/control-font-rule
    du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"

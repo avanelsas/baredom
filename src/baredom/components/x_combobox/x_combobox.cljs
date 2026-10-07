@@ -163,6 +163,7 @@
    "--x-combobox-transition-duration:var(--x-transition-duration,150ms);"
    "--x-combobox-transition-easing:var(--x-transition-easing,ease);"
    "}"
+   du/control-font-rule
    du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"

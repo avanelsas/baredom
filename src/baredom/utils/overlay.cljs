@@ -33,7 +33,8 @@
 
 (defn make-layer!
   "Create a fixed-position layer with its own shadow DOM inside the overlay root.
-   style-text is the CSS for the layer's shadow root. Returns the layer element."
+   style-text is the CSS for the layer's shadow root, after the rule that gives a
+   native control the font family of the layer. Returns the layer element."
   [^js trigger-el style-text z-index]
   (let [^js overlay (ensure-overlay-root! trigger-el)
         ^js layer   (.createElement js/document "div")
@@ -45,7 +46,7 @@
     (set! (.. layer -style -pointerEvents) "none")
     (set! (.. layer -style -zIndex) (str z-index))
 
-    (set! (.-textContent style) style-text)
+    (set! (.-textContent style) (str du/control-font-rule style-text))
     (.appendChild shadow style)
 
     (.appendChild overlay layer)

@@ -65,6 +65,9 @@ jobs:
       - name: Check that every component hides under hidden
         run: bb scripts/check_hidden_rule.bb
 
+      - name: Check that native controls take the font of the page
+        run: bb scripts/check_control_font.bb
+
       - name: Check the css api the manifest publishes
         run: bb scripts/check_css_api.bb
 
@@ -73,6 +76,11 @@ jobs:
 
       - name: Check the event details the manifest publishes
         run: bb scripts/check_event_api.bb
+
+      - name: Check the token coverage doc is current
+        run: |
+          bb scripts/audit_tokens.bb doc
+          git diff --exit-code docs/TOKEN-COVERAGE.md || (echo "docs/TOKEN-COVERAGE.md is out of date. Run: bb scripts/audit_tokens.bb doc" && exit 1)
 
       - name: Build ESM library
         run: npm run build

@@ -40,6 +40,7 @@
    "--x-stepper-label-current-color:var(--x-color-text,rgba(0,0,0,0.85));"
    "--x-stepper-label-upcoming-color:var(--x-color-text-muted,rgba(0,0,0,0.4));"
    "--x-stepper-desc-color:var(--x-color-text-muted,rgba(0,0,0,0.4));}"
+   du/control-font-rule
    du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
