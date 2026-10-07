@@ -150,21 +150,62 @@
                   ", and does not install it")
     nil))
 
-(defn- untyped
-  "The published attributes of a component that no property reflects."
-  [{:keys [attributes properties string-defs]}]
-  (let [reflected (into #{}
-                        (keep #(some-> (:reflects-attribute %) (resolve-sym string-defs)))
-                        (vals properties))]
-    (remove reflected attributes)))
+(defn- aria? [attr-name]
+  (str/starts-with? attr-name "aria-"))
 
-(let [models (discover-models)
-      links  (mapcat links models)
-      found  (concat (mapcat problems models)
-                     (mapcat name-problems models)
-                     (keep link-problem links))
-      total  (reduce + (map (comp count :attributes) models))
-      how    (frequencies (map :how links))]
+(defn- declared-attributes
+  "A map from each attribute of a component to the type and the field name its model gives it.
+   A reflecting property gives both. An `aria-` attribute is text. Any other has neither."
+  [{:keys [attributes properties string-defs]}]
+  (let [reflected (into {}
+                        (keep (fn [[k {:keys [type reflects-attribute]}]]
+                                (when reflects-attribute
+                                  [(resolve-sym reflects-attribute string-defs)
+                                   {:type (cljs-type->ts type) :field (name k)}])))
+                        properties)]
+    (into {}
+          (map (fn [attr] [attr (or (reflected attr) (when (aria? attr) {:type "string"}) {})]))
+          attributes)))
+
+(defn- manifest-attributes
+  "A map from each tag to its attributes as the manifest on disk publishes them."
+  []
+  (into {}
+        (for [m (:modules (json/parse-string (slurp "custom-elements.json") true))
+              d (:declarations m)
+              :when (:tagName d)]
+          [(:tagName d)
+           (into {}
+                 (map (fn [a] [(:name a) (cond-> {}
+                                           (:type a)      (assoc :type (get-in a [:type :text]))
+                                           (:fieldName a) (assoc :field (:fieldName a)))]))
+                 (:attributes d))])))
+
+(defn- manifest-problems
+  "Where the manifest gives an attribute another type or field name than its model."
+  [{:keys [tag-name] :as model} manifest]
+  (let [declared  (declared-attributes model)
+        published (get manifest tag-name)]
+    (for [attr (sort (set (concat (keys declared) (keys published))))
+          :let  [d (get declared attr) p (get published attr)]
+          :when (not= d p)]
+      (str tag-name " declares " attr " as " (pr-str d)
+           " and the manifest publishes " (pr-str p)))))
+
+(defn- untyped
+  "The attributes of a component to which its model gives no type."
+  [model]
+  (keep (fn [[attr {:keys [type]}]] (when-not type attr)) (declared-attributes model)))
+
+(let [models   (discover-models)
+      links    (mapcat links models)
+      manifest (manifest-attributes)
+      found    (concat (mapcat problems models)
+                       (mapcat name-problems models)
+                       (keep link-problem links)
+                       (mapcat #(manifest-problems % manifest) models))
+      total    (reduce + (map (comp count :attributes) models))
+      how      (frequencies (map :how links))]
   (if (seq found)
     (do (doseq [p found] (println "  " p))
         (println (count found) "problems")
@@ -173,5 +214,5 @@
                          total (count models)))
         (println (format "%d reflect a property: %d by data, %d by an install call, %d in a hand-written block"
                          (count links) (:data how 0) (:call how 0) (:block how 0)))
-        (println (format "%d attributes have no property that reflects them"
+        (println (format "%d attributes have no type"
                          (count (mapcat untyped models)))))))

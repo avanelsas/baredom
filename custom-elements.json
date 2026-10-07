@@ -278,9 +278,15 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "aria-label"
+        "name" : "aria-label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-describedby"
+        "name" : "aria-describedby",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ ],
       "slots" : [ {
@@ -412,7 +418,10 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "aria-label"
+        "name" : "aria-label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "name" : "picker",
         "fieldName" : "picker",
@@ -1293,9 +1302,15 @@
           "text" : "string"
         }
       }, {
-        "name" : "aria-label"
+        "name" : "aria-label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-describedby"
+        "name" : "aria-describedby",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "name" : "open",
         "fieldName" : "open",
@@ -1659,11 +1674,20 @@
           "text" : "string"
         }
       }, {
-        "name" : "aria-label"
+        "name" : "aria-label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-labelledby"
+        "name" : "aria-labelledby",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-describedby"
+        "name" : "aria-describedby",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "x-range-slider-change-request",
@@ -2402,11 +2426,20 @@
           "text" : "string"
         }
       }, {
-        "name" : "aria-label"
+        "name" : "aria-label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-describedby"
+        "name" : "aria-describedby",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-labelledby"
+        "name" : "aria-labelledby",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "x-switch-change-request",
@@ -5600,9 +5633,15 @@
           "text" : "string"
         }
       }, {
-        "name" : "aria-label"
+        "name" : "aria-label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-describedby"
+        "name" : "aria-describedby",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ ],
       "slots" : [ {
@@ -6218,7 +6257,10 @@
       }, {
         "name" : "role"
       }, {
-        "name" : "aria-label"
+        "name" : "aria-label",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ ],
       "slots" : [ {
@@ -14985,11 +15027,20 @@
           "text" : "string"
         }
       }, {
-        "name" : "aria-label"
+        "name" : "aria-label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-labelledby"
+        "name" : "aria-labelledby",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-describedby"
+        "name" : "aria-describedby",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "x-rating-change-request",
@@ -16725,7 +16776,10 @@
           "text" : "string"
         }
       }, {
-        "name" : "aria-label"
+        "name" : "aria-label",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "x-carousel-change",
@@ -18549,9 +18603,15 @@
       }, {
         "name" : "preserve-aria-current"
       }, {
-        "name" : "aria-label"
+        "name" : "aria-label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-describedby"
+        "name" : "aria-describedby",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ ],
       "slots" : [ {
@@ -18747,11 +18807,20 @@
           "text" : "string"
         }
       }, {
-        "name" : "aria-label"
+        "name" : "aria-label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-describedby"
+        "name" : "aria-describedby",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-labelledby"
+        "name" : "aria-labelledby",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "x-checkbox-change-request",
@@ -19259,11 +19328,20 @@
           "text" : "string"
         }
       }, {
-        "name" : "aria-label"
+        "name" : "aria-label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-describedby"
+        "name" : "aria-describedby",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-labelledby"
+        "name" : "aria-labelledby",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "x-radio-change-request",
@@ -21267,11 +21345,20 @@
           "text" : "string"
         }
       }, {
-        "name" : "aria-label"
+        "name" : "aria-label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-labelledby"
+        "name" : "aria-labelledby",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "aria-describedby"
+        "name" : "aria-describedby",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "x-slider-change-request",
