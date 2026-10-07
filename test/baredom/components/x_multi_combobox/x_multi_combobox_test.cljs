@@ -416,3 +416,48 @@
          (.removeAttribute el model/attr-disabled)
          (is (false? (.hasAttribute apple "disabled"))))
        (done)))))
+
+;; ── Options keep their nodes ─────────────────────────────────────────────────
+(defn- option-nodes [^js el]
+  (vec (array-seq (.querySelectorAll (shadow-part el "[part=panel]") "[part=option]"))))
+
+(defn- option-values [^js el]
+  (mapv (fn [^js node] (.getAttribute node "data-value")) (option-nodes el)))
+
+(defn- type! [^js el text]
+  (let [^js input (shadow-part el "[part=input]")]
+    (set! (.-value input) text)
+    (.dispatchEvent input (js/Event. "input" #js {:bubbles true}))))
+
+(deftest an-option-that-still-matches-keeps-its-node-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (js/setTimeout
+       (fn []
+         (.setAttribute el model/attr-open "")
+         (let [[apple banana cherry] (option-nodes el)]
+           (is (= 5 (count (option-nodes el))))
+           (type! el "an")
+           (is (= [banana] (option-nodes el)) "the one that matches is the same node")
+           (is (= "an" (.-textContent (.querySelector banana "b"))) "the match is shown in bold")
+           (is (not (.-isConnected apple)) "an option that no longer matches is gone")
+           (type! el "")
+           (is (identical? banana (nth (option-nodes el) 1)) "it stays when the query is cleared")
+           (is (not (.-isConnected cherry)) "an option that left is a new node when it returns")
+           (is (= "cherry" (.getAttribute (nth (option-nodes el) 2) "data-value"))))
+         (done))
+       50))))
+
+(deftest a-selected-option-leaves-the-panel-and-the-others-keep-their-nodes-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (js/setTimeout
+       (fn []
+         (.setAttribute el model/attr-open "")
+         (let [before (option-nodes el)]
+           (.setAttribute el model/attr-value "apple")
+           (is (= ["banana" "cherry" "date" "elderberry"] (option-values el)))
+           (is (= (subvec before 1) (option-nodes el)) "the four that stay are the same nodes"))
+         (done))
+       50))))
+

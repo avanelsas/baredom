@@ -1,5 +1,6 @@
 (ns baredom.components.x-combobox.model
-  (:require [clojure.string :as str]))
+  (:require [baredom.utils.model :as mu]
+            [clojure.string :as str]))
 
 (def tag-name "x-combobox")
 
@@ -131,6 +132,40 @@
           {:before (.substring label 0 idx)
            :match  (.substring label idx end)
            :after  (.substring label end)})))))
+
+;; ── Shown panel ──────────────────────────────────────────────────────────────
+(def empty-key "empty")
+
+(def ^:private option-id-prefix "x-cb-opt-")
+
+(defn- shown-option
+  "What the option at `position` among the visible ones shows."
+  [query active-idx selected-value position {option-key :key :keys [value label]}]
+  (let [{:keys [before match after]} (or (highlight-match label query)
+                                         {:before label :match "" :after ""})]
+    {:key      option-key
+     :id       (str option-id-prefix position)
+     :value    value
+     :active   (when (= position active-idx) "")
+     :selected (when (= value selected-value) "true")
+     :before   before
+     :match    match
+     :after    after}))
+
+(defn shown-panel
+  "What the panel shows: `:items`, each with its key and the text of what it shows, and
+   `:active-id`, the id of the active option or nil. With no option that matches `query`, the
+   one item is the empty message. The key of an option is made of its value, so an option
+   keeps its key while the query changes."
+  [options query wanted-active-idx selected-value]
+  (let [visible    (filter-options (mu/with-unique-keys :value options) query)
+        active-idx (min wanted-active-idx (dec (count visible)))]
+    (if (empty? visible)
+      {:items [{:key empty-key :text empty-message}] :active-id nil}
+      {:items     (into []
+                        (map-indexed (partial shown-option query active-idx selected-value))
+                        visible)
+       :active-id (when (>= active-idx 0) (str option-id-prefix active-idx))})))
 
 (def method-api
   {:show {:args [] :returns 'void}

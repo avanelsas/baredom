@@ -100,3 +100,31 @@
   (testing "close-on-escape can be disabled"
     (let [m (model/normalize {:close-on-escape-raw "false"})]
       (is (= false (:close-on-escape? m))))))
+
+;; ── shown-list ──────────────────────────────────────────────────────────────
+(def ^:private commands
+  (model/normalize-items
+   #js [#js {:id "new"  :label "New file"  :group "File"}
+        #js {:id "open" :label "Open file" :group "File"}
+        #js {:id "copy" :label "Copy"      :group "Edit" :disabled true}
+        #js {:id "help" :label "Help"}]))
+
+(deftest shown-list-gives-the-headers-and-the-items-in-order-test
+  (let [{:keys [entries active-id]} (model/shown-list commands "" 1)]
+    (is (= ["group-new|0" "item-new|0" "item-open|0" "group-copy|0" "item-copy|0" "item-help|0"]
+           (mapv :key entries)))
+    (is (= {:key "group-new|0" :text "File"} (first entries)))
+    (is (= {:key "item-open|0" :id "x-cp-item-1" :data-id "open" :position "1" :text "Open file"
+            :aria-disabled nil :aria-selected "true"}
+           (nth entries 2)))
+    (is (= "true" (:aria-disabled (nth entries 4))))
+    (is (= "x-cp-item-1" active-id))))
+
+(deftest shown-list-keeps-the-key-of-an-item-while-the-query-changes-test
+  (let [{:keys [entries]} (model/shown-list commands "copy" 0)]
+    (is (= ["group-copy|0" "item-copy|0"] (mapv :key entries)) "the key is made of the id")
+    (is (= "0" (:position (second entries))) "the position is among the visible ones")))
+
+(deftest shown-list-of-no-match-is-empty-test
+  (is (= {:entries [] :active-id nil} (model/shown-list commands "zzz" 0))))
+

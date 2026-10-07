@@ -158,3 +158,31 @@
       (is (= "Apple" (model/chip-label options "apple"))))
     (testing "a value with no option shows itself"
       (is (= "kiwi" (model/chip-label options "kiwi"))))))
+
+;; ── shown-panel ──────────────────────────────────────────────────────────
+(def ^:private fruits
+  [{:value "apple" :label "Apple"} {:value "banana" :label "Banana"}
+   {:value "cherry" :label "Cherry"}])
+
+(deftest shown-panel-gives-each-option-what-it-shows-test
+  (let [{:keys [items active-id]} (model/shown-panel fruits "" 1 {:value #{} :max nil})]
+    (is (= ["apple|0" "banana|0" "cherry|0"] (mapv :key items)))
+    (is (= {:key "banana|0" :id "x-mcb-opt-1" :value "banana" :active "" :disabled nil
+            :aria-disabled nil :before "Banana" :match "" :after ""}
+           (nth items 1)))
+    (is (= "x-mcb-opt-1" active-id))))
+
+(deftest shown-panel-leaves-out-a-selected-option-and-keeps-the-keys-test
+  (let [{:keys [items]} (model/shown-panel fruits "" 0 {:value #{"apple"} :max nil})]
+    (is (= ["banana|0" "cherry|0"] (mapv :key items)) "the key is made of the value")
+    (is (= ["x-mcb-opt-0" "x-mcb-opt-1"] (mapv :id items)))))
+
+(deftest shown-panel-disables-every-option-at-the-maximum-test
+  (let [{:keys [items]} (model/shown-panel fruits "" 0 {:value #{"apple"} :max 1})]
+    (is (= [{:disabled "" :aria-disabled "true"} {:disabled "" :aria-disabled "true"}]
+           (mapv #(select-keys % [:disabled :aria-disabled]) items)))))
+
+(deftest shown-panel-shows-the-empty-message-when-nothing-is-left-test
+  (is (= {:items [{:key model/empty-key :text model/empty-message}] :active-id nil}
+         (model/shown-panel fruits "zzz" 0 {:value #{} :max nil}))))
+

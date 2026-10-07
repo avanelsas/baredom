@@ -495,3 +495,48 @@
     (is (true? (.. el -validity -customError))
         "error attribute drives customError")
     (is (= "Required" (.-validationMessage el)))))
+
+;; ── Options keep their nodes ─────────────────────────────────────────────────
+(defn- option-nodes [^js el]
+  (vec (array-seq (.querySelectorAll (shadow-part el "[part=panel]") "[data-value]"))))
+
+(defn- type! [^js el text]
+  (let [^js input (shadow-part el "[part=input]")]
+    (set! (.-value input) text)
+    (.dispatchEvent input (js/Event. "input" #js {:bubbles true}))))
+
+(deftest an-option-that-still-matches-keeps-its-node-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (js/setTimeout
+       (fn []
+         (.show el)
+         (let [[us uk nl de] (option-nodes el)]
+           (type! el "united")
+           (is (= [us uk] (option-nodes el)) "the two that match are the same nodes")
+           (is (= "United" (.-textContent (.querySelector us "b"))) "the match is shown in bold")
+           (is (not (.-isConnected nl)) "an option that no longer matches is gone")
+           (type! el "")
+           (is (= [us uk] (subvec (option-nodes el) 0 2)) "they stay when the query is cleared")
+           (is (= 4 (count (option-nodes el))))
+           (is (= "United States" (.-textContent us)))
+           (is (not (.-isConnected de)) "an option that left is a new node when it returns")
+           (is (= "de" (.getAttribute (nth (option-nodes el) 3) "data-value"))))
+         (done))
+       50))))
+
+(deftest the-empty-message-replaces-the-options-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (js/setTimeout
+       (fn []
+         (.show el)
+         (type! el "zzz")
+         (is (= 0 (count (option-nodes el))))
+         (is (= model/empty-message (.-textContent (shadow-part el "[part=empty-msg]"))))
+         (type! el "ger")
+         (is (nil? (shadow-part el "[part=empty-msg]")))
+         (is (= ["de"] (mapv (fn [^js node] (.getAttribute node "data-value")) (option-nodes el))))
+         (done))
+       50))))
+

@@ -158,6 +158,34 @@
     (< bytes 1073741824) (str (.toFixed (/ bytes 1048576) 1) " MB")
     :else                (str (.toFixed (/ bytes 1073741824) 1) " GB")))
 
+;; ── Shown files ──────────────────────────────────────────────────────────────
+(defn- file-signature
+  "The name, the size and the time of the File `file`, as one text."
+  [^js file]
+  (str (.-name file) "|" (.-size file) "|" (.-lastModified file)))
+
+(defn- shown-file
+  "What the row of `file` at `index` shows, as text."
+  [index ^js file file-key]
+  {:key          file-key
+   :index        (str index)
+   :name         (.-name file)
+   :size         (format-file-size (.-size file))
+   :remove-label (str "Remove " (.-name file))})
+
+(defn shown-files
+  "What each row of the file list shows for the Files in `files`, in order. The key of a row is
+   made of the signature of its file, so a row keeps its key while its file stays in the list."
+  [files]
+  (mapv shown-file (range) files (mu/unique-keys (map file-signature files))))
+
+(defn selection-message
+  "The text that announces a selection of `n` files, or no text for none."
+  [n]
+  (if (zero? n)
+    ""
+    (str n " file" (when (not= n 1) "s") " selected")))
+
 (def method-api
   {:checkValidity  {:args [] :returns 'boolean}
    :reportValidity {:args [] :returns 'boolean}})

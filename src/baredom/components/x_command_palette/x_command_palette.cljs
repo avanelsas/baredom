@@ -2,6 +2,7 @@
   (:require
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
+   [baremirror.core :as mirror]
    [goog.object :as gobj]
    [baredom.components.x-command-palette.model :as model]))
 
@@ -80,7 +81,6 @@
 (def ^:private val-search-glyph "🔍")
 
 (def ^:private list-id      "x-cp-list")
-(def ^:private item-id-pref "x-cp-item-")
 
 (def ^:private ev-click   "click")
 (def ^:private ev-input   "input")
@@ -289,59 +289,57 @@
   (or (du/getv el k-refs) (make-shadow! el)))
 
 ;; ── Item rendering ─────────────────────────────────────────────────────────
-(defn- append-group-header! [^js list-el group]
+(defn- make-group-header! []
   (let [^js header (.createElement js/document "div")]
     (du/set-attr! header attr-part        part-group-header)
     (du/set-attr! header attr-aria-hidden val-true)
-    (set! (.-textContent header) group)
-    (.appendChild list-el header)))
+    header))
 
-(defn- append-item! [^js list-el idx item active-idx]
+(defn- make-item! []
   (let [^js div (.createElement js/document "div")]
     (du/set-attr! div attr-part     part-item)
     (du/set-attr! div attr-role     val-option)
-    (du/set-attr! div attr-id       (str item-id-pref idx))
-    (du/set-attr! div attr-data-id  (str (:id item)))
-    (du/set-attr! div attr-data-idx (str idx))
     (du/set-attr! div attr-tabindex "-1")
-    (when (:disabled? item)
-      (du/set-attr! div attr-aria-disabled val-true))
-    (set! (.-textContent div) (:label item))
-    (when (= idx active-idx)
-      (du/set-attr! div attr-aria-selected val-true))
-    (.appendChild list-el div)))
+    div))
 
-(defn- render-empty! [^js empty-el ^js input-el]
-  (du/remove-attr! empty-el attr-hidden)
-  (when input-el (du/remove-attr! input-el attr-aria-activedescendant)))
+(defn- make-entry!
+  "The node of a list entry: its fixed structure. `apply-entry!` gives it its values."
+  [entry-key]
+  (if (model/header-key? entry-key)
+    (make-group-header!)
+    (make-item!)))
 
-(defn- render-item-list! [^js empty-el ^js list-el ^js input-el visible active-idx]
-  (du/set-attr! empty-el attr-hidden "")
-  (loop [remaining (map-indexed vector visible)
-         last-group nil]
-    (when-let [[idx item] (first remaining)]
-      (let [g (:group item)]
-        (when (and g (not= g last-group))
-          (append-group-header! list-el g))
-        (append-item! list-el idx item active-idx)
-        (recur (rest remaining) (or g last-group)))))
-  (when input-el
-    (du/set-attr! input-el attr-aria-activedescendant (str item-id-pref active-idx))))
+(defn- apply-item! [^js div {:keys [id data-id position aria-disabled aria-selected]}]
+  (du/set-attr-to! div attr-id            id)
+  (du/set-attr-to! div attr-data-id       data-id)
+  (du/set-attr-to! div attr-data-idx      position)
+  (du/set-attr-to! div attr-aria-disabled aria-disabled)
+  (du/set-attr-to! div attr-aria-selected aria-selected))
 
-(defn- render-items! [^js el]
+(defn- apply-entry!
+  "Writes what `entry` shows onto its node in `nodes`."
+  [nodes {entry-key :key :keys [text] :as entry}]
+  (let [^js node (nodes entry-key)]
+    (du/set-text-to! node text)
+    (when-not (model/header-key? entry-key)
+      (apply-item! node entry))))
+
+(defn- render-items!
+  "Brings the list to the items that match the query. An item that stays keeps its node."
+  [^js el]
   (when-let [refs (du/getv el k-refs)]
     (let [^js list-el  (gobj/get refs rk-list)
           ^js empty-el (gobj/get refs rk-empty)
           ^js input-el (gobj/get refs rk-input)
-          items-js     (du/getv el k-items)
-          query        (or (du/getv el k-query) "")
-          items        (model/normalize-items items-js)
-          {:keys [visible]} (model/filter-items items query)
-          active-idx   (or (du/getv el k-active-idx) 0)]
-      (set! (.-textContent list-el) "")
-      (if (empty? visible)
-        (render-empty! empty-el input-el)
-        (render-item-list! empty-el list-el input-el visible active-idx)))))
+          {:keys [entries active-id]}
+          (model/shown-list (model/normalize-items (du/getv el k-items))
+                            (or (du/getv el k-query) "")
+                            (or (du/getv el k-active-idx) 0))
+          nodes (mirror/sync! {:list {:parent list-el}} {:list (mapv :key entries)} make-entry!)]
+      (run! (partial apply-entry! nodes) entries)
+      (du/set-attr-to! empty-el attr-hidden (when (seq entries) ""))
+      (when input-el
+        (du/set-attr-to! input-el attr-aria-activedescendant active-id)))))
 
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ────────
 (defn- apply-panel-aria! [^js panel {:keys [label]}]

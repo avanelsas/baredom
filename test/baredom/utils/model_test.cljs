@@ -111,3 +111,18 @@
   (is (= "" (model/sanitize-url "javascript:alert(1)")))
   (is (= "" (model/sanitize-url "JAVASCRIPT:void(0)")))
   (is (= "" (model/sanitize-url "vbscript:MsgBox"))))
+
+;; ── unique-keys ─────────────────────────────────────────────────────────────
+
+(deftest unique-keys-gives-equal-identities-different-keys-test
+  (is (= ["a|0" "b|0" "a|1" "a|2"] (model/unique-keys ["a" "b" "a" "a"])))
+  (is (= [] (model/unique-keys []))))
+
+(deftest unique-keys-keeps-the-key-of-an-identity-when-others-leave-test
+  (is (= (second (model/unique-keys ["a" "b"]))
+         (first (model/unique-keys ["b"])))))
+
+(deftest with-unique-keys-gives-each-item-a-key-from-its-identity-test
+  (is (= [{:id "x" :key "x|0"} {:id "y" :key "y|0"} {:id "x" :key "x|1"}]
+         (model/with-unique-keys :id [{:id "x"} {:id "y"} {:id "x"}]))))
+

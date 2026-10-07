@@ -3,7 +3,9 @@
             [baredom.utils.forms :as forms]
             [goog.object :as gobj]
             [baredom.components.x-file-upload.model :as model]
-            [baredom.utils.dom :as du]))
+            [baredom.utils.dom :as du]
+            [baremirror.core :as mirror]
+            [baremirror.plan :as plan]))
 
 ;; ---------------------------------------------------------------------------
 ;; Instance field keys
@@ -303,73 +305,86 @@
         (apply-model! el new-m)))))
 
 ;; ---------------------------------------------------------------------------
-;; Blob URL management
-;; ---------------------------------------------------------------------------
-(defn- revoke-thumbnails! [^js file-list-el]
-  (let [^js thumbs (.querySelectorAll file-list-el "[part=thumbnail]")]
-    (doseq [^js img (array-seq thumbs)]
-      (js/URL.revokeObjectURL (.-src img)))))
-
-;; ---------------------------------------------------------------------------
-;; Forward declarations
-;; ---------------------------------------------------------------------------
-(declare remove-file!)
-
-;; ---------------------------------------------------------------------------
 ;; File list rendering
 ;; ---------------------------------------------------------------------------
+(defn- revoke-thumbnail!
+  "Gives back the blob URL of the thumbnail of the file row `item`, when it has one."
+  [^js item]
+  (when-some [^js img (.querySelector item "[part=thumbnail]")]
+    (js/URL.revokeObjectURL (.-src img))))
+
+(defn- make-thumbnail! [^js file]
+  (let [^js img (.createElement js/document "img")]
+    (du/set-attr! img "part" "thumbnail")
+    (set! (.-src img) (js/URL.createObjectURL file))
+    (du/set-attr! img "alt" (.-name file))
+    img))
+
+(defn- make-remove-button! []
+  (let [^js remove-el (.createElement js/document "button")]
+    (du/set-attr! remove-el "part" "remove")
+    (du/set-attr! remove-el "type" "button")
+    (set! (.-textContent remove-el) "\u00d7")
+    remove-el))
+
+(defn- make-file-text!
+  "The spans of a file row for its name and its size."
+  []
+  (let [^js name-el (.createElement js/document "span")
+        ^js size-el (.createElement js/document "span")]
+    (du/set-attr! name-el "part" "file-name")
+    (du/set-attr! size-el "part" "file-size")
+    [name-el size-el]))
+
+(defn- make-file-item!
+  "The node of a file row: its fixed structure. An image file gets a thumbnail, whose blob URL
+   is made here and lives as long as the node."
+  [files-by-key file-key]
+  (let [^js item          (.createElement js/document "div")
+        ^js file          (files-by-key file-key)
+        [name-el size-el] (make-file-text!)]
+    (du/set-attr! item "part" "file-item")
+    (du/set-attr! item "role" "listitem")
+    (when (model/file-is-image? file)
+      (.appendChild item (make-thumbnail! file)))
+    (.append item name-el size-el (make-remove-button!))
+    item))
+
+(defn- file-part [^js item part]
+  (.querySelector item (str "[part=" part "]")))
+
+(defn- apply-file-item!
+  "Writes what the file row `shown` shows onto its node in `nodes`."
+  [nodes {file-key :key :keys [index name size remove-label]}]
+  (let [^js item   (nodes file-key)
+        ^js remove (file-part item "remove")]
+    (du/set-text-to! (file-part item "file-name") name)
+    (du/set-text-to! (file-part item "file-size") size)
+    (du/set-attr-to! remove "aria-label" remove-label)
+    (du/set-attr-to! remove "data-index" index)))
+
+(defn- render-file-rows!
+  "Brings the rows of `file-list` to what `shown` gives for `files`. A row that stays keeps its
+   node and its thumbnail, and a row that leaves gives the blob URL of its thumbnail back."
+  [^js file-list files shown]
+  (let [reading (mirror/read-places {:files {:parent file-list}})
+        steps   (plan/plan (:places reading) {:files (mapv :key shown)})
+        make    (partial make-file-item! (zipmap (map :key shown) files))]
+    (run! (comp revoke-thumbnail! (:nodes reading)) (:remove steps))
+    (run! (partial apply-file-item! (mirror/perform! reading steps make)) shown)))
+
 (defn- render-file-list! [^js el]
   (when-let [refs (du/getv el k-refs)]
-    (let [^js file-list  (gobj/get refs "fileList")
-          ^js live-region (gobj/get refs "liveRegion")
-          ^js files      (du/getv el k-files)
-          n              (.-length files)]
+    (let [files (array-seq (du/getv el k-files))
+          shown (model/shown-files files)]
+      (render-file-rows! (gobj/get refs "fileList") files shown)
+      (du/set-text-to! (gobj/get refs "liveRegion") (model/selection-message (count shown))))))
 
-      ;; Clean up old blob URLs
-      (revoke-thumbnails! file-list)
-      (set! (.-textContent file-list) "")
-
-      ;; Render each file
-      (dotimes [i n]
-        (let [^js file (aget files i)
-              ^js item (.createElement js/document "div")
-              ^js name-el (.createElement js/document "span")
-              ^js size-el (.createElement js/document "span")
-              ^js remove-el (.createElement js/document "button")
-              fname (.-name file)]
-
-          (du/set-attr! item "part" "file-item")
-          (du/set-attr! item "role" "listitem")
-
-          ;; Thumbnail for images
-          (when (model/file-is-image? file)
-            (let [^js img (.createElement js/document "img")]
-              (du/set-attr! img "part" "thumbnail")
-              (set! (.-src img) (js/URL.createObjectURL file))
-              (du/set-attr! img "alt" fname)
-              (.appendChild item img)))
-
-          (du/set-attr! name-el "part" "file-name")
-          (set! (.-textContent name-el) fname)
-
-          (du/set-attr! size-el "part" "file-size")
-          (set! (.-textContent size-el) (model/format-file-size (.-size file)))
-
-          (du/set-attr! remove-el "part"       "remove")
-          (du/set-attr! remove-el "type"       "button")
-          (du/set-attr! remove-el "aria-label" (str "Remove " fname))
-          (du/set-attr! remove-el "data-index" (str i))
-          (set! (.-textContent remove-el) "\u00d7")
-
-          (.appendChild item name-el)
-          (.appendChild item size-el)
-          (.appendChild item remove-el)
-          (.appendChild file-list item)))
-
-      ;; Live region announcement
-      (set! (.-textContent live-region)
-            (if (zero? n) ""
-                (str n " file" (when (not= n 1) "s") " selected"))))))
+(defn- clear-file-rows!
+  "Takes every file row out, so no blob URL outlives the element in the document."
+  [^js el]
+  (when-let [refs (du/getv el k-refs)]
+    (render-file-rows! (gobj/get refs "fileList") [] [])))
 
 ;; ---------------------------------------------------------------------------
 ;; Form integration
@@ -559,13 +574,12 @@
   (du/setv! el k-handlers (make-handlers el))
   (add-listeners! el)
   (update-from-attrs! el)
+  (render-file-list! el)
   (sync-validity! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el)
-  ;; Revoke any blob URLs
-  (when-let [refs (du/getv el k-refs)]
-    (revoke-thumbnails! (gobj/get refs "fileList"))))
+  (clear-file-rows! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
@@ -581,8 +595,6 @@
 (defn- form-reset! [^js el]
   (let [^js files (du/getv el k-files)]
     (set! (.-length files) 0))
-  (when-let [refs (du/getv el k-refs)]
-    (revoke-thumbnails! (gobj/get refs "fileList")))
   (render-file-list! el)
   (sync-form-value! el)
   (sync-validity! el))

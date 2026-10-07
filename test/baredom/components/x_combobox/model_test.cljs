@@ -127,3 +127,33 @@
 
 (deftest highlight-match-empty-query-test
   (is (nil? (model/highlight-match "United States" ""))))
+
+;; ── shown-panel ─────────────────────────────────────────────────────────────
+(def ^:private countries
+  [{:value "us" :label "United States"} {:value "uk" :label "United Kingdom"}
+   {:value "nl" :label "Netherlands"}])
+
+(deftest shown-panel-gives-each-option-what-it-shows-test
+  (let [{:keys [items active-id]} (model/shown-panel countries "" 1 "nl")]
+    (is (= ["us|0" "uk|0" "nl|0"] (mapv :key items)))
+    (is (= {:key "uk|0" :id "x-cb-opt-1" :value "uk" :active "" :selected nil
+            :before "United Kingdom" :match "" :after ""}
+           (nth items 1)))
+    (is (= "true" (:selected (nth items 2))))
+    (is (= "x-cb-opt-1" active-id))))
+
+(deftest shown-panel-keeps-the-key-of-an-option-while-the-query-changes-test
+  (let [{:keys [items active-id]} (model/shown-panel countries "nether" 0 "")]
+    (is (= ["nl|0"] (mapv :key items)) "the key is made of the value")
+    (is (= "x-cb-opt-0" (:id (first items))) "the id is the position among the visible ones")
+    (is (= {:before "" :match "Nether" :after "lands"}
+           (select-keys (first items) [:before :match :after])))
+    (is (= "x-cb-opt-0" active-id))))
+
+(deftest shown-panel-clamps-the-active-option-test
+  (is (= "x-cb-opt-2" (:active-id (model/shown-panel countries "" 9 "")))))
+
+(deftest shown-panel-shows-the-empty-message-when-nothing-matches-test
+  (is (= {:items [{:key model/empty-key :text model/empty-message}] :active-id nil}
+         (model/shown-panel countries "zzz" 0 ""))))
+
