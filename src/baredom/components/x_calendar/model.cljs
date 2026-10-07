@@ -4,7 +4,8 @@
    the canonical model holds only value-comparable data (strings, keywords,
    numbers, sets) so the render change-guard can compare it with `not=`.
    UTC date math lives in baredom.utils.dates."
-  (:require [baredom.utils.dates :as dates]))
+  (:require [baredom.utils.dates :as dates]
+            [clojure.string :as str]))
 
 (def tag-name "x-calendar")
 
@@ -242,3 +243,82 @@
                                 (dates/in-range? cell sd ed)))
      :range-edge? (boolean (and (= mode :range)
                                 (or (= cell-iso start) (= cell-iso end))))}))
+
+;; ── Shown grid ───────────────────────────────────────────────────────────────
+(def ^:private week-key-prefix "week-")
+
+(defn week-key?
+  "True when `cell-key` is the key of a week number cell."
+  [cell-key]
+  (str/starts-with? cell-key week-key-prefix))
+
+(defn- row-thursday
+  "The Thursday Date in a 7-cell calendar row. ISO week numbers are
+   Monday-anchored, so numbering a row from its Thursday is correct for any
+   `first-day-of-week` — numbering from the first cell is off by one whenever
+   the week does not start on Monday."
+  [row-cells]
+  (some (fn [{:keys [^js date]}]
+          (when (= 4 (.getUTCDay date)) date))
+        row-cells))
+
+(defn- day-label-format [locale]
+  (js/Intl.DateTimeFormat. (or locale "default")
+                           #js {:weekday "long" :year "numeric" :month "long"
+                                :day "numeric" :timeZone "UTC"}))
+
+(defn- shown-day
+  "What the cell of a day shows, as the text of each attribute and of the cell.
+   The key of a day cell is its iso date."
+  [m today-iso ^js day-format {:keys [^js date in-month?]}]
+  (let [iso (dates/date->iso date)
+        {:keys [today? disabled? selected? in-range? range-edge?]}
+        (compute-cell-flags m iso in-month? today-iso)]
+    {:key          iso
+     :iso          iso
+     :text         (str (.getUTCDate date))
+     :aria-label   (.format day-format date)
+     :outside      (str (not in-month?))
+     :today        (str today?)
+     :disabled     (str disabled?)
+     :selected     (str selected?)
+     :in-range     (str in-range?)
+     :range-edge   (str range-edge?)
+     :aria-current (when today? "date")}))
+
+(defn- shown-week [row row-cells]
+  {:key  (str week-key-prefix row)
+   :text (str (dates/iso-week-number (row-thursday row-cells)))})
+
+(defn- shown-row
+  "The cells of row `row`: its seven days, led by its week number when the model asks for it."
+  [{:keys [show-week-numbers?] :as m} today-iso day-format row row-cells]
+  (cond->> (map (partial shown-day m today-iso day-format) row-cells)
+    show-week-numbers? (cons (shown-week row row-cells))))
+
+(defn- grid-focus-iso
+  "The iso of the one cell that Tab can reach: the remembered cell, then the selection, then
+   today, each only when it is in `isos`, then the first of the view."
+  [{:keys [value start view-iso]} isos remembered today-iso]
+  (or (some isos [remembered value start today-iso]) view-iso))
+
+(defn- with-tabindex
+  "The day `cell` with its tabindex: only the cell of `focus-iso` can be reached by Tab, and none
+   in a disabled calendar. A week number cell is returned as it is."
+  [disabled? focus-iso {:keys [iso] :as cell}]
+  (cond-> cell
+    iso (assoc :tabindex (if (and (= iso focus-iso) (not disabled?)) "0" "-1"))))
+
+(defn shown-grid
+  "What the day grid shows: `:cells`, each cell in order with its key and the text of what it
+   shows, and `:focus-iso`, the iso of the cell that Tab can reach. `remembered` is the iso the
+   calendar last gave that place."
+  [{:keys [view-iso fdow locale disabled?] :as m} today-iso remembered]
+  (let [rows      (partition 7 (dates/month-grid (dates/iso->date view-iso) fdow))
+        cells     (into []
+                        (comp (map-indexed (partial shown-row m today-iso (day-label-format locale)))
+                              cat)
+                        rows)
+        focus-iso (grid-focus-iso m (into #{} (keep :iso) cells) remembered today-iso)]
+    {:cells     (mapv (partial with-tabindex disabled? focus-iso) cells)
+     :focus-iso focus-iso}))

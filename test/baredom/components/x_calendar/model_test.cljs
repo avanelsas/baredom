@@ -166,3 +166,47 @@
       (is (false? (:disabled? f)))
       (is (false? (:in-range? f)))
       (is (false? (:range-edge? f))))))
+
+(defn- grid-of
+  "The shown grid of a calendar made from `raw`, on 21 May 2026."
+  ([raw] (grid-of raw nil))
+  ([raw remembered]
+   (model/shown-grid (model/canonicalize (assoc raw :today (dates/iso->date "2026-05-21")))
+                     "2026-05-21"
+                     remembered)))
+
+(defn- reachable [grid]
+  (into [] (comp (filter (comp #{"0"} :tabindex)) (map :iso)) (:cells grid)))
+
+(deftest shown-grid-gives-each-cell-its-key-test
+  (testing "six rows of seven days, each keyed by its date"
+    (let [cells (:cells (grid-of {}))]
+      (is (= 42 (count cells)))
+      (is (= ["2026-04-26" "2026-04-27"] (mapv :key (take 2 cells))))
+      (is (= (mapv :iso cells) (mapv :key cells)))))
+  (testing "each row is led by its week number when week numbers are shown"
+    (let [cells (:cells (grid-of {:show-week-numbers? true}))]
+      (is (= 48 (count cells)))
+      (is (= ["week-0" "2026-04-26" "2026-04-27"] (mapv :key (take 3 cells))))
+      (is (= "week-1" (:key (nth cells 8)))))))
+
+(deftest shown-grid-gives-a-day-what-it-shows-test
+  (let [day (first (filter (comp #{"2026-05-21"} :iso) (:cells (grid-of {:value "2026-05-21"}))))]
+    (is (= {:text "21" :outside "false" :today "true" :selected "true" :disabled "false"
+            :in-range "false" :range-edge "false" :aria-current "date" :tabindex "0"}
+           (select-keys day [:text :outside :today :selected :disabled :in-range :range-edge
+                             :aria-current :tabindex])))
+    (is (string? (:aria-label day)))))
+
+(deftest shown-grid-lets-tab-reach-one-cell-test
+  (testing "the selection, when nothing is remembered"
+    (is (= ["2026-05-10"] (reachable (grid-of {:value "2026-05-10"})))))
+  (testing "the remembered cell before the selection"
+    (is (= ["2026-05-12"] (reachable (grid-of {:value "2026-05-10"} "2026-05-12")))))
+  (testing "today, when there is no selection"
+    (is (= ["2026-05-21"] (reachable (grid-of {})))))
+  (testing "the first of the view, when the remembered cell is in another month"
+    (is (= "2026-07-01" (:focus-iso (grid-of {:month-raw "2026-07"} "2026-05-12")))))
+  (testing "no cell in a disabled calendar"
+    (is (= [] (reachable (grid-of {:disabled? true}))))))
+
