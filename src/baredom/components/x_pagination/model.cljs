@@ -137,9 +137,9 @@
 ;; ── Metadata ──────────────────────────────────────────────────────────────
 (def property-api
   {:page           {:type 'number}
-   :total-pages    {:type 'number}
-   :sibling-count  {:type 'number}
-   :boundary-count {:type 'number}
+   :totalPages     {:type 'number}
+   :siblingCount   {:type 'number}
+   :boundaryCount  {:type 'number}
    :size           {:type 'string}
    :disabled       {:type 'boolean}
    :label          {:type 'string}})

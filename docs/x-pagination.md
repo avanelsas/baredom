@@ -31,9 +31,9 @@ A stateless native Web Component that renders a numbered page control with prev/
 | Property        | Type    | Reflects attribute  |
 |-----------------|---------|---------------------|
 | `page`          | number  | `page`              |
-| `total-pages`   | number  | `total-pages`       |
-| `sibling-count` | number  | `sibling-count`     |
-| `boundary-count`| number  | `boundary-count`    |
+| `totalPages`    | number  | `total-pages`       |
+| `siblingCount`  | number  | `sibling-count`     |
+| `boundaryCount` | number  | `boundary-count`    |
 | `size`          | string  | `size`              |
 | `disabled`      | boolean | `disabled`          |
 | `label`         | string  | `label`             |

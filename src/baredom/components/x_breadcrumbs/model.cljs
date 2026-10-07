@@ -104,9 +104,9 @@
    :size         {:type 'string}
    :variant      {:type 'string}
    :wrap         {:type 'boolean}
-   :max-items    {:type 'number}
-   :items-before {:type 'number}
-   :items-after  {:type 'number}
+   :maxItems     {:type 'number}
+   :itemsBefore  {:type 'number}
+   :itemsAfter   {:type 'number}
    :disabled     {:type 'boolean}})
 
 (def event-schema {})

@@ -323,9 +323,9 @@
 
 (defn- install-property-accessors! [^js proto]
   (du/define-parsed-prop! proto model/attr-page           model/attr-page           parse-page-attr)
-  (du/define-parsed-prop! proto model/attr-total-pages    model/attr-total-pages    model/parse-total-pages)
-  (du/define-parsed-prop! proto model/attr-sibling-count  model/attr-sibling-count  model/parse-sibling-count)
-  (du/define-parsed-prop! proto model/attr-boundary-count model/attr-boundary-count model/parse-boundary-count)
+  (du/define-parsed-prop! proto "totalPages"              model/attr-total-pages    model/parse-total-pages)
+  (du/define-parsed-prop! proto "siblingCount"            model/attr-sibling-count  model/parse-sibling-count)
+  (du/define-parsed-prop! proto "boundaryCount"           model/attr-boundary-count model/parse-boundary-count)
   (du/define-string-prop! proto model/attr-size           model/attr-size           model/default-size)
   (du/define-bool-prop!   proto model/attr-disabled       model/attr-disabled)
   (du/define-string-prop! proto model/attr-label          model/attr-label          model/default-label))

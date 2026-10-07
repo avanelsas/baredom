@@ -168,11 +168,11 @@
 
 (deftest items-before-property-default-test
   (let [^js el (append! (make-el))]
-    (is (= 1 (aget el "items-before")))))
+    (is (= 1 (.-itemsBefore el)))))
 
 (deftest items-after-property-default-test
   (let [^js el (append! (make-el))]
-    (is (= 2 (aget el "items-after")))))
+    (is (= 2 (.-itemsAfter el)))))
 
 ;; ── Separator DOM rendering ───────────────────────────────────────────────
 (deftest separator-renders-in-dom-test
@@ -203,15 +203,20 @@
 ;; ── Numeric property roundtrips ───────────────────────────────────────────
 (deftest items-before-property-roundtrip-test
   (let [^js el (append! (make-el))]
-    (aset el "items-before" 3)
+    (set! (.-itemsBefore el) 3)
     (is (= "3" (.getAttribute el model/attr-items-before)))
-    (is (= 3   (aget el "items-before")))))
+    (is (= 3   (.-itemsBefore el)))))
 
 (deftest items-after-property-roundtrip-test
   (let [^js el (append! (make-el))]
-    (aset el "items-after" 4)
+    (set! (.-itemsAfter el) 4)
     (is (= "4" (.getAttribute el model/attr-items-after)))
-    (is (= 4   (aget el "items-after")))))
+    (is (= 4   (.-itemsAfter el)))))
+
+(deftest the-max-items-property-reflects-its-attribute
+  (let [^js el (append! (make-el))]
+    (set! (.-maxItems el) 5)
+    (is (= ["5" 5] [(.getAttribute el model/attr-max-items) (.-maxItems el)]))))
 
 ;; ── Reconnect: stable after remove/re-add ────────────────────────────────
 (deftest reconnect-stable-test
