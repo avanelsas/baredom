@@ -77,7 +77,7 @@
    "height:100%;"
    "background:var(--x-progress-fill-color);"
    "border-radius:var(--x-progress-border-radius,9999px);"
-   "transition:width 0.3s ease;"
+   "transition:width var(--x-transition-duration,0.3s) var(--x-transition-easing,ease);"
    "width:0%;}"
 
    ;; Indeterminate animation

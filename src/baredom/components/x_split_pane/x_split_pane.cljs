@@ -114,7 +114,7 @@
 
    "[part=divider-line]{"
    "background:var(--x-split-pane-divider-color);"
-   "transition:background 120ms ease;"
+   "transition:background var(--x-transition-duration,120ms) var(--x-transition-easing,ease);"
    "inline-size:var(--x-split-pane-divider-line-size);"
    "block-size:100%;"
    "}"

@@ -131,7 +131,8 @@
    "border:var(" css-border ",1px solid var(--x-color-border,#d8d8d8));"
    "border-radius:var(" css-radius ",var(--x-radius-md,8px));"
    "box-shadow:var(" css-shadow ",0 1px 2px rgba(0,0,0,.06));"
-   "transition:var(" css-transition ",box-shadow .16s ease,transform .16s ease);}"
+   "transition:var(" css-transition ",box-shadow var(--x-transition-duration,.16s) var(--x-transition-easing,ease),"
+   "transform var(--x-transition-duration,.16s) var(--x-transition-easing,ease));}"
 
    "[part=handle]{"
    "display:flex;"

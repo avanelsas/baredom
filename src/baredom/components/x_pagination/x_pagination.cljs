@@ -81,7 +81,8 @@
    "cursor:pointer;"
    "user-select:none;"
    "box-sizing:border-box;"
-   "transition:background 0.15s,color 0.15s;}"
+   "transition:background var(--x-transition-duration,0.15s) var(--x-transition-easing,ease),"
+   "color var(--x-transition-duration,0.15s) var(--x-transition-easing,ease);}"
 
    "[part~='button']:hover:not(:disabled){"
    "background:var(--x-pagination-button-hover-bg);"

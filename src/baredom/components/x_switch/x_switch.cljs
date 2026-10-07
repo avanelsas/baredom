@@ -69,7 +69,7 @@
    "height:var(--x-switch-track-height);"
    "border-radius:var(--x-switch-track-radius);"
    "background:var(--x-switch-track-bg);"
-   "transition:background 150ms ease;"
+   "transition:background var(--x-transition-duration,150ms) var(--x-transition-easing,ease);"
    "flex-shrink:0;"
    "}"
 
@@ -86,7 +86,7 @@
    "border-radius:50%;"
    "background:var(--x-switch-thumb-bg);"
    "box-shadow:0 1px 3px rgba(0,0,0,0.25);"
-   "transition:transform 150ms ease;"
+   "transition:transform var(--x-transition-duration,150ms) var(--x-transition-easing,ease);"
    "}"
 
    ":host([data-checked]) [part=thumb]{"

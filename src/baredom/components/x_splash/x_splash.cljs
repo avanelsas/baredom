@@ -36,7 +36,7 @@
    "--x-splash-color:var(--x-color-text, #0f172a);"
    "--x-splash-z-index:9999;"
    "--x-splash-fade-duration:var(--x-transition-duration, 400ms);"
-   "--x-splash-fade-ease:cubic-bezier(0.4,0,0.2,1);"
+   "--x-splash-fade-ease:var(--x-transition-easing,cubic-bezier(0.4,0,0.2,1));"
    "--x-splash-spinner-size:40px;"
    "--x-splash-spinner-color:var(--x-color-text, currentColor);"
    "--x-splash-spinner-track-color:var(--x-color-border, rgba(0,0,0,0.12));"
@@ -126,7 +126,7 @@
    "height:100%;"
    "background:var(--x-splash-progress-color);"
    "border-radius:var(--x-splash-progress-radius);"
-   "transition:width 200ms ease;"
+   "transition:width var(--x-transition-duration,200ms) var(--x-transition-easing,ease);"
    "width:0%;}"
 
    ;; Reduced motion

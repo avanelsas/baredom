@@ -17,6 +17,12 @@
    :label (du/get-attr el model/attr-label)
    :controls (du/get-attr el model/attr-controls)})
 
+(def ^:private duration
+  "var(--x-tab-transition-duration,var(--x-transition-duration,120ms))")
+
+(def ^:private timing
+  "var(--x-tab-transition-timing,var(--x-transition-easing,ease))")
+
 (def ^:private style-text
   (str
    ":host{"
@@ -39,9 +45,9 @@
    "padding:var(--x-tab-padding-md,10px 16px);border-radius:var(--x-tab-radius,8px);"
    "color:var(--x-tab-color);background:var(--x-tab-background,transparent);"
    "border:1px solid var(--x-tab-border-color,transparent);"
-   "transition:background var(--x-tab-transition-duration,120ms) var(--x-tab-transition-timing,ease),"
-   "color var(--x-tab-transition-duration,120ms) var(--x-tab-transition-timing,ease),"
-   "border-color var(--x-tab-transition-duration,120ms) var(--x-tab-transition-timing,ease);}"
+   "transition:background " duration " " timing ","
+   "color " duration " " timing ","
+   "border-color " duration " " timing ";}"
    ".base[data-size='sm']{padding:var(--x-tab-padding-sm,6px 12px);}"
    ".base[data-size='md']{padding:var(--x-tab-padding-md,10px 16px);}"
    ".base[data-size='lg']{padding:var(--x-tab-padding-lg,14px 20px);}"

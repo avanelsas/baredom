@@ -64,7 +64,7 @@
   --x-card-radius-xl: 1.5rem;
 
   --x-card-transition-duration: var(--x-transition-duration, 140ms);
-  --x-card-transition-timing: ease;
+  --x-card-transition-timing: var(--x-transition-easing,ease);
 
   outline: none;
   }"

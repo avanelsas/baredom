@@ -202,7 +202,7 @@
    "color:var(--x-multi-combobox-chevron-color);"
    "flex-shrink:0;"
    "margin-left:0.25rem;"
-   "transition:transform 200ms ease;"
+   "transition:transform var(--x-transition-duration,200ms) var(--x-transition-easing,ease);"
    "cursor:pointer;"
    "}"
    ":host([open]) [part=chevron]{"

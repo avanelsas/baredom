@@ -113,7 +113,8 @@
    "background:var(" css-bg ",var(--x-color-surface,#fafafa));"
    "border:var(" css-border ",1px solid var(--x-color-border,#e2e2e2));"
    "border-radius:var(" css-radius ",var(--x-radius-md,8px));"
-   "transition:background .16s ease,border-color .16s ease;}"
+   "transition:background var(--x-transition-duration,.16s) var(--x-transition-easing,ease),"
+   "border-color var(--x-transition-duration,.16s) var(--x-transition-easing,ease);}"
 
    ":host([data-drag-state=over]) [part=zone]{"
    "background:var(" css-over-bg "," primary-tint ");"

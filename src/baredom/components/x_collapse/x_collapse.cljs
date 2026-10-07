@@ -133,7 +133,7 @@
    "display:inline-block;"
    "margin-inline-start:0.5rem;"
    "color:var(--x-collapse-chevron-color);"
-   "transition:transform 200ms ease;"
+   "transition:transform var(--x-transition-duration,200ms) var(--x-transition-easing,ease);"
    "flex-shrink:0;"
    "}"
    ":host([open]) [part=chevron]{"

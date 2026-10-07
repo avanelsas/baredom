@@ -123,7 +123,7 @@
    "transform:translate(-50%,-50%);"
    "cursor:grab;"
    "z-index:1;"
-   "transition:box-shadow 100ms ease;}"
+   "transition:box-shadow var(--x-transition-duration,100ms) var(--x-transition-easing,ease);}"
    "[part=thumb-start]{left:var(--_x-range-slider-start-pct,0%);}"
    "[part=thumb-end]{left:var(--_x-range-slider-end-pct,100%);}"
    "[part=thumb-start][data-active],[part=thumb-end][data-active]{z-index:2;}"

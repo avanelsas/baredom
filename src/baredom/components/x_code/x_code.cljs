@@ -268,7 +268,7 @@
    "font-size:0.75rem;"
    "cursor:pointer;"
    "text-align:center;"
-   "transition:background 120ms ease;"
+   "transition:background var(--x-transition-duration,120ms) var(--x-transition-easing,ease);"
    "}"
    ":host([data-collapsible]) [part=expander]{display:block;}"
    "[part=expander]:hover{text-decoration:underline;}"
