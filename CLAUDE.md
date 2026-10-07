@@ -317,6 +317,12 @@ data, and it holds no logic.
 **In a template, a fixed value is text, a number or a boolean.** A keyword is always a hole.
 `make-node!` refuses a template that is not fixed.
 
+**The requests map is generated.** An application passes `baredom.requests/requests`, or
+`requests` from `@vanelsas/baredom/requests`, as the `:requests` of `mirror/listen!`. It comes
+from the `:requests` key of each model's `event-schema`, see [`docs/MODEL-LAYER.md`](docs/MODEL-LAYER.md).
+Never edit `src/baredom/requests.cljs`. The map holds attribute requests only. A cancelable
+event with no `:requests` is an action, and `listen!` cannot refuse it.
+
 **A component keeps its own writer.** A BareDOM component uses `mirror/sync!` for places and
 `du/set-attr-to!` for attributes, so its writes reach the trace recorder. It does not call
 `mirror/set-attrs!`, which is for applications.
