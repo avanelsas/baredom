@@ -35,7 +35,7 @@ All components must consume the shared design tokens defined by `x-theme` (`src/
 - `--x-space-xs`, `--x-space-sm`, `--x-space-md`, `--x-space-lg`, `--x-space-xl`
 
 ### Shape
-- `--x-radius-sm`, `--x-radius-md`, `--x-radius-lg`, `--x-radius-full`
+- `--x-radius-sm`, `--x-radius-md`, `--x-radius-lg`, `--x-radius-xl`, `--x-radius-full`
 - `--x-border-width`
 
 ### Shadows

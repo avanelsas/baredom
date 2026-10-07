@@ -55,6 +55,19 @@
     (is (re-find #"--x-font-weight-semibold:" css))
     (is (re-find #"--x-line-height-normal:" css))))
 
+(defn- radius-scale
+  "The values of the five radius tokens in the CSS of `preset`, from the smallest to full."
+  [preset]
+  (let [css (model/preset->css preset)]
+    (mapv #(second (re-find (re-pattern (str "--x-radius-" % ":([^;]+);")) css))
+          ["sm" "md" "lg" "xl" "full"])))
+
+(deftest the-radius-scale-has-five-steps
+  (is (= ["0.375rem" "0.75rem" "1rem" "1.5rem" "9999px"] (radius-scale "default"))))
+
+(deftest the-neo-brutalist-preset-has-no-radius
+  (is (= ["0" "0" "0" "0" "0"] (radius-scale "neo-brutalist"))))
+
 (deftest preset->css-contains-spacing-tokens-test
   (let [css (model/preset->css "default")]
     (is (re-find #"--x-space-xs:" css))

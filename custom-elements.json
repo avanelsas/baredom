@@ -8048,6 +8048,8 @@
       }, {
         "name" : "--x-radius-sm"
       }, {
+        "name" : "--x-radius-xl"
+      }, {
         "name" : "--x-shadow-lg"
       }, {
         "name" : "--x-shadow-md"
