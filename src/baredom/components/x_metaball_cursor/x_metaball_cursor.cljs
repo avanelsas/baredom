@@ -38,6 +38,7 @@
    "overflow:hidden;"
    "pointer-events:none;"
    "z-index:var(" model/css-z-index ",9999);}"
+   du/hidden-rule
 
    "[part=viewport]{"
    "position:absolute;"

@@ -28,6 +28,7 @@
    "--x-table-row-cursor:pointer;"
    "background:var(--x-table-row-bg);"
    "transition:background var(--x-table-row-transition-duration) ease;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

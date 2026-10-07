@@ -46,6 +46,7 @@
    "--x-file-upload-remove-color:var(--x-color-text-muted,#64748b);"
    "--x-file-upload-remove-hover:var(--x-color-danger,#ef4444);"
    "}"
+   du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-file-upload-bg:var(--x-color-surface,#1e293b);"

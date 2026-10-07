@@ -73,6 +73,7 @@
    "--x-avatar-focus-ring:var(--x-color-focus-ring, rgba(59,130,246,0.55));"
    "--x-avatar-font-size:var(--x-font-size-sm, 0.875rem);"
    "--x-avatar-size:var(--x-avatar-size-md);}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

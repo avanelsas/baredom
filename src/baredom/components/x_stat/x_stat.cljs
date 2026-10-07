@@ -86,6 +86,7 @@
    "--x-stat-transition-duration:var(--x-transition-duration,120ms);"
    "--x-stat-transition-timing:var(--x-transition-easing,ease);"
    "--x-stat-loading-opacity:0.6;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

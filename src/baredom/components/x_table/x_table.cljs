@@ -53,6 +53,7 @@
    "--x-table-caption-font-weight:600;"
    "--x-table-caption-padding:0 0 0.5rem;"
    "--x-table-compact-padding:0.25rem 0.5rem;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
@@ -244,10 +245,10 @@
             row-index    (gobj/get (.-detail e) detail-row-index)
             currently?   (.hasAttribute row selected-attr)
             will-select? (not currently?)]
-        (dispatch-row-select! el row-index will-select? selectable)
-        (cond
-          (= selectable select-single) (handle-single-select! el row)
-          (= selectable select-multi)  (handle-multi-select! el row))))))
+        (when (dispatch-row-select! el row-index will-select? selectable)
+          (cond
+            (= selectable select-single) (handle-single-select! el row)
+            (= selectable select-multi)  (handle-multi-select! el row)))))))
 
 (defn- on-row-connected [^js el ^js _e]
   ;; Re-compute stripe attributes whenever a new row connects.

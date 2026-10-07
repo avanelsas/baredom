@@ -136,6 +136,7 @@
    "--x-carousel-focus-ring:var(--x-color-focus-ring,#60a5fa);"
    "--x-carousel-disabled-opacity:0.5;"
    "}"
+   du/hidden-rule
 
    "@media(prefers-color-scheme:dark){"
    ":host{"

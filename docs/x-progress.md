@@ -20,6 +20,8 @@ A linear progress bar web component with variant colors, optional value label, i
 | `show-value`    | boolean | absent    | Shows computed percentage text            |
 | `indeterminate` | boolean | absent    | Animated shimmer; ignores `value`         |
 
+**Attributes that belong together.** This component acts at the moment an attribute is written: it sends `x-progress-complete`. It uses the other attributes as they are at that moment. When you change several attributes that belong together, write them in one step, so the component sees one state. See "The hold of a render" in [`UTILITIES.md`](UTILITIES.md).
+
 ## Properties
 
 | Property        | Type    | Reflects attribute  |
@@ -60,6 +62,7 @@ None. Label text is provided via the `label` attribute.
 - `aria-valuetext` shows e.g. `"75%"` or `"Loading…"` when indeterminate.
 - `aria-label` mirrors the `label` attribute.
 - `aria-busy="true"` is set when `indeterminate` is present; removed otherwise.
+- When indeterminate, `aria-valuenow` and `aria-valuemax` are removed. No maximum of an earlier state is left on the host.
 
 ## Shadow DOM Structure
 

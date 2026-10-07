@@ -23,6 +23,7 @@
    "box-sizing:border-box;"
    "pointer-events:none;"
    "color-scheme:light dark;}"
+   du/hidden-rule
 
    ;; Restore pointer events on slotted toasts so they are interactive
    "::slotted(" model/child-tag "){"

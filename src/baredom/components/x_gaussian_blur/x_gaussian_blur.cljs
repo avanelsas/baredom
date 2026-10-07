@@ -37,6 +37,7 @@
    "--x-gaussian-blur-bg:transparent;"
    "--x-gaussian-blur-z-index:0;"
    "--x-gaussian-blur-border-radius:0;}"
+   du/hidden-rule
 
    ":host{border-radius:var(--x-gaussian-blur-border-radius);}"
 

@@ -47,6 +47,7 @@
    "--x-table-cell-disabled-opacity:0.45;"
    "min-width:var(--x-table-cell-min-width);"
    "max-width:var(--x-table-cell-max-width);}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

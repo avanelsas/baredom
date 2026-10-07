@@ -53,6 +53,7 @@
    "--x-breadcrumbs-font-size:var(--x-font-size-sm,0.875rem);"
    "--x-breadcrumbs-gap:0.25rem;"
    "--x-breadcrumbs-disabled-opacity:0.55;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

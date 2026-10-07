@@ -32,6 +32,7 @@
    "--x-drawer-footer-padding:0.75rem 1.25rem;"
    "--x-drawer-border:var(--x-color-border,color-mix(in srgb,currentColor 12%,transparent));"
    "}"
+   du/hidden-rule
    "[part=backdrop]{"
    "display:none;"
    "position:fixed;"

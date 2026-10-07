@@ -101,6 +101,7 @@
    "--x-floating-panel-duration:var(--x-transition-duration,150ms);"
    "--x-floating-panel-accent:var(--x-color-primary,#2563eb);"
    "}"
+   du/hidden-rule
 
    "[part=panel]{"
    "position:fixed;"

@@ -34,7 +34,7 @@
   (du/setv! el k-translations translations))
 
 ;; ── CSS ─────────────────────────────────────────────────────────────────────
-(def ^:private styles ":host{display:contents}")
+(def ^:private styles (str ":host{display:contents}" du/hidden-rule))
 
 ;; ── DOM initialisation ──────────────────────────────────────────────────────
 (defn- init-dom! [^js el]

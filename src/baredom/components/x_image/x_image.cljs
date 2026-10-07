@@ -66,6 +66,7 @@
    "--x-image-error-gap:var(--x-space-xs,6px);"
    "--x-image-font-family:var(--x-font-family,system-ui,sans-serif);"
    "--x-image-font-size:var(--x-font-size-sm,0.875rem);}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

@@ -115,7 +115,7 @@
    "box-sizing:border-box;"
    "border-radius:var(" css-radius ",var(--x-radius-md,8px));}"
 
-   ":host([hidden]){display:none;}"
+   du/hidden-rule
 
    ".sr-only{"
    "position:absolute;width:1px;height:1px;padding:0;margin:-1px;"

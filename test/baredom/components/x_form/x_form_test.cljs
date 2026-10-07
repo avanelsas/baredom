@@ -289,3 +289,23 @@
         "clearErrors should remove error from field-a")
     (is (not (.hasAttribute field-b "error"))
         "clearErrors should remove error from field-b")))
+
+;; ---------------------------------------------------------------------------
+;; A shadow root that the server sent
+;; ---------------------------------------------------------------------------
+
+(defn- prerendered!
+  "An element in the document that arrived with a shadow root made from markup."
+  []
+  (let [^js holder (.createElement js/document "div")]
+    (.setHTMLUnsafe holder (str "<" model/tag-name "><template shadowrootmode=\"open\">"
+                                "<p id=\"server\">server</p></template></" model/tag-name ">"))
+    (append! (.-firstElementChild holder))))
+
+(defn- in-root [^js el selector]
+  (.querySelector (.-shadowRoot el) selector))
+
+(deftest a-form-takes-over-a-shadow-root-that-the-server-sent
+  (let [el (prerendered!)]
+    (is (nil? (in-root el "#server")) "the server's content is gone")
+    (is (some? (in-root el "form")) "the form of the component is there")))

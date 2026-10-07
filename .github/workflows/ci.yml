@@ -62,6 +62,9 @@ jobs:
       - name: Check that BareMirror names no baredom namespace
         run: bb scripts/check_baremirror_boundary.bb
 
+      - name: Check that every component hides under hidden
+        run: bb scripts/check_hidden_rule.bb
+
       - name: Check the css api the manifest publishes
         run: bb scripts/check_css_api.bb
 

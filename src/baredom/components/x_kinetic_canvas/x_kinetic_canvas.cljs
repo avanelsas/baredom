@@ -72,6 +72,7 @@
    model/css-color-2 ":var(--x-color-primary,#2563eb);"
    model/css-color-3 ":var(--x-color-secondary,#7c3aed);"
    model/css-matrix-font-size ":14;}"
+   du/hidden-rule
 
    "@media(prefers-color-scheme:dark){"
    ":host{"

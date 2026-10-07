@@ -120,6 +120,7 @@
    "--x-multi-combobox-transition-easing:var(--x-transition-easing,ease);"
    "--x-multi-combobox-chip-gap:0.25rem;"
    "}"
+   du/hidden-rule
    ;; Dark mode
    "@media (prefers-color-scheme:dark){"
    ":host{"

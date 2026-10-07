@@ -20,6 +20,8 @@ A circular SVG progress indicator. Renders a stroke-based ring that fills propor
 | `show-value`    | boolean | absent      | When present, renders the percentage in the center |
 | `indeterminate` | boolean | absent      | When present, shows a spinning arc (ignores `value`) |
 
+**Attributes that belong together.** This component acts at the moment an attribute is written: it sends `x-progress-circle-complete`. It uses the other attributes as they are at that moment. When you change several attributes that belong together, write them in one step, so the component sees one state. See "The hold of a render" in [`UTILITIES.md`](UTILITIES.md).
+
 ## Properties
 
 | Property        | Type    | Reflects attribute |
@@ -62,7 +64,7 @@ Fires once when `value >= max` (and not indeterminate). Resets when value drops 
 ## Accessibility
 
 - Host element has `role="progressbar"`, `aria-valuemin="0"`, `aria-valuenow`, `aria-valuemax`, `aria-valuetext`.
-- When indeterminate: `aria-busy="true"` is set, `aria-valuenow` is removed, `aria-valuetext` is `"Loading…"`.
+- When indeterminate: `aria-busy="true"` is set, `aria-valuenow` and `aria-valuemax` are removed, `aria-valuetext` is `"Loading…"`.
 - `aria-label` is set from the `label` attribute when provided.
 - The SVG is `aria-hidden="true"` and `focusable="false"` to prevent duplicate screen-reader announcements.
 

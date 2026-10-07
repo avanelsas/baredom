@@ -46,6 +46,7 @@
 (def ^:private style-text
   (str
    ":host{display:block;}"
+   du/hidden-rule
    "[part=root]{"
    "display:flex;"
    "flex-direction:column;"
@@ -58,7 +59,7 @@
 
 ;; ── Shadow DOM construction ───────────────────────────────────────────────
 (defn- make-shadow! [^js el]
-  (when-not (.-shadowRoot el)
+  (when-not (du/getv el k-refs)
     (let [root     (.attachShadow el #js {:mode "open"})
           style-el (.createElement js/document "style")
           form-el  (.createElement js/document "form")

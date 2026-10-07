@@ -33,6 +33,7 @@
    "--x-scroll-story-transition-duration:300ms;"
    "--x-scroll-story-disabled-opacity:0.55;"
    "--x-scroll-story-media-top:0;}"
+   du/hidden-rule
 
    "[part=container]{"
    "display:flex;gap:var(--x-scroll-story-gap);}"

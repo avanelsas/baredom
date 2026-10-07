@@ -54,6 +54,7 @@
    "--x-menu-item-font-size:0.9375rem;"
    "--x-menu-item-icon-gap:8px;"
    "--x-menu-item-divider-color:var(--x-color-border,#e5e7eb);}"
+   du/hidden-rule
    ":host([disabled]){pointer-events:none;}"
    "@media (prefers-color-scheme:dark){"
    ":host{"

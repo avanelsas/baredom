@@ -21,6 +21,7 @@
    "--x-spinner-track-color:rgba(0,0,0,0.12);"
    "--x-spinner-thickness:2px;"
    "--x-spinner-duration:0.75s;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

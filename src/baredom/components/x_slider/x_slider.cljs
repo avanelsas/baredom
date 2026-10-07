@@ -37,6 +37,7 @@
    "--x-slider-value-color:rgba(0,0,0,0.50);"
    "--x-slider-radius:var(--x-radius-full,9999px);"
    "}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

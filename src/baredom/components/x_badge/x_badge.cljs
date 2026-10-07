@@ -45,6 +45,7 @@
    "--x-badge-height:1.25rem;"
    "--x-badge-padding:0 0.375rem;"
    "--x-badge-radius:var(--x-radius-sm,0.25rem);}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

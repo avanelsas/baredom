@@ -26,6 +26,7 @@
    "--x-tab-selected-color:var(--x-color-primary-hover,#1d4ed8);"
    "--x-tab-selected-background:rgba(59,130,246,0.12);"
    "--x-tab-selected-border-color:transparent;}"
+   du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-tab-color:var(--x-color-text-muted,#94a3b8);"

@@ -26,6 +26,7 @@
    "--x-scroll-stack-peek:6px;"
    "--x-scroll-stack-rotation:3deg;"
    "--x-scroll-stack-gap:1rem;}"
+   du/hidden-rule
 
    "[part=container]{"
    "position:sticky;top:0;height:100dvh;"

@@ -23,6 +23,7 @@
 ;; ── CSS ─────────────────────────────────────────────────────────────────────
 (def ^:private styles
   (str ":host{display:inline}"
+  du/hidden-rule
        "[part=text]{font:var(--x-i18n-font,inherit);"
        "color:var(--x-i18n-color,inherit)}"))
 

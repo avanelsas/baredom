@@ -28,7 +28,7 @@
 
 ;; ── Host styles ─────────────────────────────────────────────────────────────
 (def ^:private host-style-text
-  ":host{display:contents;}")
+  (str ":host{display:contents;}" du/hidden-rule))
 
 ;; ── Overlay layer styles ────────────────────────────────────────────────────
 (def ^:private layer-style-text

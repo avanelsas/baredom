@@ -59,6 +59,7 @@
    "--x-modal-easing:ease;"
    "--x-modal-z:1000;"
    "}"
+   du/hidden-rule
    "[part=backdrop]{"
    "position:fixed;"
    "inset:0;"

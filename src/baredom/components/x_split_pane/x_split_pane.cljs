@@ -73,6 +73,7 @@
    "--x-split-pane-divider-hover-color:var(--x-color-primary,#3b82f6);"
    "--x-split-pane-divider-focus-color:var(--x-color-focus-ring,#60a5fa);"
    "}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

@@ -30,7 +30,8 @@
 ;; ── Style text ──────────────────────────────────────────────────────────────
 
 (defn- style-text []
-  "
+  (str
+   "
   :host {
     display: block;
     color-scheme: light dark;
@@ -56,7 +57,9 @@
 
     --x-spotlight-card-x: 50%;
     --x-spotlight-card-y: 50%;
-  }
+  }"
+   du/hidden-rule
+   "
 
   @media (prefers-color-scheme: dark) {
     :host {
@@ -135,7 +138,7 @@
     .card { transition: none; }
     .spotlight { transition: none; opacity: 1; }
   }
-  ")
+  "))
 
 ;; ── Shadow DOM construction ─────────────────────────────────────────────────
 

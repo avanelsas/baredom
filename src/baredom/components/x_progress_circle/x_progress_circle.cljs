@@ -28,6 +28,7 @@
    "--x-progress-circle-stroke-width:2.8;"
    "--x-progress-circle-value-color:rgba(0,0,0,0.50);"
    "--x-progress-circle-transition-duration:var(--x-transition-duration,0.3s);}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
@@ -186,6 +187,7 @@
     (if indeterminate
       (do
         (du/remove-attr! el "aria-valuenow")
+        (du/remove-attr! el "aria-valuemax")
         (du/set-attr!    el "aria-busy"      "true")
         (du/set-attr!    el "aria-valuetext" aria-valuetext))
       (do

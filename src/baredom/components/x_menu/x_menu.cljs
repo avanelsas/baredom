@@ -41,6 +41,7 @@
    "--x-menu-min-width:160px;"
    "--x-menu-padding:4px;"
    "--x-menu-z-index:1000;}"
+   du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-menu-bg:var(--x-color-bg,#1f2937);"

@@ -21,6 +21,7 @@
    "--x-timeline-label-font-size:var(--x-font-size-sm,0.875rem);"
    "--x-timeline-label-font-weight:600;"
    "--x-timeline-label-padding:0 0 0.5rem;}"
+   du/hidden-rule
 
    "slot{display:contents;}"
 

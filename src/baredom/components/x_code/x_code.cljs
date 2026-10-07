@@ -97,6 +97,7 @@
    "--x-code-token-attr-value:#0a3069;"
    "--x-code-token-entity:#0550ae;"
    "}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

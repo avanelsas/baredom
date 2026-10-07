@@ -33,6 +33,7 @@
    "vertical-align:middle;"
    "color:var(" css-var-color ",currentColor);"
    css-var-size ":20px;}"
+   du/hidden-rule
 
    "[part=box]{"
    "display:inline-flex;"

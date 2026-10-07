@@ -48,6 +48,7 @@
    "--x-copy-tooltip-font-size:var(--x-font-size-sm,0.8125rem);"
    "--x-copy-tooltip-z:100;"
    "}"
+   du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-copy-tooltip-bg:var(--x-color-bg,#0f172a);"

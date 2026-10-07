@@ -66,6 +66,7 @@
    "--x-toast-color:inherit;"
    "--x-toast-icon-color:inherit;"
    "--x-toast-progress-fill:currentColor;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

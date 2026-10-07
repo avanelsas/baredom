@@ -141,6 +141,7 @@
    "--x-button-transition-duration:var(--x-transition-duration,140ms);"
    "--x-button-transition-easing:var(--x-transition-easing,cubic-bezier(0.2,0,0,1));"
    "}"
+   du/hidden-rule
    "@media (prefers-color-scheme: dark){"
    ":host{"
    "--x-button-shadow:var(--x-shadow-sm,0 1px 2px rgba(0,0,0,0.35),0 1px 1px rgba(0,0,0,0.2));"

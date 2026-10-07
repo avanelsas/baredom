@@ -206,3 +206,11 @@
     ;; Reach max again — should fire again
     (.setAttribute el model/attr-value "100")
     (is (= 2 @count))))
+
+(deftest an-indeterminate-bar-has-no-aria-valuemax-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-max "200")
+    (.setAttribute el model/attr-indeterminate "")
+    (is (not (.hasAttribute el "aria-valuemax")) "the maximum of an earlier state is not left behind")
+    (.removeAttribute el model/attr-indeterminate)
+    (is (= "200" (.getAttribute el "aria-valuemax")) "a determinate bar has its maximum again")))

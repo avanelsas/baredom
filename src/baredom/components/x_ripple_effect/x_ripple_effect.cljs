@@ -18,6 +18,7 @@
    ":host{"
    "display:inline-block;"
    "position:relative;}"
+   du/hidden-rule
 
    ":host([disabled]){"
    "cursor:default;}"

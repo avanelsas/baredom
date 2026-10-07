@@ -45,6 +45,7 @@
    "--x-morph-stack-goo-blur:10;"
    "--x-morph-stack-goo-threshold:18;"
    "--x-morph-stack-bg:transparent;}"
+   du/hidden-rule
 
    ;; Variant presets — bundles of spring + goo tuning. Each preset is sized
    ;; for clearly distinct *character*, not just numerical difference:

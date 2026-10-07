@@ -110,6 +110,7 @@
 (def ^:private style-text
   (str
    ":host{display:contents;}"
+   du/hidden-rule
    "[part=overlay]{"
    "display:none;position:fixed;inset:0;"
    "background:var(--x-command-palette-backdrop,rgba(0,0,0,0.45));"

@@ -342,6 +342,42 @@
     (is (false? (:selected (first @events))))
     (is (not (.hasAttribute row1 "selected")))))
 
+(defn- table-with-rows!
+  "A table of `selectable` mode in the document, with `n` interactive rows. Returns the rows."
+  [selectable n]
+  (let [^js table (append! (make-table {:selectable selectable}))
+        rows      (vec (repeatedly n make-row))]
+    (doseq [^js row rows]
+      (.setAttribute row row-model/attr-interactive "")
+      (.appendChild table row))
+    (.addEventListener table model/event-row-select (fn [^js e] (.preventDefault e)))
+    rows))
+
+(defn- click-row! [^js row]
+  (.dispatchEvent row
+                  (js/CustomEvent. row-model/event-click
+                                   #js {:detail     #js {:rowIndex 1 :selected false :disabled false}
+                                        :bubbles    true
+                                        :composed   true
+                                        :cancelable true})))
+
+(deftest a-cancelled-row-select-leaves-the-row-unselected-in-single-mode
+  (let [[^js row] (table-with-rows! "single" 1)]
+    (click-row! row)
+    (is (not (.hasAttribute row row-model/attr-selected)))))
+
+(deftest a-cancelled-row-select-leaves-the-selected-row-as-it-was-in-single-mode
+  (let [[^js chosen ^js other] (table-with-rows! "single" 2)]
+    (.setAttribute chosen row-model/attr-selected "")
+    (click-row! other)
+    (is (.hasAttribute chosen row-model/attr-selected))
+    (is (not (.hasAttribute other row-model/attr-selected)))))
+
+(deftest a-cancelled-row-select-leaves-the-row-unselected-in-multi-mode
+  (let [[^js row] (table-with-rows! "multi" 1)]
+    (click-row! row)
+    (is (not (.hasAttribute row row-model/attr-selected)))))
+
 ;; ── striped attribute ────────────────────────────────────────────────────────
 (deftest striped-sets-data-stripe-on-even-rows-test
   (let [^js table (append! (make-table {:columns "2" :striped true}))

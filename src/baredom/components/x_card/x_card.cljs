@@ -35,7 +35,8 @@
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private style-text
-  "
+  (str
+   "
   :host {
   display: block;
   color-scheme: light dark;
@@ -66,7 +67,9 @@
   --x-card-transition-timing: ease;
 
   outline: none;
-  }
+  }"
+   du/hidden-rule
+   "
 
   @media (prefers-color-scheme: dark) {
   :host {
@@ -162,7 +165,7 @@
   transform: none;
   }
   }
-  ")
+  "))
 
 ;; ── DOM initialisation ────────────────────────────────────────────────────
 (defn- init-dom! [^js el]

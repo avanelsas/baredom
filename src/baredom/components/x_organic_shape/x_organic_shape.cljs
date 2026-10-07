@@ -25,6 +25,7 @@
    "--x-organic-shape-animate-timing:ease-in-out;"
    "--x-organic-shape-animate-direction:normal;"
    "--x-organic-shape-animate-delay:0s;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

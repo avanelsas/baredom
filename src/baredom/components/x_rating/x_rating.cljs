@@ -50,6 +50,7 @@
    "--x-rating-disabled-opacity:0.45;"
    "--x-rating-label-color:rgba(0,0,0,0.60);"
    "}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

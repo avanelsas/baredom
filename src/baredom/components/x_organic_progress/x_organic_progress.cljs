@@ -47,6 +47,7 @@
    model/css-opacity ":1;"
    "background:var(" model/css-bg ",transparent);"
    "opacity:var(" model/css-opacity ",1);}"
+   du/hidden-rule
 
    "[part=svg]{"
    "display:block;"

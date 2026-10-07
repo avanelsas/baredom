@@ -20,6 +20,12 @@ returns, so work that `f` starts and does not finish is not held.
 
 ## `baredom.utils.dom` (alias `du`)
 
+### Styles
+
+| Name | Kind | Description |
+|------|------|-------------|
+| `hidden-rule` | value | The CSS rule `:host([hidden]){display:none;}`. A component that sets a display on `:host` puts it in its style, after every rule that does. |
+
 ### Instance-field access
 
 | Function | Signature | Description |
