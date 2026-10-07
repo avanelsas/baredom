@@ -50,12 +50,14 @@
 
 (def event-schema
   {event-change-request {:cancelable true
+                         :requests   {attr-value :value}
                          :detail     {:value 'string :label 'string :previousValue 'string}}
    event-change         {:cancelable false
                          :detail     {:value 'string :label 'string}}
    event-input          {:cancelable false
                          :detail     {:query 'string}}
    event-toggle         {:cancelable true
+                         :requests   {attr-open :open}
                          :detail     {:open 'boolean :source 'string}}})
 
 ;; ---------------------------------------------------------------------------

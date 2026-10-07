@@ -62,9 +62,13 @@
    :danger      {:type 'boolean :reflects-attribute attr-danger}})
 
 (def event-schema
-  {event-cancel-request  {:cancelable true  :detail {:reason 'string}}
+  {event-cancel-request  {:cancelable true
+                          :requests   {attr-open false}
+                          :detail     {:reason 'string}}
    event-cancel          {:cancelable false :detail {}}
-   event-confirm-request {:cancelable true  :detail {}}
+   event-confirm-request {:cancelable true
+                          :requests   {attr-open false}
+                          :detail     {}}
    event-confirm         {:cancelable false :detail {}}})
 
 ;; ── Method API metadata ──────────────────────────────────────────────────────

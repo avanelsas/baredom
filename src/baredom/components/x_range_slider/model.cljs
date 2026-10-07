@@ -83,6 +83,7 @@
 
 (def event-schema
   {event-change-request {:cancelable true
+                         :requests {attr-start :start attr-end :end}
                          :detail {:start         'number :end         'number
                                   :previousStart 'number :previousEnd 'number
                                   :min           'number :max         'number}}

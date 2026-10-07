@@ -44,6 +44,7 @@
 
 (def event-schema
   {event-change-request {:cancelable true
+                         :requests {attr-checked :nextChecked}
                          :detail {:value          'string
                                   :previousChecked 'boolean
                                   :nextChecked     'boolean}}

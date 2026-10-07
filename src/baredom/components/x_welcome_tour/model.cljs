@@ -41,7 +41,9 @@
 
 (def event-schema
   {event-start       {:detail {} :cancelable false}
-   event-step-change {:detail {:step 'number :previousStep 'number} :cancelable true}
+   event-step-change {:cancelable true
+                      :requests   {attr-step :step}
+                      :detail     {:step 'number :previousStep 'number}}
    event-complete    {:detail {:stepsCompleted 'number} :cancelable false}
    event-skip        {:detail {:step 'number} :cancelable false}})
 

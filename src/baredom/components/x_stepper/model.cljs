@@ -22,7 +22,9 @@
    :disabled    {:type 'boolean :reflects-attribute attr-disabled}})
 
 (def event-schema
-  {event-change {:detail {:from 'number :to 'number} :cancelable true}})
+  {event-change {:cancelable true
+                 :requests   {attr-current :to}
+                 :detail     {:from 'number :to 'number}}})
 
 ;; ── Orientation ──────────────────────────────────────────────────────────────
 (def ^:private default-orientation :horizontal)

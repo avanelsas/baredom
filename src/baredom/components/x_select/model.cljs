@@ -46,6 +46,7 @@
 
 (def event-schema
   {event-change-request {:cancelable true
+                         :requests {attr-value :value}
                          :detail {:value 'string :label 'string :previousValue 'string}}
    event-select-change  {:cancelable false
                          :detail {:value 'string :label 'string}}})
