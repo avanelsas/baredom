@@ -590,4 +590,24 @@
      {init baredom.exports.x-trace-history/init}
      :depends-on #{:base}}
 
+    :baremirror
+    {:exports
+     {plan          baremirror.js/plan
+      perform       baremirror.js/perform
+      readPlaces    baremirror.js/read-places
+      sync          baremirror.js/sync
+      release       baremirror.js/release
+      makeNode      baremirror.js/make-node
+      readParts     baremirror.js/read-parts
+      write         baremirror.js/write
+      setAttrs      baremirror.js/set-attrs
+      setText       baremirror.js/set-text
+      withOneRender baremirror.js/with-one-render
+      split         baremirror.js/split
+      readOrigin    baremirror.js/read-origin
+      listen        baremirror.js/listen
+      dispatcher    baremirror.js/dispatcher
+      defineElement baremirror.js/define-element}
+     :depends-on #{:base}}
+
     }}}}
