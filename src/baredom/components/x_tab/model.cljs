@@ -33,7 +33,7 @@
    :value    {:type 'string  :reflects-attribute attr-value}})
 
 (def event-schema
-  {event-tab-select {:detail {:value 'string}}})
+  {event-tab-select {:cancelable false :detail {:value 'string}}})
 
 (defn valid-enum [v allowed fallback]
   (if (contains? allowed v) v fallback))

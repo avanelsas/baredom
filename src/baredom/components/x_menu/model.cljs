@@ -23,9 +23,9 @@
    :label     {:type 'string  :reflects-attribute attr-label}})
 
 (def event-schema
-  {event-open {:detail {}}
-   event-close {:detail {}}
-   event-select {:detail {:value 'string}}})
+  {event-open {:cancelable false :detail {}}
+   event-close {:cancelable false :detail {}}
+   event-select {:cancelable false :detail {:value 'string}}})
 
 (defn valid-enum [v allowed fallback]
   (if (contains? allowed v) v fallback))

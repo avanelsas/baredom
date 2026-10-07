@@ -49,12 +49,12 @@
              :reflects-attribute attr-pressed}})
 
 (def event-schema
-  {event-press {:detail {:source 'string}}
-   event-press-start {:detail {:source 'string}}
-   event-press-end {:detail {:source 'string}}
-   event-hover-start {:detail {}}
-   event-hover-end {:detail {}}
-   event-focus-visible {:detail {}}})
+  {event-press {:cancelable false :detail {:source 'string}}
+   event-press-start {:cancelable false :detail {:source 'string}}
+   event-press-end {:cancelable false :detail {:source 'string}}
+   event-hover-start {:cancelable false :detail {}}
+   event-hover-end {:cancelable false :detail {}}
+   event-focus-visible {:cancelable false :detail {}}})
 
 (defn normalize-enum
   [value allowed default-value]

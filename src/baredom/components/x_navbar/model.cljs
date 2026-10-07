@@ -50,10 +50,10 @@
    :breakpoint  {:type 'string  :reflects-attribute attr-breakpoint  :default ""}})
 
 (def event-schema
-  {event-focus-visible {:detail {}}
-   event-navigate {:detail {:href 'string
-                            :source 'string}}
-   event-brand-activate {:detail {:source 'string}}})
+  {event-focus-visible {:cancelable false :detail {}}
+   event-navigate {:cancelable false :detail {:href 'string
+                                              :source 'string}}
+   event-brand-activate {:cancelable false :detail {:source 'string}}})
 
 (def slot-names
   {:brand slot-brand

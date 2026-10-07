@@ -81,14 +81,14 @@
 
 ;; --- Event schema ---
 (def event-schema
-  {event-press {:detail {:source 'string}}
-   event-press-start {:detail {:source 'string}}
-   event-press-end {:detail {:source 'string}}
-   event-hover-start {:detail {}}
-   event-hover-end {:detail {}}
-   event-focus-visible {:detail {}}
-   event-burst {:detail {:mode 'string :press-x 'number :press-y 'number}}
-   event-reform {:detail {:mode 'string :duration 'number}}})
+  {event-press {:cancelable false :detail {:source 'string}}
+   event-press-start {:cancelable false :detail {:source 'string}}
+   event-press-end {:cancelable false :detail {:source 'string}}
+   event-hover-start {:cancelable false :detail {}}
+   event-hover-end {:cancelable false :detail {}}
+   event-focus-visible {:cancelable false :detail {}}
+   event-burst {:cancelable false :detail {:mode 'string :press-x 'number :press-y 'number}}
+   event-reform {:cancelable false :detail {:mode 'string :duration 'number}}})
 
 ;; --- Normalization ---
 (defn normalize-enum

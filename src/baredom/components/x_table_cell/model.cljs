@@ -45,9 +45,9 @@
 (def event-schema
   {event-sort       {:detail     {:direction 'string :previousDirection 'string}
                      :cancelable true}
-   event-connected  {:detail {:type 'string :scope 'string
-                               :colSpan 'number :rowSpan 'number :align 'string}}
-   event-disconnected {:detail {}}})
+   event-connected  {:cancelable false :detail {:type 'string :scope 'string
+                                                 :colSpan 'number :rowSpan 'number :align 'string}}
+   event-disconnected {:cancelable false :detail {}}})
 
 ;; ── Private enum sets ────────────────────────────────────────────────────────
 

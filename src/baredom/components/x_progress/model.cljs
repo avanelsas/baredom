@@ -39,7 +39,7 @@
    :showValue     {:type 'boolean :reflects-attribute attr-show-value}})
 
 (def event-schema
-  {event-complete {:detail {:value 'number :max 'number}}})
+  {event-complete {:cancelable false :detail {:value 'number :max 'number}}})
 
 (defn normalize-number
   [s default-val]

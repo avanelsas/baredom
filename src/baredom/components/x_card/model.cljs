@@ -32,7 +32,7 @@
 (def event-press "press")
 
 (def event-schema
-  {event-press {:detail {}}})
+  {event-press {:cancelable false :detail {}}})
 
 (defn valid-enum
   [value allowed fallback]
