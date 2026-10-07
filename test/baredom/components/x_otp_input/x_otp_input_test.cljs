@@ -507,3 +507,24 @@
     (when-let [^js cb (.-formDisabledCallback el)]
       (.call cb el false))
     (is (not (.hasAttribute el model/attr-disabled)))))
+
+;; ---------------------------------------------------------------------------
+;; A shadow root that the server sent
+;; ---------------------------------------------------------------------------
+
+(defn- prerendered!
+  "An element in the document that arrived with a shadow root made from markup."
+  []
+  (let [^js holder (.createElement js/document "div")]
+    (.setHTMLUnsafe holder (str "<" model/tag-name "><template shadowrootmode=\"open\">"
+                                "<p id=\"server\">server</p></template></" model/tag-name ">"))
+    (append! (.-firstElementChild holder))))
+
+(defn- in-root [^js el selector]
+  (.querySelector (.-shadowRoot el) selector))
+
+(deftest an-otp-input-takes-over-a-shadow-root-that-the-server-sent
+  (let [el (prerendered!)]
+    (is (nil? (in-root el "#server")) "the server's content is gone")
+    (is (some? (in-root el "[part=root]")) "the group of the component is there")
+    (is (some? (in-root el "input")) "the component has rendered its cells")))

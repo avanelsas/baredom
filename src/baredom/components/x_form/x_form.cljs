@@ -58,7 +58,7 @@
 
 ;; ── Shadow DOM construction ───────────────────────────────────────────────
 (defn- make-shadow! [^js el]
-  (when-not (.-shadowRoot el)
+  (when-not (du/getv el k-refs)
     (let [root     (.attachShadow el #js {:mode "open"})
           style-el (.createElement js/document "style")
           form-el  (.createElement js/document "form")

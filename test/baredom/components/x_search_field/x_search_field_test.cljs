@@ -247,8 +247,7 @@
           input (shadow-part el "[part=input]")
           seen  (atom nil)]
       (.setAttribute el model/attr-name "q")
-      (.setAttribute el model/attr-debounce "0")
-      (.addEventListener
+        (.addEventListener
        el model/event-input
        (fn [^js ev] (reset! seen (.-value (.-detail ev)))))
       (set! (.-value input) "test")
@@ -350,3 +349,29 @@
   (let [el (typed! "abc")]
     (set! (.-value el) "")
     (is (= "" (.-value (shadow-part el "[part=input]"))))))
+
+;; ---------------------------------------------------------------------------
+;; A shadow root that the server sent
+;; ---------------------------------------------------------------------------
+
+(defn- prerendered!
+  "An element in the document that arrived with a shadow root made from markup."
+  []
+  (let [^js holder (.createElement js/document "div")]
+    (.setHTMLUnsafe holder (str "<" model/tag-name "><template shadowrootmode=\"open\">"
+                                "<p id=\"server\">server</p></template></" model/tag-name ">"))
+    (append! (.-firstElementChild holder))))
+
+(defn- in-root [^js el selector]
+  (.querySelector (.-shadowRoot el) selector))
+
+(deftest a-search-field-takes-over-a-shadow-root-that-the-server-sent
+  (let [el     (prerendered!)
+        values (atom [])]
+    (is (nil? (in-root el "#server")) "the server's content is gone")
+    (.addEventListener el model/event-input
+                       (fn [^js e] (swap! values conj (.. e -detail -value))))
+    (let [^js input (in-root el "[part=input]")]
+      (set! (.-value input) "abc")
+      (.dispatchEvent input (js/Event. "input" #js {:bubbles true})))
+    (is (= ["abc"] @values) "the component sends its input event")))
