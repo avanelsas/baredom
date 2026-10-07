@@ -108,6 +108,13 @@ See [`docs/x-trace-history.md`](./x-trace-history.md) for the full user guide, [
 
 ---
 
+## Prerendering
+
+`scripts/prerender.mjs` writes a page back out with every shadow tree in its markup, so the page
+shows before its scripts have run. See [`PRERENDER.md`](PRERENDER.md).
+
+---
+
 ## Linting
 
 ```bash

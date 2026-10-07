@@ -80,6 +80,16 @@ jobs:
       - name: Check bundle sizes
         run: bash scripts/check-bundle-size.sh
 
+      - name: Prerender the task list
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/dev/null 2>&1 &
+          sleep 1
+          node scripts/prerender.mjs http://127.0.0.1:8000/bare-html/tasks.html /tmp/tasks.prerendered.html
+          test "$(grep -o 'data-x-key' /tmp/tasks.prerendered.html | wc -l)" -eq 3
+          test "$(grep -o 'shadowrootmode' /tmp/tasks.prerendered.html | wc -l)" -eq 11
+        env:
+          CHROME_FLAGS: "--no-sandbox"
+
       - name: Build React adapter
         run: |
           bb scripts/generate_react.bb
