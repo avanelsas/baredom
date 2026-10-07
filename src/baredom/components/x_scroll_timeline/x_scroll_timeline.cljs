@@ -76,14 +76,14 @@
    "[part=track-line]{"
    "position:absolute;top:0;bottom:0;left:0;right:0;"
    "background:var(--x-scroll-timeline-track-color);"
-   "border-radius:999px;}"
+   "border-radius:var(--x-radius-full,999px);}"
 
    ;; Straight track fill (progress)
    "[part=track-fill]{"
    "position:absolute;top:0;left:0;right:0;"
    "height:0%;"
    "background:var(--x-scroll-timeline-track-fill-color);"
-   "border-radius:999px;"
+   "border-radius:var(--x-radius-full,999px);"
    "transition:height 60ms linear;}"
 
    ;; SVG track (curved mode) — positioned in container, not inside track div
@@ -231,7 +231,7 @@
 
    "[part=indicator]::before,[part=indicator]::after{"
    "content:'';position:absolute;top:8px;width:12px;height:32px;"
-   "background:rgba(255,255,255,0.9);border-radius:3px;}"
+   "background:rgba(255,255,255,0.9);border-radius:var(--x-radius-sm,3px);}"
 
    "[part=indicator]::before{left:8px;}"
    "[part=indicator]::after{right:8px;}"

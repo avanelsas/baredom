@@ -269,7 +269,7 @@
    "all:unset;"
    "width:var(--x-color-picker-swatch-size);"
    "height:var(--x-color-picker-swatch-size);"
-   "border-radius:4px;"
+   "border-radius:var(--x-radius-sm,4px);"
    "cursor:pointer;"
    "border:1px solid rgba(0,0,0,0.1);"
    "box-sizing:border-box;"

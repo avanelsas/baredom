@@ -83,7 +83,7 @@
 
    "[part=indicator]::before,[part=indicator]::after{"
    "content:'';position:absolute;top:8px;width:12px;height:32px;"
-   "background:rgba(255,255,255,0.9);border-radius:3px;}"
+   "background:rgba(255,255,255,0.9);border-radius:var(--x-radius-sm,3px);}"
 
    "[part=indicator]::before{left:8px;}"
    "[part=indicator]::after{right:8px;}"

@@ -269,7 +269,7 @@
    "font-family:inherit;"
    "color:var(--x-multi-combobox-fg);"
    "cursor:default;"
-   "border-radius:4px;"
+   "border-radius:var(--x-radius-sm,4px);"
    "margin:0 0.25rem;"
    "}"
    "[part=option]:hover{"

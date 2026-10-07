@@ -97,7 +97,7 @@
    "color:var(--x-search-field-clear-color);"
    "font-size:1.125rem;"
    "line-height:1;"
-   "border-radius:4px;"
+   "border-radius:var(--x-radius-sm,4px);"
    "padding:0;"
    "}"
    "[part=clear]:hover{"

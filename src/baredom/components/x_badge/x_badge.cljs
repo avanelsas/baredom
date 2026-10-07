@@ -97,7 +97,7 @@
    "--x-badge-font-size:0.6875rem;"
    "--x-badge-height:1rem;"
    "--x-badge-padding:0 0.25rem;"
-   "--x-badge-radius:0.1875rem;}"
+   "--x-badge-radius:var(--x-radius-sm,0.1875rem);}"
 
    ;; Base element
    "[part=base]{"
@@ -118,7 +118,7 @@
    "box-sizing:border-box;}"
 
    ;; Pill modifier
-   ":host([data-pill]) [part=base]{border-radius:999px;}"
+   ":host([data-pill]) [part=base]{border-radius:var(--x-radius-full,999px);}"
 
    ;; Dot mode — equal width/height, no padding, no label
    ":host([data-dot]) [part=base]{"

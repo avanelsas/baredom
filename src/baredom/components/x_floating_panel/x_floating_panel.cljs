@@ -154,7 +154,7 @@
    "flex:none;"
    "inline-size:1.5rem;"
    "block-size:0.25rem;"
-   "border-radius:999px;"
+   "border-radius:var(--x-radius-full,999px);"
    "background:currentColor;"
    "opacity:0.25;"
    "}"

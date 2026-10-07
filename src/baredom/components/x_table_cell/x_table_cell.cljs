@@ -124,7 +124,7 @@
    "display:inline-flex;"
    "align-items:center;"
    "justify-content:center;"
-   "border-radius:4px;"
+   "border-radius:var(--x-radius-sm,4px);"
    "transition:color var(--x-table-cell-transition-duration) ease;"
    "line-height:1;}"
 

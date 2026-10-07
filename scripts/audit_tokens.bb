@@ -273,6 +273,13 @@
      ["x-splash" "--x-splash-spinner-duration" "0.75s"]]]
    ["An effect that plays once. Its length is part of the effect."
     [["x-particle-button" "animation" "x-pb-glow-pulse 400ms ease-out"]]]
+   ["A ring or a dot. Its roundness is its shape."
+    [["x-avatar" "border-radius" "999px"]
+     ["x-button" "border-radius" "999px"]
+     ["x-particle-button" "border-radius" "999px"]
+     ["x-timeline-item" "border-radius" "999px"]]]
+   ["The shape of a mark. It is not a corner."
+    [["x-checkbox" "border-radius" "1px"]]]
    ["Smoothing tied to scrolling. It follows the pointer and no design default."
     [["x-scroll-parallax" "--x-scroll-parallax-smooth-duration" "80ms"]
      ["x-scroll-stack" "transition" "transform 60ms linear"]

@@ -65,7 +65,7 @@
    "flex-shrink:0;"
    "width:var(--x-avatar-group-size);"
    "height:var(--x-avatar-group-size);"
-   "border-radius:999px;"
+   "border-radius:var(--x-radius-full,999px);"
    "background:var(--x-avatar-group-overflow-bg);"
    "color:var(--x-avatar-group-overflow-color);"
    "border:1px solid var(--x-avatar-group-overflow-border);"
