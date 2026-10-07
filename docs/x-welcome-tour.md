@@ -52,6 +52,8 @@ A guided product tour component with spotlight backdrop, popover steps, and conf
 | `nextLabel`  | string  | `next-label`| Next button text                 |
 | `doneLabel`  | string  | `done-label`| Done button text                 |
 | `skipLabel`  | string  | `skip-label`| Skip button text                 |
+| `counter`    | boolean | `counter`   | Show the step counter            |
+| `dots`       | boolean | `dots`      | Show the dot indicators          |
 
 ## `x-welcome-tour` Methods
 

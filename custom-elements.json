@@ -16741,15 +16741,15 @@
         }
       }, {
         "kind" : "field",
-        "name" : "readonly",
-        "type" : {
-          "text" : "boolean"
-        }
-      }, {
-        "kind" : "field",
         "name" : "type",
         "type" : {
           "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
         }
       }, {
         "kind" : "field",
@@ -16842,7 +16842,7 @@
         }
       }, {
         "name" : "readonly",
-        "fieldName" : "readonly",
+        "fieldName" : "readOnly",
         "type" : {
           "text" : "boolean"
         }

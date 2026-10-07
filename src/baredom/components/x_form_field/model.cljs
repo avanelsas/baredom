@@ -49,7 +49,7 @@
    :placeholder  {:type 'string  :reflects-attribute attr-placeholder}
    :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}
    :disabled     {:type 'boolean :reflects-attribute attr-disabled}
-   :readonly     {:type 'boolean :reflects-attribute attr-readonly}
+   :readOnly     {:type 'boolean :reflects-attribute attr-readonly}
    :required     {:type 'boolean :reflects-attribute attr-required}
    :validity          {:type 'ValidityState   :readonly true}
    :validationMessage {:type 'string          :readonly true}

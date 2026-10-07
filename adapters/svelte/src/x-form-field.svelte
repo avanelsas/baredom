@@ -9,8 +9,8 @@
     disabled?: boolean;
     name?: string;
     value?: string;
-    readonly?: boolean;
     type?: string;
+    readOnly?: boolean;
     label?: string;
     autocomplete?: string;
     required?: boolean;
@@ -31,8 +31,8 @@
     disabled,
     name,
     value,
-    readonly,
     type,
+    readOnly,
     label,
     autocomplete,
     required,
@@ -69,8 +69,8 @@
   {disabled}
   {name}
   {value}
-  {readonly}
   {type}
+  {readOnly}
   {label}
   {autocomplete}
   {required}
