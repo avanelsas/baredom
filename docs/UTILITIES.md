@@ -100,6 +100,13 @@ them and the `.d.ts` marks them `readonly`) and the two methods in `method-api`.
 | `parse-bool-present` | `[s]` | `true` when the attribute is present (any value including `""`) |
 | `non-empty-string?` | `[value]` | String predicate — `true` for non-blank strings |
 
+### Keys
+
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `unique-keys` | `[identities]` | A key for each identity: the identity as text and how many equal ones come before it |
+| `with-unique-keys` | `[identity-of items]` | The maps `items`, each with a `:key` made of its identity |
+
 ### Security sanitizers
 
 | Function | Signature | Description |

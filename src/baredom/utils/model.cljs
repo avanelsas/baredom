@@ -83,3 +83,24 @@
    distinction matters."
   [url]
   (if (safe-url? url) (or url "") ""))
+
+(defn- count-identity [counts identity]
+  (update counts identity (fnil inc 0)))
+
+(defn- key-of [identity seen]
+  (str identity "|" (get seen identity 0)))
+
+(defn unique-keys
+  "A key for each of `identities`, in order: the identity as text, and how many equal ones come
+   before it. Equal identities so get different keys."
+  [identities]
+  (mapv key-of identities (reductions count-identity {} identities)))
+
+(defn- with-key [item item-key]
+  (assoc item :key item-key))
+
+(defn with-unique-keys
+  "The maps `items`, each with a `:key` made of what `identity-of` gives for it."
+  [identity-of items]
+  (mapv with-key items (unique-keys (map identity-of items))))
+
