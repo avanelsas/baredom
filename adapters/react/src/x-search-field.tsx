@@ -16,6 +16,7 @@ export interface XSearchFieldProps {
   label?: string;
   autocomplete?: string;
   required?: boolean;
+  onChangeRequest?: (e: CustomEvent<{ name: string; value: string; previousValue: string }>) => void;
   onInput?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onChange?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onSearch?: (e: CustomEvent<{ name: string; value: string }>) => void;
@@ -29,7 +30,7 @@ export interface XSearchFieldProps {
 
 export const XSearchField = forwardRef<XSearchFieldElement, XSearchFieldProps>(
   function XSearchField(props, forwardedRef) {
-    const { onInput, onChange, onSearch, onClear, children, ...rest } = props;
+    const { onChangeRequest, onInput, onChange, onSearch, onClear, children, ...rest } = props;
     const innerRef = useRef<XSearchFieldElement>(null);
 
     const setRef = (el: XSearchFieldElement | null) => {
@@ -43,6 +44,10 @@ export const XSearchField = forwardRef<XSearchFieldElement, XSearchFieldProps>(
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
+      if (onChangeRequest) {
+        el.addEventListener("x-search-field-change-request", onChangeRequest as EventListener);
+        cleanup.push(() => el.removeEventListener("x-search-field-change-request", onChangeRequest as EventListener));
+      }
       if (onInput) {
         el.addEventListener("x-search-field-input", onInput as EventListener);
         cleanup.push(() => el.removeEventListener("x-search-field-input", onInput as EventListener));
@@ -61,7 +66,7 @@ export const XSearchField = forwardRef<XSearchFieldElement, XSearchFieldProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onInput, onChange, onSearch, onClear]);
+    }, [onChangeRequest, onInput, onChange, onSearch, onClear]);
 
     return <x-search-field ref={setRef} {...rest}>{children}</x-search-field>;
   }

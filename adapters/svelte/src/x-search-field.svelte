@@ -13,6 +13,7 @@
     label?: string;
     autocomplete?: string;
     required?: boolean;
+    onchangerequest?: (e: CustomEvent<{ name: string; value: string; previousValue: string }>) => void;
     oninput?: (e: CustomEvent<{ name: string; value: string }>) => void;
     onchange?: (e: CustomEvent<{ name: string; value: string }>) => void;
     onsearch?: (e: CustomEvent<{ name: string; value: string }>) => void;
@@ -35,6 +36,7 @@
     label,
     autocomplete,
     required,
+    onchangerequest,
     oninput,
     onchange,
     onsearch,
@@ -50,6 +52,9 @@
     const node = el;
     if (!node) return;
     const cleanups: Array<() => void> = [];
+    const onchangerequestHandler = (e: Event) => onchangerequest?.(e as CustomEvent<{ name: string; value: string; previousValue: string }>);
+    node.addEventListener("x-search-field-change-request", onchangerequestHandler);
+    cleanups.push(() => node.removeEventListener("x-search-field-change-request", onchangerequestHandler));
     const oninputHandler = (e: Event) => oninput?.(e as CustomEvent<{ name: string; value: string }>);
     node.addEventListener("x-search-field-input", oninputHandler);
     cleanups.push(() => node.removeEventListener("x-search-field-input", oninputHandler));

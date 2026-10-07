@@ -27,10 +27,12 @@ export class BaredomFormField implements OnInit, OnDestroy {
   @Input() set autocomplete(v: string) { this.el.autocomplete = v as any; }
   @Input() set required(v: boolean) { this.el.required = v as any; }
 
+  @Output() changeRequest = new EventEmitter<CustomEvent<{ name: string; value: string; previousValue: string }>>();
   @Output() input = new EventEmitter<CustomEvent<{ name: string; value: string }>>();
   @Output() change = new EventEmitter<CustomEvent<{ name: string; value: string }>>();
 
   ngOnInit(): void {
+    this.listen('x-form-field-change-request', this.changeRequest);
     this.listen('x-form-field-input', this.input);
     this.listen('x-form-field-change', this.change);
   }

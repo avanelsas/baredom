@@ -16,6 +16,7 @@ export interface XFormFieldProps {
   label?: string;
   autocomplete?: string;
   required?: boolean;
+  onChangeRequest?: (e: CustomEvent<{ name: string; value: string; previousValue: string }>) => void;
   onInput?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onChange?: (e: CustomEvent<{ name: string; value: string }>) => void;
   ref?: XFormFieldElement | ((el: XFormFieldElement) => void);
@@ -27,7 +28,7 @@ export interface XFormFieldProps {
 }
 
 export function XFormField(props: XFormFieldProps): JSX.Element {
-  const [local, others] = splitProps(props, ["onInput", "onChange", "ref", "children"]);
+  const [local, others] = splitProps(props, ["onChangeRequest", "onInput", "onChange", "ref", "children"]);
   let el!: XFormFieldElement;
 
   const setRef = (r: XFormFieldElement) => {
@@ -37,6 +38,11 @@ export function XFormField(props: XFormFieldProps): JSX.Element {
 
   onMount(() => {
     if (!el) return;
+    {
+      const handler = (e: Event) => local.onChangeRequest?.(e as CustomEvent<{ name: string; value: string; previousValue: string }>);
+      el.addEventListener("x-form-field-change-request", handler);
+      onCleanup(() => el.removeEventListener("x-form-field-change-request", handler));
+    }
     {
       const handler = (e: Event) => local.onInput?.(e as CustomEvent<{ name: string; value: string }>);
       el.addEventListener("x-form-field-input", handler);

@@ -16,8 +16,9 @@
 (def attr-autocomplete "autocomplete")
 
 ;; Event name constants
-(def event-input  "x-form-field-input")
-(def event-change "x-form-field-change")
+(def event-change-request "x-form-field-change-request")
+(def event-input          "x-form-field-input")
+(def event-change         "x-form-field-change")
 
 (def observed-attributes
   #js [attr-label
@@ -57,8 +58,9 @@
    :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
-  {event-input  {:cancelable false :detail {:name 'string :value 'string}}
-   event-change {:cancelable false :detail {:name 'string :value 'string}}})
+  {event-change-request {:cancelable true  :detail {:name 'string :value 'string :previousValue 'string}}
+   event-input          {:cancelable false :detail {:name 'string :value 'string}}
+   event-change         {:cancelable false :detail {:name 'string :value 'string}}})
 
 (defn normalize
   "Derives a complete view-model map from raw attribute values."
