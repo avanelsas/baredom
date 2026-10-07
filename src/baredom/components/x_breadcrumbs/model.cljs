@@ -100,14 +100,14 @@
 
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api
-  {:separator    {:type 'string}
-   :size         {:type 'string}
-   :variant      {:type 'string}
-   :wrap         {:type 'boolean}
-   :max-items    {:type 'number}
-   :items-before {:type 'number}
-   :items-after  {:type 'number}
-   :disabled     {:type 'boolean}})
+  {:separator    {:type 'string  :reflects-attribute attr-separator}
+   :size         {:type 'string  :reflects-attribute attr-size}
+   :variant      {:type 'string  :reflects-attribute attr-variant}
+   :wrap         {:type 'boolean :reflects-attribute attr-wrap}
+   :maxItems     {:type 'number  :reflects-attribute attr-max-items}
+   :itemsBefore  {:type 'number  :reflects-attribute attr-items-before}
+   :itemsAfter   {:type 'number  :reflects-attribute attr-items-after}
+   :disabled     {:type 'boolean :reflects-attribute attr-disabled}})
 
 (def event-schema {})
 

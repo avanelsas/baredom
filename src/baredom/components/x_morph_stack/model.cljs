@@ -61,14 +61,15 @@
 (def event-changed  "x-morph-stack-changed")
 
 (def property-api
-  {:activeState  {:type 'string}
-   :activeIndex  {:type 'number}
-   :stiffness    {:type 'number}
-   :damping      {:type 'number}
-   :mass         {:type 'number}
-   :variant      {:type 'string :enum allowed-variants :default default-variant}
-   :duration     {:type 'number :unit 'ms :nullable true}
-   :disabled     {:type 'boolean}})
+  {:activeState  {:type 'string  :reflects-attribute attr-active-state}
+   :activeIndex  {:type 'number  :reflects-attribute attr-active-index}
+   :stiffness    {:type 'number  :reflects-attribute attr-stiffness}
+   :damping      {:type 'number  :reflects-attribute attr-damping}
+   :mass         {:type 'number  :reflects-attribute attr-mass}
+   :variant      {:type 'string  :reflects-attribute attr-variant
+                  :enum allowed-variants :default default-variant}
+   :duration     {:type 'number  :reflects-attribute attr-duration :unit 'ms :nullable true}
+   :disabled     {:type 'boolean :reflects-attribute attr-disabled}})
 
 (def event-schema
   {event-change  {:detail {:from 'string :to 'string :reason 'string}

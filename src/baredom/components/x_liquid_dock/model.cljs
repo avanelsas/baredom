@@ -49,17 +49,17 @@
 
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:position       {:type 'string}
-   :gap            {:type 'number}
-   :blur           {:type 'number}
-   :threshold      {:type 'string}
-   :rippleScale    {:type 'number}
-   :rippleSpeed    {:type 'number}
-   :color          {:type 'string}
-   :magnetRadius   {:type 'number}
-   :magnetStrength {:type 'number}
-   :bobIntensity   {:type 'number}
-   :disabled       {:type 'boolean}})
+  {:position       {:type 'string  :reflects-attribute attr-position}
+   :gap            {:type 'number  :reflects-attribute attr-gap}
+   :blur           {:type 'number  :reflects-attribute attr-blur}
+   :threshold      {:type 'string  :reflects-attribute attr-threshold}
+   :rippleScale    {:type 'number  :reflects-attribute attr-ripple-scale}
+   :rippleSpeed    {:type 'number  :reflects-attribute attr-ripple-speed}
+   :color          {:type 'string  :reflects-attribute attr-color}
+   :magnetRadius   {:type 'number  :reflects-attribute attr-magnet-radius}
+   :magnetStrength {:type 'number  :reflects-attribute attr-magnet-strength}
+   :bobIntensity   {:type 'number  :reflects-attribute attr-bob-intensity}
+   :disabled       {:type 'boolean :reflects-attribute attr-disabled}})
 
 ;; ── Defaults ────────────────────────────────────────────────────────────────
 (def ^:private default-position        "bottom")

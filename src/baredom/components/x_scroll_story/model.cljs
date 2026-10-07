@@ -34,17 +34,17 @@
 
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:layout            {:type 'string}
-   :threshold         {:type 'number}
-   :split             {:type 'number}
-   :disabled          {:type 'boolean}
-   :label             {:type 'string}
+  {:layout            {:type 'string  :reflects-attribute attr-layout}
+   :threshold         {:type 'number  :reflects-attribute attr-threshold}
+   :split             {:type 'number  :reflects-attribute attr-split}
+   :disabled          {:type 'boolean :reflects-attribute attr-disabled}
+   :label             {:type 'string  :reflects-attribute attr-label}
    :activeIndex       {:type 'number  :read-only true}
    :progress          {:type 'number  :read-only true}
-   :autoplay          {:type 'boolean}
-   :autoplaySpeed     {:type 'number}
-   :autoplayLoop      {:type 'boolean}
-   :autoplayIndicator {:type 'boolean}
+   :autoplay          {:type 'boolean :reflects-attribute attr-autoplay}
+   :autoplaySpeed     {:type 'number  :reflects-attribute attr-autoplay-speed}
+   :autoplayLoop      {:type 'boolean :reflects-attribute attr-autoplay-loop}
+   :autoplayIndicator {:type 'boolean :reflects-attribute attr-autoplay-indicator}
    :autoplayPaused    {:type 'boolean :read-only true}})
 
 ;; ── Event schema ────────────────────────────────────────────────────────────

@@ -46,7 +46,7 @@
    :disabled {:type 'boolean :reflects-attribute attr-disabled}
    :loading  {:type 'boolean :reflects-attribute attr-loading}
    :selected {:type 'string :reflects-attribute attr-selected}
-   :data     {:type 'array}})
+   :data     {:type 'array   :reflects-attribute attr-data}})
 
 ;; ---- Pure parsing helpers ----
 

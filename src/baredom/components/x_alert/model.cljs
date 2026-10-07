@@ -16,12 +16,12 @@
 (def event-dismiss "x-alert-dismiss")
 
 (def property-api
-  {:type        {:type 'string}
-   :text        {:type 'string}
-   :icon        {:type 'string}
-   :dismissible {:type 'boolean}
-   :disabled    {:type 'boolean}
-   :timeoutMs   {:type 'number}})
+  {:type        {:type 'string  :reflects-attribute attr-type}
+   :text        {:type 'string  :reflects-attribute attr-text}
+   :icon        {:type 'string  :reflects-attribute attr-icon}
+   :dismissible {:type 'boolean :reflects-attribute attr-dismissible}
+   :disabled    {:type 'boolean :reflects-attribute attr-disabled}
+   :timeoutMs   {:type 'number  :reflects-attribute attr-timeout-ms}})
 
 (def event-schema
   {event-dismiss {:detail     {:type 'string :reason 'string :text 'string}

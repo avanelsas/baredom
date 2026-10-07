@@ -168,6 +168,15 @@
     (set! (.-page el) 7)
     (is (= "7" (.getAttribute el model/attr-page)))))
 
+(deftest the-count-properties-reflect-their-attributes
+  (let [^js el (make-el {"page" "1" "total-pages" "5"})]
+    (set! (.-totalPages el) 20)
+    (set! (.-siblingCount el) 2)
+    (set! (.-boundaryCount el) 3)
+    (is (= ["20" "2" "3"]
+           (mapv #(.getAttribute el %) ["total-pages" "sibling-count" "boundary-count"])))
+    (is (= [20 2 3] [(.-totalPages el) (.-siblingCount el) (.-boundaryCount el)]))))
+
 (deftest disabled-property-getter-test
   (let [^js el (make-el {})]
     (is (false? (.-disabled el)))))

@@ -902,7 +902,9 @@
   (du/define-string-prop! proto "prevLabel" model/attr-prev-label "Back")
   (du/define-string-prop! proto "nextLabel" model/attr-next-label "Next")
   (du/define-string-prop! proto "doneLabel" model/attr-done-label "Done")
-  (du/define-string-prop! proto "skipLabel" model/attr-skip-label "Skip"))
+  (du/define-string-prop! proto "skipLabel" model/attr-skip-label "Skip")
+  (du/define-bool-prop!   proto "counter"   model/attr-counter)
+  (du/define-bool-prop!   proto "dots"      model/attr-dots))
 
 ;; ── Install public methods ──────────────────────────────────────────────────
 (defn- install-methods! [^js proto]

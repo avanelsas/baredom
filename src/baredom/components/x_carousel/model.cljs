@@ -41,15 +41,15 @@
 ;; ── Metadata ────────────────────────────────────────────────────────────────
 (def property-api
   {:currentSlide {:type 'number}
-   :autoplay     {:type 'boolean}
-   :interval     {:type 'number}
-   :loop         {:type 'boolean}
-   :arrows       {:type 'boolean}
-   :dots         {:type 'boolean}
-   :disabled     {:type 'boolean}
-   :transition   {:type 'string}
-   :direction    {:type 'string}
-   :peek         {:type 'string}
+   :autoplay     {:type 'boolean :reflects-attribute attr-autoplay}
+   :interval     {:type 'number  :reflects-attribute attr-interval}
+   :loop         {:type 'boolean :reflects-attribute attr-loop}
+   :arrows       {:type 'boolean :reflects-attribute attr-arrows}
+   :dots         {:type 'boolean :reflects-attribute attr-dots}
+   :disabled     {:type 'boolean :reflects-attribute attr-disabled}
+   :transition   {:type 'string  :reflects-attribute attr-transition}
+   :direction    {:type 'string  :reflects-attribute attr-direction}
+   :peek         {:type 'string  :reflects-attribute attr-peek}
    :slideCount   {:type 'number :readonly true}})
 
 (def event-schema

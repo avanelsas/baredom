@@ -52,19 +52,19 @@
 
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:layout      {:type 'string}
-   :track       {:type 'string}
-   :threshold   {:type 'number}
-   :noProgress  {:type 'boolean}
-   :disabled    {:type 'boolean}
-   :label       {:type 'string}
-   :marker      {:type 'string}
+  {:layout      {:type 'string  :reflects-attribute attr-layout}
+   :track       {:type 'string  :reflects-attribute attr-track}
+   :threshold   {:type 'number  :reflects-attribute attr-threshold}
+   :noProgress  {:type 'boolean :reflects-attribute attr-no-progress}
+   :disabled    {:type 'boolean :reflects-attribute attr-disabled}
+   :label       {:type 'string  :reflects-attribute attr-label}
+   :marker      {:type 'string  :reflects-attribute attr-marker}
    :activeIndex {:type 'number :readonly true}
    :progress    {:type 'number :readonly true}
-   :autoplay          {:type 'boolean}
-   :autoplaySpeed     {:type 'number}
-   :autoplayLoop      {:type 'boolean}
-   :autoplayIndicator {:type 'boolean}
+   :autoplay          {:type 'boolean :reflects-attribute attr-autoplay}
+   :autoplaySpeed     {:type 'number  :reflects-attribute attr-autoplay-speed}
+   :autoplayLoop      {:type 'boolean :reflects-attribute attr-autoplay-loop}
+   :autoplayIndicator {:type 'boolean :reflects-attribute attr-autoplay-indicator}
    :autoplayPaused    {:type 'boolean :readonly true}})
 
 ;; ── Event schema ────────────────────────────────────────────────────────────

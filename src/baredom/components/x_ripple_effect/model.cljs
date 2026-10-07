@@ -14,10 +14,10 @@
 (def event-end   "x-ripple-effect-end")
 
 (def property-api
-  {:intensity {:type 'number}
-   :duration  {:type 'number}
-   :frequency {:type 'number}
-   :disabled  {:type 'boolean}})
+  {:intensity {:type 'number  :reflects-attribute attr-intensity}
+   :duration  {:type 'number  :reflects-attribute attr-duration}
+   :frequency {:type 'number  :reflects-attribute attr-frequency}
+   :disabled  {:type 'boolean :reflects-attribute attr-disabled}})
 
 (def event-schema
   {event-start {:detail {:x 'number :y 'number} :cancelable false}

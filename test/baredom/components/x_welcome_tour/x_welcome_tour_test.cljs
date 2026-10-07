@@ -118,6 +118,20 @@
     (set! (.-skipLabel el) "Exit")
     (is (= "Exit" (.getAttribute el "skip-label")))))
 
+(deftest the-counter-and-dots-properties-reflect-their-attributes
+  (let [^js el (append! (make-tour 1))]
+    (set! (.-counter el) true)
+    (set! (.-dots el) true)
+    (is (= ["" ""] [(.getAttribute el "counter") (.getAttribute el "dots")]))
+    (set! (.-counter el) false)
+    (set! (.-dots el) false)
+    (is (= [false false] [(.hasAttribute el "counter") (.hasAttribute el "dots")]))))
+
+(deftest the-counter-and-dots-properties-read-their-attributes
+  (let [^js el (append! (make-tour 1))]
+    (.setAttribute el "counter" "")
+    (is (= [true false] [(.-counter el) (.-dots el)]))))
+
 ;; ── Open / close ────────────────────────────────────────────────────────────
 (deftest open-creates-overlay-test
   (async done

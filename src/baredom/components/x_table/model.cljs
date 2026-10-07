@@ -24,14 +24,14 @@
 ;; ── Property API metadata ────────────────────────────────────────────────────
 
 (def property-api
-  {:columns    {:type 'string}
-   :caption    {:type 'string}
-   :selectable {:type 'string}
-   :striped    {:type 'boolean}
-   :bordered   {:type 'boolean}
-   :fullWidth  {:type 'boolean}
-   :compact    {:type 'boolean}
-   :rowCount   {:type 'number}})
+  {:columns    {:type 'string  :reflects-attribute attr-columns}
+   :caption    {:type 'string  :reflects-attribute attr-caption}
+   :selectable {:type 'string  :reflects-attribute attr-selectable}
+   :striped    {:type 'boolean :reflects-attribute attr-striped}
+   :bordered   {:type 'boolean :reflects-attribute attr-bordered}
+   :fullWidth  {:type 'boolean :reflects-attribute attr-full-width}
+   :compact    {:type 'boolean :reflects-attribute attr-compact}
+   :rowCount   {:type 'number  :reflects-attribute attr-row-count}})
 
 (def event-schema
   {event-sort

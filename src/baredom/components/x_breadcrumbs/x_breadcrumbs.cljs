@@ -284,8 +284,8 @@
   (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
-(defn- def-int-prop! [^js proto attr default]
-  (.defineProperty js/Object proto attr
+(defn- def-int-prop! [^js proto prop attr default]
+  (.defineProperty js/Object proto prop
                    #js {:get (fn []
                                (this-as ^js this
                                  (model/parse-pos-int
@@ -304,9 +304,9 @@
   (du/define-bool-prop!   proto model/attr-wrap                   model/attr-wrap)
   (du/define-bool-prop!   proto model/attr-disabled               model/attr-disabled)
   (du/define-bool-prop!   proto model/attr-preserve-aria-current  model/attr-preserve-aria-current)
-  (def-int-prop!          proto model/attr-max-items    nil)
-  (def-int-prop!          proto model/attr-items-before model/default-items-before)
-  (def-int-prop!          proto model/attr-items-after  model/default-items-after)
+  (def-int-prop!          proto "maxItems"    model/attr-max-items    nil)
+  (def-int-prop!          proto "itemsBefore" model/attr-items-before model/default-items-before)
+  (def-int-prop!          proto "itemsAfter"  model/attr-items-after  model/default-items-after)
   (du/define-string-prop! proto model/attr-aria-label             model/attr-aria-label)
   (du/define-string-prop! proto model/attr-aria-describedby       model/attr-aria-describedby))
 

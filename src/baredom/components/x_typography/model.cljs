@@ -11,10 +11,10 @@
   #js [attr-variant attr-align attr-truncate attr-line-clamp])
 
 (def property-api
-  {:variant   {:type 'string}
-   :align     {:type 'string}
-   :truncate  {:type 'boolean}
-   :lineClamp {:type 'number}})
+  {:variant   {:type 'string  :reflects-attribute attr-variant}
+   :align     {:type 'string  :reflects-attribute attr-align}
+   :truncate  {:type 'boolean :reflects-attribute attr-truncate}
+   :lineClamp {:type 'number  :reflects-attribute attr-line-clamp}})
 
 (def event-schema {})
 

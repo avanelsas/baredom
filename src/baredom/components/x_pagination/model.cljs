@@ -136,13 +136,13 @@
 
 ;; ── Metadata ──────────────────────────────────────────────────────────────
 (def property-api
-  {:page           {:type 'number}
-   :total-pages    {:type 'number}
-   :sibling-count  {:type 'number}
-   :boundary-count {:type 'number}
-   :size           {:type 'string}
-   :disabled       {:type 'boolean}
-   :label          {:type 'string}})
+  {:page           {:type 'number  :reflects-attribute attr-page}
+   :totalPages     {:type 'number  :reflects-attribute attr-total-pages}
+   :siblingCount   {:type 'number  :reflects-attribute attr-sibling-count}
+   :boundaryCount  {:type 'number  :reflects-attribute attr-boundary-count}
+   :size           {:type 'string  :reflects-attribute attr-size}
+   :disabled       {:type 'boolean :reflects-attribute attr-disabled}
+   :label          {:type 'string  :reflects-attribute attr-label}})
 
 (def event-schema
   {event-change-request {:cancelable true

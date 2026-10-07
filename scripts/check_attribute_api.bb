@@ -22,6 +22,12 @@
 ;; `x-timeline-item` observes four `data-*` attributes, none declared that way. The
 ;; tightening was tried and produces five false positives.
 ;;
+;; It also checks each property that reflects an attribute against the component.
+;; The model says which attribute a property reflects, and the manifest takes the
+;; attribute's type from that. The component installs the property somewhere else:
+;; from the model's data, with a call that names the property and the attribute, or
+;; in a hand-written block. A link that no install agrees with is reported.
+;;
 ;; Usage: bb scripts/check_attribute_api.bb
 
 (load-file "scripts/metadata.bb")
@@ -52,12 +58,161 @@
            :when (not (contains? declared a))]
        (str tag-name " publishes " (pr-str a) ", which its model never declares")))))
 
-(let [models (discover-models)
-      found  (mapcat problems models)
-      total  (reduce + (map (comp count :attributes) models))]
+(require '[clojure.walk :as walk]
+         '[edamame.core :as edamame])
+
+(defn- component-forms [dir-name]
+  (mapcat (fn [^java.io.File f]
+            (edamame/parse-string-all (slurp f) {:all true :readers {'js identity} :auto-resolve name}))
+          (filter (fn [^java.io.File f]
+                    (and (str/ends-with? (.getName f) ".cljs") (not= "model.cljs" (.getName f))))
+                  (.listFiles (io/file components-dir dir-name)))))
+
+(defn- text-of
+  "The text a literal or a symbol for an attribute or a property stands for, or nil."
+  [x string-defs]
+  (cond
+    (string? x) x
+    (and (symbol? x) (re-find #"^(attr|prop)-" (name x))) (get string-defs (symbol (name x)))))
+
+(defn- unrolled
+  "The body of a `doseq` over a literal vector, once for each item, or nil."
+  [[head bindings & body]]
+  (when (and (= 'doseq head) (vector? bindings))
+    (let [[sym items] bindings]
+      (when (and (symbol? sym) (vector? items))
+        (mapcat #(walk/postwalk-replace {sym %} body) items)))))
+
+(defn- subforms
+  "Every list in `forms`, with the body of each loop over a literal vector written out."
+  [forms]
+  (let [lists (filter seq? (tree-seq coll? seq forms))]
+    (concat lists (filter seq? (tree-seq coll? seq (mapcat unrolled lists))))))
+
+(def ^:private writers
+  "Calls that take `proto` and a name and do not install a reflecting property."
+  '#{aset gobj/set unchecked-set .defineProperty})
+
+(defn- install-pair
+  "The texts an install call names, as a set, or nil. An install call takes `proto` and then
+   a property and an attribute in either order, or one name that serves as both."
+  [[head proto a b] string-defs]
+  (let [texts (keep #(text-of % string-defs) [a b])]
+    (when (and (symbol? head) (not (writers head)) (= 'proto proto)
+               (text-of a string-defs))
+      (set texts))))
+
+(defn- defines?
+  "True when `form` defines the property `prop` and holds a symbol that stands for `attr`."
+  [form prop attr string-defs]
+  (let [[head _ _ defined] form]
+    (and (= '.defineProperty head)
+         (= prop (text-of defined string-defs))
+         (some #(and (symbol? %) (= attr (text-of % string-defs)))
+               (tree-seq coll? seq (drop 4 form))))))
+
+(def ^:private installed-by-data
+  "The property types that `du/install-properties!` installs."
+  #{"boolean" "string" "number"})
+
+(defn- links
+  "Each reflected property of a component with how its install was found: `:call`, `:data` or
+   `:block` when it agrees, `:wrong` with the pairs that differ, or `:missing`."
+  [{:keys [tag-name dir-name properties string-defs]}]
+  (let [forms (subforms (component-forms dir-name))
+        pairs (into #{} (keep #(install-pair % string-defs)) forms)
+        data? (some #{'(du/install-properties! proto model/property-api)} forms)]
+    (for [[k {:keys [type reflects-attribute readonly]}] properties
+          :when (and reflects-attribute (not readonly))
+          :let  [prop   (name k)
+                 attr   (resolve-sym reflects-attribute string-defs)
+                 link   (set [prop attr])
+                 others (filter #(some link %) pairs)]]
+      {:tag tag-name :prop prop :attr attr :others others
+       :how (cond
+              (pairs link)                                              :call
+              (and data? (installed-by-data (normalize-type-sym type))) :data
+              (some #(defines? % prop attr string-defs) forms)          :block
+              (seq others)                                              :wrong
+              :else                                                     :missing)})))
+
+(defn- name-problems
+  "The properties of a component whose name has a dash. A JavaScript property is in camel case."
+  [{:keys [tag-name properties]}]
+  (for [k (keys properties) :when (str/includes? (name k) "-")]
+    (str tag-name " declares the property " (name k) ", which has a dash in its name")))
+
+(defn- link-problem [{:keys [tag prop attr others how]}]
+  (case how
+    :wrong   (str tag " declares that " prop " reflects " (pr-str attr)
+                  ", and an install call names " (pr-str (mapv (comp vec sort) others)))
+    :missing (str tag " declares that " prop " reflects " (pr-str attr)
+                  ", and does not install it")
+    nil))
+
+(defn- aria? [attr-name]
+  (str/starts-with? attr-name "aria-"))
+
+(defn- declared-attributes
+  "A map from each attribute of a component to the type and the field name its model gives it.
+   A reflecting property gives both. An `aria-` attribute is text. Any other has neither."
+  [{:keys [attributes properties string-defs]}]
+  (let [reflected (into {}
+                        (keep (fn [[k {:keys [type reflects-attribute]}]]
+                                (when reflects-attribute
+                                  [(resolve-sym reflects-attribute string-defs)
+                                   {:type (cljs-type->ts type) :field (name k)}])))
+                        properties)]
+    (into {}
+          (map (fn [attr] [attr (or (reflected attr) (when (aria? attr) {:type "string"}) {})]))
+          attributes)))
+
+(defn- manifest-attributes
+  "A map from each tag to its attributes as the manifest on disk publishes them."
+  []
+  (into {}
+        (for [m (:modules (json/parse-string (slurp "custom-elements.json") true))
+              d (:declarations m)
+              :when (:tagName d)]
+          [(:tagName d)
+           (into {}
+                 (map (fn [a] [(:name a) (cond-> {}
+                                           (:type a)      (assoc :type (get-in a [:type :text]))
+                                           (:fieldName a) (assoc :field (:fieldName a)))]))
+                 (:attributes d))])))
+
+(defn- manifest-problems
+  "Where the manifest gives an attribute another type or field name than its model."
+  [{:keys [tag-name] :as model} manifest]
+  (let [declared  (declared-attributes model)
+        published (get manifest tag-name)]
+    (for [attr (sort (set (concat (keys declared) (keys published))))
+          :let  [d (get declared attr) p (get published attr)]
+          :when (not= d p)]
+      (str tag-name " declares " attr " as " (pr-str d)
+           " and the manifest publishes " (pr-str p)))))
+
+(defn- untyped
+  "The attributes of a component to which its model gives no type."
+  [model]
+  (keep (fn [[attr {:keys [type]}]] (when-not type attr)) (declared-attributes model)))
+
+(let [models   (discover-models)
+      links    (mapcat links models)
+      manifest (manifest-attributes)
+      found    (concat (mapcat problems models)
+                       (mapcat name-problems models)
+                       (keep link-problem links)
+                       (mapcat #(manifest-problems % manifest) models))
+      total    (reduce + (map (comp count :attributes) models))
+      how      (frequencies (map :how links))]
   (if (seq found)
     (do (doseq [p found] (println "  " p))
         (println (count found) "problems")
         (System/exit 1))
-    (println (format "%d attributes across %d components agree with their model"
-                     total (count models)))))
+    (do (println (format "%d attributes across %d components agree with their model"
+                         total (count models)))
+        (println (format "%d reflect a property: %d by data, %d by an install call, %d in a hand-written block"
+                         (count links) (:data how 0) (:call how 0) (:block how 0)))
+        (println (format "%d attributes have no type"
+                         (count (mapcat untyped models)))))))

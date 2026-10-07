@@ -56,9 +56,9 @@
 
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api
-  {:size {:type 'string}
-   :axis {:type 'string}
-   :grow {:type 'boolean}})
+  {:size {:type 'string  :reflects-attribute attr-size}
+   :axis {:type 'string  :reflects-attribute attr-axis}
+   :grow {:type 'boolean :reflects-attribute attr-grow}})
 
 (def event-schema {})
 

@@ -46,8 +46,8 @@
         default-max))))
 
 (def property-api
-  {:position {:type 'string}
-   :max      {:type 'number}
+  {:position {:type 'string  :reflects-attribute attr-position}
+   :max      {:type 'number  :reflects-attribute attr-max}
    :count    {:type 'number :readonly true}})
 
 (def event-schema

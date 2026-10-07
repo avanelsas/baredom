@@ -86,13 +86,13 @@
 
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api
-  {:variant {:type 'string}
-   :size    {:type 'string}
-   :pill    {:type 'boolean}
-   :dot     {:type 'boolean}
-   :count   {:type 'number}
-   :max     {:type 'number}
-   :text    {:type 'string}})
+  {:variant {:type 'string  :reflects-attribute attr-variant}
+   :size    {:type 'string  :reflects-attribute attr-size}
+   :pill    {:type 'boolean :reflects-attribute attr-pill}
+   :dot     {:type 'boolean :reflects-attribute attr-dot}
+   :count   {:type 'number  :reflects-attribute attr-count}
+   :max     {:type 'number  :reflects-attribute attr-max}
+   :text    {:type 'string  :reflects-attribute attr-text}})
 
 (def event-schema {})
 
