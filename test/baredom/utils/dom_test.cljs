@@ -189,6 +189,20 @@
     (set! (.-testTimeout el) js/NaN)
     (is (not (.hasAttribute el "timeout")))))
 
+(defn- timeout-after
+  "The timeout attribute of a new element after `value` is written to its number property."
+  [value]
+  (let [^js el (append! (make-el))]
+    (du/define-number-prop! el "testTimeout" "timeout" 3000)
+    (set! (.-testTimeout el) value)
+    (.getAttribute el "timeout")))
+
+(deftest a-number-property-writes-numeric-text-as-a-number
+  (is (= ["5000" "2.5" "7" "3"] (mapv timeout-after ["5000" "2.5" " 7 " "3px"]))))
+
+(deftest a-number-property-removes-its-attribute-for-a-value-that-is-not-a-number
+  (is (= [nil nil nil nil] (mapv timeout-after ["abc" "" nil true]))))
+
 ;; ── install-properties! ─────────────────────────────────────────────────────
 
 (deftest install-properties-bool-test

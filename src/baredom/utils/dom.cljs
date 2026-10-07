@@ -313,6 +313,12 @@
                                  (set-attr! this attr-name s)
                                  (remove-attr! this attr-name))))})))
 
+(defn- number-attr-text
+  "The attribute text for a value written to a number property, or nil when it has no number."
+  [v]
+  (let [n (js/parseFloat v)]
+    (when-not (js/isNaN n) (str n))))
+
 (defn define-number-prop!
   "Install a numeric JS property that reflects to/from an HTML attribute.
    `default-val` is returned when the attribute is absent or non-numeric."
@@ -330,8 +336,8 @@
                             default-val))))
         :set (fn [v]
                (this-as ^js this
-                        (if (and (number? v) (not (js/isNaN v)))
-                          (set-attr! this attr-name (str v))
+                        (if-let [text (number-attr-text v)]
+                          (set-attr! this attr-name text)
                           (remove-attr! this attr-name))))}))
 
 (defn define-parsed-prop!

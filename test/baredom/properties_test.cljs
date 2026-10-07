@@ -52,15 +52,18 @@
   [api]
   (for [[k {:keys [type reflects-attribute readonly]}] api
         :when (and reflects-attribute (not readonly))]
-    {:prop (name k) :attr reflects-attribute :values (get samples type)}))
+    {:prop (name k) :attr reflects-attribute :type type :values (get samples type)}))
 
 (deftest every-reflected-property-writes-its-attribute-and-reads-it-back
   (doseq [{:keys [init! tag api]} cases]
     (init!)
-    (doseq [{:keys [prop attr values]} (reflected api)]
+    (doseq [{:keys [prop attr type values]} (reflected api)]
       (testing (str tag " " prop)
         (when (is (some? values) "the type of the property has sample values")
           (let [el      (element! tag)
                 results (mapv #(write! el prop attr %) values)]
             (is (= values (mapv :read results)) "each value reads back")
-            (is (apply not= (map :attribute results)) "each value changes the attribute")))))))
+            (is (apply not= (map :attribute results)) "each value changes the attribute")
+            (when (= 'number type)
+              (is (= "7" (:attribute (write! el prop attr "7")))
+                  "numeric text reaches the attribute"))))))))
