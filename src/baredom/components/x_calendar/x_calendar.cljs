@@ -78,6 +78,7 @@
    "--x-calendar-range-text:var(--x-color-primary-active,#1e40af);"
    "--x-calendar-today-ring:var(--x-color-primary,#2563eb);"
    "}"
+   du/hidden-rule
    "[part=calendar]{"
    "position:relative;box-sizing:border-box;"
    "width:var(--x-calendar-width,18rem);max-width:calc(100vw - 2rem);"

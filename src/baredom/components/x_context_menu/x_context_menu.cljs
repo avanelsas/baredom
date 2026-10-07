@@ -40,7 +40,7 @@
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private host-style-text
-  ":host{display:contents;}slot{display:none;}")
+  (str ":host{display:contents;}" du/hidden-rule "slot{display:none;}"))
 
 (def ^:private panel-style-text
   (str

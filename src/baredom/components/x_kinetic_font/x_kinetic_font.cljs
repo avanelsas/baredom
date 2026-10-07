@@ -55,6 +55,7 @@
    model/css-opsz-min ":8;"
    model/css-opsz-max ":144;"
    model/css-skew-max ":-15;}"
+   du/hidden-rule
 
    "[part=container]{"
    "color:var(" model/css-color ",currentColor);"

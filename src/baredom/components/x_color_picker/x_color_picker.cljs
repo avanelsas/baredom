@@ -37,6 +37,7 @@
    "--x-color-picker-focus-ring:var(--x-color-focus-ring,#60a5fa);"
    "--x-color-picker-disabled-opacity:0.45;"
    "}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

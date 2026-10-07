@@ -19,6 +19,7 @@
    "--x-skeleton-highlight:rgba(255,255,255,0.65);"
    "--x-skeleton-border-radius:var(--x-radius-sm,4px);"
    "--x-skeleton-duration:1.5s;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

@@ -35,6 +35,7 @@
    "overflow:hidden;"
    "z-index:var(" model/css-z-index ",0);"
    "inset:var(" model/css-inset ",auto);}"
+   du/hidden-rule
 
    "canvas{"
    "display:block;"

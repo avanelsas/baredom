@@ -26,6 +26,7 @@
   (str
    ":host{display:block;}"
    ":host([inline]){display:inline-block;}"
+   du/hidden-rule
    ".base{"
    "display:grid;"
    "box-sizing:border-box;"

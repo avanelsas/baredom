@@ -48,6 +48,7 @@
    "--x-splash-progress-radius:var(--x-radius-sm, 2px);"
    "--x-splash-gap:20px;"
    "--x-splash-blur-amount:8px;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

@@ -50,6 +50,7 @@
    "--x-chart-crosshair-color:var(--x-color-border,rgba(0,0,0,0.18));"
    "--x-chart-crosshair-width:1;"
    "}"
+   du/hidden-rule
    "@media(prefers-color-scheme:dark){"
    ":host{"
    "--x-chart-series-1:rgba(120,190,255,0.95);"

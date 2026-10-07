@@ -88,7 +88,7 @@
 (def ^:private style-text
   (str
    ":host{display:block;box-sizing:border-box;}"
-   ":host([hidden]){display:none;}"
+   du/hidden-rule
 
    ".sr-only{"
    "position:absolute;width:1px;height:1px;padding:0;margin:-1px;"

@@ -53,6 +53,7 @@
    "--x-table-caption-font-weight:600;"
    "--x-table-caption-padding:0 0 0.5rem;"
    "--x-table-compact-padding:0.25rem 0.5rem;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

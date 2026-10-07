@@ -91,6 +91,7 @@
    "--x-cancel-dialogue-enter-duration:0ms;"
    "--x-cancel-dialogue-exit-duration:0ms;"
    "}"
+   du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-cancel-dialogue-bg:var(--x-color-bg,#1e293b);"

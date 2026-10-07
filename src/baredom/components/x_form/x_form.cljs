@@ -46,6 +46,7 @@
 (def ^:private style-text
   (str
    ":host{display:block;}"
+   du/hidden-rule
    "[part=root]{"
    "display:flex;"
    "flex-direction:column;"

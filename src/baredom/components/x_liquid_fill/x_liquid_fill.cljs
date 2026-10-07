@@ -73,6 +73,7 @@
    model/css-color-2 ":#D4AF37;"
    model/css-color-3 ":#F9F295;"
    model/css-specular ":rgba(255,255,240,0.6);}"
+   du/hidden-rule
 
    ":host{"
    "background:var(" model/css-bg ",transparent);"

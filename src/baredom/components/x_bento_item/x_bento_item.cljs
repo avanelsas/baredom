@@ -21,6 +21,7 @@
 (def ^:private style-text
   (str
    ":host{display:block;min-width:0;min-height:0;}"
+   du/hidden-rule
    ".base{width:100%;height:100%;box-sizing:border-box;}"))
 
 ;; ── DOM initialisation ────────────────────────────────────────────────────

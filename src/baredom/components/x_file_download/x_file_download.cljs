@@ -57,6 +57,7 @@
    "--x-file-download-disabled-opacity:0.45;"
    "--x-file-download-transition:background var(--x-transition-duration,120ms) ease;"
    "}"
+   du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-file-download-bg:var(--x-color-primary,#3b82f6);"

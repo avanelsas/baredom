@@ -79,6 +79,7 @@
    "--x-collapse-chevron-color:var(--x-color-text-muted, #64748b);"
    "--x-collapse-focus-ring:var(--x-color-focus-ring, #60a5fa);"
    "}"
+   du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-collapse-border:1px solid var(--x-color-border,#334155);"

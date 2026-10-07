@@ -16,6 +16,7 @@
    "height:var(--x-spacer-size,1rem);"
    "width:0;"
    "pointer-events:none;}"
+   du/hidden-rule
 
    ":host([data-axis='horizontal']){"
    "height:0;"

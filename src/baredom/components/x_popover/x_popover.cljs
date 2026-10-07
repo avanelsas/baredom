@@ -57,6 +57,7 @@
    "--x-popover-transition-duration:var(--x-transition-duration,150ms);"
    "--x-popover-transition-easing:var(--x-transition-easing,ease);"
    "}"
+   du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-popover-panel-bg:var(--x-color-bg,#1e293b);"

@@ -59,6 +59,7 @@
    "--x-divider-thickness:1px;"
    "--x-divider-inset:0px;"
    "--x-divider-length:auto;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

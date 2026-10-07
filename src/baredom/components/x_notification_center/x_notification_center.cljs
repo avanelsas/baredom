@@ -32,6 +32,7 @@
    "--x-notification-center-z-index:9999;"
    "pointer-events:none;"
    "}"
+   du/hidden-rule
 
    ":host([data-position='top-right']){"
    "top:var(--x-notification-center-offset-y);"

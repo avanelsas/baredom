@@ -41,6 +41,7 @@
    "--x-kbd-font-size:0.875em;"
    "--x-kbd-shadow:inset 0 -1px 0 rgba(0,0,0,0.08);"
    "--x-kbd-separator-color:var(--x-color-text-muted,currentColor);}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

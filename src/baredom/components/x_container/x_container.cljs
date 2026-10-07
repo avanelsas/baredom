@@ -38,7 +38,8 @@
 
 ;; ── Styles ─────────────────────────────────────────────────────────────────
 (def ^:private style-text
-  "
+  (str
+   "
   :host{
   display:block;
   color-scheme:light dark;
@@ -61,7 +62,9 @@
   --x-container-border:transparent;
   --x-container-radius:0;
   --x-container-shadow:none;
-  }
+  }"
+   du/hidden-rule
+   "
 
   @media (prefers-color-scheme: dark){
   :host{
@@ -113,7 +116,7 @@
   width:100%;
   }
 
-  ")
+  "))
 
 ;; ── DOM initialisation ─────────────────────────────────────────────────────
 (defn- create-base! [tag]

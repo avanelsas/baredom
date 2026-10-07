@@ -42,7 +42,7 @@
    model/css-item-size ":48px;"
    "}"
 
-   ":host([hidden]){display:none;}"
+   du/hidden-rule
 
    "[part=track]{"
    "display:flex;"

@@ -13,6 +13,7 @@
 (def ^:private style-text
   (str
    ":host{display:block;color-scheme:light dark;}"
+   du/hidden-rule
    ".base{display:flex;flex-direction:row;}"
    ".base[aria-orientation='vertical']{flex-direction:column;}"
    "::slotted(x-tab){margin-inline-end:var(--x-tabs-gap,8px);}"

@@ -40,7 +40,7 @@
    "  display: block;"
    "  position: relative;"
    "}"
-   ":host([hidden]) { display: none; }"
+   du/hidden-rule
    ".backdrop[hidden] { display: none; }"
    ".backdrop {"
    "  position: fixed;"

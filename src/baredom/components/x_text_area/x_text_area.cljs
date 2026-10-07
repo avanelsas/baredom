@@ -36,6 +36,7 @@
    "--x-text-area-font-size:var(--x-font-size-base,1rem);"
    "--x-text-area-resize:vertical;"
    "}"
+   du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-text-area-label-color:var(--x-color-border,#d1d5db);"

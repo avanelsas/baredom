@@ -46,6 +46,7 @@
    model/css-specular-color ":rgba(255,255,255,0.6);"
    model/css-spring ":" model/spring-easing ";"
    model/css-spring-duration ":" model/spring-duration ";}"
+   du/hidden-rule
 
    ;; SVG blob layer — renders the organic goo shape
    "[part=svg]{"

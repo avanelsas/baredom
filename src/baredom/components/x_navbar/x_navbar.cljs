@@ -112,7 +112,7 @@
    "--x-navbar-focus-ring:var(--x-color-focus-ring,#93c5fd);"
    "}"
    "}"
-   ":host([hidden]){display:none;}"
+   du/hidden-rule
    "[part='base']{"
    "display:block;"
    "color:var(--x-navbar-color);"

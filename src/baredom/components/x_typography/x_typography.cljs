@@ -30,6 +30,7 @@
      "color-scheme:light dark;"
      "font-family:var(--x-typography-font-family," sans ");"
      "color:var(--x-typography-color,var(--x-color-text,inherit));}"
+     du/hidden-rule
 
      ;; ── Container: box-model reset ──
      "[part=container]{margin:0;padding:0;}"

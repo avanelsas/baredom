@@ -41,6 +41,7 @@
    "pointer-events:auto;"
    model/css-color ":var(--x-color-primary,#6366f1);"
    "}"
+   du/hidden-rule
 
    ;; ── Position variants ──
    ":host(:not([position])),"

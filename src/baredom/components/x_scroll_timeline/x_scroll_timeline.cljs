@@ -43,6 +43,7 @@
    "--x-scroll-timeline-transition-duration:300ms;"
    "--x-scroll-timeline-curve-amplitude:60;"
    "--x-scroll-timeline-disabled-opacity:0.55;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

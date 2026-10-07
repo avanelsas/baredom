@@ -40,6 +40,7 @@
    "--x-otp-input-font-size:1.25rem;"
    "--x-otp-input-font-weight:var(--x-font-weight-semibold,600);"
    "}"
+   du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-otp-input-bg:var(--x-color-surface,#1f2937);"

@@ -30,6 +30,7 @@
    "--x-search-field-clear-color:var(--x-color-border,#9ca3af);"
    "--x-search-field-disabled-opacity:0.45;"
    "}"
+   du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-search-field-bg:var(--x-color-surface,#1f2937);"

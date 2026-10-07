@@ -25,6 +25,7 @@
    "--x-progress-fill-color:var(--x-color-primary,#3b82f6);"
    "--x-progress-label-color:rgba(0,0,0,0.60);"
    "--x-progress-value-color:rgba(0,0,0,0.50);}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

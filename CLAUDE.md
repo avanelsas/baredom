@@ -204,6 +204,11 @@ Every component under `src/baredom/components/<name>/` follows:
 
 All components use open shadow DOM (`mode: "open"`). Styles are inline ClojureScript strings. CSS custom properties follow `--x-<component>-<property>` naming. Light/dark mode via `@media (prefers-color-scheme: dark)`. Animations must respect `@media (prefers-reduced-motion: reduce)`.
 
+A component that sets a `display` on `:host` also has `du/hidden-rule` in its style, placed after
+every other rule that sets a display on the host. An author rule beats the browser's own rule
+for the `hidden` attribute, so without it `hidden` has no effect. Enforced by
+`bb scripts/check_hidden_rule.bb` in CI.
+
 ### Theming
 
 All components must consume shared design tokens from `x-theme`. Wrap hardcoded CSS values with `var(--x-token, fallback)`. Key rules:

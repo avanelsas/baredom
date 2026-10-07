@@ -54,6 +54,7 @@
    "--x-fieldset-input-radius:var(--x-radius-sm,0.375rem);"
    "--x-fieldset-input-focus:var(--x-color-focus-ring,#60a5fa);"
    "}"
+   du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-fieldset-border-color:var(--x-color-border, #374151);"

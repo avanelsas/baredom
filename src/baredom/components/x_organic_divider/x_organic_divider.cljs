@@ -33,6 +33,7 @@
    "--x-organic-divider-height:120px;"
    "--x-organic-divider-animate-duration:6s;"
    "--x-organic-divider-animate-timing:ease-in-out;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

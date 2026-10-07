@@ -22,6 +22,7 @@
 (def ^:private style-text
   (str
    ":host{display:block;}"
+   du/hidden-rule
    ".base{"
    "display:grid;"
    "box-sizing:border-box;"

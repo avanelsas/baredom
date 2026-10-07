@@ -44,6 +44,7 @@
    "display:block;"
    "pointer-events:none;"
    "}"
+   du/hidden-rule
 
    ":host([data-mode='overlay']){"
    "position:fixed;"

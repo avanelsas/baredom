@@ -42,6 +42,7 @@
    "--x-avatar-group-overflow-ring:var(--x-color-bg, #ffffff);"
    "--x-avatar-group-size:32px;"
    "--x-avatar-group-font-size:0.75rem;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

@@ -26,6 +26,7 @@
    "--x-scroll-parallax-fade-range:20%;"
    "--x-scroll-parallax-scale-min:0.85;"
    "--x-scroll-parallax-disabled-opacity:0.55;}"
+   du/hidden-rule
 
    "[part=viewport]{"
    "position:relative;width:100%;height:100%;"

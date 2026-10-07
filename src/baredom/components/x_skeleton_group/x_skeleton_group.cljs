@@ -33,6 +33,7 @@
    "display:block;"
    "box-sizing:border-box;"
    "}"
+   du/hidden-rule
    "[part=container]{"
    "display:flex;"
    "flex-direction:column;"

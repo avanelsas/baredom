@@ -40,6 +40,7 @@
    model/css-border-width ":1.5;"
    model/css-shadow ":var(--x-shadow-sm,0 1px 3px rgba(0,0,0,0.1));"
    model/css-padding ":1rem;}"
+   du/hidden-rule
 
    "[part=svg]{"
    "display:block;"

@@ -43,6 +43,7 @@
    "--x-dropdown-transition-duration:var(--x-transition-duration,150ms);"
    "--x-dropdown-transition-easing:var(--x-transition-easing,ease);"
    "}"
+   du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-dropdown-trigger-bg:var(--x-color-surface-hover,#1e293b);"

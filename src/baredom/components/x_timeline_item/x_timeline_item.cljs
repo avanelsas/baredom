@@ -36,6 +36,7 @@
    "--x-timeline-item-motion-ease:var(--x-transition-easing,cubic-bezier(0.2,0,0,1));"
    "--x-timeline-item-enter-duration:160ms;"
    "--x-timeline-item-disabled-opacity:0.45;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"

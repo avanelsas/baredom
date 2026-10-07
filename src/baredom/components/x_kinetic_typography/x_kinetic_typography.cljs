@@ -65,6 +65,7 @@
    "--x-kinetic-typography-path-stroke:none;"
    "--x-kinetic-typography-path-stroke-width:0;"
    "--x-kinetic-typography-crawl-perspective:400px;}"
+   du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
