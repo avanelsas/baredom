@@ -20,7 +20,7 @@ Closed families, in which CI allows no value that follows no token: radius, tran
 | `x-bento-item` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-breadcrumbs` | 0/8 |  | 1/3 | 0/1 |  |  |  |  | 0/1 |  |  |
 | `x-button` | 34/47 |  | 0/3 | 0/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 0/1 |
-| `x-calendar` | 17/40 |  | 0/5 | 0/4 |  | 7/7 | 1/2 | 1/1 | 0/11 |  | 0/2 |
+| `x-calendar` | 17/41 |  | 0/5 | 0/4 |  | 7/7 | 1/1 | 1/1 | 0/11 |  | 0/2 |
 | `x-cancel-dialogue` | 17/22 |  | 0/3 | 0/2 | 0/2 | 2/2 | 1/2 |  | 0/6 | 0/3 |  |
 | `x-card` | 8/14 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
 | `x-carousel` | 12/12 |  |  |  |  | 1/1 | 1/1 | 3/3 | 0/4 |  |  |
@@ -29,7 +29,7 @@ Closed families, in which CI allows no value that follows no token: radius, tran
 | `x-chip` | 7/7 |  | 1/2 |  |  | 1/1 |  | 1/1 | 0/4 |  | 0/1 |
 | `x-code` | 9/33 | 1/1 | 0/4 | 0/1 | 0/1 | 2/2 |  | 1/1 | 0/8 |  | 0/4 |
 | `x-collapse` | 14/14 |  | 0/1 | 0/1 |  | 1/1 |  | 1/1 | 0/3 |  |  |
-| `x-color-picker` | 8/22 | 1/1 | 1/1 |  |  | 2/2 | 1/4 |  | 0/5 | 0/1 | 0/8 |
+| `x-color-picker` | 8/22 | 1/1 | 1/1 |  |  | 2/2 | 1/3 |  | 0/5 | 0/1 | 0/8 |
 | `x-combobox` | 26/27 |  | 1/3 | 0/1 | 0/1 | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 0/2 |
 | `x-command-palette` | 10/16 |  | 1/4 | 0/1 | 0/2 | 1/1 | 2/2 |  | 0/6 | 0/2 | 0/1 |
 | `x-confetti` |  |  |  |  |  |  |  |  |  | 0/1 |  |
@@ -37,7 +37,7 @@ Closed families, in which CI allows no value that follows no token: radius, tran
 | `x-context-menu` | 2/4 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-copy` | 8/12 |  | 1/1 |  |  | 1/1 |  |  | 0/1 | 0/1 |  |
 | `x-currency-field` | 16/16 |  | 0/5 | 0/1 | 0/1 | 1/1 |  | 1/1 | 0/3 |  |  |
-| `x-date-picker` | 25/50 |  | 0/5 | 0/4 | 0/1 | 4/4 | 0/3 |  | 0/9 | 0/1 | 0/3 |
+| `x-date-picker` | 25/51 |  | 0/5 | 0/4 | 0/1 | 4/4 | 0/1 |  | 0/9 | 0/1 | 0/3 |
 | `x-divider` | 0/8 |  | 0/1 | 0/1 |  |  |  |  | 0/2 |  |  |
 | `x-drag-panel` | 7/7 |  |  |  |  | 2/2 | 0/2 | 1/1 | 0/4 | 0/1 |  |
 | `x-drawer` | 6/8 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 0/2 |
@@ -55,7 +55,7 @@ Closed families, in which CI allows no value that follows no token: radius, tran
 | `x-i18n-provider` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-icon` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-image` | 6/6 | 1/1 | 1/2 |  | 0/1 | 1/1 |  | 2/2 | 1/2 |  |  |
-| `x-kbd` | 2/2 | 0/1 | 0/3 | 0/1 | 0/1 |  | 0/2 |  | 0/4 |  | 0/1 |
+| `x-kbd` | 2/2 | 0/1 | 0/3 | 0/1 | 0/1 |  |  |  | 0/4 |  | 0/1 |
 | `x-kinetic-canvas` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-kinetic-font` | 1/1 | 0/2 | 0/2 |  | 0/1 |  |  |  | 0/1 |  |  |
 | `x-kinetic-typography` | 4/4 | 0/1 | 0/1 | 0/1 | 0/1 |  |  |  | 0/1 |  |  |
@@ -89,7 +89,7 @@ Closed families, in which CI allows no value that follows no token: radius, tran
 | `x-scroll-parallax` |  |  |  |  |  |  |  |  | 0/1 |  |  |
 | `x-scroll-stack` |  |  |  |  |  |  |  |  | 0/2 |  |  |
 | `x-scroll-story` | 0/1 |  |  |  |  | 1/1 |  | 1/1 | 0/2 |  |  |
-| `x-scroll-timeline` | 2/9 |  | 0/1 | 0/1 |  | 3/3 | 0/1 | 1/1 | 0/8 |  | 0/2 |
+| `x-scroll-timeline` | 2/9 |  | 0/1 | 0/1 |  | 3/3 |  | 1/1 | 0/8 |  | 0/2 |
 | `x-search-field` | 8/12 |  | 0/2 |  | 0/1 | 2/2 |  | 1/1 | 0/2 |  |  |
 | `x-select` | 19/19 |  | 2/4 |  | 0/1 | 1/1 | 1/1 | 1/1 | 0/2 |  | 0/1 |
 | `x-sidebar` | 4/5 |  |  |  |  |  | 2/2 | 2/2 |  | 0/2 |  |
@@ -105,7 +105,7 @@ Closed families, in which CI allows no value that follows no token: radius, tran
 | `x-stat` | 10/10 |  | 0/3 | 0/2 |  | 1/1 |  | 2/2 | 0/2 |  | 0/1 |
 | `x-stepper` | 20/26 |  | 1/7 | 0/2 | 0/2 | 1/1 |  | 1/1 | 0/3 |  |  |
 | `x-switch` | 8/8 |  |  |  |  | 1/1 | 0/1 | 2/2 |  |  |  |
-| `x-tab` | 5/9 |  |  |  |  | 1/1 | 0/1 | 2/2 | 0/4 |  | 0/2 |
+| `x-tab` | 5/10 |  |  |  |  | 1/1 |  | 2/2 | 0/4 |  | 0/2 |
 | `x-table` | 3/5 |  | 0/1 | 0/1 |  | 1/1 |  |  | 0/2 |  | 0/1 |
 | `x-table-cell` | 11/13 |  |  | 0/1 |  | 1/1 |  | 1/1 | 0/3 |  | 0/1 |
 | `x-table-row` | 1/7 |  |  |  |  |  |  | 1/1 |  |  |  |
@@ -119,7 +119,7 @@ Closed families, in which CI allows no value that follows no token: radius, tran
 | `x-typography` | 6/6 | 0/3 | 0/16 | 0/16 | 0/16 | 2/2 |  |  | 0/3 |  | 0/2 |
 | `x-welcome-tour` | 26/27 | 1/1 | 4/5 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 0/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 793/1176 | 5/12 | 31/154 | 3/70 | 1/42 | 110/110 | 60/81 | 107/107 | 15/241 | 3/29 | 0/69 |
+| **All** | 793/1179 | 5/12 | 31/154 | 3/70 | 1/42 | 110/110 | 60/73 | 107/107 | 15/241 | 3/29 | 0/69 |
 
 CSS not read, or not in full: x-liquid-glass.
 
@@ -154,6 +154,14 @@ A ring or a dot. Its roundness is its shape.
 - `x-button`: `border-radius: 999px`
 - `x-particle-button`: `border-radius: 999px`
 - `x-timeline-item`: `border-radius: 999px`
+
+A ring, an outline or an edge drawn with a shadow. It is not an elevation.
+
+- `x-color-picker`: `box-shadow: 0 0 0 1px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(0,0,0,0.3)`
+- `x-date-picker`: `box-shadow: 0 0 0 3px rgba(96,165,250,0.25)`
+- `x-kbd`: `--x-kbd-shadow: inset 0 -1px 0 rgba(0,0,0,0.08)`
+- `x-kbd`: `--x-kbd-shadow: inset 0 -1px 0 rgba(0,0,0,0.4)`
+- `x-scroll-timeline`: `box-shadow: 0 0 0 3px rgba(59,130,246,0.25)`
 
 The shape of a mark. It is not a corner.
 
