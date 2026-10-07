@@ -217,6 +217,19 @@
   [delta]
   (if (pos? delta) "forward" "backward"))
 
+(defn- shown-indicator [active index]
+  {:key           (str index)
+   :aria-label    (str "Slide " (inc index))
+   :aria-selected (str (= index active))})
+
+(defn shown-indicators
+  "What each indicator dot shows, one for each of `cnt` slides, or none when `show?` is false.
+   The key of a dot is its index as text."
+  [show? cnt active]
+  (if show?
+    (mapv (partial shown-indicator active) (range cnt))
+    []))
+
 (defn change-detail [active-index previous-index]
   {:activeIndex   active-index
    :previousIndex previous-index})

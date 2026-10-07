@@ -1,6 +1,7 @@
 (ns baredom.components.x-scroll.x-scroll
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
+            [baremirror.core :as mirror]
             [goog.object :as gobj]
             [baredom.components.x-scroll.model :as model]))
 
@@ -363,27 +364,31 @@
         (.addEventListener track "transitionend" on-end)))))
 
 ;; ── Indicators ──────────────────────────────────────────────────────────────
-(defn- build-indicators! [^js el cnt active on-click-fn]
-  (let [{:keys [indicators]} (ensure-refs! el)
-        ^js indicators indicators]
-    ;; Clear existing
-    (set! (.-innerHTML indicators) "")
-    (dotimes [i cnt]
-      (let [btn (.createElement js/document "button")]
-        (du/set-attr! btn "part" "indicator")
-        (du/set-attr! btn "type" "button")
-        (du/set-attr! btn "role" "tab")
-        (du/set-attr! btn "aria-label" (str "Slide " (inc i)))
-        (du/set-attr! btn "aria-selected" (str (= i active)))
-        (.addEventListener btn "click" (fn [_e] (on-click-fn i)))
-        (.appendChild indicators btn)))))
+(defn- make-indicator!
+  "The node of an indicator dot: its fixed structure. `apply-indicator!` gives it its values."
+  [_key]
+  (let [btn (.createElement js/document "button")]
+    (du/set-attr! btn "part" "indicator")
+    (du/set-attr! btn "type" "button")
+    (du/set-attr! btn "role" "tab")
+    btn))
 
-(defn- update-indicators! [^js el active]
+(defn- apply-indicator!
+  "Writes what `indicator` shows onto its node in `nodes`."
+  [nodes {dot-key :key :keys [aria-label aria-selected]}]
+  (let [^js btn (nodes dot-key)]
+    (du/set-attr-to! btn "aria-label" aria-label)
+    (du/set-attr-to! btn "aria-selected" aria-selected)))
+
+(defn- render-indicators!
+  "Brings the indicator dots to the model `m` and the count of slides `cnt`.
+   A dot that stays keeps its node."
+  [^js el {:keys [show-indicators? active-index]} cnt]
   (let [{:keys [indicators]} (ensure-refs! el)
-        ^js indicators indicators
-        dots (.-children indicators)]
-    (dotimes [i (.-length dots)]
-      (du/set-attr! ^js (aget dots i) "aria-selected" (str (= i active))))))
+        shown (model/shown-indicators show-indicators? cnt active-index)
+        nodes (mirror/sync! {:dots {:parent indicators}} {:dots (mapv :key shown)}
+                            make-indicator!)]
+    (run! (partial apply-indicator! nodes) shown)))
 
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
 ;; ── Autoplay ────────────────────────────────────────────────────────────────
@@ -450,7 +455,7 @@
                 (if loop?
                   (animate-loop-step! el new-m raw-delta)
                   (position-slides! el new-m))
-                (update-indicators! el target)
+                (render-indicators! el new-m cnt)
                 ;; Update control button states
                 (let [{:keys [prev-btn next-btn live]} (ensure-refs! el)
                       ^js prev-btn prev-btn
@@ -646,21 +651,28 @@
           ^js prev-btn prev-btn
           ^js next-btn next-btn
           ^js live     live]
-      (when (:show-indicators? m2)
-        (build-indicators! el cnt (:active-index m2) (fn [i] (go-to! el i))))
+      (render-indicators! el m2 cnt)
       (set! (.-disabled prev-btn) (not (model/can-go-prev? m2 cnt)))
       (set! (.-disabled next-btn) (not (model/can-go-next? m2 cnt)))
       (when (pos? cnt)
         (set! (.-textContent live) (str "Slide " (inc (:active-index m2)) " of " cnt)))
       (position-slides! el m2))))
 
+(defn- on-indicator-click
+  "Goes to the slide of the dot that a click in the indicators came from."
+  [^js el ^js e]
+  (when-some [^js dot (.closest (.-target e) "[part=indicator]")]
+    (go-to! el (js/parseInt (.getAttribute dot mirror/attr-key) 10))))
+
 ;; ── Listener management ────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
-  (let [{:keys [prev-btn next-btn slot viewport]} (ensure-refs! el)
+  (let [{:keys [prev-btn next-btn slot viewport indicators]} (ensure-refs! el)
         ^js prev-btn prev-btn
         ^js next-btn next-btn
         ^js slot     slot
         ^js viewport viewport
+        ^js indicators indicators
+        dot-h     (fn [e] (on-indicator-click el e))
         prev-h    (fn [_e] (prev! el))
         next-h    (fn [_e] (next! el))
         key-h     (fn [e] (on-keydown el e))
@@ -673,6 +685,7 @@
         focusout-h (fn [_e] (restart-autoplay! el))]
     (.addEventListener prev-btn "click" prev-h)
     (.addEventListener next-btn "click" next-h)
+    (.addEventListener indicators "click" dot-h)
     (.addEventListener el "keydown" key-h)
     (.addEventListener viewport "pointerdown" pdown-h)
     (.addEventListener slot "slotchange" slot-h)
@@ -684,6 +697,7 @@
     (du/setv! el k-handlers
               #js {:prev      prev-h
                    :next      next-h
+                   :dot       dot-h
                    :keydown   key-h
                    :pdown     pdown-h
                    :slot      slot-h
@@ -701,9 +715,11 @@
       (let [^js prev-btn (:prev-btn refs)
             ^js next-btn (:next-btn refs)
             ^js slot     (:slot refs)
-            ^js viewport (:viewport refs)]
+            ^js viewport (:viewport refs)
+            ^js indicators (:indicators refs)]
         (when-let [h (gobj/get hs "prev")]    (.removeEventListener prev-btn "click" h))
         (when-let [h (gobj/get hs "next")]    (.removeEventListener next-btn "click" h))
+        (when-let [h (gobj/get hs "dot")]     (.removeEventListener indicators "click" h))
         (when-let [h (gobj/get hs "keydown")] (.removeEventListener el "keydown" h))
         (when-let [h (gobj/get hs "pdown")]   (.removeEventListener viewport "pointerdown" h))
         ;; Clean up any in-progress drag window listeners
@@ -739,8 +755,8 @@
     (du/setv! el k-resize-obs nil)))
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
-(defn- apply-model! [^js el {:keys [mode show-controls? show-indicators?
-                                    disabled? label active-index] :as m}]
+(defn- apply-model! [^js el {:keys [mode show-controls? disabled? label active-index]
+                             :as m}]
   (let [{:keys [viewport prev-btn next-btn live]} (ensure-refs! el)
         ^js viewport viewport
         ^js prev-btn prev-btn
@@ -766,11 +782,7 @@
     (set! (.-tabIndex el) (if disabled? -1 0))
 
     ;; Indicators
-    (when show-indicators?
-      (build-indicators! el cnt active-index (fn [i] (go-to! el i))))
-    (when-not show-indicators?
-      (let [{:keys [indicators]} (ensure-refs! el)]
-        (set! (.-innerHTML ^js indicators) "")))
+    (render-indicators! el m cnt)
 
     ;; Live region
     (when (pos? cnt)

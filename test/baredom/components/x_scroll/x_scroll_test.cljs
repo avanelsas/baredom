@@ -614,3 +614,70 @@
            (is (= "Slide 2 of 5" (.-textContent live))))
          (done))
        50))))
+
+;; ── Indicator dots keep their nodes ─────────────────────────────────────────
+(defn- dots [^js el]
+  (vec (array-seq (.-children (shadow-part el "[part=indicators]")))))
+
+(defn- scroll-with-dots! [n]
+  (doto (make-scroll-with-slides n)
+    (.setAttribute model/attr-show-indicators "")))
+
+(deftest a-click-on-a-dot-keeps-the-dot-and-its-focus
+  (cljs.test/async done
+    (let [^js el (scroll-with-dots! 4)]
+      (js/setTimeout
+       (fn []
+         (let [before      (dots el)
+               ^js clicked (nth before 2)]
+           (.focus clicked)
+           (.click clicked)
+           (is (= "2" (.getAttribute el model/attr-active-index)) "the click went to the slide")
+           (is (= before (dots el)) "every dot is the same node")
+           (is (identical? clicked (.-activeElement (.-shadowRoot el))) "the dot still has focus")
+           (is (= "true" (.getAttribute clicked "aria-selected")))
+           (done)))
+       50))))
+
+(deftest a-write-of-the-active-index-keeps-the-dots-and-the-focus
+  (cljs.test/async done
+    (let [^js el (scroll-with-dots! 4)]
+      (js/setTimeout
+       (fn []
+         (let [before      (dots el)
+               ^js focused (nth before 1)]
+           (.focus focused)
+           (.setAttribute el model/attr-active-index "3")
+           (is (= before (dots el)) "every dot is the same node")
+           (is (identical? focused (.-activeElement (.-shadowRoot el))) "the dot still has focus")
+           (is (= "true" (.getAttribute (nth before 3) "aria-selected")))
+           (is (= "false" (.getAttribute (nth before 0) "aria-selected")))
+           (done)))
+       50))))
+
+(deftest a-new-slide-adds-a-dot-at-the-end
+  (cljs.test/async done
+    (let [^js el (scroll-with-dots! 3)]
+      (js/setTimeout
+       (fn []
+         (let [before (dots el)]
+           (add-slides! el 1)
+           (js/setTimeout
+            (fn []
+              (is (= 4 (count (dots el))))
+              (is (= before (subvec (dots el) 0 3)) "the first three keep their nodes")
+              (done))
+            50)))
+       50))))
+
+(deftest hiding-the-indicators-removes-the-dots
+  (cljs.test/async done
+    (let [^js el (scroll-with-dots! 3)]
+      (js/setTimeout
+       (fn []
+         (is (= 3 (count (dots el))))
+         (.removeAttribute el model/attr-show-indicators)
+         (is (= 0 (count (dots el))))
+         (done))
+       50))))
+
