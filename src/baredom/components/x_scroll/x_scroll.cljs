@@ -50,6 +50,7 @@
    "--x-scroll-slide-size:100%;"
    "--x-scroll-disabled-opacity:0.55;"
    "--x-scroll-focus-ring:var(--x-color-focus-ring,rgba(0,102,204,0.6));}"
+   du/control-font-rule
    du/hidden-rule
 
    "@media (prefers-color-scheme:dark){:host{"

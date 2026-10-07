@@ -71,6 +71,7 @@
    "cursor:default;"
    "user-select:none;"
    "outline:none;}"
+   du/control-font-rule
    du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"

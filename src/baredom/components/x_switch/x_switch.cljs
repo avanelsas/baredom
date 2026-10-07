@@ -30,6 +30,7 @@
    "--x-switch-disabled-opacity:0.45;"
    "--x-switch-transition:background var(--x-transition-duration,150ms) var(--x-transition-easing,ease),transform var(--x-transition-duration,150ms) var(--x-transition-easing,ease);"
    "}"
+   du/control-font-rule
    du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"

@@ -215,6 +215,12 @@ every other rule that sets a display on the host. An author rule beats the brows
 for the `hidden` attribute, so without it `hidden` has no effect. Enforced by
 `bb scripts/check_hidden_rule.bb` in CI.
 
+A component that creates a `button`, an `input`, a `select` or a `textarea` also has
+`du/control-font-rule` in its style, on the line before `du/hidden-rule`. A browser gives a
+native control a font of its own, so without the rule the control ignores the font of the page.
+`overlay/make-layer!` adds the rule to every layer. Enforced by
+`bb scripts/check_control_font.bb` in CI.
+
 ### Theming
 
 All components must consume shared design tokens from `x-theme`. Wrap hardcoded CSS values with `var(--x-token, fallback)`. Key rules:

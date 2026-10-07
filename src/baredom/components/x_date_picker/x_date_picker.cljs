@@ -498,6 +498,7 @@
    "--x-date-picker-range-text:var(--x-color-primary-active,#1e40af);"
    "--x-date-picker-error-color:var(--x-color-danger,#dc2626);"
    "}"
+   du/control-font-rule
    du/hidden-rule
    "[part=container]{position:relative;display:flex;align-items:stretch;gap:8px;width:100%;}"
    "[part=input]{"

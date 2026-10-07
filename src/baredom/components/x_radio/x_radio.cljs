@@ -33,6 +33,7 @@
    "--x-radio-disabled-opacity:0.45;"
    "--x-radio-transition:background var(--x-transition-duration,120ms) var(--x-transition-easing,ease),border-color var(--x-transition-duration,120ms) var(--x-transition-easing,ease);"
    "}"
+   du/control-font-rule
    du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"

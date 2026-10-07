@@ -48,6 +48,7 @@
    "--x-file-upload-remove-color:var(--x-color-text-muted,#64748b);"
    "--x-file-upload-remove-hover:var(--x-color-danger,#ef4444);"
    "}"
+   du/control-font-rule
    du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"

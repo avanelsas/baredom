@@ -111,6 +111,7 @@
 (def ^:private style-text
   (str
    ":host{display:contents;}"
+   du/control-font-rule
    du/hidden-rule
    "[part=overlay]{"
    "display:none;position:fixed;inset:0;"

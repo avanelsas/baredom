@@ -154,6 +154,11 @@
   (when (not= text (.-textContent node))
     (set! (.-textContent node) text)))
 
+(def control-font-rule
+  "The CSS rule that gives the native controls of a component its font family.
+   A browser gives a button or an input a font of its own otherwise."
+  "button,input,select,textarea{font-family:inherit;}")
+
 (def hidden-rule
   "The CSS rule that hides a host under the `hidden` attribute.
    A component that sets a display on `:host` puts it after every rule that does."
