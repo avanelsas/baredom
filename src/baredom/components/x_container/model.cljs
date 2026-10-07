@@ -27,10 +27,12 @@
   #js [attr-as attr-size attr-padding attr-center attr-fluid attr-label])
 
 (def property-api
-  {:center {:type 'boolean
-            :reflects-attribute attr-center}
-   :fluid {:type 'boolean
-           :reflects-attribute attr-fluid}})
+  {:center  {:type 'boolean :reflects-attribute attr-center}
+   :fluid   {:type 'boolean :reflects-attribute attr-fluid}
+   :as      {:type 'string  :reflects-attribute attr-as}
+   :size    {:type 'string  :reflects-attribute attr-size}
+   :padding {:type 'string  :reflects-attribute attr-padding}
+   :label   {:type 'string  :reflects-attribute attr-label}})
 
 (def event-schema {})
 

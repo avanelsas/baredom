@@ -41,7 +41,11 @@
 
 ```clojure
 {:open boolean?
- :collapsed boolean?}
+ :collapsed boolean?
+ :placement string?    ; default "left"
+ :variant string?      ; default "docked"
+ :breakpoint number?   ; default 768
+ :label string?}       ; default "Sidebar"
 ```
 
 ### Events

@@ -18,14 +18,24 @@ export class BaredomDatePicker implements OnInit, OnDestroy {
   }
 
   @Input() set open(v: boolean) { this.el.open = v as any; }
+  @Input() set min(v: string) { this.el.min = v as any; }
+  @Input() set format(v: string) { this.el.format = v as any; }
+  @Input() set placeholder(v: string) { this.el.placeholder = v as any; }
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
+  @Input() set locale(v: string) { this.el.locale = v as any; }
   @Input() set name(v: string) { this.el.name = v as any; }
+  @Input() set autoSwap(v: boolean) { this.el.autoSwap = v as any; }
   @Input() set value(v: string) { this.el.value = v as any; }
   @Input() set mode(v: string) { this.el.mode = v as any; }
   @Input() set start(v: string) { this.el.start = v as any; }
   @Input() set readOnly(v: boolean) { this.el.readOnly = v as any; }
+  @Input() set max(v: string) { this.el.max = v as any; }
+  @Input() set closeOnSelect(v: boolean) { this.el.closeOnSelect = v as any; }
   @Input() set error(v: string) { this.el.error = v as any; }
+  @Input() set autocomplete(v: string) { this.el.autocomplete = v as any; }
   @Input() set end(v: string) { this.el.end = v as any; }
+  @Input() set separator(v: string) { this.el.separator = v as any; }
+  @Input() set rangeAllowSameDay(v: boolean) { this.el.rangeAllowSameDay = v as any; }
   @Input() set required(v: boolean) { this.el.required = v as any; }
 
   @Output() input = new EventEmitter<CustomEvent<{ value: string; mode: string }>>();

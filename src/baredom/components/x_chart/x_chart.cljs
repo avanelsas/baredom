@@ -812,6 +812,8 @@
   (du/define-string-prop! proto "type"     model/attr-type)
   (du/define-string-prop! proto "cursor"   model/attr-cursor)
   (du/define-string-prop! proto "selected" model/attr-selected)
+  (du/define-string-prop! proto "xFormat"  model/attr-x-format)
+  (du/define-string-prop! proto "yFormat"  model/attr-y-format)
   (define-num-prop!       proto "height"   model/attr-height  model/default-height)
   (define-num-prop!       proto "padding"  model/attr-padding model/default-padding)
   (du/define-bool-prop!   proto "grid"     model/attr-grid)

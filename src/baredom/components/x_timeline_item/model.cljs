@@ -17,9 +17,13 @@
 (def data-attr-position "data-position")
 (def data-attr-striped  "data-striped")
 
+(def internal-attributes
+  "The attributes that the parent x-timeline writes. They are not part of the public API."
+  #{data-attr-last data-attr-index data-attr-position data-attr-striped})
+
 (def observed-attributes
-  #js ["label" "title" "status" "icon" "connector" "position" "disabled"
-       "data-last" "data-index" "data-position" "data-striped"])
+  #js [attr-label attr-title attr-status attr-icon attr-connector attr-position attr-disabled
+       data-attr-last data-attr-index data-attr-position data-attr-striped])
 
 ;; ── Event name constants ──────────────────────────────────────────────────────
 (def event-connected    "x-timeline-item-connected")

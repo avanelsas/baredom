@@ -8,6 +8,15 @@ import { init } from "@vanelsas/baredom/x-grid";
 init();
 
 export interface XGridProps {
+  minColumnSize?: string;
+  rowGap?: string;
+  columns?: string;
+  autoFlow?: string;
+  gap?: string;
+  justifyItems?: string;
+  columnGap?: string;
+  inline?: boolean;
+  alignItems?: string;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;

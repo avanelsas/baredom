@@ -17,13 +17,18 @@ export class BaredomTextArea implements OnInit, OnDestroy {
     this.zone = zone;
   }
 
+  @Input() set placeholder(v: string) { this.el.placeholder = v as any; }
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
   @Input() set name(v: string) { this.el.name = v as any; }
   @Input() set value(v: string) { this.el.value = v as any; }
   @Input() set minLength(v: number) { this.el.minLength = v as any; }
+  @Input() set resize(v: string) { this.el.resize = v as any; }
+  @Input() set hint(v: string) { this.el.hint = v as any; }
   @Input() set rows(v: number) { this.el.rows = v as any; }
   @Input() set readOnly(v: boolean) { this.el.readOnly = v as any; }
+  @Input() set label(v: string) { this.el.label = v as any; }
   @Input() set maxLength(v: number) { this.el.maxLength = v as any; }
+  @Input() set error(v: string) { this.el.error = v as any; }
   @Input() set autocomplete(v: string) { this.el.autocomplete = v as any; }
   @Input() set required(v: boolean) { this.el.required = v as any; }
 

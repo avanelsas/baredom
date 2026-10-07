@@ -15,9 +15,18 @@ export const XParticleButton = defineComponent({
   name: "XParticleButton",
   inheritAttrs: false,
   props: {
+    particleCount: { type: Number as PropType<number | undefined>, default: undefined },
     disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    variant: { type: String as PropType<string | undefined>, default: undefined },
+    mode: { type: String as PropType<string | undefined>, default: undefined },
+    type: { type: String as PropType<string | undefined>, default: undefined },
+    intensity: { type: Number as PropType<number | undefined>, default: undefined },
+    size: { type: String as PropType<string | undefined>, default: undefined },
+    reassembleSpeed: { type: Number as PropType<number | undefined>, default: undefined },
     loading: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    label: { type: String as PropType<string | undefined>, default: undefined },
     pressed: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    particleSize: { type: Number as PropType<number | undefined>, default: undefined },
   },
   emits: {
     "press": (_e: CustomEvent<{ source: string }>) => true,

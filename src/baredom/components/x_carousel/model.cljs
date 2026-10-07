@@ -40,7 +40,7 @@
 
 ;; ── Metadata ────────────────────────────────────────────────────────────────
 (def property-api
-  {:currentSlide {:type 'number}
+  {:currentSlide {:type 'number  :reflects-attribute attr-current}
    :autoplay     {:type 'boolean :reflects-attribute attr-autoplay}
    :interval     {:type 'number  :reflects-attribute attr-interval}
    :loop         {:type 'boolean :reflects-attribute attr-loop}

@@ -189,8 +189,12 @@
 
 ;; ── Property accessors ─────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (du/define-bool-default-true-prop! proto "center" model/attr-center)
-  (du/define-bool-prop!              proto "fluid"  model/attr-fluid))
+  (du/define-bool-default-true-prop! proto "center"  model/attr-center)
+  (du/define-bool-prop!              proto "fluid"   model/attr-fluid)
+  (du/define-string-prop!            proto "as"      model/attr-as      model/default-as)
+  (du/define-string-prop!            proto "size"    model/attr-size    model/default-size)
+  (du/define-string-prop!            proto "padding" model/attr-padding model/default-padding)
+  (du/define-string-prop!            proto "label"   model/attr-label   ""))
 
 ;; ── Lifecycle ──────────────────────────────────────────────────────────────
 (defn- connected! [^js el]

@@ -5,6 +5,15 @@
   init();
   export type { XGridElement };
   export interface XGridProps {
+    minColumnSize?: string;
+    rowGap?: string;
+    columns?: string;
+    autoFlow?: string;
+    gap?: string;
+    justifyItems?: string;
+    columnGap?: string;
+    inline?: boolean;
+    alignItems?: string;
     el?: XGridElement | null;
     children?: import("svelte").Snippet;
     class?: string;
@@ -15,6 +24,15 @@
 
 <script lang="ts">
   let {
+    minColumnSize,
+    rowGap,
+    columns,
+    autoFlow,
+    gap,
+    justifyItems,
+    columnGap,
+    inline,
+    alignItems,
     el = $bindable(null),
     children,
     class: className,
@@ -25,6 +43,15 @@
 
 <x-grid
   bind:this={el}
+  {minColumnSize}
+  {rowGap}
+  {columns}
+  {autoFlow}
+  {gap}
+  {justifyItems}
+  {columnGap}
+  {inline}
+  {alignItems}
   class={className}
   {id}
   {...rest}

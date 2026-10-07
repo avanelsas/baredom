@@ -15,9 +15,17 @@ export const XCommandPalette = defineComponent({
   name: "XCommandPalette",
   inheritAttrs: false,
   props: {
-    items: { type: Object as PropType<any | undefined>, default: undefined },
+    emptyText: { type: String as PropType<string | undefined>, default: undefined },
     open: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    noScrim: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    placeholder: { type: String as PropType<string | undefined>, default: undefined },
     disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    closeOnScrim: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    dismissible: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    modal: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    label: { type: String as PropType<string | undefined>, default: undefined },
+    closeOnEscape: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    items: { type: Object as PropType<any | undefined>, default: undefined },
   },
   emits: {
     "open-request": (_e: CustomEvent<{}>) => true,

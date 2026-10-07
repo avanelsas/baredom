@@ -8,9 +8,11 @@ import { init } from "@vanelsas/baredom/x-select";
 init();
 
 export interface XSelectProps {
+  placeholder?: string;
   disabled?: boolean;
   name?: string;
   value?: string;
+  size?: string;
   error?: string;
   required?: boolean;
   defaultValue?: string;

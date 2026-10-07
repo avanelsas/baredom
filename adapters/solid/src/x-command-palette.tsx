@@ -7,9 +7,17 @@ import { init } from "@vanelsas/baredom/x-command-palette";
 init();
 
 export interface XCommandPaletteProps {
-  items?: any;
+  emptyText?: string;
   open?: boolean;
+  noScrim?: boolean;
+  placeholder?: string;
   disabled?: boolean;
+  closeOnScrim?: boolean;
+  dismissible?: boolean;
+  modal?: boolean;
+  label?: string;
+  closeOnEscape?: boolean;
+  items?: any;
   onOpenRequest?: (e: CustomEvent<{}>) => void;
   onOpen?: (e: CustomEvent<{}>) => void;
   onCloseRequest?: (e: CustomEvent<{}>) => void;

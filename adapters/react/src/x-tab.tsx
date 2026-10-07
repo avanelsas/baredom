@@ -11,6 +11,11 @@ export interface XTabProps {
   selected?: boolean;
   disabled?: boolean;
   value?: string;
+  orientation?: string;
+  size?: string;
+  variant?: string;
+  label?: string;
+  controls?: string;
   onTabSelect?: (e: CustomEvent<{ value: string }>) => void;
   children?: React.ReactNode;
   className?: string;

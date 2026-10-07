@@ -8,6 +8,9 @@ import { init } from "@vanelsas/baredom/x-bento-item";
 init();
 
 export interface XBentoItemProps {
+  colSpan?: number;
+  rowSpan?: number;
+  order?: number;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;

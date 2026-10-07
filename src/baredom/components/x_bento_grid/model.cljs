@@ -21,7 +21,12 @@
 (def default-gap "md")
 (def default-row-height "auto")
 
-(def property-api {})
+(def property-api
+  {:columns   {:type 'number :reflects-attribute attr-columns    :default default-columns}
+   :gap       {:type 'string :reflects-attribute attr-gap        :default default-gap}
+   :rowGap    {:type 'string :reflects-attribute attr-row-gap    :default ""}
+   :columnGap {:type 'string :reflects-attribute attr-column-gap :default ""}
+   :rowHeight {:type 'string :reflects-attribute attr-row-height :default default-row-height}})
 (def event-schema {})
 
 (defn gap->css [v]

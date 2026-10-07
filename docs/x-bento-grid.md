@@ -29,6 +29,18 @@ x-bento-grid
 | `lg`   | `24px`    |
 | `xl`   | `32px`    |
 
+## Properties
+
+Each property reflects its attribute. A property reads its default when the attribute is absent.
+
+| Property    | Type   | Reflects     | Default  |
+|-------------|--------|--------------|----------|
+| `columns`   | number | `columns`    | `4`      |
+| `gap`       | string | `gap`        | `"md"`   |
+| `rowGap`    | string | `row-gap`    | `""`     |
+| `columnGap` | string | `column-gap` | `""`     |
+| `rowHeight` | string | `row-height` | `"auto"` |
+
 ## Slots
 
 | Slot      | Description |

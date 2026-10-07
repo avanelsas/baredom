@@ -42,6 +42,7 @@ A navigation trail that renders slotted anchor elements as breadcrumb items sepa
 | `itemsBefore`       | number  | `items-before`        |
 | `itemsAfter`        | number  | `items-after`         |
 | `disabled`          | boolean | `disabled`            |
+| `preserveAriaCurrent` | boolean | `preserve-aria-current` |
 | `aria-label`        | string  | `aria-label`          |
 | `aria-describedby`  | string  | `aria-describedby`    |
 

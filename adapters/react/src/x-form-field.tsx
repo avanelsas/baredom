@@ -13,8 +13,10 @@ export interface XFormFieldProps {
   name?: string;
   value?: string;
   type?: string;
+  hint?: string;
   readOnly?: boolean;
   label?: string;
+  error?: string;
   autocomplete?: string;
   required?: boolean;
   onChangeRequest?: (e: CustomEvent<{ name: string; value: string; previousValue: string }>) => void;

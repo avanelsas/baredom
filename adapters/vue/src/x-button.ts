@@ -18,6 +18,10 @@ export const XButton = defineComponent({
     disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     loading: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     pressed: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    type: { type: String as PropType<string | undefined>, default: undefined },
+    variant: { type: String as PropType<string | undefined>, default: undefined },
+    size: { type: String as PropType<string | undefined>, default: undefined },
+    label: { type: String as PropType<string | undefined>, default: undefined },
   },
   emits: {
     "press": (_e: CustomEvent<{ source: string }>) => true,

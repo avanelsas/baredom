@@ -18,6 +18,11 @@ export const XTab = defineComponent({
     selected: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     value: { type: String as PropType<string | undefined>, default: undefined },
+    orientation: { type: String as PropType<string | undefined>, default: undefined },
+    size: { type: String as PropType<string | undefined>, default: undefined },
+    variant: { type: String as PropType<string | undefined>, default: undefined },
+    label: { type: String as PropType<string | undefined>, default: undefined },
+    controls: { type: String as PropType<string | undefined>, default: undefined },
   },
   emits: {
     "tab-select": (_e: CustomEvent<{ value: string }>) => true,

@@ -17,6 +17,10 @@ export const XCard = defineComponent({
   props: {
     interactive: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    variant: { type: String as PropType<string | undefined>, default: undefined },
+    padding: { type: String as PropType<string | undefined>, default: undefined },
+    radius: { type: String as PropType<string | undefined>, default: undefined },
+    label: { type: String as PropType<string | undefined>, default: undefined },
   },
   emits: {
     "press": (_e: CustomEvent<{}>) => true,

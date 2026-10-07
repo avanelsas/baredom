@@ -39,13 +39,15 @@
        attr-autocomplete
        attr-resize])
 
+(def default-resize "vertical")
+
 (def allowed-resize
   #{"none" "vertical" "horizontal" "both"})
 
 (defn normalize-resize [raw]
   (if (and (string? raw) (contains? allowed-resize raw))
     raw
-    "vertical"))
+    default-resize))
 
 (defn parse-positive-int [raw]
   (when (string? raw)
@@ -63,6 +65,11 @@
    :maxLength    {:type 'number  :reflects-attribute attr-maxlength}
    :minLength    {:type 'number  :reflects-attribute attr-minlength}
    :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}
+   :placeholder  {:type 'string  :reflects-attribute attr-placeholder}
+   :label        {:type 'string  :reflects-attribute attr-label}
+   :hint         {:type 'string  :reflects-attribute attr-hint}
+   :error        {:type 'string  :reflects-attribute attr-error}
+   :resize       {:type 'string  :reflects-attribute attr-resize}
    :validity          {:type 'ValidityState   :readonly true}
    :validationMessage {:type 'string          :readonly true}
    :willValidate      {:type 'boolean         :readonly true}

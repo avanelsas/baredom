@@ -48,6 +48,8 @@ All properties reflect to their corresponding attributes. Setting a property upd
 | `disabled` | boolean   | yes                | |
 | `loading`  | boolean   | yes                | |
 | `selected` | string    | yes                | |
+| `xFormat`  | string    | yes (`x-format`)   | |
+| `yFormat`  | string    | yes (`y-format`)   | |
 | `data`     | JS array  | no                 | Alternative to the JSON `data` attribute. Setting this property directly accepts a plain JS array and bypasses JSON parsing. When both the attribute and the property are set, the property takes precedence. |
 
 ### x-format / y-format

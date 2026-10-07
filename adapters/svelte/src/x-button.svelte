@@ -8,6 +8,10 @@
     disabled?: boolean;
     loading?: boolean;
     pressed?: boolean;
+    type?: string;
+    variant?: string;
+    size?: string;
+    label?: string;
     onpress?: (e: CustomEvent<{ source: string }>) => void;
     onpressstart?: (e: CustomEvent<{ source: string }>) => void;
     onpressend?: (e: CustomEvent<{ source: string }>) => void;
@@ -27,6 +31,10 @@
     disabled,
     loading,
     pressed,
+    type,
+    variant,
+    size,
+    label,
     onpress,
     onpressstart,
     onpressend,
@@ -71,6 +79,10 @@
   {disabled}
   {loading}
   {pressed}
+  {type}
+  {variant}
+  {size}
+  {label}
   class={className}
   {id}
   {...rest}

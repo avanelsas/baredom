@@ -8,6 +8,11 @@ import { init } from "@vanelsas/baredom/x-bento-grid";
 init();
 
 export interface XBentoGridProps {
+  columns?: number;
+  gap?: string;
+  rowGap?: string;
+  columnGap?: string;
+  rowHeight?: string;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;

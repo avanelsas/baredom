@@ -21,8 +21,15 @@
 (def event-change-request "value-change-request")
 (def event-value-change   "value-change")
 
+(def default-orientation "horizontal")
+(def default-activation "auto")
+
 (def property-api
-  {:value {:type 'string :reflects-attribute attr-value}})
+  {:value       {:type 'string  :reflects-attribute attr-value}
+   :orientation {:type 'string  :reflects-attribute attr-orientation :default default-orientation}
+   :activation  {:type 'string  :reflects-attribute attr-activation  :default default-activation}
+   :label       {:type 'string  :reflects-attribute attr-label       :default ""}
+   :loop        {:type 'boolean :reflects-attribute attr-loop}})
 
 (def event-schema
   {event-change-request {:cancelable true
@@ -34,10 +41,10 @@
   (if (contains? allowed v) v fallback))
 
 (defn normalize-orientation [v]
-  (valid-enum v orientation-values "horizontal"))
+  (valid-enum v orientation-values default-orientation))
 
 (defn normalize-activation [v]
-  (valid-enum v activation-values "auto"))
+  (valid-enum v activation-values default-activation))
 
 (defn normalize
   [{:keys [value orientation activation label loop]}]

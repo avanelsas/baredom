@@ -15,20 +15,21 @@ Map of keyword property name to descriptor:
 
 ```clojure
 (def property-api
-  {:type        {:type 'string}
-   :text        {:type 'string}
-   :icon        {:type 'string}
-   :dismissible {:type 'boolean}
-   :disabled    {:type 'boolean}
-   :timeoutMs   {:type 'number}})
+  {:type        {:type 'string  :reflects-attribute attr-type}
+   :text        {:type 'string  :reflects-attribute attr-text}
+   :dismissible {:type 'boolean :reflects-attribute attr-dismissible}
+   :timeoutMs   {:type 'number  :reflects-attribute attr-timeout-ms}})
 ```
 
 Keys:
 - `:type` — `'string`, `'boolean`, or `'number`
-- `:reflects-attribute` — attribute name constant (optional, when property should sync to/from an attribute)
+- `:reflects-attribute` — the constant of the attribute that the property reads and writes
+- `:default` — what the property reads when the attribute is absent. Only `du/install-properties!` reads this key, so state it only in a component that installs its properties from the model
 - `:readonly` — `true` for read-only properties (optional)
 
-Note: the example above is x-alert's `property-api` — the minimal form with only `:type`. The golden sample x-icon uses the richer form with `:reflects-attribute` and `:default` (see its `model.cljs`). Both are acceptable; add `:reflects-attribute`, `:default`, or `:readonly` only when needed.
+**Every public attribute has a property that reflects it.** The manifest takes the type of an attribute from that property. The name of the property is the attribute in camel case, with no dash. Two kinds of attribute need no property: `role` and `aria-` attributes, which are text by the ARIA standard, and the attributes a model names in `internal-attributes`.
+
+`bb scripts/check_attribute_api.bb` enforces this in CI. It also checks that each link agrees with how the component installs the property, and that the manifest publishes the same type and field name as the model.
 
 ### `event-schema`
 Map of event constant symbol to descriptor:
@@ -74,6 +75,7 @@ Args entries: `{:name "param" :type 'number}`. This metadata drives automatic Ty
 
 ## Optional definitions
 
+- **`internal-attributes`**: a set of observed attributes that are not public API, such as the ones a parent component writes onto its children. The manifest leaves them out.
 - **Slot names** — string constants for named slots
 - **CSS custom property names** — `--x-<component>-<property>` constants
 - **Enum values** — sets or vectors of allowed values for constrained attributes

@@ -213,6 +213,12 @@
     (is (= "4" (.getAttribute el model/attr-items-after)))
     (is (= 4   (.-itemsAfter el)))))
 
+(deftest the-preserve-aria-current-property-reflects-its-attribute
+  (let [^js el (append! (make-el))]
+    (set! (.-preserveAriaCurrent el) true)
+    (is (= [true true]
+           [(.hasAttribute el model/attr-preserve-aria-current) (.-preserveAriaCurrent el)]))))
+
 (deftest the-max-items-property-reflects-its-attribute
   (let [^js el (append! (make-el))]
     (set! (.-maxItems el) 5)

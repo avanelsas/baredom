@@ -8,14 +8,15 @@ import { init } from "@vanelsas/baredom/x-breadcrumbs";
 init();
 
 export interface XBreadcrumbsProps {
-  separator?: string;
-  size?: string;
-  variant?: string;
+  itemsAfter?: number;
   wrap?: boolean;
+  disabled?: boolean;
+  variant?: string;
+  size?: string;
+  preserveAriaCurrent?: boolean;
+  separator?: string;
   maxItems?: number;
   itemsBefore?: number;
-  itemsAfter?: number;
-  disabled?: boolean;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;

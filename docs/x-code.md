@@ -37,7 +37,7 @@ surrounding markup.
 | `wrap`         | boolean | absent  | Soft-wraps long lines instead of scrolling horizontally.               |
 | `max-lines`    | number  | `0`     | When positive and exceeded, the block collapses behind a fade. `0` = off. |
 | `expanded`     | boolean | absent  | Whether a collapsible block is expanded. Toggled by the expander.      |
-| `code`         | string  | —       | Code source as an attribute. Overridden by the `code` property; overrides text content. |
+| `code`         | string  | —       | Code source as an attribute. Overrides text content. |
 
 ## Properties
 
@@ -50,15 +50,14 @@ surrounding markup.
 | `wrap`        | boolean | `wrap`         | `false` | —                                                        |
 | `maxLines`    | number  | `max-lines`    | `0`     | —                                                        |
 | `expanded`    | boolean | `expanded`     | `false` | —                                                        |
-| `code`        | string  | — (none)       | —       | Property-only override. Getter reports the effective code (property → `code` attribute → text content). Setting it re-renders. |
+| `code`        | string  | `code`         | —       | Setting a value writes the `code` attribute as text. `null` or `undefined` removes it. The getter reports the effective code (`code` attribute, or else text content). |
 
 ## Code source precedence
 
 The rendered code is resolved in this order:
 
-1. The `code` **property** (if set to a string).
-2. The `code` **attribute**.
-3. The element's light-DOM **`textContent`**.
+1. The `code` **attribute**, which the `code` property writes.
+2. The element's light-DOM **`textContent`**.
 
 A `MutationObserver` re-renders the block whenever the light-DOM text changes.
 

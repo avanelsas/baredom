@@ -80,6 +80,31 @@
     (is (= "from-property" (.-textContent (part el "[part=line-content]"))))
     (is (= "from-property" (.-code el)) "the code getter reports the override")))
 
+(deftest the-code-property-writes-the-code-attribute
+  (let [el (append! (make-el))]
+    (set! (.-code el) "from-property")
+    (is (= "from-property" (.getAttribute el model/attr-code)))))
+
+(deftest the-code-property-writes-a-number-as-text
+  (let [el (append! (make-el))]
+    (set! (.-code el) 42)
+    (is (= "42" (.getAttribute el model/attr-code)))))
+
+(deftest a-nil-code-property-removes-the-attribute
+  (let [el (append! (with-text (make-el) "from-text-content"))]
+    (set! (.-code el) "from-property")
+    (set! (.-code el) nil)
+    (is (= [false "from-text-content"]
+           [(.hasAttribute el model/attr-code) (.-code el)]))
+    (is (= "from-text-content" (.-textContent (part el "[part=line-content]"))))))
+
+(deftest a-code-attribute-written-after-the-property-is-the-code
+  (let [el (append! (make-el))]
+    (set! (.-code el) "from-property")
+    (.setAttribute el model/attr-code "from-attribute")
+    (is (= ["from-attribute" "from-attribute"]
+           [(.-code el) (.-textContent (part el "[part=line-content]"))]))))
+
 (deftest code-attribute-rendering-test
   (let [el (append! (make-el))]
     (.setAttribute el model/attr-code "attr-code-value")

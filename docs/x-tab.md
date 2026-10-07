@@ -77,6 +77,11 @@ Invalid enum values are normalized internally without rewriting host attributes.
 | `selected` | boolean | Reflects the selected state |
 | `disabled` | boolean | Reflects the disabled state |
 | `value`    | string  | Tab identifier              |
+| `orientation` | string | Reflects `orientation`, default `"horizontal"` |
+| `size`     | string  | Reflects `size`, default `"md"` |
+| `variant`  | string  | Reflects `variant`, default `"default"` |
+| `label`    | string  | Reflects `label`, default `""` |
+| `controls` | string  | Reflects `controls`, default `""` |
 
 Example:
 

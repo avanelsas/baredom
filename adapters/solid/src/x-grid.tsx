@@ -7,6 +7,15 @@ import { init } from "@vanelsas/baredom/x-grid";
 init();
 
 export interface XGridProps {
+  minColumnSize?: string;
+  rowGap?: string;
+  columns?: string;
+  autoFlow?: string;
+  gap?: string;
+  justifyItems?: string;
+  columnGap?: string;
+  inline?: boolean;
+  alignItems?: string;
   ref?: XGridElement | ((el: XGridElement) => void);
   children?: JSX.Element;
   class?: string;

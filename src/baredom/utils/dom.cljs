@@ -262,14 +262,20 @@
         :get (fn [] (this-as ^js this (has-attr? this attr-name)))
         :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
 
+(defn- on-value?
+  "True when a value written to a property that is on by default means on."
+  [v]
+  (boolean (and v (mu/parse-bool-default-true v))))
+
 (defn define-bool-default-true-prop!
   "Install a boolean JS property for an HTML attribute that defaults to
    `true`. Absent → true, attribute value `\"false\"` (case-insensitive,
    trimmed) → false, any other value → true. Setter REMOVES the attribute
    for truthy values (so the explicit-true HTML matches the natural-true
-   absent default) and writes the literal `\"false\"` for falsy. Removing
-   for falsy would resolve back to the default `true`, defeating the
-   point — hence the explicit `\"false\"` encoding.
+   absent default) and writes the literal `\"false\"` for falsy and for
+   the text `\"false\"`. Removing for falsy would resolve back to the
+   default `true`, defeating the point — hence the explicit `\"false\"`
+   encoding.
 
    Use for `dismissible`, `arrows`, `dots`, `spinner`, etc. — boolean
    attributes whose natural state is enabled and opting out is explicit.
@@ -285,7 +291,7 @@
                  (mu/parse-bool-default-true (get-attr this attr-name))))
         :set (fn [v]
                (this-as ^js this
-                 (if v
+                 (if (on-value? v)
                    (remove-attr! this attr-name)
                    (set-attr! this attr-name "false"))))}))
 
@@ -313,6 +319,12 @@
                                  (set-attr! this attr-name s)
                                  (remove-attr! this attr-name))))})))
 
+(defn- number-attr-text
+  "The attribute text for a value written to a number property, or nil when it has no number."
+  [v]
+  (let [n (js/parseFloat v)]
+    (when-not (js/isNaN n) (str n))))
+
 (defn define-number-prop!
   "Install a numeric JS property that reflects to/from an HTML attribute.
    `default-val` is returned when the attribute is absent or non-numeric."
@@ -330,8 +342,8 @@
                             default-val))))
         :set (fn [v]
                (this-as ^js this
-                        (if (and (number? v) (not (js/isNaN v)))
-                          (set-attr! this attr-name (str v))
+                        (if-let [text (number-attr-text v)]
+                          (set-attr! this attr-name text)
                           (remove-attr! this attr-name))))}))
 
 (defn define-parsed-prop!

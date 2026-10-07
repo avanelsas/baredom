@@ -193,6 +193,12 @@ Every component under `src/baredom/components/<name>/` follows:
 2. **`<name>.cljs`** — DOM and lifecycle layer. Shadow DOM creation, `render!`, event wiring, lifecycle callbacks, `init!` via `component/register!`.
 3. **`src/baredom/exports/<name>.cljs`** — ESM entry point. Exposes `^:export init`, `register!`, and `public-api` metadata.
 
+**Every public attribute has a property that reflects it.** `property-api` names the attribute
+in `:reflects-attribute`, and the manifest takes the attribute's type from there. The property
+name is the attribute in camel case. `role`, `aria-` attributes and the attributes in a model's
+`internal-attributes` need none. Enforced by `bb scripts/check_attribute_api.bb` in CI, see
+[`docs/MODEL-LAYER.md`](docs/MODEL-LAYER.md).
+
 **Model fns have two callers, not one.** A `model.cljs` function is called both from its component (which supplies fully-shaped input via `read-model`) *and* directly from `model_test.cljs` (which often passes sparse maps like `{}`). The input contract that holds in production does **not** hold in tests. Concretely: if a destructured key like `:label-present?` is documented as `boolean`, tests may still pass `nil` for it, and `(and nil …)` returns `nil` rather than `false`. **Coerce output booleans explicitly** at the return site — e.g. `:labelled? (boolean (and label-present? …))` — instead of relying on inputs to already be booleans. The same rule applies to any output whose downstream consumer (or test assertion) checks a strict predicate like `false?` / `true?` / `nil?`.
 
 ### Additional files per component

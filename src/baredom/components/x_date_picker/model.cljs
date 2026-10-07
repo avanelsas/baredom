@@ -35,6 +35,8 @@
        "disabled" "readonly" "required" "name" "autocomplete" "error"
        "aria-label" "aria-describedby" "open"])
 
+(def default-separator " - ")
+
 (def property-api
   {:mode        {:type 'string  :reflects-attribute attr-mode}
    :value       {:type 'string  :reflects-attribute attr-value}
@@ -50,6 +52,17 @@
    ;; `error` reflects the attribute so x-form's setFieldError can drive the
    ;; inline validation message, mirroring x-form-field.
    :error       {:type 'string  :reflects-attribute attr-error}
+   :min               {:type 'string  :reflects-attribute attr-min          :default ""}
+   :max               {:type 'string  :reflects-attribute attr-max          :default ""}
+   :format            {:type 'string  :reflects-attribute attr-format       :default "iso"}
+   :locale            {:type 'string  :reflects-attribute attr-locale       :default ""}
+   :separator         {:type 'string  :reflects-attribute attr-separator
+                       :default default-separator}
+   :placeholder       {:type 'string  :reflects-attribute attr-placeholder  :default ""}
+   :autocomplete      {:type 'string  :reflects-attribute attr-autocomplete :default ""}
+   :autoSwap          {:type 'boolean :reflects-attribute attr-auto-swap}
+   :rangeAllowSameDay {:type 'boolean :reflects-attribute attr-range-allow-same}
+   :closeOnSelect     {:type 'boolean :reflects-attribute attr-close-on-select}
    :validity          {:type 'ValidityState   :readonly true}
    :validationMessage {:type 'string          :readonly true}
    :willValidate      {:type 'boolean         :readonly true}
@@ -116,7 +129,7 @@
   "Try to parse a display string that may contain a separator.
    Returns {:ok? boolean :start js/Date|nil :end js/Date|nil}."
   [display {:keys [separator]}]
-  (let [sep (if (and (string? separator) (pos? (.-length separator))) separator " - ")
+  (let [sep (if (and (string? separator) (pos? (.-length separator))) separator default-separator)
         s   (normalize-str display)]
     (if (nil? s)
       {:ok? false :start nil :end nil}
@@ -142,7 +155,7 @@
   (let [m         (parse-mode mode)
         fmt       (parse-format format)
         loc       (normalize-str locale)
-        sep       (or (normalize-str separator) " - ")
+        sep       (or (normalize-str separator) default-separator)
         min-d     (dates/iso->date min)
         max-d     (dates/iso->date max)
         auto-swap? (boolean auto-swap?)

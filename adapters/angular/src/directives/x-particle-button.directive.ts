@@ -17,9 +17,18 @@ export class BaredomParticleButton implements OnInit, OnDestroy {
     this.zone = zone;
   }
 
+  @Input() set particleCount(v: number) { this.el.particleCount = v as any; }
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
+  @Input() set variant(v: string) { this.el.variant = v as any; }
+  @Input() set mode(v: string) { this.el.mode = v as any; }
+  @Input() set type(v: string) { this.el.type = v as any; }
+  @Input() set intensity(v: number) { this.el.intensity = v as any; }
+  @Input() set size(v: string) { this.el.size = v as any; }
+  @Input() set reassembleSpeed(v: number) { this.el.reassembleSpeed = v as any; }
   @Input() set loading(v: boolean) { this.el.loading = v as any; }
+  @Input() set label(v: string) { this.el.label = v as any; }
   @Input() set pressed(v: boolean) { this.el.pressed = v as any; }
+  @Input() set particleSize(v: number) { this.el.particleSize = v as any; }
 
   @Output() press = new EventEmitter<CustomEvent<{ source: string }>>();
   @Output() pressStart = new EventEmitter<CustomEvent<{ source: string }>>();

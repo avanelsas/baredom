@@ -287,7 +287,17 @@ Behavior:
 
 ## Properties
 
-These properties reflect boolean attributes.
+Each property reflects its attribute. The first three are booleans and have a section below.
+
+| Property   | Type    | Reflects   | Default     |
+|------------|---------|------------|-------------|
+| `disabled` | boolean | `disabled` | `false`     |
+| `loading`  | boolean | `loading`  | `false`     |
+| `pressed`  | boolean | `pressed`  | `false`     |
+| `type`     | string  | `type`     | `"button"`  |
+| `variant`  | string  | `variant`  | `"primary"` |
+| `size`     | string  | `size`     | `"md"`      |
+| `label`    | string  | `label`    | `""`        |
 
 ### `disabled`
 

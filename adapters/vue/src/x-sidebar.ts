@@ -17,6 +17,10 @@ export const XSidebar = defineComponent({
   props: {
     open: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     collapsed: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    placement: { type: String as PropType<string | undefined>, default: undefined },
+    variant: { type: String as PropType<string | undefined>, default: undefined },
+    breakpoint: { type: Number as PropType<number | undefined>, default: undefined },
+    label: { type: String as PropType<string | undefined>, default: undefined },
   },
   emits: {
     "toggle": (_e: CustomEvent<{ open: boolean }>) => true,

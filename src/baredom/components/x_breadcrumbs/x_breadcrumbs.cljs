@@ -303,7 +303,7 @@
   (du/define-string-prop! proto model/attr-variant                model/attr-variant                model/default-variant)
   (du/define-bool-prop!   proto model/attr-wrap                   model/attr-wrap)
   (du/define-bool-prop!   proto model/attr-disabled               model/attr-disabled)
-  (du/define-bool-prop!   proto model/attr-preserve-aria-current  model/attr-preserve-aria-current)
+  (du/define-bool-prop!   proto "preserveAriaCurrent"             model/attr-preserve-aria-current)
   (def-int-prop!          proto "maxItems"    model/attr-max-items    nil)
   (def-int-prop!          proto "itemsBefore" model/attr-items-before model/default-items-before)
   (def-int-prop!          proto "itemsAfter"  model/attr-items-after  model/default-items-after)

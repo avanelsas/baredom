@@ -8,6 +8,10 @@ init();
 
 export interface XTabsProps {
   value?: string;
+  orientation?: string;
+  activation?: string;
+  label?: string;
+  loop?: boolean;
   defaultValue?: string;
   onValueChangeRequest?: (e: CustomEvent<{ value: string; previousValue: string }>) => void;
   onValueChange?: (e: CustomEvent<{ value: string }>) => void;

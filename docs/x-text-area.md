@@ -40,6 +40,11 @@ A form-associated multi-line text input web component. Wraps a native `<textarea
 | `maxLength`  | number  | `maxlength`| Maximum character count. Returns `null` when not set. |
 | `minLength`  | number  | `minlength`| Minimum character count. Returns `null` when not set. |
 | `autocomplete`| string | `autocomplete` | Autocomplete hint. |
+| `placeholder`| string  | `placeholder` | Placeholder text. |
+| `label`      | string  | `label`    | Label text. |
+| `hint`       | string  | `hint`     | Hint text. |
+| `error`      | string  | `error`    | Error text. |
+| `resize`     | string  | `resize`   | Resize mode (default `"vertical"`). |
 
 ## Events
 

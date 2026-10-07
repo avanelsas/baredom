@@ -15,14 +15,15 @@ export const XBreadcrumbs = defineComponent({
   name: "XBreadcrumbs",
   inheritAttrs: false,
   props: {
-    separator: { type: String as PropType<string | undefined>, default: undefined },
-    size: { type: String as PropType<string | undefined>, default: undefined },
-    variant: { type: String as PropType<string | undefined>, default: undefined },
+    itemsAfter: { type: Number as PropType<number | undefined>, default: undefined },
     wrap: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    variant: { type: String as PropType<string | undefined>, default: undefined },
+    size: { type: String as PropType<string | undefined>, default: undefined },
+    preserveAriaCurrent: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    separator: { type: String as PropType<string | undefined>, default: undefined },
     maxItems: { type: Number as PropType<number | undefined>, default: undefined },
     itemsBefore: { type: Number as PropType<number | undefined>, default: undefined },
-    itemsAfter: { type: Number as PropType<number | undefined>, default: undefined },
-    disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
   },
   setup(props, { emit, attrs, slots, expose }) {
     const elRef = ref<XBreadcrumbsElement | null>(null);

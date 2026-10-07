@@ -2,6 +2,7 @@
   (:require
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
+   [baredom.utils.model :as mu]
    [baremirror.core :as mirror]
    [goog.object :as gobj]
    [baredom.components.x-command-palette.model :as model]))
@@ -589,9 +590,34 @@
                                             (request-close! this)
                                             (request-open!  this))))}))
 
+;; closeOnScrim follows the scrim when its attribute is absent, so absent is not false.
+(defn- define-close-on-scrim-prop! [^js proto]
+  (.defineProperty js/Object proto "closeOnScrim"
+                   #js {:configurable true
+                        :enumerable   true
+                        :get (fn []
+                               (this-as ^js this
+                                 (:close-on-scrim? (read-model this))))
+                        :set (fn [v]
+                               (this-as ^js this
+                                 (if (some? v)
+                                   (du/set-attr! this model/attr-close-on-scrim
+                                                 (str (mu/parse-bool-attr (str v))))
+                                   (du/remove-attr! this model/attr-close-on-scrim))))}))
+
 (defn- install-property-accessors! [^js proto]
-  (du/define-bool-prop! proto "open"     model/attr-open)
-  (du/define-bool-prop! proto "disabled" model/attr-disabled)
+  (du/define-bool-prop!              proto "open"          model/attr-open)
+  (du/define-bool-prop!              proto "disabled"      model/attr-disabled)
+  (du/define-bool-default-true-prop! proto "modal"         model/attr-modal)
+  (du/define-bool-default-true-prop! proto "dismissible"   model/attr-dismissible)
+  (du/define-bool-default-true-prop! proto "closeOnEscape" model/attr-close-on-escape)
+  (du/define-bool-prop!              proto "noScrim"       model/attr-no-scrim)
+  (du/define-string-prop!            proto "label"         model/attr-label "")
+  (du/define-string-prop!            proto "placeholder"   model/attr-placeholder
+                                     model/default-placeholder)
+  (du/define-string-prop!            proto "emptyText"     model/attr-empty-text
+                                     model/default-empty-text)
+  (define-close-on-scrim-prop! proto)
   (define-items-prop! proto)
   (define-methods!    proto))
 

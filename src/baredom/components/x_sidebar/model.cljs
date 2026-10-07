@@ -53,10 +53,12 @@
    :collapsed false})
 
 (def property-api
-  {:open {:type 'boolean
-          :reflects-attribute attr-open}
-   :collapsed {:type 'boolean
-               :reflects-attribute attr-collapsed}})
+  {:open       {:type 'boolean :reflects-attribute attr-open}
+   :collapsed  {:type 'boolean :reflects-attribute attr-collapsed}
+   :placement  {:type 'string  :reflects-attribute attr-placement  :default (:placement defaults)}
+   :variant    {:type 'string  :reflects-attribute attr-variant    :default (:variant defaults)}
+   :breakpoint {:type 'number  :reflects-attribute attr-breakpoint :default (:breakpoint defaults)}
+   :label      {:type 'string  :reflects-attribute attr-label      :default (:label defaults)}})
 
 (def event-schema
   {event-toggle {:cancelable false :detail {:open 'boolean}}

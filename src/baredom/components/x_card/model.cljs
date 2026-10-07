@@ -27,7 +27,11 @@
 
 (def property-api
   {:interactive {:type 'boolean :reflects-attribute attr-interactive}
-   :disabled    {:type 'boolean :reflects-attribute attr-disabled}})
+   :disabled    {:type 'boolean :reflects-attribute attr-disabled}
+   :variant     {:type 'string  :reflects-attribute attr-variant :default default-variant}
+   :padding     {:type 'string  :reflects-attribute attr-padding :default default-padding}
+   :radius      {:type 'string  :reflects-attribute attr-radius  :default default-radius}
+   :label       {:type 'string  :reflects-attribute attr-label   :default ""}})
 
 (def event-press "press")
 

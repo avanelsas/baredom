@@ -17,9 +17,11 @@ export class BaredomSelect implements OnInit, OnDestroy {
     this.zone = zone;
   }
 
+  @Input() set placeholder(v: string) { this.el.placeholder = v as any; }
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
   @Input() set name(v: string) { this.el.name = v as any; }
   @Input() set value(v: string) { this.el.value = v as any; }
+  @Input() set size(v: string) { this.el.size = v as any; }
   @Input() set error(v: string) { this.el.error = v as any; }
   @Input() set required(v: boolean) { this.el.required = v as any; }
 
