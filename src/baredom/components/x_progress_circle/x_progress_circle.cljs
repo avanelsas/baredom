@@ -186,6 +186,7 @@
     (if indeterminate
       (do
         (du/remove-attr! el "aria-valuenow")
+        (du/remove-attr! el "aria-valuemax")
         (du/set-attr!    el "aria-busy"      "true")
         (du/set-attr!    el "aria-valuetext" aria-valuetext))
       (do

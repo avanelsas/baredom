@@ -62,7 +62,7 @@ Fires once when `value >= max` (and not indeterminate). Resets when value drops 
 ## Accessibility
 
 - Host element has `role="progressbar"`, `aria-valuemin="0"`, `aria-valuenow`, `aria-valuemax`, `aria-valuetext`.
-- When indeterminate: `aria-busy="true"` is set, `aria-valuenow` is removed, `aria-valuetext` is `"Loading…"`.
+- When indeterminate: `aria-busy="true"` is set, `aria-valuenow` and `aria-valuemax` are removed, `aria-valuetext` is `"Loading…"`.
 - `aria-label` is set from the `label` attribute when provided.
 - The SVG is `aria-hidden="true"` and `focusable="false"` to prevent duplicate screen-reader announcements.
 

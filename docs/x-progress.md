@@ -60,6 +60,7 @@ None. Label text is provided via the `label` attribute.
 - `aria-valuetext` shows e.g. `"75%"` or `"Loading…"` when indeterminate.
 - `aria-label` mirrors the `label` attribute.
 - `aria-busy="true"` is set when `indeterminate` is present; removed otherwise.
+- When indeterminate, `aria-valuenow` and `aria-valuemax` are removed. No maximum of an earlier state is left on the host.
 
 ## Shadow DOM Structure
 
