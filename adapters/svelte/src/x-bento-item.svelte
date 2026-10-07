@@ -5,6 +5,9 @@
   init();
   export type { XBentoItemElement };
   export interface XBentoItemProps {
+    colSpan?: number;
+    rowSpan?: number;
+    order?: number;
     el?: XBentoItemElement | null;
     children?: import("svelte").Snippet;
     class?: string;
@@ -15,6 +18,9 @@
 
 <script lang="ts">
   let {
+    colSpan,
+    rowSpan,
+    order,
     el = $bindable(null),
     children,
     class: className,
@@ -25,6 +31,9 @@
 
 <x-bento-item
   bind:this={el}
+  {colSpan}
+  {rowSpan}
+  {order}
   class={className}
   {id}
   {...rest}

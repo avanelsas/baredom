@@ -5,6 +5,11 @@
   init();
   export type { XBentoGridElement };
   export interface XBentoGridProps {
+    columns?: number;
+    gap?: string;
+    rowGap?: string;
+    columnGap?: string;
+    rowHeight?: string;
     el?: XBentoGridElement | null;
     children?: import("svelte").Snippet;
     class?: string;
@@ -15,6 +20,11 @@
 
 <script lang="ts">
   let {
+    columns,
+    gap,
+    rowGap,
+    columnGap,
+    rowHeight,
     el = $bindable(null),
     children,
     class: className,
@@ -25,6 +35,11 @@
 
 <x-bento-grid
   bind:this={el}
+  {columns}
+  {gap}
+  {rowGap}
+  {columnGap}
+  {rowHeight}
   class={className}
   {id}
   {...rest}

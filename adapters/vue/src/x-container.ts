@@ -17,6 +17,10 @@ export const XContainer = defineComponent({
   props: {
     center: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     fluid: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    as: { type: String as PropType<string | undefined>, default: undefined },
+    size: { type: String as PropType<string | undefined>, default: undefined },
+    padding: { type: String as PropType<string | undefined>, default: undefined },
+    label: { type: String as PropType<string | undefined>, default: undefined },
   },
   setup(props, { emit, attrs, slots, expose }) {
     const elRef = ref<XContainerElement | null>(null);

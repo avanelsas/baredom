@@ -7,6 +7,11 @@ import { init } from "@vanelsas/baredom/x-bento-grid";
 init();
 
 export interface XBentoGridProps {
+  columns?: number;
+  gap?: string;
+  rowGap?: string;
+  columnGap?: string;
+  rowHeight?: string;
   ref?: XBentoGridElement | ((el: XBentoGridElement) => void);
   children?: JSX.Element;
   class?: string;

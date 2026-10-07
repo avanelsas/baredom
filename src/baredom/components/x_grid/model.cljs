@@ -29,8 +29,20 @@
 
 (def default-gap "md")
 (def default-min-column-size "16rem")
+(def default-align "stretch")
+(def default-flow "row")
 
-(def property-api {})
+(def property-api
+  {:columns       {:type 'string  :reflects-attribute attr-columns         :default ""}
+   :minColumnSize {:type 'string  :reflects-attribute attr-min-column-size
+                   :default default-min-column-size}
+   :gap           {:type 'string  :reflects-attribute attr-gap             :default default-gap}
+   :rowGap        {:type 'string  :reflects-attribute attr-row-gap         :default ""}
+   :columnGap     {:type 'string  :reflects-attribute attr-column-gap      :default ""}
+   :alignItems    {:type 'string  :reflects-attribute attr-align-items     :default default-align}
+   :justifyItems  {:type 'string  :reflects-attribute attr-justify-items   :default default-align}
+   :autoFlow      {:type 'string  :reflects-attribute attr-auto-flow       :default default-flow}
+   :inline        {:type 'boolean :reflects-attribute attr-inline}})
 (def event-schema {})
 
 (defn gap->css [v]
@@ -51,10 +63,10 @@
 (defn normalize-column-gap [v] (when (contains? gap-values v) v))
 
 (defn normalize-align [v]
-  (valid-enum v align-values "stretch"))
+  (valid-enum v align-values default-align))
 
 (defn normalize-flow [v]
-  (valid-enum v flow-values "row"))
+  (valid-enum v flow-values default-flow))
 
 (defn flow->css [v]
   (case v

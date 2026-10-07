@@ -7,6 +7,10 @@
   export interface XCardProps {
     interactive?: boolean;
     disabled?: boolean;
+    variant?: string;
+    padding?: string;
+    radius?: string;
+    label?: string;
     onpress?: (e: CustomEvent<{}>) => void;
     el?: XCardElement | null;
     children?: import("svelte").Snippet;
@@ -20,6 +24,10 @@
   let {
     interactive,
     disabled,
+    variant,
+    padding,
+    radius,
+    label,
     onpress,
     el = $bindable(null),
     children,
@@ -43,6 +51,10 @@
   bind:this={el}
   {interactive}
   {disabled}
+  {variant}
+  {padding}
+  {radius}
+  {label}
   class={className}
   {id}
   {...rest}

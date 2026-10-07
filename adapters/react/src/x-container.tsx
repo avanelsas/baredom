@@ -10,6 +10,10 @@ init();
 export interface XContainerProps {
   center?: boolean;
   fluid?: boolean;
+  as?: string;
+  size?: string;
+  padding?: string;
+  label?: string;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;

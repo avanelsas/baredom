@@ -7,6 +7,10 @@
   export interface XContainerProps {
     center?: boolean;
     fluid?: boolean;
+    as?: string;
+    size?: string;
+    padding?: string;
+    label?: string;
     el?: XContainerElement | null;
     children?: import("svelte").Snippet;
     class?: string;
@@ -19,6 +23,10 @@
   let {
     center,
     fluid,
+    as,
+    size,
+    padding,
+    label,
     el = $bindable(null),
     children,
     class: className,
@@ -31,6 +39,10 @@
   bind:this={el}
   {center}
   {fluid}
+  {as}
+  {size}
+  {padding}
+  {label}
   class={className}
   {id}
   {...rest}

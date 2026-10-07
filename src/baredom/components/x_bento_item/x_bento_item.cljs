@@ -75,9 +75,13 @@
   (when (not= old-val new-val)
     (update-from-attrs! el)))
 
+(defn- install-property-accessors! [^js proto]
+  (du/install-properties! proto model/property-api))
+
 ;; ── Public API ────────────────────────────────────────────────────────────
 (defn init! []
   (component/register! model/tag-name
                        {:observed-attributes  model/observed-attributes
                         :connected-fn         connected!
-                        :attribute-changed-fn attribute-changed!}))
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   install-property-accessors!}))

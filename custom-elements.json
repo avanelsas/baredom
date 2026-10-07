@@ -186,25 +186,115 @@
       "superclass" : {
         "name" : "HTMLElement"
       },
-      "members" : [ ],
+      "members" : [ {
+        "kind" : "field",
+        "name" : "minColumnSize",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rowGap",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "columns",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoFlow",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "gap",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "justifyItems",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "columnGap",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "inline",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "alignItems",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "attributes" : [ {
-        "name" : "columns"
+        "name" : "columns",
+        "fieldName" : "columns",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "min-column-size"
+        "name" : "min-column-size",
+        "fieldName" : "minColumnSize",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "gap"
+        "name" : "gap",
+        "fieldName" : "gap",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "row-gap"
+        "name" : "row-gap",
+        "fieldName" : "rowGap",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "column-gap"
+        "name" : "column-gap",
+        "fieldName" : "columnGap",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "align-items"
+        "name" : "align-items",
+        "fieldName" : "alignItems",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "justify-items"
+        "name" : "justify-items",
+        "fieldName" : "justifyItems",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "auto-flow"
+        "name" : "auto-flow",
+        "fieldName" : "autoFlow",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "inline"
+        "name" : "inline",
+        "fieldName" : "inline",
+        "type" : {
+          "text" : "boolean"
+        }
       } ],
       "events" : [ ],
       "slots" : [ {
@@ -15123,13 +15213,43 @@
       "superclass" : {
         "name" : "HTMLElement"
       },
-      "members" : [ ],
+      "members" : [ {
+        "kind" : "field",
+        "name" : "colSpan",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rowSpan",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "order",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
       "attributes" : [ {
-        "name" : "col-span"
+        "name" : "col-span",
+        "fieldName" : "colSpan",
+        "type" : {
+          "text" : "number"
+        }
       }, {
-        "name" : "row-span"
+        "name" : "row-span",
+        "fieldName" : "rowSpan",
+        "type" : {
+          "text" : "number"
+        }
       }, {
-        "name" : "order"
+        "name" : "order",
+        "fieldName" : "order",
+        "type" : {
+          "text" : "number"
+        }
       } ],
       "events" : [ ],
       "slots" : [ {
@@ -17707,13 +17827,49 @@
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "padding",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "radius",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "attributes" : [ {
-        "name" : "variant"
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "padding"
+        "name" : "padding",
+        "fieldName" : "padding",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "radius"
+        "name" : "radius",
+        "fieldName" : "radius",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "name" : "interactive",
         "fieldName" : "interactive",
@@ -17727,7 +17883,11 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "label"
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "press",
@@ -18163,13 +18323,49 @@
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "as",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "padding",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "attributes" : [ {
-        "name" : "as"
+        "name" : "as",
+        "fieldName" : "as",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "size"
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "padding"
+        "name" : "padding",
+        "fieldName" : "padding",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "name" : "center",
         "fieldName" : "center",
@@ -18183,7 +18379,11 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "label"
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ ],
       "slots" : [ {
@@ -19538,17 +19738,67 @@
       "superclass" : {
         "name" : "HTMLElement"
       },
-      "members" : [ ],
+      "members" : [ {
+        "kind" : "field",
+        "name" : "columns",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "gap",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rowGap",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "columnGap",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rowHeight",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "attributes" : [ {
-        "name" : "columns"
+        "name" : "columns",
+        "fieldName" : "columns",
+        "type" : {
+          "text" : "number"
+        }
       }, {
-        "name" : "gap"
+        "name" : "gap",
+        "fieldName" : "gap",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "row-gap"
+        "name" : "row-gap",
+        "fieldName" : "rowGap",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "column-gap"
+        "name" : "column-gap",
+        "fieldName" : "columnGap",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "row-height"
+        "name" : "row-height",
+        "fieldName" : "rowHeight",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ ],
       "slots" : [ {

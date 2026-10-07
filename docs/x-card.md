@@ -19,6 +19,10 @@ Themeable surface container for grouping related content.
 |----------|------|-----------------------|
 | `interactive` | boolean | yes (`interactive`) |
 | `disabled` | boolean | yes (`disabled`) |
+| `variant` | string | yes (`variant`), default `"elevated"` |
+| `padding` | string | yes (`padding`), default `"md"` |
+| `radius` | string | yes (`radius`), default `"lg"` |
+| `label` | string | yes (`label`), default `""` |
 
 ## Event
 

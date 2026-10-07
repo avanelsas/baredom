@@ -10,6 +10,10 @@ init();
 export interface XCardProps {
   interactive?: boolean;
   disabled?: boolean;
+  variant?: string;
+  padding?: string;
+  radius?: string;
+  label?: string;
   onPress?: (e: CustomEvent<{}>) => void;
   children?: React.ReactNode;
   className?: string;

@@ -9,6 +9,10 @@ init();
 export interface XContainerProps {
   center?: boolean;
   fluid?: boolean;
+  as?: string;
+  size?: string;
+  padding?: string;
+  label?: string;
   ref?: XContainerElement | ((el: XContainerElement) => void);
   children?: JSX.Element;
   class?: string;

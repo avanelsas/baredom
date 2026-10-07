@@ -18,6 +18,16 @@ x-bento-item
 
 Out-of-range span values are clamped (minimum 1, maximum 6). Invalid values fall back to 1.
 
+## Properties
+
+Each property reflects its attribute. A property reads its default when the attribute is absent.
+
+| Property  | Type   | Reflects   | Default |
+|-----------|--------|------------|---------|
+| `colSpan` | number | `col-span` | `1`     |
+| `rowSpan` | number | `row-span` | `1`     |
+| `order`   | number | `order`    | `0`     |
+
 ## Slots
 
 | Slot      | Description |

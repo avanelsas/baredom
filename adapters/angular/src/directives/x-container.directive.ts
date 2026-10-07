@@ -16,5 +16,9 @@ export class BaredomContainer {
 
   @Input() set center(v: boolean) { this.el.center = v as any; }
   @Input() set fluid(v: boolean) { this.el.fluid = v as any; }
+  @Input() set as(v: string) { this.el.as = v as any; }
+  @Input() set size(v: string) { this.el.size = v as any; }
+  @Input() set padding(v: string) { this.el.padding = v as any; }
+  @Input() set label(v: string) { this.el.label = v as any; }
 
 }

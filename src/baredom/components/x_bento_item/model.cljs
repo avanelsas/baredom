@@ -11,7 +11,12 @@
        attr-row-span
        attr-order])
 
-(def property-api {})
+(def default-span 1)
+
+(def property-api
+  {:colSpan {:type 'number :reflects-attribute attr-col-span :default default-span}
+   :rowSpan {:type 'number :reflects-attribute attr-row-span :default default-span}
+   :order   {:type 'number :reflects-attribute attr-order    :default 0}})
 (def event-schema {})
 
 (defn normalize-span
@@ -21,8 +26,8 @@
     (let [n (js/parseInt v 10)]
       (if (and (number? n) (not (js/isNaN n)))
         (-> n (max 1) (min 6))
-        1))
-    1))
+        default-span))
+    default-span))
 
 (defn normalize-order
   "Parse order attribute to integer, or nil if absent/invalid."

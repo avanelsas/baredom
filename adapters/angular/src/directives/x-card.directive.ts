@@ -19,6 +19,10 @@ export class BaredomCard implements OnInit, OnDestroy {
 
   @Input() set interactive(v: boolean) { this.el.interactive = v as any; }
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
+  @Input() set variant(v: string) { this.el.variant = v as any; }
+  @Input() set padding(v: string) { this.el.padding = v as any; }
+  @Input() set radius(v: string) { this.el.radius = v as any; }
+  @Input() set label(v: string) { this.el.label = v as any; }
 
   @Output() press = new EventEmitter<CustomEvent<{}>>();
 

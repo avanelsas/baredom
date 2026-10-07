@@ -72,7 +72,19 @@ Set by the component based on attribute values. Can be overridden in CSS.
 
 ## Properties
 
-This component exposes an attribute-only API. No JavaScript property accessors are defined.
+Each property reflects its attribute. A property reads its default when the attribute is absent.
+
+| Property        | Type    | Reflects          | Default    |
+|-----------------|---------|-------------------|------------|
+| `columns`       | string  | `columns`         | `""`       |
+| `minColumnSize` | string  | `min-column-size` | `"16rem"`  |
+| `gap`           | string  | `gap`             | `"md"`     |
+| `rowGap`        | string  | `row-gap`         | `""`       |
+| `columnGap`     | string  | `column-gap`      | `""`       |
+| `alignItems`    | string  | `align-items`     | `"stretch"`|
+| `justifyItems`  | string  | `justify-items`   | `"stretch"`|
+| `autoFlow`      | string  | `auto-flow`       | `"row"`    |
+| `inline`        | boolean | `inline`          | `false`    |
 
 ---
 

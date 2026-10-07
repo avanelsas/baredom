@@ -9,6 +9,10 @@ init();
 export interface XCardProps {
   interactive?: boolean;
   disabled?: boolean;
+  variant?: string;
+  padding?: string;
+  radius?: string;
+  label?: string;
   onPress?: (e: CustomEvent<{}>) => void;
   ref?: XCardElement | ((el: XCardElement) => void);
   children?: JSX.Element;

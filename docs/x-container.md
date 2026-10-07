@@ -169,6 +169,10 @@ on the internal semantic root element.
 | -------- | ------- | ------------------------------ |
 | `center` | boolean | Reflects layout centering      |
 | `fluid`  | boolean | Reflects full-width fluid mode |
+| `as`     | string  | Reflects `as`, default `"div"` |
+| `size`   | string  | Reflects `size`, default `"lg"` |
+| `padding`| string  | Reflects `padding`, default `"md"` |
+| `label`  | string  | Reflects `label`, default `""` |
 
 ## Notes
 
