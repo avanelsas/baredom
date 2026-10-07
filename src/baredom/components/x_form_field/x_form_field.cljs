@@ -262,24 +262,29 @@
         (apply-model! el new-m)))))
 
 ;; ── Event handlers ────────────────────────────────────────────────────────
+(defn- sync-form! [^js el ^js input-el]
+  (when-let [^js internals (du/getv el k-internals)]
+    (.setFormValue internals (.-value input-el))
+    (sync-validity! el internals input-el)))
+
 (defn- on-input-input [^js el ^js _evt]
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)
-          value        (.-value input-el)
+          previous     (or (du/get-attr el model/attr-value) "")
           name         (or (du/get-attr el model/attr-name) "")]
-      (when-let [^js internals (du/getv el k-internals)]
-        (.setFormValue internals value)
-        (sync-validity! el internals input-el))
-      (du/dispatch! el model/event-input #js {:name name :value value}))))
+      (if (du/dispatch-cancelable! el model/event-change-request
+                                   #js {:name name :value (.-value input-el) :previousValue previous})
+        (do (sync-form! el input-el)
+            (du/dispatch! el model/event-input #js {:name name :value (.-value input-el)}))
+        (do (set! (.-value input-el) previous)
+            (sync-form! el input-el))))))
 
 (defn- on-input-change [^js el ^js _evt]
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)
           value        (.-value input-el)
           name         (or (du/get-attr el model/attr-name) "")]
-      (when-let [^js internals (du/getv el k-internals)]
-        (.setFormValue internals value)
-        (sync-validity! el internals input-el))
+      (sync-form! el input-el)
       (du/dispatch! el model/event-change #js {:name name :value value}))))
 
 ;; ── Listener management ───────────────────────────────────────────────────

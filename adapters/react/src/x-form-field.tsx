@@ -17,6 +17,7 @@ export interface XFormFieldProps {
   label?: string;
   autocomplete?: string;
   required?: boolean;
+  onChangeRequest?: (e: CustomEvent<{ name: string; value: string; previousValue: string }>) => void;
   onInput?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onChange?: (e: CustomEvent<{ name: string; value: string }>) => void;
   children?: React.ReactNode;
@@ -28,7 +29,7 @@ export interface XFormFieldProps {
 
 export const XFormField = forwardRef<XFormFieldElement, XFormFieldProps>(
   function XFormField(props, forwardedRef) {
-    const { onInput, onChange, children, ...rest } = props;
+    const { onChangeRequest, onInput, onChange, children, ...rest } = props;
     const innerRef = useRef<XFormFieldElement>(null);
 
     const setRef = (el: XFormFieldElement | null) => {
@@ -42,6 +43,10 @@ export const XFormField = forwardRef<XFormFieldElement, XFormFieldProps>(
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
+      if (onChangeRequest) {
+        el.addEventListener("x-form-field-change-request", onChangeRequest as EventListener);
+        cleanup.push(() => el.removeEventListener("x-form-field-change-request", onChangeRequest as EventListener));
+      }
       if (onInput) {
         el.addEventListener("x-form-field-input", onInput as EventListener);
         cleanup.push(() => el.removeEventListener("x-form-field-input", onInput as EventListener));
@@ -52,7 +57,7 @@ export const XFormField = forwardRef<XFormFieldElement, XFormFieldProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onInput, onChange]);
+    }, [onChangeRequest, onInput, onChange]);
 
     return <x-form-field ref={setRef} {...rest}>{children}</x-form-field>;
   }

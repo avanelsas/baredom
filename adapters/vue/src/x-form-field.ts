@@ -26,6 +26,7 @@ export const XFormField = defineComponent({
     required: { type: Boolean as PropType<boolean | undefined>, default: undefined },
   },
   emits: {
+    "change-request": (_e: CustomEvent<{ name: string; value: string; previousValue: string }>) => true,
     "input": (_e: CustomEvent<{ name: string; value: string }>) => true,
     "change": (_e: CustomEvent<{ name: string; value: string }>) => true,
   },
@@ -37,6 +38,11 @@ export const XFormField = defineComponent({
       const el = elRef.value;
       if (!el) return;
 
+      {
+        const handler = (e: Event) => emit("change-request", e as CustomEvent);
+        el.addEventListener("x-form-field-change-request", handler);
+        cleanup.push(() => el.removeEventListener("x-form-field-change-request", handler));
+      }
       {
         const handler = (e: Event) => emit("input", e as CustomEvent);
         el.addEventListener("x-form-field-input", handler);

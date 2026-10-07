@@ -52,10 +52,13 @@ The `value` property setter updates both the `value` attribute and the shadow `<
 
 ## Events
 
-| Event                  | Bubbles | Composed | Cancelable | Detail                          |
-|------------------------|---------|----------|------------|----------------------------------|
-| `x-form-field-input`   | true    | true     | false      | `{ name: string, value: string }` |
-| `x-form-field-change`  | true    | true     | false      | `{ name: string, value: string }` |
+| Event                         | Bubbles | Composed | Cancelable | Detail                                                   |
+|-------------------------------|---------|----------|------------|----------------------------------------------------------|
+| `x-form-field-change-request` | true    | true     | true       | `{ name: string, value: string, previousValue: string }` |
+| `x-form-field-input`          | true    | true     | false      | `{ name: string, value: string }`                        |
+| `x-form-field-change`         | true    | true     | false      | `{ name: string, value: string }`                        |
+
+`x-form-field-change-request` fires on every keystroke, before the form value changes and before `x-form-field-input`. Call `preventDefault()` to refuse the change. The input, the form value and the validity then go back to the `value` attribute, and `x-form-field-input` does not fire. `previousValue` is the `value` attribute. An application that refuses requests writes each value it accepts to `value`.
 
 `x-form-field-input` fires on every keystroke (mirrors native `input` event).
 `x-form-field-change` fires on blur/commit (mirrors native `change` event).

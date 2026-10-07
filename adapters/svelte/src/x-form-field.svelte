@@ -14,6 +14,7 @@
     label?: string;
     autocomplete?: string;
     required?: boolean;
+    onchangerequest?: (e: CustomEvent<{ name: string; value: string; previousValue: string }>) => void;
     oninput?: (e: CustomEvent<{ name: string; value: string }>) => void;
     onchange?: (e: CustomEvent<{ name: string; value: string }>) => void;
     el?: XFormFieldElement | null;
@@ -35,6 +36,7 @@
     label,
     autocomplete,
     required,
+    onchangerequest,
     oninput,
     onchange,
     el = $bindable(null),
@@ -48,6 +50,9 @@
     const node = el;
     if (!node) return;
     const cleanups: Array<() => void> = [];
+    const onchangerequestHandler = (e: Event) => onchangerequest?.(e as CustomEvent<{ name: string; value: string; previousValue: string }>);
+    node.addEventListener("x-form-field-change-request", onchangerequestHandler);
+    cleanups.push(() => node.removeEventListener("x-form-field-change-request", onchangerequestHandler));
     const oninputHandler = (e: Event) => oninput?.(e as CustomEvent<{ name: string; value: string }>);
     node.addEventListener("x-form-field-input", oninputHandler);
     cleanups.push(() => node.removeEventListener("x-form-field-input", oninputHandler));
