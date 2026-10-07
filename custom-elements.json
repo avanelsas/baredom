@@ -102,6 +102,7 @@
         "type" : {
           "text" : "CustomEvent<{ kind: string; value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "kind" : "string",
           "value" : "string"
@@ -111,6 +112,7 @@
         "type" : {
           "text" : "CustomEvent<{ kind: string; value: string; reason: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "kind" : "string",
           "value" : "string",
@@ -423,6 +425,7 @@
         "type" : {
           "text" : "CustomEvent<{ href: string; filename: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "href" : "string",
           "filename" : "string"
@@ -432,6 +435,7 @@
         "type" : {
           "text" : "CustomEvent<{ filename: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "filename" : "string"
         }
@@ -439,12 +443,14 @@
         "name" : "x-file-download-cancel",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "x-file-download-error",
         "type" : {
           "text" : "CustomEvent<{ error: string; phase: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "error" : "string",
           "phase" : "string"
@@ -577,6 +583,7 @@
         "type" : {
           "text" : "CustomEvent<{ source: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "source" : "string"
         }
@@ -585,6 +592,7 @@
         "type" : {
           "text" : "CustomEvent<{ source: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "source" : "string"
         }
@@ -593,6 +601,7 @@
         "type" : {
           "text" : "CustomEvent<{ source: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "source" : "string"
         }
@@ -600,17 +609,20 @@
         "name" : "hover-start",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "hover-end",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "focus-visible",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : ""
@@ -960,6 +972,10 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string; previousValue: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "value" : "value"
+        },
         "detail" : {
           "name" : "string",
           "value" : "string",
@@ -970,6 +986,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "name" : "string",
           "value" : "string"
@@ -979,6 +996,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "name" : "string",
           "value" : "string"
@@ -988,6 +1006,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "name" : "string",
           "value" : "string"
@@ -997,6 +1016,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "name" : "string"
         }
@@ -1288,6 +1308,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; mode: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string",
           "mode" : "string"
@@ -1296,6 +1317,12 @@
         "name" : "x-date-picker-change-request",
         "type" : {
           "text" : "CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>"
+        },
+        "cancelable" : true,
+        "requests" : {
+          "value" : "value",
+          "start" : "start",
+          "end" : "end"
         },
         "detail" : {
           "value" : "string | null",
@@ -1310,6 +1337,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string | null",
           "date" : "string | null",
@@ -1642,6 +1670,11 @@
         "type" : {
           "text" : "CustomEvent<{ start: number; end: number; previousStart: number; previousEnd: number; min: number; max: number }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "start" : "start",
+          "end" : "end"
+        },
         "detail" : {
           "start" : "number",
           "end" : "number",
@@ -1655,6 +1688,7 @@
         "type" : {
           "text" : "CustomEvent<{ start: number; end: number; min: number; max: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "start" : "number",
           "end" : "number",
@@ -1666,6 +1700,7 @@
         "type" : {
           "text" : "CustomEvent<{ start: number; end: number; min: number; max: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "start" : "number",
           "end" : "number",
@@ -1807,6 +1842,10 @@
         "type" : {
           "text" : "CustomEvent<{ page: number; previousPage: number }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "page" : "page"
+        },
         "detail" : {
           "page" : "number",
           "previousPage" : "number"
@@ -1816,6 +1855,7 @@
         "type" : {
           "text" : "CustomEvent<{ page: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "page" : "number"
         }
@@ -1966,6 +2006,7 @@
         "type" : {
           "text" : "CustomEvent<{ open: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "open" : "boolean"
         }
@@ -1974,6 +2015,7 @@
         "type" : {
           "text" : "CustomEvent<{ reason: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "reason" : "string"
         }
@@ -2343,6 +2385,10 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "checked" : "nextChecked"
+        },
         "detail" : {
           "value" : "string",
           "previousChecked" : "boolean",
@@ -2353,6 +2399,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; checked: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string",
           "checked" : "boolean"
@@ -2505,6 +2552,7 @@
         "type" : {
           "text" : "CustomEvent<{ position: number; orientation: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "position" : "number",
           "orientation" : "string"
@@ -2514,6 +2562,7 @@
         "type" : {
           "text" : "CustomEvent<{ position: number; orientation: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "position" : "number",
           "orientation" : "string"
@@ -2728,6 +2777,7 @@
         "type" : {
           "text" : "CustomEvent<{ count: number; origin: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "count" : "number",
           "origin" : "string"
@@ -2737,6 +2787,7 @@
         "type" : {
           "text" : "CustomEvent<{ duration: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "duration" : "number"
         }
@@ -3137,6 +3188,7 @@
         "type" : {
           "text" : "CustomEvent<{ files: any; rejected: any }>"
         },
+        "cancelable" : false,
         "detail" : {
           "files" : "any",
           "rejected" : "any"
@@ -3146,6 +3198,7 @@
         "type" : {
           "text" : "CustomEvent<{ file: Record<string, any>; remaining: any }>"
         },
+        "cancelable" : false,
         "detail" : {
           "file" : "Record<string, any>",
           "remaining" : "any"
@@ -3360,6 +3413,7 @@
         "type" : {
           "text" : "CustomEvent<{ from: string; to: string; reason: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "from" : "string",
           "to" : "string",
@@ -3370,6 +3424,7 @@
         "type" : {
           "text" : "CustomEvent<{ from: string; to: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "from" : "string",
           "to" : "string"
@@ -3656,6 +3711,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number; velocity: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number",
           "velocity" : "number"
@@ -4000,6 +4056,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string; complete: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "name" : "string",
           "value" : "string",
@@ -4010,6 +4067,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string; complete: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "name" : "string",
           "value" : "string",
@@ -4020,6 +4078,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "name" : "string",
           "value" : "string"
@@ -4215,6 +4274,10 @@
         "type" : {
           "text" : "CustomEvent<{ reason: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "open" : false
+        },
         "detail" : {
           "reason" : "string"
         }
@@ -4222,17 +4285,23 @@
         "name" : "x-cancel-dialogue-cancel",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "x-cancel-dialogue-confirm-request",
         "type" : {
           "text" : "CustomEvent<{}>"
+        },
+        "cancelable" : true,
+        "requests" : {
+          "open" : false
         }
       }, {
         "name" : "x-cancel-dialogue-confirm",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : ""
@@ -4510,6 +4579,7 @@
         "type" : {
           "text" : "CustomEvent<{ text: string; mode: string; from: string; fromAttr: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "text" : "string",
           "mode" : "string",
@@ -4521,6 +4591,7 @@
         "type" : {
           "text" : "CustomEvent<{ text: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "text" : "string"
         }
@@ -4529,6 +4600,7 @@
         "type" : {
           "text" : "CustomEvent<{ error: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "error" : "string"
         }
@@ -4720,6 +4792,7 @@
         "type" : {
           "text" : "CustomEvent<{ index: number; id: string; previousIndex: number; previousId: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "index" : "number",
           "id" : "string",
@@ -4731,6 +4804,7 @@
         "type" : {
           "text" : "CustomEvent<{ index: number; id: string; progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "index" : "number",
           "id" : "string",
@@ -4741,6 +4815,7 @@
         "type" : {
           "text" : "CustomEvent<{ index: number; id: string; progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "index" : "number",
           "id" : "string",
@@ -4751,6 +4826,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number; activeIndex: number; activeId: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number",
           "activeIndex" : "number",
@@ -4761,6 +4837,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number"
         }
@@ -4769,6 +4846,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number"
         }
@@ -4777,6 +4855,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number; activeIndex: number; activeId: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number",
           "activeIndex" : "number",
@@ -4787,6 +4866,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number; activeIndex: number; activeId: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number",
           "activeIndex" : "number",
@@ -4967,12 +5047,14 @@
         "name" : "x-kinetic-font-spring-activate",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "x-kinetic-font-spring-settle",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : ""
@@ -5163,6 +5245,7 @@
         "type" : {
           "text" : "CustomEvent<{ kind: string; value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "kind" : "string",
           "value" : "string"
@@ -5172,6 +5255,7 @@
         "type" : {
           "text" : "CustomEvent<{ kind: string; value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "kind" : "string",
           "value" : "string"
@@ -5181,6 +5265,7 @@
         "type" : {
           "text" : "CustomEvent<{ kind: string; value: string; from: string | null; to: string; index: number; panel: HTMLElement }>"
         },
+        "cancelable" : false,
         "detail" : {
           "kind" : "string",
           "value" : "string",
@@ -5542,6 +5627,10 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; label: string; previousValue: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "value" : "value"
+        },
         "detail" : {
           "value" : "string",
           "label" : "string",
@@ -5552,6 +5641,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; label: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string",
           "label" : "string"
@@ -5561,6 +5651,7 @@
         "type" : {
           "text" : "CustomEvent<{ query: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "query" : "string"
         }
@@ -5568,6 +5659,10 @@
         "name" : "x-combobox-toggle",
         "type" : {
           "text" : "CustomEvent<{ open: boolean; source: string }>"
+        },
+        "cancelable" : true,
+        "requests" : {
+          "open" : "open"
         },
         "detail" : {
           "open" : "boolean",
@@ -6228,6 +6323,7 @@
         "type" : {
           "text" : "CustomEvent<{ index: number; id: string; previousIndex: number; previousId: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "index" : "number",
           "id" : "string",
@@ -6239,6 +6335,7 @@
         "type" : {
           "text" : "CustomEvent<{ index: number; id: string; progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "index" : "number",
           "id" : "string",
@@ -6249,6 +6346,7 @@
         "type" : {
           "text" : "CustomEvent<{ index: number; id: string; progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "index" : "number",
           "id" : "string",
@@ -6259,6 +6357,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number; activeIndex: number; activeId: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number",
           "activeIndex" : "number",
@@ -6269,6 +6368,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number"
         }
@@ -6277,6 +6377,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number"
         }
@@ -6285,6 +6386,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number; activeIndex: number; activeId: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number",
           "activeIndex" : "number",
@@ -6295,6 +6397,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number; activeIndex: number; activeId: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number",
           "activeIndex" : "number",
@@ -6445,6 +6548,7 @@
         "type" : {
           "text" : "CustomEvent<{ index: number; item: any; source: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "index" : "number",
           "item" : "any",
@@ -6529,6 +6633,7 @@
         "type" : {
           "text" : "CustomEvent<{ index: number; status: string; label: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "index" : "number",
           "status" : "string",
@@ -6680,6 +6785,7 @@
         "type" : {
           "text" : "CustomEvent<{ status: string; label: string; position: string; disabled: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "status" : "string",
           "label" : "string",
@@ -6691,6 +6797,7 @@
         "type" : {
           "text" : "CustomEvent<{ status: string; label: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "status" : "string",
           "label" : "string"
@@ -6700,6 +6807,7 @@
         "type" : {
           "text" : "CustomEvent<{ status: string; label: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "status" : "string",
           "label" : "string"
@@ -6850,6 +6958,7 @@
         "type" : {
           "text" : "CustomEvent<{ colIndex: number; direction: string; previousDirection: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "colIndex" : "number",
           "direction" : "string",
@@ -6860,6 +6969,7 @@
         "type" : {
           "text" : "CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "rowIndex" : "number",
           "selected" : "boolean",
@@ -6976,6 +7086,7 @@
         "type" : {
           "text" : "CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean }>"
         },
+        "cancelable" : true,
         "detail" : {
           "rowIndex" : "number",
           "selected" : "boolean",
@@ -6986,6 +7097,7 @@
         "type" : {
           "text" : "CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean; interactive: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "rowIndex" : "number",
           "selected" : "boolean",
@@ -6996,7 +7108,8 @@
         "name" : "x-table-row-disconnected",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : ""
@@ -7190,6 +7303,7 @@
         "type" : {
           "text" : "CustomEvent<{ direction: string; previousDirection: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "direction" : "string",
           "previousDirection" : "string"
@@ -7199,6 +7313,7 @@
         "type" : {
           "text" : "CustomEvent<{ type: string; scope: string; colSpan: number; rowSpan: number; align: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "type" : "string",
           "scope" : "string",
@@ -7210,7 +7325,8 @@
         "name" : "x-table-cell-disconnected",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : "sort-icon"
@@ -7566,6 +7682,10 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; label: string; previousValue: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "value" : "value"
+        },
         "detail" : {
           "value" : "string",
           "label" : "string",
@@ -7576,6 +7696,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; label: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string",
           "label" : "string"
@@ -7725,17 +7846,20 @@
         "name" : "x-menu-open",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "x-menu-close",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "x-menu-select",
         "type" : {
           "text" : "CustomEvent<{ value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string"
         }
@@ -7972,6 +8096,10 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string; previousValue: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "value" : "value"
+        },
         "detail" : {
           "name" : "string",
           "value" : "string",
@@ -7982,6 +8110,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "name" : "string",
           "value" : "string"
@@ -7991,6 +8120,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "name" : "string",
           "value" : "string"
@@ -8575,6 +8705,7 @@
         "type" : {
           "text" : "CustomEvent<{ status: string; label: string; position: string; disabled: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "status" : "string",
           "label" : "string",
@@ -8586,6 +8717,7 @@
         "type" : {
           "text" : "CustomEvent<{ status: string; label: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "status" : "string",
           "label" : "string"
@@ -8595,6 +8727,7 @@
         "type" : {
           "text" : "CustomEvent<{ status: string; label: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "status" : "string",
           "label" : "string"
@@ -8789,6 +8922,10 @@
         "type" : {
           "text" : "CustomEvent<{ open: boolean; source: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "open" : "open"
+        },
         "detail" : {
           "open" : "boolean",
           "source" : "string"
@@ -8798,6 +8935,7 @@
         "type" : {
           "text" : "CustomEvent<{ open: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "open" : "boolean"
         }
@@ -9436,6 +9574,10 @@
         "type" : {
           "text" : "CustomEvent<{ reason: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "open" : true
+        },
         "detail" : {
           "reason" : "string"
         }
@@ -9444,6 +9586,7 @@
         "type" : {
           "text" : "CustomEvent<{ reason: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "reason" : "string"
         }
@@ -9451,6 +9594,10 @@
         "name" : "x-context-menu-close-request",
         "type" : {
           "text" : "CustomEvent<{ reason: string }>"
+        },
+        "cancelable" : true,
+        "requests" : {
+          "open" : false
         },
         "detail" : {
           "reason" : "string"
@@ -9460,6 +9607,7 @@
         "type" : {
           "text" : "CustomEvent<{ reason: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "reason" : "string"
         }
@@ -9468,6 +9616,7 @@
         "type" : {
           "text" : "CustomEvent<{ item: Record<string, any> }>"
         },
+        "cancelable" : false,
         "detail" : {
           "item" : "Record<string, any>"
         }
@@ -9656,6 +9805,7 @@
         "type" : {
           "text" : "CustomEvent<{ open: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "open" : "boolean"
         }
@@ -9663,6 +9813,10 @@
         "name" : "x-floating-panel-dismiss-request",
         "type" : {
           "text" : "CustomEvent<{ reason: string }>"
+        },
+        "cancelable" : true,
+        "requests" : {
+          "open" : false
         },
         "detail" : {
           "reason" : "string"
@@ -9672,6 +9826,7 @@
         "type" : {
           "text" : "CustomEvent<{ x: number; y: number; source: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "x" : "number",
           "y" : "number",
@@ -9828,6 +9983,7 @@
         "type" : {
           "text" : "CustomEvent<{ stackedCount: number; totalCount: number; progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "stackedCount" : "number",
           "totalCount" : "number",
@@ -9838,6 +9994,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number; stackedCount: number; totalCount: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number",
           "stackedCount" : "number",
@@ -10044,6 +10201,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string"
         }
@@ -10174,6 +10332,7 @@
         "type" : {
           "text" : "CustomEvent<{ type: string; reason: string; text: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "type" : "string",
           "reason" : "string",
@@ -10375,6 +10534,10 @@
         "type" : {
           "text" : "CustomEvent<{ from: number; to: number }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "current" : "to"
+        },
         "detail" : {
           "from" : "number",
           "to" : "number"
@@ -10535,6 +10698,7 @@
         "type" : {
           "text" : "CustomEvent<{ x: number; y: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "x" : "number",
           "y" : "number"
@@ -10544,6 +10708,7 @@
         "type" : {
           "text" : "CustomEvent<{ x: number; y: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "x" : "number",
           "y" : "number"
@@ -10649,6 +10814,7 @@
         "type" : {
           "text" : "CustomEvent<{ open: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "open" : "boolean"
         }
@@ -10657,6 +10823,7 @@
         "type" : {
           "text" : "CustomEvent<{ reason: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "reason" : "string"
         }
@@ -10911,11 +11078,16 @@
         "name" : "x-welcome-tour-start",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "x-welcome-tour-step-change",
         "type" : {
           "text" : "CustomEvent<{ step: number; previousStep: number }>"
+        },
+        "cancelable" : true,
+        "requests" : {
+          "step" : "step"
         },
         "detail" : {
           "step" : "number",
@@ -10926,6 +11098,7 @@
         "type" : {
           "text" : "CustomEvent<{ stepsCompleted: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "stepsCompleted" : "number"
         }
@@ -10934,6 +11107,7 @@
         "type" : {
           "text" : "CustomEvent<{ step: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "step" : "number"
         }
@@ -11106,12 +11280,14 @@
         "name" : "x-welcome-tour-step-connected",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "x-welcome-tour-step-disconnected",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : ""
@@ -11233,6 +11409,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: number; max: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "number",
           "max" : "number"
@@ -11363,7 +11540,8 @@
         "name" : "x-splash-hidden",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : ""
@@ -11540,6 +11718,7 @@
         "type" : {
           "text" : "CustomEvent<{ type: string; reason: string; heading: string; message: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "type" : "string",
           "reason" : "string",
@@ -11855,6 +12034,7 @@
         "type" : {
           "text" : "CustomEvent<{ code: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "code" : "string"
         }
@@ -11863,6 +12043,7 @@
         "type" : {
           "text" : "CustomEvent<{ expanded: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "expanded" : "boolean"
         }
@@ -12141,6 +12322,7 @@
         "type" : {
           "text" : "CustomEvent<{ seriesId: string; index: number; x: number; y: number; value: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "seriesId" : "string",
           "index" : "number",
@@ -12153,6 +12335,7 @@
         "type" : {
           "text" : "CustomEvent<{ seriesId: string; index: number; x: number; y: number; value: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "seriesId" : "string",
           "index" : "number",
@@ -12463,6 +12646,10 @@
         "type" : {
           "text" : "CustomEvent<{ value: any; action: string; item: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "value" : "value"
+        },
         "detail" : {
           "value" : "any",
           "action" : "string",
@@ -12473,6 +12660,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: any }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "any"
         }
@@ -12481,6 +12669,7 @@
         "type" : {
           "text" : "CustomEvent<{ query: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "query" : "string"
         }
@@ -12488,6 +12677,10 @@
         "name" : "x-multi-combobox-toggle",
         "type" : {
           "text" : "CustomEvent<{ open: boolean; source: string }>"
+        },
+        "cancelable" : true,
+        "requests" : {
+          "open" : "open"
         },
         "detail" : {
           "open" : "boolean",
@@ -12715,12 +12908,14 @@
         "name" : "focus-visible",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "navigate",
         "type" : {
           "text" : "CustomEvent<{ href: string; source: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "href" : "string",
           "source" : "string"
@@ -12730,6 +12925,7 @@
         "type" : {
           "text" : "CustomEvent<{ source: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "source" : "string"
         }
@@ -13074,6 +13270,7 @@
         "type" : {
           "text" : "CustomEvent<{ locale: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "locale" : "string"
         }
@@ -13082,6 +13279,7 @@
         "type" : {
           "text" : "CustomEvent<{ locale: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "locale" : "string"
         }
@@ -13090,6 +13288,7 @@
         "type" : {
           "text" : "CustomEvent<{ locale: string; message: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "locale" : "string",
           "message" : "string"
@@ -13329,6 +13528,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; start: string; end: string; mode: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string",
           "start" : "string",
@@ -13340,6 +13540,7 @@
         "type" : {
           "text" : "CustomEvent<{ month: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "month" : "string"
         }
@@ -13498,6 +13699,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; label: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "value" : "string",
           "label" : "string"
@@ -13621,6 +13823,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number"
         }
@@ -13629,6 +13832,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number"
         }
@@ -13637,6 +13841,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number"
         }
@@ -13746,12 +13951,14 @@
         "name" : "x-soft-body-grab",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "x-soft-body-release",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : ""
@@ -13853,6 +14060,7 @@
         "type" : {
           "text" : "CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean }>"
         },
+        "cancelable" : true,
         "detail" : {
           "rowIndex" : "number",
           "selected" : "boolean",
@@ -13863,6 +14071,7 @@
         "type" : {
           "text" : "CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean; interactive: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "rowIndex" : "number",
           "selected" : "boolean",
@@ -13873,7 +14082,8 @@
         "name" : "x-table-row-disconnected",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : ""
@@ -14242,6 +14452,10 @@
         "type" : {
           "text" : "CustomEvent<{ value: number; previousValue: number; max: number }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "value" : "value"
+        },
         "detail" : {
           "value" : "number",
           "previousValue" : "number",
@@ -14252,6 +14466,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: number; max: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "number",
           "max" : "number"
@@ -14261,6 +14476,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: number; max: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "number",
           "max" : "number"
@@ -14442,6 +14658,10 @@
         "type" : {
           "text" : "CustomEvent<{ open: boolean; source: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "open" : "open"
+        },
         "detail" : {
           "open" : "boolean",
           "source" : "string"
@@ -14451,6 +14671,7 @@
         "type" : {
           "text" : "CustomEvent<{ open: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "open" : "boolean"
         }
@@ -14612,6 +14833,7 @@
         "type" : {
           "text" : "CustomEvent<{ id: string; count: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "id" : "string",
           "count" : "number"
@@ -14621,6 +14843,7 @@
         "type" : {
           "text" : "CustomEvent<{ id: string; type: string; reason: string; text: string; count: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "id" : "string",
           "type" : "string",
@@ -14632,7 +14855,8 @@
         "name" : "x-notification-center-empty",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : ""
@@ -14805,6 +15029,7 @@
         "type" : {
           "text" : "CustomEvent<{ activeIndex: number; previousIndex: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "activeIndex" : "number",
           "previousIndex" : "number"
@@ -14814,6 +15039,7 @@
         "type" : {
           "text" : "CustomEvent<{ direction: string; activeIndex: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "direction" : "string",
           "activeIndex" : "number"
@@ -14823,6 +15049,7 @@
         "type" : {
           "text" : "CustomEvent<{ activeIndex: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "activeIndex" : "number"
         }
@@ -14831,6 +15058,7 @@
         "type" : {
           "text" : "CustomEvent<{ direction: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "direction" : "string"
         }
@@ -15016,6 +15244,7 @@
         "type" : {
           "text" : "CustomEvent<{ src: string; naturalWidth: number; naturalHeight: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "src" : "string",
           "naturalWidth" : "number",
@@ -15026,6 +15255,7 @@
         "type" : {
           "text" : "CustomEvent<{ src: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "src" : "string"
         }
@@ -15202,6 +15432,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: number; max: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "number",
           "max" : "number"
@@ -15327,6 +15558,7 @@
         "type" : {
           "text" : "CustomEvent<{ source: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "source" : "string"
         }
@@ -15335,6 +15567,7 @@
         "type" : {
           "text" : "CustomEvent<{ source: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "source" : "string"
         }
@@ -15343,6 +15576,7 @@
         "type" : {
           "text" : "CustomEvent<{ source: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "source" : "string"
         }
@@ -15350,22 +15584,26 @@
         "name" : "hover-start",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "hover-end",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "focus-visible",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "burst",
         "type" : {
           "text" : "CustomEvent<{ mode: string; \"press-x\": number; \"press-y\": number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "mode" : "string",
           "press-x" : "number",
@@ -15376,6 +15614,7 @@
         "type" : {
           "text" : "CustomEvent<{ mode: string; duration: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "mode" : "string",
           "duration" : "number"
@@ -15817,6 +16056,10 @@
         "type" : {
           "text" : "CustomEvent<{ index: number; previousIndex: number; reason: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "current" : "index"
+        },
         "detail" : {
           "index" : "number",
           "previousIndex" : "number",
@@ -16044,6 +16287,7 @@
         "type" : {
           "text" : "CustomEvent<{ direction: string; previousDirection: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "direction" : "string",
           "previousDirection" : "string"
@@ -16053,6 +16297,7 @@
         "type" : {
           "text" : "CustomEvent<{ type: string; scope: string; colSpan: number; rowSpan: number; align: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "type" : "string",
           "scope" : "string",
@@ -16064,7 +16309,8 @@
         "name" : "x-table-cell-disconnected",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : "sort-icon"
@@ -16217,6 +16463,10 @@
         "type" : {
           "text" : "CustomEvent<{ open: boolean; source: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "open" : "open"
+        },
         "detail" : {
           "open" : "boolean",
           "source" : "string"
@@ -16226,6 +16476,7 @@
         "type" : {
           "text" : "CustomEvent<{ open: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "open" : "boolean"
         }
@@ -16362,6 +16613,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string"
         }
@@ -16612,6 +16864,10 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string; previousValue: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "value" : "value"
+        },
         "detail" : {
           "name" : "string",
           "value" : "string",
@@ -16622,6 +16878,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "name" : "string",
           "value" : "string"
@@ -16631,6 +16888,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "name" : "string",
           "value" : "string"
@@ -16750,7 +17008,8 @@
         "name" : "press",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : ""
@@ -17062,6 +17321,10 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string; previousValue: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "value" : "value"
+        },
         "detail" : {
           "name" : "string",
           "value" : "string",
@@ -17072,6 +17335,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "name" : "string",
           "value" : "string"
@@ -17081,6 +17345,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "name" : "string",
           "value" : "string"
@@ -17729,6 +17994,10 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "checked" : "nextChecked"
+        },
         "detail" : {
           "value" : "string",
           "previousChecked" : "boolean",
@@ -17739,6 +18008,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; checked: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string",
           "checked" : "boolean"
@@ -17974,6 +18244,7 @@
         "type" : {
           "text" : "CustomEvent<{ index: number; item: any; source: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "index" : "number",
           "item" : "any",
@@ -18179,6 +18450,10 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "checked" : "nextChecked"
+        },
         "detail" : {
           "value" : "string",
           "previousChecked" : "boolean",
@@ -18189,6 +18464,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; checked: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string",
           "checked" : "boolean"
@@ -18311,6 +18587,7 @@
         "type" : {
           "text" : "CustomEvent<{ type: string; reason: string; heading: string; message: string }>"
         },
+        "cancelable" : true,
         "detail" : {
           "type" : "string",
           "reason" : "string",
@@ -18451,6 +18728,7 @@
         "type" : {
           "text" : "CustomEvent<{ open: boolean }>"
         },
+        "cancelable" : false,
         "detail" : {
           "open" : "boolean"
         }
@@ -18459,6 +18737,7 @@
         "type" : {
           "text" : "CustomEvent<{ reason: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "reason" : "string"
         }
@@ -18608,6 +18887,7 @@
         "type" : {
           "text" : "CustomEvent<{ values: Record<string, any> }>"
         },
+        "cancelable" : true,
         "detail" : {
           "values" : "Record<string, any>"
         }
@@ -18615,7 +18895,8 @@
         "name" : "x-form-reset",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : ""
@@ -18719,6 +19000,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number"
         }
@@ -18727,6 +19009,7 @@
         "type" : {
           "text" : "CustomEvent<{ progress: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "progress" : "number"
         }
@@ -18812,6 +19095,10 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; previousValue: string }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "value" : "value"
+        },
         "detail" : {
           "value" : "string",
           "previousValue" : "string"
@@ -18821,6 +19108,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string"
         }
@@ -18912,6 +19200,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string"
         }
@@ -19074,12 +19363,14 @@
         "name" : "x-tooltip-show",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "x-tooltip-hide",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       } ],
       "slots" : [ {
         "name" : ""
@@ -19606,6 +19897,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; h: number; s: number; l: number; a: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "string",
           "h" : "number",
@@ -19618,6 +19910,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; h: number; s: number; l: number; a: number }>"
         },
+        "cancelable" : true,
         "detail" : {
           "value" : "string",
           "h" : "number",
@@ -19796,27 +20089,38 @@
         "name" : "x-command-palette-open-request",
         "type" : {
           "text" : "CustomEvent<{}>"
+        },
+        "cancelable" : true,
+        "requests" : {
+          "open" : true
         }
       }, {
         "name" : "x-command-palette-open",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "x-command-palette-close-request",
         "type" : {
           "text" : "CustomEvent<{}>"
+        },
+        "cancelable" : true,
+        "requests" : {
+          "open" : false
         }
       }, {
         "name" : "x-command-palette-close",
         "type" : {
           "text" : "CustomEvent<{}>"
-        }
+        },
+        "cancelable" : false
       }, {
         "name" : "x-command-palette-select-request",
         "type" : {
           "text" : "CustomEvent<{ item: Record<string, any> }>"
         },
+        "cancelable" : true,
         "detail" : {
           "item" : "Record<string, any>"
         }
@@ -19825,6 +20129,7 @@
         "type" : {
           "text" : "CustomEvent<{ item: Record<string, any> }>"
         },
+        "cancelable" : false,
         "detail" : {
           "item" : "Record<string, any>"
         }
@@ -19833,6 +20138,7 @@
         "type" : {
           "text" : "CustomEvent<{ query: string }>"
         },
+        "cancelable" : false,
         "detail" : {
           "query" : "string"
         }
@@ -20124,6 +20430,10 @@
         "type" : {
           "text" : "CustomEvent<{ value: number; previousValue: number; min: number; max: number }>"
         },
+        "cancelable" : true,
+        "requests" : {
+          "value" : "value"
+        },
         "detail" : {
           "value" : "number",
           "previousValue" : "number",
@@ -20135,6 +20445,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: number; min: number; max: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "number",
           "min" : "number",
@@ -20145,6 +20456,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: number; min: number; max: number }>"
         },
+        "cancelable" : false,
         "detail" : {
           "value" : "number",
           "min" : "number",

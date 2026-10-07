@@ -167,7 +167,10 @@
                                (cond-> {:name (resolve-sym event-key sdefs)
                                         :type {:text (str "CustomEvent<"
                                                           (generate-event-detail-type detail)
-                                                          ">")}}
+                                                          ">")}
+                                        :cancelable (true? (:cancelable event-info))}
+                                 (:requests event-info)
+                                 (assoc :requests (event-requests (:requests event-info) sdefs))
                                  (seq fields)
                                  (assoc :detail (into (array-map) fields)))))
                            events))

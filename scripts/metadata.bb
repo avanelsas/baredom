@@ -335,6 +335,16 @@
     (or (get string-defs sym) (str sym))
     (str sym)))
 
+;; ── Event requests ──────────────────────────────────────────────────────────
+(defn event-requests
+  "The `:requests` of an event with each attribute as its name. A detail key is text and a
+   fixed value stays a boolean."
+  [requests string-defs]
+  (into (array-map)
+        (map (fn [[attr value]]
+               [(resolve-sym attr string-defs) (if (keyword? value) (name value) value)]))
+        requests))
+
 ;; ── Event detail ────────────────────────────────────────────────────────────
 ;; A detail field is the key of the `#js {}` literal the component dispatches, so
 ;; it reaches JavaScript spelled exactly as the model writes it. It is not
