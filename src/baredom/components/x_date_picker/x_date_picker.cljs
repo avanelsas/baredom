@@ -3,6 +3,7 @@
             [baredom.utils.dom :as du]
             [baredom.utils.dates :as dates]
             [baredom.utils.forms :as forms]
+            [baremirror.core :as mirror]
             [goog.object :as gobj]
             [baredom.utils.model :as mu]
             [baredom.components.x-date-picker.model :as model]))
@@ -62,70 +63,48 @@
     state))
 
 ;; ---------------------------------------------------------------------------
-;; Day flag helpers
-;; ---------------------------------------------------------------------------
-
-(defn- day-out-of-range?
-  [^js d canon]
-  (or (and (:min-d canon) (neg? (dates/compare-date d (:min-d canon))))
-      (and (:max-d canon) (pos? (dates/compare-date d (:max-d canon))))))
-
-(defn- compute-flags
-  [^js d canon]
-  (if (= (:mode canon) :single)
-    {:selected? (and (:value-d canon)
-                     (= 0 (dates/compare-date d (:value-d canon))))
-     :in-range? false
-     :edge?     false}
-    (let [start (:start-d canon)
-          end   (:end-d canon)
-          sel?  (or (and start (= 0 (dates/compare-date d start)))
-                    (and end   (= 0 (dates/compare-date d end))))
-          in-r? (and start end (dates/in-range? d start end))
-          edge? (or (and start (= 0 (dates/compare-date d start)))
-                    (and end   (= 0 (dates/compare-date d end))))]
-      {:selected? sel? :in-range? in-r? :edge? edge?})))
-
-;; ---------------------------------------------------------------------------
 ;; Grid rendering
 ;; ---------------------------------------------------------------------------
 
-(defn- render-grid!
-  [^js el ^js grid canon]
-  (set! (.-textContent grid) "")
-  (let [state (du/getv el k-state)
-        ^js month (when state (gobj/get state "month"))
-        items (dates/month-grid month)]
-    (doseq [{:keys [date in-month?]} items]
-      (let [^js btn  (.createElement js/document "button")
-            iso      (dates/date->iso date)
-            day      (.getUTCDate date)
-            disabled? (day-out-of-range? date canon)
-            {:keys [selected? in-range? edge?]} (compute-flags date canon)]
-        (du/set-attr! btn "part" "day")
-        (du/set-attr! btn "type" "button")
-        (du/set-attr! btn "role" "gridcell")
-        (du/set-attr! btn "data-iso" iso)
-        (du/set-attr! btn "data-outside" (if in-month? "false" "true"))
-        (du/set-attr! btn "data-disabled" (if disabled? "true" "false"))
-        (du/set-attr! btn "data-selected" (if selected? "true" "false"))
-        (du/set-attr! btn "data-in-range" (if in-range? "true" "false"))
-        (du/set-attr! btn "data-range-edge" (if edge? "true" "false"))
-        (du/set-attr! btn "aria-selected" (if selected? "true" "false"))
-        (du/set-attr! btn "aria-disabled" (if disabled? "true" "false"))
-        (du/set-attr! btn "tabindex" "-1")
-        (set! (.-textContent btn) (str day))
-        (.appendChild grid btn)))))
+(defn- make-day-cell!
+  "The node of a day cell: its fixed structure. `apply-day-cell!` gives it its values."
+  [_key]
+  (let [^js btn (.createElement js/document "button")]
+    (du/set-attr! btn "part" "day")
+    (du/set-attr! btn "type" "button")
+    (du/set-attr! btn "role" "gridcell")
+    btn))
 
-(defn- apply-grid-focus!
-  "Set tabindex=0 on the focused day cell (from k-grid-focus), -1 on all others."
-  [^js el]
-  (let [iso  (du/getv el k-grid-focus)
-        refs (du/getv el k-refs)
-        ^js grid (when refs (gobj/get refs "grid"))]
-    (when (and grid iso)
-      (when-let [^js btn (.querySelector grid (str "[data-iso=\"" iso "\"]"))]
-        (du/set-attr! btn "tabindex" "0")))))
+(def ^:private day-attrs
+  "The attributes of a day cell, each with the key of what the model's day shows for it."
+  [["data-iso"        :iso]
+   ["data-outside"    :outside]
+   ["data-disabled"   :disabled]
+   ["data-selected"   :selected]
+   ["data-in-range"   :in-range]
+   ["data-range-edge" :range-edge]
+   ["aria-selected"   :selected]
+   ["aria-disabled"   :disabled]
+   ["tabindex"        :tabindex]])
+
+(defn- apply-day-attr! [^js btn day [attr-name shown-key]]
+  (du/set-attr-to! btn attr-name (get day shown-key)))
+
+(defn- apply-day-cell!
+  "Writes what `day` shows onto its node in `nodes`."
+  [nodes {day-key :key :keys [text] :as day}]
+  (let [^js btn (nodes day-key)]
+    (du/set-text-to! btn text)
+    (run! (partial apply-day-attr! btn day) day-attrs)))
+
+(defn- render-grid!
+  "Brings the day grid to the month shown. A day that stays in view keeps its node."
+  [^js el ^js grid canon]
+  (let [state     (du/getv el k-state)
+        ^js month (when state (gobj/get state "month"))
+        days      (model/shown-days month canon (du/getv el k-grid-focus))
+        nodes     (mirror/sync! {:days {:parent grid}} {:days (mapv :key days)} make-day-cell!)]
+    (run! (partial apply-day-cell! nodes) days)))
 
 (defn- focus-grid-date!
   "Set the focused date and move DOM focus to that cell."
@@ -183,8 +162,7 @@
           (set! (.-textContent month-label) (month-name month locale)))
         (render-weekdays! el weekdays-el)
         (when (and grid canon)
-          (render-grid! el grid canon)
-          (apply-grid-focus! el))))))
+          (render-grid! el grid canon))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Input display
@@ -854,7 +832,7 @@
              (not (du/has-attr? el model/attr-readonly)))
         (do
           (.preventDefault e)
-          (when-not (day-out-of-range? cur canon)
+          (when-not (model/day-out-of-range? cur canon)
             (do-select-date! el cur "keyboard")))
 
         ;; Escape closes the calendar

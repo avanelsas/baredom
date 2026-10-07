@@ -98,3 +98,42 @@
     (let [{:keys [ok?]}
           (model/parse-display->range "" {:separator " - "})]
       (is (= false ok?)))))
+
+(defn- days-of
+  "The shown days of June 2024 for a picker made from `raw`, with `focus-iso` as the reachable cell."
+  [raw focus-iso]
+  (model/shown-days (dates/iso->date "2024-06-01") (model/canonicalize raw) focus-iso))
+
+(defn- day-of [days iso]
+  (first (filter (comp #{iso} :iso) days)))
+
+(deftest shown-days-gives-each-cell-its-key-test
+  (let [days (days-of {} nil)]
+    (is (= 42 (count days)))
+    (is (= ["2024-05-26" "2024-05-27"] (mapv :key (take 2 days))))
+    (is (= (mapv :iso days) (mapv :key days)) "the key of a cell is its date"))
+  (is (= [] (model/shown-days nil (model/canonicalize {}) nil)) "no cells with no month"))
+
+(deftest shown-days-gives-a-day-what-it-shows-test
+  (testing "a selected day in single mode"
+    (is (= {:key "2024-06-15" :iso "2024-06-15" :text "15" :outside "false" :disabled "false"
+            :selected "true" :in-range "false" :range-edge "false" :tabindex "0"}
+           (day-of (days-of {:value "2024-06-15"} "2024-06-15") "2024-06-15"))))
+  (testing "a day of another month, and a day out of range"
+    (let [days (days-of {:min "2024-06-10"} nil)]
+      (is (= "true" (:outside (first days))))
+      (is (= "true" (:disabled (day-of days "2024-06-05"))))
+      (is (= "false" (:disabled (day-of days "2024-06-10"))))))
+  (testing "the edges and the inside of a range"
+    (let [days (days-of {:mode "range" :start "2024-06-10" :end "2024-06-12"} nil)]
+      (is (= {:selected "true" :in-range "true" :range-edge "true"}
+             (select-keys (day-of days "2024-06-10") [:selected :in-range :range-edge])))
+      (is (= {:selected "false" :in-range "true" :range-edge "false"}
+             (select-keys (day-of days "2024-06-11") [:selected :in-range :range-edge]))))))
+
+(deftest shown-days-lets-tab-reach-only-the-focus-cell-test
+  (is (= ["2024-06-15"]
+         (into [] (comp (filter (comp #{"0"} :tabindex)) (map :iso)) (days-of {} "2024-06-15"))))
+  (is (not-any? (comp #{"0"} :tabindex) (days-of {} "2024-09-01"))
+      "no cell when the focus is in another month"))
+
