@@ -19,6 +19,7 @@ export class BaredomChart implements OnInit, OnDestroy {
 
   @Input() set selected(v: string) { this.el.selected = v as any; }
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
+  @Input() set yFormat(v: string) { this.el.yFormat = v as any; }
   @Input() set axes(v: boolean) { this.el.axes = v as any; }
   @Input() set grid(v: boolean) { this.el.grid = v as any; }
   @Input() set cursor(v: string) { this.el.cursor = v as any; }
@@ -27,6 +28,7 @@ export class BaredomChart implements OnInit, OnDestroy {
   @Input() set padding(v: number) { this.el.padding = v as any; }
   @Input() set tooltip(v: boolean) { this.el.tooltip = v as any; }
   @Input() set height(v: number) { this.el.height = v as any; }
+  @Input() set xFormat(v: string) { this.el.xFormat = v as any; }
   @Input() set data(v: any) { this.el.data = v as any; }
 
   @Output() select = new EventEmitter<CustomEvent<{ seriesId: string; index: number; x: number; y: number; value: number }>>();

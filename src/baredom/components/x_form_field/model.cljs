@@ -48,6 +48,8 @@
    :name         {:type 'string  :reflects-attribute attr-name}
    :placeholder  {:type 'string  :reflects-attribute attr-placeholder}
    :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}
+   :hint         {:type 'string  :reflects-attribute attr-hint}
+   :error        {:type 'string  :reflects-attribute attr-error}
    :disabled     {:type 'boolean :reflects-attribute attr-disabled}
    :readOnly     {:type 'boolean :reflects-attribute attr-readonly}
    :required     {:type 'boolean :reflects-attribute attr-required}

@@ -46,6 +46,8 @@
    :disabled {:type 'boolean :reflects-attribute attr-disabled}
    :loading  {:type 'boolean :reflects-attribute attr-loading}
    :selected {:type 'string :reflects-attribute attr-selected}
+   :xFormat  {:type 'string :reflects-attribute attr-x-format}
+   :yFormat  {:type 'string :reflects-attribute attr-y-format}
    :data     {:type 'array   :reflects-attribute attr-data}})
 
 ;; ---- Pure parsing helpers ----

@@ -15,9 +15,11 @@ export const XSelect = defineComponent({
   name: "XSelect",
   inheritAttrs: false,
   props: {
+    placeholder: { type: String as PropType<string | undefined>, default: undefined },
     disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     name: { type: String as PropType<string | undefined>, default: undefined },
     value: { type: String as PropType<string | undefined>, default: undefined },
+    size: { type: String as PropType<string | undefined>, default: undefined },
     error: { type: String as PropType<string | undefined>, default: undefined },
     required: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     modelValue: { type: String as PropType<string | undefined>, default: undefined },

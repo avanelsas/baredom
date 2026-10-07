@@ -36,7 +36,15 @@
    :open {:type 'boolean
           :reflects-attribute attr-open}
    :disabled {:type 'boolean
-              :reflects-attribute attr-disabled}})
+              :reflects-attribute attr-disabled}
+   :modal         {:type 'boolean :reflects-attribute attr-modal}
+   :dismissible   {:type 'boolean :reflects-attribute attr-dismissible}
+   :closeOnEscape {:type 'boolean :reflects-attribute attr-close-on-escape}
+   :noScrim       {:type 'boolean :reflects-attribute attr-no-scrim}
+   :closeOnScrim  {:type 'boolean :reflects-attribute attr-close-on-scrim}
+   :label         {:type 'string  :reflects-attribute attr-label}
+   :placeholder   {:type 'string  :reflects-attribute attr-placeholder}
+   :emptyText     {:type 'string  :reflects-attribute attr-empty-text}})
 
 (def event-schema
   {event-open-request {:cancelable true

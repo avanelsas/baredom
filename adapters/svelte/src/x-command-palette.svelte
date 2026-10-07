@@ -5,9 +5,17 @@
   init();
   export type { XCommandPaletteElement };
   export interface XCommandPaletteProps {
-    items?: any;
+    emptyText?: string;
     open?: boolean;
+    noScrim?: boolean;
+    placeholder?: string;
     disabled?: boolean;
+    closeOnScrim?: boolean;
+    dismissible?: boolean;
+    modal?: boolean;
+    label?: string;
+    closeOnEscape?: boolean;
+    items?: any;
     onopenrequest?: (e: CustomEvent<{}>) => void;
     onopen?: (e: CustomEvent<{}>) => void;
     oncloserequest?: (e: CustomEvent<{}>) => void;
@@ -25,9 +33,17 @@
 
 <script lang="ts">
   let {
-    items,
+    emptyText,
     open,
+    noScrim,
+    placeholder,
     disabled,
+    closeOnScrim,
+    dismissible,
+    modal,
+    label,
+    closeOnEscape,
+    items,
     onopenrequest,
     onopen,
     oncloserequest,
@@ -73,9 +89,17 @@
 
 <x-command-palette
   bind:this={el}
-  {items}
+  {emptyText}
   {open}
+  {noScrim}
+  {placeholder}
   {disabled}
+  {closeOnScrim}
+  {dismissible}
+  {modal}
+  {label}
+  {closeOnEscape}
+  {items}
   class={className}
   {id}
   {...rest}

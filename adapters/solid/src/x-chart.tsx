@@ -9,6 +9,7 @@ init();
 export interface XChartProps {
   selected?: string;
   disabled?: boolean;
+  yFormat?: string;
   axes?: boolean;
   grid?: boolean;
   cursor?: string;
@@ -17,6 +18,7 @@ export interface XChartProps {
   padding?: number;
   tooltip?: boolean;
   height?: number;
+  xFormat?: string;
   data?: any;
   onSelect?: (e: CustomEvent<{ seriesId: string; index: number; x: number; y: number; value: number }>) => void;
   onHover?: (e: CustomEvent<{ seriesId: string; index: number; x: number; y: number; value: number }>) => void;

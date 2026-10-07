@@ -262,14 +262,20 @@
         :get (fn [] (this-as ^js this (has-attr? this attr-name)))
         :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
 
+(defn- on-value?
+  "True when a value written to a property that is on by default means on."
+  [v]
+  (boolean (and v (mu/parse-bool-default-true v))))
+
 (defn define-bool-default-true-prop!
   "Install a boolean JS property for an HTML attribute that defaults to
    `true`. Absent → true, attribute value `\"false\"` (case-insensitive,
    trimmed) → false, any other value → true. Setter REMOVES the attribute
    for truthy values (so the explicit-true HTML matches the natural-true
-   absent default) and writes the literal `\"false\"` for falsy. Removing
-   for falsy would resolve back to the default `true`, defeating the
-   point — hence the explicit `\"false\"` encoding.
+   absent default) and writes the literal `\"false\"` for falsy and for
+   the text `\"false\"`. Removing for falsy would resolve back to the
+   default `true`, defeating the point — hence the explicit `\"false\"`
+   encoding.
 
    Use for `dismissible`, `arrows`, `dots`, `spinner`, etc. — boolean
    attributes whose natural state is enabled and opting out is explicit.
@@ -285,7 +291,7 @@
                  (mu/parse-bool-default-true (get-attr this attr-name))))
         :set (fn [v]
                (this-as ^js this
-                 (if v
+                 (if (on-value? v)
                    (remove-attr! this attr-name)
                    (set-attr! this attr-name "false"))))}))
 

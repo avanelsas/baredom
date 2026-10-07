@@ -53,6 +53,17 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 | `required` | boolean | `required`         |
 | `open`     | boolean | `open`             |
 | `error`    | string  | `error`            |
+| `name`     | string  | `name`             |
+| `min`      | string  | `min`              |
+| `max`      | string  | `max`              |
+| `format`   | string  | `format`           |
+| `locale`   | string  | `locale`           |
+| `separator` | string | `separator`        |
+| `placeholder` | string | `placeholder`     |
+| `autocomplete` | string | `autocomplete`   |
+| `autoSwap` | boolean | `auto-swap`        |
+| `rangeAllowSameDay` | boolean | `range-allow-same-day` |
+| `closeOnSelect` | boolean | `close-on-select` |
 
 ---
 

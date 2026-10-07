@@ -38,6 +38,14 @@ A searchable command list overlay (⌘K pattern). Opens as a modal with a text i
 | `items`    | array   | Command items. Each item: `{ id, label, keywords?, group?, value?, icon?, disabled? }` |
 | `open`     | boolean | Reflects `open` attribute                                                |
 | `disabled` | boolean | Reflects `disabled` attribute                                            |
+| `modal`    | boolean | Reflects `modal`. `true` when the attribute is absent                    |
+| `dismissible` | boolean | Reflects `dismissible`. `true` when the attribute is absent           |
+| `closeOnEscape` | boolean | Reflects `close-on-escape`. `true` when the attribute is absent     |
+| `noScrim`  | boolean | Reflects `no-scrim`                                                      |
+| `closeOnScrim` | boolean | Reflects `close-on-scrim`. Reads the effective value, which follows the scrim when the attribute is absent. Writes `"true"` or `"false"`, and `null` removes the attribute |
+| `label`    | string  | Reflects `label`                                                         |
+| `placeholder` | string | Reflects `placeholder`, default `"Search…"`                            |
+| `emptyText` | string | Reflects `empty-text`, default `"No results"`                            |
 
 ### Item shape
 

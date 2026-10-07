@@ -7,6 +7,7 @@
   export interface XChartProps {
     selected?: string;
     disabled?: boolean;
+    yFormat?: string;
     axes?: boolean;
     grid?: boolean;
     cursor?: string;
@@ -15,6 +16,7 @@
     padding?: number;
     tooltip?: boolean;
     height?: number;
+    xFormat?: string;
     data?: any;
     onselect?: (e: CustomEvent<{ seriesId: string; index: number; x: number; y: number; value: number }>) => void;
     onhover?: (e: CustomEvent<{ seriesId: string; index: number; x: number; y: number; value: number }>) => void;
@@ -30,6 +32,7 @@
   let {
     selected,
     disabled,
+    yFormat,
     axes,
     grid,
     cursor,
@@ -38,6 +41,7 @@
     padding,
     tooltip,
     height,
+    xFormat,
     data,
     onselect,
     onhover,
@@ -66,6 +70,7 @@
   bind:this={el}
   {selected}
   {disabled}
+  {yFormat}
   {axes}
   {grid}
   {cursor}
@@ -74,6 +79,7 @@
   {padding}
   {tooltip}
   {height}
+  {xFormat}
   {data}
   class={className}
   {id}

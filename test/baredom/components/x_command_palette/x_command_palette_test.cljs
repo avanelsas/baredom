@@ -254,3 +254,11 @@
     (is (= "Copy" (.-textContent copy)))
     (is (= ["Edit" "File"] (header-texts el)))))
 
+;; ── The boolean properties and the text "false" ────────────────────────────
+
+(deftest the-text-false-switches-a-boolean-property-off
+  (let [^js el (append! (make-el))]
+    (doseq [prop ["modal" "dismissible" "closeOnEscape" "closeOnScrim"]]
+      (unchecked-set el prop "false"))
+    (is (= [false false false false]
+           [(.-modal el) (.-dismissible el) (.-closeOnEscape el) (.-closeOnScrim el)]))))

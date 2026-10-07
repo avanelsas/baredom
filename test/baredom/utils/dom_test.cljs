@@ -203,6 +203,18 @@
 (deftest a-number-property-removes-its-attribute-for-a-value-that-is-not-a-number
   (is (= [nil nil nil nil] (mapv timeout-after ["abc" "" nil true]))))
 
+(defn- spinner-after
+  "What a property that is on by default reads after `value` is written to it."
+  [value]
+  (let [^js el (append! (make-el))]
+    (du/define-bool-default-true-prop! el "testSpinner" "spinner")
+    (set! (.-testSpinner el) value)
+    (.-testSpinner el)))
+
+(deftest a-property-that-is-on-by-default-reads-the-text-false-as-false
+  (is (= [true false false false true]
+         (mapv spinner-after [true false "false" " FALSE " "true"]))))
+
 ;; ── install-properties! ─────────────────────────────────────────────────────
 
 (deftest install-properties-bool-test

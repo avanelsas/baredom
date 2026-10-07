@@ -7,13 +7,18 @@ import { init } from "@vanelsas/baredom/x-text-area";
 init();
 
 export interface XTextAreaProps {
+  placeholder?: string;
   disabled?: boolean;
   name?: string;
   value?: string;
   minLength?: number;
+  resize?: string;
+  hint?: string;
   rows?: number;
   readOnly?: boolean;
+  label?: string;
   maxLength?: number;
+  error?: string;
   autocomplete?: string;
   required?: boolean;
   defaultValue?: string;

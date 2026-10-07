@@ -8,14 +8,24 @@ init();
 
 export interface XDatePickerProps {
   open?: boolean;
+  min?: string;
+  format?: string;
+  placeholder?: string;
   disabled?: boolean;
+  locale?: string;
   name?: string;
+  autoSwap?: boolean;
   value?: string;
   mode?: string;
   start?: string;
   readOnly?: boolean;
+  max?: string;
+  closeOnSelect?: boolean;
   error?: string;
+  autocomplete?: string;
   end?: string;
+  separator?: string;
+  rangeAllowSameDay?: boolean;
   required?: boolean;
   defaultValue?: string;
   onInput?: (e: CustomEvent<{ value: string; mode: string }>) => void;

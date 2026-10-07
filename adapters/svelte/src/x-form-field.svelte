@@ -10,8 +10,10 @@
     name?: string;
     value?: string;
     type?: string;
+    hint?: string;
     readOnly?: boolean;
     label?: string;
+    error?: string;
     autocomplete?: string;
     required?: boolean;
     onchangerequest?: (e: CustomEvent<{ name: string; value: string; previousValue: string }>) => void;
@@ -32,8 +34,10 @@
     name,
     value,
     type,
+    hint,
     readOnly,
     label,
+    error,
     autocomplete,
     required,
     onchangerequest,
@@ -70,8 +74,10 @@
   {name}
   {value}
   {type}
+  {hint}
   {readOnly}
   {label}
+  {error}
   {autocomplete}
   {required}
   class={className}

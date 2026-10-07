@@ -6,13 +6,23 @@
   export type { XDatePickerElement };
   export interface XDatePickerProps {
     open?: boolean;
+    min?: string;
+    format?: string;
+    placeholder?: string;
     disabled?: boolean;
+    locale?: string;
     name?: string;
+    autoSwap?: boolean;
     mode?: string;
     start?: string;
     readOnly?: boolean;
+    max?: string;
+    closeOnSelect?: boolean;
     error?: string;
+    autocomplete?: string;
     end?: string;
+    separator?: string;
+    rangeAllowSameDay?: boolean;
     required?: boolean;
     /** Two-way bindable form value — `bind:value={...}`. */
     value?: string;
@@ -30,13 +40,23 @@
 <script lang="ts">
   let {
     open,
+    min,
+    format,
+    placeholder,
     disabled,
+    locale,
     name,
+    autoSwap,
     mode,
     start,
     readOnly,
+    max,
+    closeOnSelect,
     error,
+    autocomplete,
     end,
+    separator,
+    rangeAllowSameDay,
     required,
     value = $bindable(undefined),
     oninput,
@@ -80,13 +100,23 @@
 <x-date-picker
   bind:this={el}
   {open}
+  {min}
+  {format}
+  {placeholder}
   {disabled}
+  {locale}
   {name}
+  {autoSwap}
   {mode}
   {start}
   {readOnly}
+  {max}
+  {closeOnSelect}
   {error}
+  {autocomplete}
   {end}
+  {separator}
+  {rangeAllowSameDay}
   {required}
   class={className}
   {id}

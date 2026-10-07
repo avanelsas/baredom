@@ -1243,11 +1243,29 @@
         "readonly" : true
       }, {
         "kind" : "field",
+        "name" : "min",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "format",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "willValidate",
         "type" : {
           "text" : "boolean"
         },
         "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "kind" : "field",
         "name" : "disabled",
@@ -1256,9 +1274,21 @@
         }
       }, {
         "kind" : "field",
+        "name" : "locale",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "name",
         "type" : {
           "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoSwap",
+        "type" : {
+          "text" : "boolean"
         }
       }, {
         "kind" : "field",
@@ -1286,7 +1316,25 @@
         }
       }, {
         "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "closeOnSelect",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
         "name" : "error",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autocomplete",
         "type" : {
           "text" : "string"
         }
@@ -1302,6 +1350,18 @@
         "name" : "end",
         "type" : {
           "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "separator",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rangeAllowSameDay",
+        "type" : {
+          "text" : "boolean"
         }
       }, {
         "kind" : "field",
@@ -1382,23 +1442,59 @@
           "text" : "string"
         }
       }, {
-        "name" : "min"
+        "name" : "min",
+        "fieldName" : "min",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "max"
+        "name" : "max",
+        "fieldName" : "max",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "format"
+        "name" : "format",
+        "fieldName" : "format",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "locale"
+        "name" : "locale",
+        "fieldName" : "locale",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "separator"
+        "name" : "separator",
+        "fieldName" : "separator",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "auto-swap"
+        "name" : "auto-swap",
+        "fieldName" : "autoSwap",
+        "type" : {
+          "text" : "boolean"
+        }
       }, {
-        "name" : "range-allow-same-day"
+        "name" : "range-allow-same-day",
+        "fieldName" : "rangeAllowSameDay",
+        "type" : {
+          "text" : "boolean"
+        }
       }, {
-        "name" : "close-on-select"
+        "name" : "close-on-select",
+        "fieldName" : "closeOnSelect",
+        "type" : {
+          "text" : "boolean"
+        }
       }, {
-        "name" : "placeholder"
+        "name" : "placeholder",
+        "fieldName" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "name" : "disabled",
         "fieldName" : "disabled",
@@ -1424,7 +1520,11 @@
           "text" : "string"
         }
       }, {
-        "name" : "autocomplete"
+        "name" : "autocomplete",
+        "fieldName" : "autocomplete",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "name" : "error",
         "fieldName" : "error",
@@ -8022,6 +8122,12 @@
         "readonly" : true
       }, {
         "kind" : "field",
+        "name" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "disabled",
         "type" : {
           "text" : "boolean"
@@ -8035,6 +8141,12 @@
       }, {
         "kind" : "field",
         "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
         "type" : {
           "text" : "string"
         }
@@ -8094,9 +8206,17 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "size"
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "placeholder"
+        "name" : "placeholder",
+        "fieldName" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "name" : "value",
         "fieldName" : "value",
@@ -8382,6 +8502,12 @@
         "readonly" : true
       }, {
         "kind" : "field",
+        "name" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "disabled",
         "type" : {
           "text" : "boolean"
@@ -8406,6 +8532,18 @@
         }
       }, {
         "kind" : "field",
+        "name" : "resize",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "hint",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "rows",
         "type" : {
           "text" : "number"
@@ -8418,9 +8556,21 @@
         }
       }, {
         "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "maxLength",
         "type" : {
           "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "error",
+        "type" : {
+          "text" : "string"
         }
       }, {
         "kind" : "field",
@@ -8466,7 +8616,11 @@
         }
       } ],
       "attributes" : [ {
-        "name" : "label"
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "name" : "name",
         "fieldName" : "name",
@@ -8480,11 +8634,23 @@
           "text" : "string"
         }
       }, {
-        "name" : "placeholder"
+        "name" : "placeholder",
+        "fieldName" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "hint"
+        "name" : "hint",
+        "fieldName" : "hint",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "error"
+        "name" : "error",
+        "fieldName" : "error",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "name" : "disabled",
         "fieldName" : "disabled",
@@ -8528,7 +8694,11 @@
           "text" : "string"
         }
       }, {
-        "name" : "resize"
+        "name" : "resize",
+        "fieldName" : "resize",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "x-text-area-change-request",
@@ -12816,6 +12986,12 @@
         }
       }, {
         "kind" : "field",
+        "name" : "yFormat",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "axes",
         "type" : {
           "text" : "boolean"
@@ -12864,6 +13040,12 @@
         }
       }, {
         "kind" : "field",
+        "name" : "xFormat",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "data",
         "type" : {
           "text" : "any"
@@ -12894,9 +13076,17 @@
           "text" : "number"
         }
       }, {
-        "name" : "x-format"
+        "name" : "x-format",
+        "fieldName" : "xFormat",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "y-format"
+        "name" : "y-format",
+        "fieldName" : "yFormat",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "name" : "grid",
         "fieldName" : "grid",
@@ -17772,6 +17962,12 @@
         }
       }, {
         "kind" : "field",
+        "name" : "hint",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "readOnly",
         "type" : {
           "text" : "boolean"
@@ -17779,6 +17975,12 @@
       }, {
         "kind" : "field",
         "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "error",
         "type" : {
           "text" : "string"
         }
@@ -17856,9 +18058,17 @@
           "text" : "string"
         }
       }, {
-        "name" : "hint"
+        "name" : "hint",
+        "fieldName" : "hint",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "error"
+        "name" : "error",
+        "fieldName" : "error",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "name" : "disabled",
         "fieldName" : "disabled",
@@ -21506,9 +21716,9 @@
       },
       "members" : [ {
         "kind" : "field",
-        "name" : "items",
+        "name" : "emptyText",
         "type" : {
-          "text" : "any"
+          "text" : "string"
         }
       }, {
         "kind" : "field",
@@ -21518,9 +21728,57 @@
         }
       }, {
         "kind" : "field",
+        "name" : "noScrim",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "disabled",
         "type" : {
           "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "closeOnScrim",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "dismissible",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "modal",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "closeOnEscape",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "items",
+        "type" : {
+          "text" : "any"
         }
       }, {
         "kind" : "method",
@@ -21554,9 +21812,17 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "modal"
+        "name" : "modal",
+        "fieldName" : "modal",
+        "type" : {
+          "text" : "boolean"
+        }
       }, {
-        "name" : "dismissible"
+        "name" : "dismissible",
+        "fieldName" : "dismissible",
+        "type" : {
+          "text" : "boolean"
+        }
       }, {
         "name" : "disabled",
         "fieldName" : "disabled",
@@ -21564,17 +21830,41 @@
           "text" : "boolean"
         }
       }, {
-        "name" : "no-scrim"
+        "name" : "no-scrim",
+        "fieldName" : "noScrim",
+        "type" : {
+          "text" : "boolean"
+        }
       }, {
-        "name" : "close-on-scrim"
+        "name" : "close-on-scrim",
+        "fieldName" : "closeOnScrim",
+        "type" : {
+          "text" : "boolean"
+        }
       }, {
-        "name" : "close-on-escape"
+        "name" : "close-on-escape",
+        "fieldName" : "closeOnEscape",
+        "type" : {
+          "text" : "boolean"
+        }
       }, {
-        "name" : "label"
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "placeholder"
+        "name" : "placeholder",
+        "fieldName" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
       }, {
-        "name" : "empty-text"
+        "name" : "empty-text",
+        "fieldName" : "emptyText",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "x-command-palette-open-request",

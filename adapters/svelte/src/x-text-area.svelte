@@ -5,12 +5,17 @@
   init();
   export type { XTextAreaElement };
   export interface XTextAreaProps {
+    placeholder?: string;
     disabled?: boolean;
     name?: string;
     minLength?: number;
+    resize?: string;
+    hint?: string;
     rows?: number;
     readOnly?: boolean;
+    label?: string;
     maxLength?: number;
+    error?: string;
     autocomplete?: string;
     required?: boolean;
     /** Two-way bindable form value — `bind:value={...}`. */
@@ -28,12 +33,17 @@
 
 <script lang="ts">
   let {
+    placeholder,
     disabled,
     name,
     minLength,
+    resize,
+    hint,
     rows,
     readOnly,
+    label,
     maxLength,
+    error,
     autocomplete,
     required,
     value = $bindable(undefined),
@@ -77,12 +87,17 @@
 
 <x-text-area
   bind:this={el}
+  {placeholder}
   {disabled}
   {name}
   {minLength}
+  {resize}
+  {hint}
   {rows}
   {readOnly}
+  {label}
   {maxLength}
+  {error}
   {autocomplete}
   {required}
   class={className}

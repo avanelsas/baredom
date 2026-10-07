@@ -382,6 +382,8 @@
   (du/define-string-prop! proto "name"         model/attr-name "")
   (du/define-string-prop! proto "placeholder"  model/attr-placeholder "")
   (du/define-string-prop! proto "autocomplete" model/attr-autocomplete "")
+  (du/define-string-prop! proto "hint"         model/attr-hint "")
+  (du/define-string-prop! proto "error"        model/attr-error "")
   (du/define-bool-prop! proto "disabled" model/attr-disabled)
   (du/define-bool-prop! proto "readOnly" model/attr-readonly)
   (du/define-bool-prop! proto "required" model/attr-required))

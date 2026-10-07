@@ -5,8 +5,10 @@
   init();
   export type { XSelectElement };
   export interface XSelectProps {
+    placeholder?: string;
     disabled?: boolean;
     name?: string;
+    size?: string;
     error?: string;
     required?: boolean;
     /** Two-way bindable form value — `bind:value={...}`. */
@@ -23,8 +25,10 @@
 
 <script lang="ts">
   let {
+    placeholder,
     disabled,
     name,
+    size,
     error,
     required,
     value = $bindable(undefined),
@@ -64,8 +68,10 @@
 
 <x-select
   bind:this={el}
+  {placeholder}
   {disabled}
   {name}
+  {size}
   {error}
   {required}
   class={className}

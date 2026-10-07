@@ -32,6 +32,9 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 | `required` | boolean | `required`         |
 | `value`    | string  | `value`            |
 | `error`    | string  | `error`            |
+| `name`     | string  | `name`             |
+| `size`     | string  | `size`             |
+| `placeholder` | string | `placeholder`     |
 
 ## Events
 

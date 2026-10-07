@@ -40,6 +40,8 @@ A self-contained, form-associated text-input field with a label, optional hint, 
 | `name`        | string  | `name`             |
 | `placeholder` | string  | `placeholder`      |
 | `autocomplete`| string  | `autocomplete`     |
+| `hint`        | string  | `hint`             |
+| `error`       | string  | `error`            |
 | `disabled`    | boolean | `disabled`         |
 | `readOnly`    | boolean | `readonly`         |
 | `required`    | boolean | `required`         |

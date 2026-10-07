@@ -17,6 +17,7 @@ export const XChart = defineComponent({
   props: {
     selected: { type: String as PropType<string | undefined>, default: undefined },
     disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    yFormat: { type: String as PropType<string | undefined>, default: undefined },
     axes: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     grid: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     cursor: { type: String as PropType<string | undefined>, default: undefined },
@@ -25,6 +26,7 @@ export const XChart = defineComponent({
     padding: { type: Number as PropType<number | undefined>, default: undefined },
     tooltip: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     height: { type: Number as PropType<number | undefined>, default: undefined },
+    xFormat: { type: String as PropType<string | undefined>, default: undefined },
     data: { type: Object as PropType<any | undefined>, default: undefined },
   },
   emits: {

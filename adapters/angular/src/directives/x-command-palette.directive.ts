@@ -17,9 +17,17 @@ export class BaredomCommandPalette implements OnInit, OnDestroy {
     this.zone = zone;
   }
 
-  @Input() set items(v: any) { this.el.items = v as any; }
+  @Input() set emptyText(v: string) { this.el.emptyText = v as any; }
   @Input() set open(v: boolean) { this.el.open = v as any; }
+  @Input() set noScrim(v: boolean) { this.el.noScrim = v as any; }
+  @Input() set placeholder(v: string) { this.el.placeholder = v as any; }
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
+  @Input() set closeOnScrim(v: boolean) { this.el.closeOnScrim = v as any; }
+  @Input() set dismissible(v: boolean) { this.el.dismissible = v as any; }
+  @Input() set modal(v: boolean) { this.el.modal = v as any; }
+  @Input() set label(v: string) { this.el.label = v as any; }
+  @Input() set closeOnEscape(v: boolean) { this.el.closeOnEscape = v as any; }
+  @Input() set items(v: any) { this.el.items = v as any; }
 
   @Output() openRequest = new EventEmitter<CustomEvent<{}>>();
   @Output() openEvent = new EventEmitter<CustomEvent<{}>>();
