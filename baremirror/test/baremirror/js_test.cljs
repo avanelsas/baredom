@@ -36,7 +36,7 @@
        #js ["button" #js {:on #js {"press" "remove"}} "Remove"]])
 
 (deftest split-returns-javascript-values
-  (let [row (mjs/split "row" (row-template))]
+  (let [^js row (mjs/split "row" (row-template))]
     (testing "the fixed template is an array with the part names"
       (is (= ["li"
               ["span" {"role" "checkbox" "data-x-part" "row.0"}]
@@ -90,7 +90,7 @@
 (deftest the-pieces-of-sync-take-the-values-of-each-other
   (let [parent         (staged! #js ["ul"])
         [containers a] (items parent ["a" "b"])
-        reading        (mjs/read-places containers)
+        ^js reading    (mjs/read-places containers)
         nodes          (mjs/perform reading (mjs/plan (.-places reading) a) make-item)]
     (is (= {"items" []} (data (.-places reading))))
     (is (= ["a" "b"] (keys-in parent)))
@@ -155,7 +155,7 @@
       (is (= [["remove" "t1"] ["toggle" 1]] (mapv data @messages))))))
 
 (deftest a-meaning-with-a-function-in-a-template-reaches-the-dispatch-function
-  (let [tag      (mjs/split "tag" #js ["button" #js {:on #js {"click" #js ["untag" key-count]}} "x"])
+  (let [^js tag  (mjs/split "tag" #js ["button" #js {:on #js {"click" #js ["untag" key-count]}} "x"])
         button   (staged! (.-fixed tag))
         messages (atom [])]
     (mjs/listen button #js {:dispatch (partial swap! messages conj) :events (.-events tag)})
