@@ -352,6 +352,17 @@
       (str tag " is listed as not themed by design for " prop ": " value
            ", which it does not have"))))
 
+(def ^:private closed
+  "The families in which every value follows the theme or is listed as not themed by design."
+  #{"transition"})
+
+(defn- reopened
+  "The values of a closed family that follow no token, as a message for each."
+  [rows]
+  (for [{:keys [tag family prop value kind]} rows
+        :when (and (closed family) (open kind))]
+    (str tag " has " prop ": " value ", which follows no token of the closed family " family)))
+
 (defn- not-read
   "The components whose CSS was not read, or not in full, with the definitions concerned."
   [components]
@@ -371,6 +382,9 @@
    "or the component's own property whose default is a token. Structural values such as `0`,"
    "`none` and `inherit` are not counted, and neither are the values listed at the end as not"
    "themed by design. An empty cell means the component has no value of that family."
+   ""
+   (str "Closed families, in which CI allows no value that follows no token: "
+        (str/join ", " (sort closed)) ".")
    ""])
 
 (def ^:private by-design-lines
@@ -427,7 +441,7 @@
   (when-not report
     (println "Usage: bb scripts/audit_tokens.bb summary|literals|doc")
     (System/exit 1))
-  (when-let [faults (seq (concat unknown (stale rows)))]
+  (when-let [faults (seq (concat unknown (stale rows) (reopened rows)))]
     (run! println faults)
     (System/exit 1))
   (report components)
