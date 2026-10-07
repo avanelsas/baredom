@@ -148,6 +148,12 @@
       (set-attr! el attr-name value)
       (remove-attr! el attr-name))))
 
+(defn set-text-to!
+  "Sets the text of `node` to `text`, only where it differs."
+  [^js node text]
+  (when (not= text (.-textContent node))
+    (set! (.-textContent node) text)))
+
 (def hidden-rule
   "The CSS rule that hides a host under the `hidden` attribute.
    A component that sets a display on `:host` puts it after every rule that does."

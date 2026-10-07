@@ -146,3 +146,28 @@
   (let [d (model/change-detail 1 3)]
     (is (= 1 (:from d)))
     (is (= 3 (:to d)))))
+
+(defn- shown [m]
+  (model/shown-steps m))
+
+(deftest shown-steps-gives-each-step-what-it-shows-test
+  (let [[done current upcoming] (shown {:steps   [{:label "A"} {:label "B" :description "second"} {}]
+                                        :current 1})]
+    (is (= {:key "0" :index "0" :state "complete" :label "A" :description "" :described? false
+            :number "✓" :aria-label "Step 1: A (completed)" :aria-current nil
+            :tabindex "0" :aria-disabled nil}
+           done))
+    (is (= {:key "1" :index "1" :state "current" :label "B" :description "second" :described? true
+            :number "2" :aria-label "Step 2: B (current)" :aria-current "step"
+            :tabindex "0" :aria-disabled nil}
+           current))
+    (is (= {:number "3" :label "" :aria-label "Step 3:  (upcoming)"}
+           (select-keys upcoming [:number :label :aria-label])))))
+
+(deftest shown-steps-of-a-disabled-stepper-cannot-be-reached-test
+  (is (= [{:tabindex "-1" :aria-disabled "true"}]
+         (mapv #(select-keys % [:tabindex :aria-disabled])
+               (shown {:steps [{:label "A"}] :current 0 :disabled? true})))))
+
+(deftest shown-steps-of-no-steps-is-empty-test
+  (is (= [] (shown {:steps [] :current 0}))))

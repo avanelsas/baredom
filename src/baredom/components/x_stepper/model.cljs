@@ -118,6 +118,38 @@
     :current  "current"
     :upcoming "upcoming"))
 
+;; ── Shown steps ──────────────────────────────────────────────────────────────
+(defn- step-aria-label [index label state]
+  (str "Step " (inc index) ": " label
+       " ("
+       (case state
+         :complete "completed"
+         :current  "current"
+         :upcoming "upcoming")
+       ")"))
+
+(defn- shown-step
+  "What the step at `index` shows, as the text of each attribute and each part."
+  [current disabled? index {:keys [label description]}]
+  (let [label (or label "")
+        state (step-state index current)]
+    {:key           (str index)
+     :index         (str index)
+     :state         (state->attr state)
+     :label         label
+     :description   (or description "")
+     :described?    (boolean (seq description))
+     :number        (if (= state :complete) "✓" (str (inc index)))
+     :aria-label    (step-aria-label index label state)
+     :aria-current  (when (= state :current) "step")
+     :tabindex      (if disabled? "-1" "0")
+     :aria-disabled (when disabled? "true")}))
+
+(defn shown-steps
+  "What each step of the model shows. The key of a step is its index as text."
+  [{:keys [steps current disabled?]}]
+  (into [] (map-indexed (partial shown-step current disabled?)) steps))
+
 ;; ── View model ───────────────────────────────────────────────────────────────
 (defn normalize
   "Normalize raw attribute inputs into a stable view-model map.
