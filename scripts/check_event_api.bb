@@ -290,11 +290,29 @@
               :when (:tagName d)]
           [(:tagName d) (:events d)])))
 
+(defn- requests-ns-problems
+  "Where the `requests` of `baredom.requests` differs from what the models declare."
+  [models]
+  (let [declared (into {}
+                       (for [{:keys [events string-defs]} models
+                             [event {:keys [requests]}] events
+                             :when requests]
+                         [(resolve-sym event string-defs)
+                          (mapv #(resolve-sym % string-defs) (keys requests))]))
+        written  (->> (edamame/parse-string-all (slurp "src/baredom/requests.cljs") parse-opts)
+                      (some (fn [form] (when (= 'requests (second form)) (last form)))))]
+    (for [event (sort (set/union (set (keys declared)) (set (keys written))))
+          :let  [d (get declared event) w (get written event)]
+          :when (not= d w)]
+      (str "baredom.requests has " event " as " (pr-str w)
+           " and its model declares " (pr-str d)))))
+
 (let [models  (filter (comp seq :events) (discover-models))
       manifest (manifest-events)
       results (map checked models)
       found   (concat (mapcat :problems results)
-                      (mapcat #(published % manifest) models))
+                      (mapcat #(published % manifest) models)
+                      (requests-ns-problems models))
       n-cmp   (reduce + (map (comp count :compared) results))
       n-unr   (reduce + (map (comp count :unread) results))]
   (doseq [p found] (println "  " p))
