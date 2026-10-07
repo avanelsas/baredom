@@ -113,16 +113,18 @@
          "}\n")))
 
 ;; ── Custom Elements Manifest generation ─────────────────────────────────────
-(defn- aria? [attr-name]
-  (str/starts-with? attr-name "aria-"))
+(defn- aria-attribute?
+  "True for `role` and for an `aria-` attribute, which the ARIA standard defines as text."
+  [attr-name]
+  (or (= "role" attr-name) (str/starts-with? attr-name "aria-")))
 
 (defn- cem-attributes
   "The attributes a component observes, as CEM entries.
 
    A property declares which attribute it reflects, so an attribute named there
-   carries that property's type and field name. An `aria-` attribute is text by the
-   ARIA standard. The rest carry a name alone: the component states no type for
-   them, and stating one here would be a guess."
+   carries that property's type and field name. `role` and an `aria-` attribute are
+   text by the ARIA standard. The rest carry a name alone: the component states no
+   type for them, and stating one here would be a guess."
   [attributes properties sdefs]
   (let [reflected (into {}
                         (keep (fn [[k {:keys [type reflects-attribute]}]]
@@ -134,7 +136,7 @@
     (mapv (fn [attr-name]
             (merge {:name attr-name}
                    (or (get reflected attr-name)
-                       (when (aria? attr-name) {:type {:text "string"}}))))
+                       (when (aria-attribute? attr-name) {:type {:text "string"}}))))
           attributes)))
 
 (defn generate-cem-module

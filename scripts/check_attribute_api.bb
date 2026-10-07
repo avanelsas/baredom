@@ -156,13 +156,15 @@
                   ", and does not install it")
     nil))
 
-(defn- aria? [attr-name]
-  (str/starts-with? attr-name "aria-"))
+(defn- aria-attribute?
+  "True for `role` and for an `aria-` attribute, which the ARIA standard defines as text."
+  [attr-name]
+  (or (= "role" attr-name) (str/starts-with? attr-name "aria-")))
 
 (defn- declared-attributes
   "A map from each public attribute of a component to the type and the field name its model
-   gives it. A reflecting property gives both. An `aria-` attribute is text. Any other has
-   neither. An attribute in the model's `internal-attributes` is not public."
+   gives it. A reflecting property gives both. `role` and an `aria-` attribute are text. Any
+   other has neither. An attribute in the model's `internal-attributes` is not public."
   [{:keys [attributes internal-attributes properties string-defs]}]
   (let [reflected (into {}
                         (keep (fn [[k {:keys [type reflects-attribute]}]]
@@ -172,7 +174,10 @@
                         properties)]
     (into {}
           (comp (remove (set internal-attributes))
-                (map (fn [attr] [attr (or (reflected attr) (when (aria? attr) {:type "string"}) {})])))
+                (map (fn [attr]
+                       [attr (or (reflected attr)
+                                 (when (aria-attribute? attr) {:type "string"})
+                                 {})])))
           attributes)))
 
 (defn- manifest-attributes

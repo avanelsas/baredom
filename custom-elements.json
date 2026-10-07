@@ -6255,7 +6255,10 @@
           "text" : "string"
         }
       }, {
-        "name" : "role"
+        "name" : "role",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "name" : "aria-label",
         "type" : {
