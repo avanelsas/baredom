@@ -77,6 +77,9 @@ jobs:
       - name: Check the event details the manifest publishes
         run: bb scripts/check_event_api.bb
 
+      - name: Test the token audit
+        run: bb scripts/audit_tokens_test.bb
+
       - name: Check the token coverage doc is current
         run: |
           bb scripts/audit_tokens.bb doc

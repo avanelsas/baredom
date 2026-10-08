@@ -461,20 +461,25 @@
   (spit doc-file (coverage-doc components))
   (println "Wrote" doc-file))
 
-(let [models     (remove #(= "x-theme" (:tag-name %)) (discover-models))
-      components (map audited models)
-      unknown    (mapcat (partial unknown-names (all-tag-names)) models)
-      rows       (mapcat :rows components)
-      missing    (not-read components)
-      report     (get {"summary" summary "literals" literals "doc" write-doc!}
-                      (first *command-line-args*))]
-  (when-not report
-    (println "Usage: bb scripts/audit_tokens.bb summary|literals|doc")
-    (System/exit 1))
-  (when-let [faults (seq (concat unknown (stale rows) (reopened rows)))]
-    (run! println faults)
-    (System/exit 1))
-  (report components)
-  (println (format "\n%d values in %d components. Not read, or not in full: %s"
-                   (count rows) (count (distinct (map :tag rows)))
-                   (if (seq missing) (str/join ", " missing) "none"))))
+(defn- main
+  "Runs the report that `mode` names and fails on a fault."
+  [mode]
+  (let [models     (remove #(= "x-theme" (:tag-name %)) (discover-models))
+        components (map audited models)
+        unknown    (mapcat (partial unknown-names (all-tag-names)) models)
+        rows       (mapcat :rows components)
+        missing    (not-read components)
+        report     (get {"summary" summary "literals" literals "doc" write-doc!} mode)]
+    (when-not report
+      (println "Usage: bb scripts/audit_tokens.bb summary|literals|doc")
+      (System/exit 1))
+    (when-let [faults (seq (concat unknown (stale rows) (reopened rows)))]
+      (run! println faults)
+      (System/exit 1))
+    (report components)
+    (println (format "\n%d values in %d components. Not read, or not in full: %s"
+                     (count rows) (count (distinct (map :tag rows)))
+                     (if (seq missing) (str/join ", " missing) "none")))))
+
+(when (= *file* (System/getProperty "babashka.file"))
+  (main (first *command-line-args*)))
