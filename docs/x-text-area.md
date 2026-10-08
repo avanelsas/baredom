@@ -77,10 +77,10 @@ All properties are set on `:host` and can be overridden per-instance or globally
 
 | Property                          | Default (light)     | Description |
 |----------------------------------|---------------------|-------------|
-| `--x-text-area-label-color`      | `#374151`           | Label text color. |
+| `--x-text-area-label-color`      | `var(--x-color-text-muted, #374151)`           | Label text color. |
 | `--x-text-area-label-font-size`  | `0.875rem`          | Label font size. |
 | `--x-text-area-bg`               | `#ffffff`           | Textarea background color. |
-| `--x-text-area-color`            | `#111827`           | Textarea text color. |
+| `--x-text-area-color`            | `var(--x-color-text, #111827)`           | Textarea text color. |
 | `--x-text-area-border`           | `1px solid #d1d5db` | Textarea border. |
 | `--x-text-area-border-radius`    | `6px`               | Corner radius. |
 | `--x-text-area-padding`          | `0.5rem 0.75rem`    | Inner padding. |

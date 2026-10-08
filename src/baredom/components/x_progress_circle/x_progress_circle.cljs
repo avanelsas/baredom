@@ -23,17 +23,17 @@
    "color-scheme:light dark;"
    "box-sizing:border-box;"
    "--x-progress-circle-size:64px;"
-   "--x-progress-circle-track-color:rgba(0,0,0,0.10);"
+   "--x-progress-circle-track-color:var(--x-color-border,rgba(0,0,0,0.10));"
    "--x-progress-circle-fill-color:var(--x-color-primary,#3b82f6);"
    "--x-progress-circle-stroke-width:2.8;"
-   "--x-progress-circle-value-color:rgba(0,0,0,0.50);"
+   "--x-progress-circle-value-color:var(--x-color-text-muted,rgba(0,0,0,0.50));"
    "--x-progress-circle-transition-duration:var(--x-transition-duration,0.3s);}"
    du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-progress-circle-track-color:rgba(255,255,255,0.12);"
-   "--x-progress-circle-value-color:rgba(255,255,255,0.50);}}"
+   "--x-progress-circle-track-color:var(--x-color-border,rgba(255,255,255,0.12));"
+   "--x-progress-circle-value-color:var(--x-color-text-muted,rgba(255,255,255,0.50));}}"
 
    ;; Sizes
    "[part=base][data-size='sm']{--x-progress-circle-size:40px;}"

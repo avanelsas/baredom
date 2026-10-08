@@ -109,11 +109,11 @@ All events bubble and are composed (cross the shadow-DOM boundary).
 | Property | Default (light) | Description |
 |----------|----------------|-------------|
 | `--x-rating-active-color` | `#f59e0b` | Filled-star color |
-| `--x-rating-inactive-color` | `rgba(0,0,0,0.20)` | Empty-star color |
+| `--x-rating-inactive-color` | `var(--x-color-border, rgba(0,0,0,0.20))` | Empty-star color |
 | `--x-rating-hover-color` | `var(--x-rating-active-color)` | Fill color during hover preview |
 | `--x-rating-focus-ring` | `#60a5fa` | Focus ring color |
 | `--x-rating-disabled-opacity` | `0.45` | Opacity when disabled |
-| `--x-rating-label-color` | `rgba(0,0,0,0.60)` | Label text color |
+| `--x-rating-label-color` | `var(--x-color-text-muted, rgba(0,0,0,0.60))` | Label text color |
 
 Dark-mode overrides are applied automatically via
 `@media (prefers-color-scheme: dark)`.

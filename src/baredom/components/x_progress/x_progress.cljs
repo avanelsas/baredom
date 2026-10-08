@@ -21,17 +21,17 @@
    "color-scheme:light dark;"
    "box-sizing:border-box;"
    "--x-progress-border-radius:var(--x-radius-full,9999px);"
-   "--x-progress-track-color:rgba(0,0,0,0.10);"
+   "--x-progress-track-color:var(--x-color-border,rgba(0,0,0,0.10));"
    "--x-progress-fill-color:var(--x-color-primary,#3b82f6);"
-   "--x-progress-label-color:rgba(0,0,0,0.60);"
-   "--x-progress-value-color:rgba(0,0,0,0.50);}"
+   "--x-progress-label-color:var(--x-color-text-muted,rgba(0,0,0,0.60));"
+   "--x-progress-value-color:var(--x-color-text-muted,rgba(0,0,0,0.50));}"
    du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-progress-track-color:rgba(255,255,255,0.12);"
-   "--x-progress-label-color:rgba(255,255,255,0.60);"
-   "--x-progress-value-color:rgba(255,255,255,0.50);}}"
+   "--x-progress-track-color:var(--x-color-border,rgba(255,255,255,0.12));"
+   "--x-progress-label-color:var(--x-color-text-muted,rgba(255,255,255,0.60));"
+   "--x-progress-value-color:var(--x-color-text-muted,rgba(255,255,255,0.50));}}"
 
    ;; Size — sets height custom property
    "[part=base][data-size='sm']{--x-progress-height:4px;}"

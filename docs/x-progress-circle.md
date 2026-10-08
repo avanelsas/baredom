@@ -55,10 +55,10 @@ Fires once when `value >= max` (and not indeterminate). Resets when value drops 
 | Property                               | Default                  | Description                        |
 |----------------------------------------|--------------------------|------------------------------------|
 | `--x-progress-circle-size`             | `64px`                   | Outer diameter (overridden by size) |
-| `--x-progress-circle-track-color`      | `rgba(0,0,0,0.10)`       | Ring track color (adaptive dark)   |
+| `--x-progress-circle-track-color`      | `var(--x-color-border, rgba(0,0,0,0.10))`       | Ring track color (adaptive dark)   |
 | `--x-progress-circle-fill-color`       | `#3b82f6`                | Arc fill color (overridden by variant) |
 | `--x-progress-circle-stroke-width`     | `2.8`                    | SVG stroke width in viewBox units  |
-| `--x-progress-circle-value-color`      | `rgba(0,0,0,0.50)`       | Center text color (adaptive dark)  |
+| `--x-progress-circle-value-color`      | `var(--x-color-text-muted, rgba(0,0,0,0.50))`       | Center text color (adaptive dark)  |
 | `--x-progress-circle-transition-duration` | `0.3s`               | Transition speed for dashoffset    |
 
 ## Accessibility

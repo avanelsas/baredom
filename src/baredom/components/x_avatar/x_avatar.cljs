@@ -99,8 +99,8 @@
 
    ":host([data-variant='subtle']){"
    "--x-avatar-bg:rgba(0,0,0,0.03);"
-   "--x-avatar-border:rgba(0,0,0,0.08);"
-   "--x-avatar-color:rgba(0,0,0,0.55);}"
+   "--x-avatar-border:var(--x-color-border,rgba(0,0,0,0.08));"
+   "--x-avatar-color:var(--x-color-text-muted,rgba(0,0,0,0.55));}"
 
    "@media (prefers-color-scheme:dark){"
    ":host([data-variant='brand']){"
@@ -109,8 +109,8 @@
    "--x-avatar-color:rgba(210,235,255,0.92);}"
    ":host([data-variant='subtle']){"
    "--x-avatar-bg:rgba(255,255,255,0.04);"
-   "--x-avatar-border:rgba(255,255,255,0.08);"
-   "--x-avatar-color:rgba(255,255,255,0.50);}}"
+   "--x-avatar-border:var(--x-color-border,rgba(255,255,255,0.08));"
+   "--x-avatar-color:var(--x-color-text-muted,rgba(255,255,255,0.50));}}"
 
    "[part=root]{"
    "width:var(--x-avatar-size);"

@@ -55,7 +55,7 @@
    ":host{"
    "display:block;"
    "color-scheme:light dark;"
-   "--x-divider-color:rgba(0,0,0,0.12);"
+   "--x-divider-color:var(--x-color-border,rgba(0,0,0,0.12));"
    "--x-divider-thickness:1px;"
    "--x-divider-inset:0px;"
    "--x-divider-length:auto;}"
@@ -63,7 +63,7 @@
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-divider-color:rgba(255,255,255,0.15);}}"
+   "--x-divider-color:var(--x-color-border,rgba(255,255,255,0.15));}}"
 
    "[part=container]{"
    "display:flex;"

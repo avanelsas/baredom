@@ -44,19 +44,19 @@
    "display:inline-block;"
    "color-scheme:light dark;"
    "--x-rating-active-color:var(--x-color-warning,#f59e0b);"
-   "--x-rating-inactive-color:rgba(0,0,0,0.20);"
+   "--x-rating-inactive-color:var(--x-color-border,rgba(0,0,0,0.20));"
    "--x-rating-hover-color:var(--x-rating-active-color);"
    "--x-rating-focus-ring:var(--x-color-focus-ring,#60a5fa);"
    "--x-rating-disabled-opacity:0.45;"
-   "--x-rating-label-color:rgba(0,0,0,0.60);"
+   "--x-rating-label-color:var(--x-color-text-muted,rgba(0,0,0,0.60));"
    "}"
    du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-rating-inactive-color:rgba(255,255,255,0.22);"
+   "--x-rating-inactive-color:var(--x-color-border,rgba(255,255,255,0.22));"
    "--x-rating-focus-ring:var(--x-color-focus-ring,#93c5fd);"
-   "--x-rating-label-color:rgba(255,255,255,0.60);"
+   "--x-rating-label-color:var(--x-color-text-muted,rgba(255,255,255,0.60));"
    "}}"
 
    "[part=base]{"
