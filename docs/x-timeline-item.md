@@ -65,18 +65,18 @@ These are set by the future `x-timeline` parent and are observed for reactive re
 | Property                               | Default                                          | Description |
 |----------------------------------------|--------------------------------------------------|-------------|
 | `--x-timeline-item-marker-size`        | `2rem`                                           | Diameter of the marker circle |
-| `--x-timeline-item-marker-bg`          | per-status (see below)                           | Marker background color |
-| `--x-timeline-item-marker-color`       | per-status                                       | Marker icon/text color |
-| `--x-timeline-item-connector-color`    | per-status                                       | Color of the connector line |
+| `--x-timeline-item-marker-bg`          | `var(--x-color-border,rgba(0,0,0,0.06))`         | Marker background color |
+| `--x-timeline-item-marker-color`       | `var(--x-color-text-muted,rgba(0,0,0,0.45))`     | Marker icon/text color |
+| `--x-timeline-item-connector-color`    | `var(--x-color-border,rgba(0,0,0,0.12))`         | Color of the connector line |
 | `--x-timeline-item-connector-width`    | `2px`                                            | Width of the connector line |
 | `--x-timeline-item-gap`               | `0.75rem`                                        | Gap between marker and content, and between items |
 | `--x-timeline-item-label-width`        | `6rem`                                           | Width of the label column |
-| `--x-timeline-item-label-color`        | `rgba(0,0,0,0.5)` / dark: `rgba(255,255,255,0.5)` | Label text color |
-| `--x-timeline-item-label-font-size`    | `0.8125rem`                                      | Label font size |
-| `--x-timeline-item-title-font-size`    | `var(--x-font-size-sm, 0.9375rem)`               | Title font size |
-| `--x-timeline-item-stripe-bg`          | `rgba(0,0,0,0.025)`                              | Background when `data-striped` is present |
-| `--x-timeline-item-motion`             | `150ms`                                          | Transition duration for color changes |
-| `--x-timeline-item-enter-duration`     | `var(--x-transition-duration, 160ms)`            | Duration of the enter animation |
+| `--x-timeline-item-label-color`        | `var(--x-color-text-muted,rgba(0,0,0,0.5))` / dark: `rgba(255,255,255,0.5)` | Label text color |
+| `--x-timeline-item-label-font-size`    | `var(--x-font-size-sm,0.8125rem)`                | Label font size |
+| `--x-timeline-item-title-font-size`    | `var(--x-font-size-sm,0.9375rem)`                | Title font size |
+| `--x-timeline-item-stripe-bg`          | `var(--x-color-surface,rgba(0,0,0,0.025))`       | Background when `data-striped` is present |
+| `--x-timeline-item-motion`             | `var(--x-transition-duration,150ms)`             | Transition duration for color changes |
+| `--x-timeline-item-enter-duration`     | `var(--x-transition-duration,160ms)`             | Duration of the enter animation |
 
 ### Status color defaults
 

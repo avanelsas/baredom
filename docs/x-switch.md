@@ -83,11 +83,11 @@ el.addEventListener('x-switch-change', (e) => {
 | `--x-switch-track-height`       | `24px`        | Track height                        |
 | `--x-switch-thumb-size`         | `18px`        | Thumb diameter                      |
 | `--x-switch-thumb-offset`       | `3px`         | Thumb inset from track edge         |
-| `--x-switch-track-radius`       | `999px`       | Track border radius                 |
-| `--x-switch-track-bg`           | `#d1d5db`     | Track background (off)              |
-| `--x-switch-track-bg-checked`   | `#2563eb`     | Track background (on)               |
-| `--x-switch-thumb-bg`           | `#ffffff`     | Thumb background                    |
-| `--x-switch-focus-ring`         | `#60a5fa`     | Focus ring color                    |
+| `--x-switch-track-radius`       | `var(--x-radius-full,999px)` | Track border radius                 |
+| `--x-switch-track-bg`           | `var(--x-color-border,#d1d5db)` | Track background (off)              |
+| `--x-switch-track-bg-checked`   | `var(--x-color-primary,#2563eb)` | Track background (on)               |
+| `--x-switch-thumb-bg`           | `var(--x-color-bg,#ffffff)` | Thumb background                    |
+| `--x-switch-focus-ring`         | `var(--x-color-focus-ring,#60a5fa)` | Focus ring color                    |
 | `--x-switch-disabled-opacity`   | `0.45`        | Opacity when disabled               |
 
 Dark-mode overrides are applied automatically via `@media (prefers-color-scheme: dark)`.

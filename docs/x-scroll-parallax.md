@@ -71,7 +71,7 @@ A parallax scrolling container where slotted children move at different speeds r
 | Property                                 | Default | Description                                      |
 |------------------------------------------|---------|--------------------------------------------------|
 | `--x-scroll-parallax-perspective`        | `none`  | CSS perspective on viewport (e.g. `1000px`)      |
-| `--x-scroll-parallax-overflow`           | `hidden`| Viewport overflow (`visible` to allow overflow)  |
+| `--x-scroll-parallax-overflow`           | `hidden` | Viewport overflow (`visible` to allow overflow)  |
 | `--x-scroll-parallax-smooth-duration`    | `80ms`  | Transition duration when `easing="smooth"`       |
 | `--x-scroll-parallax-fade-range`         | `20%`   | Viewport fraction for opacity fade transition    |
 | `--x-scroll-parallax-scale-min`          | `0.85`  | Minimum scale for `data-scale="grow"`            |

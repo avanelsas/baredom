@@ -72,17 +72,17 @@ There is no built-in close button. Provide a close affordance in the `header` sl
 | Property                    | Light default                                        | Dark default                    | Description                                       |
 |-----------------------------|------------------------------------------------------|---------------------------------|---------------------------------------------------|
 | `--x-drawer-size`           | `20rem`                                              | *(same)*                        | Panel width (left/right) or height (top/bottom)   |
-| `--x-drawer-bg`             | `Canvas`                                             | `#1c1d24`                       | Panel background                                  |
-| `--x-drawer-fg`             | `CanvasText`                                         | `#e2e4ef`                       | Panel foreground                                  |
-| `--x-drawer-backdrop`       | `rgb(0 0 0 / 0.4)`                                   | `rgb(0 0 0 / 0.55)`             | Scrim color                                       |
-| `--x-drawer-shadow`         | `0 8px 24px rgb(0 0 0 / 0.18)`                       | `0 8px 40px rgb(0 0 0 / 0.55)`  | Panel box shadow                                  |
-| `--x-drawer-duration`       | `200ms`                                              | *(same)*                        | Slide animation duration                          |
-| `--x-drawer-easing`         | `var(--x-transition-easing, ease)`                   | *(same)*                        | Slide animation easing                            |
-| `--x-drawer-z`              | `var(--x-z-modal, 1000)`                                               | *(same)*                        | z-index base (panel is z+1)                       |
+| `--x-drawer-bg`             | `var(--x-color-bg,Canvas)`                           | `#1c1d24`                       | Panel background                                  |
+| `--x-drawer-fg`             | `var(--x-color-text,CanvasText)`                     | `#e2e4ef`                       | Panel foreground                                  |
+| `--x-drawer-backdrop`       | `rgb(0 0 0/0.4)`                                     | `rgb(0 0 0 / 0.55)`             | Scrim color                                       |
+| `--x-drawer-shadow`         | `var(--x-shadow-lg,0 8px 24px rgb(0 0 0/0.18))`      | `0 8px 40px rgb(0 0 0 / 0.55)`  | Panel box shadow                                  |
+| `--x-drawer-duration`       | `var(--x-transition-duration,200ms)`                 | *(same)*                        | Slide animation duration                          |
+| `--x-drawer-easing`         | `var(--x-transition-easing,ease)`                    | *(same)*                        | Slide animation easing                            |
+| `--x-drawer-z`              | `var(--x-z-modal,1000)`                                                | *(same)*                        | z-index base (panel is z+1)                       |
 | `--x-drawer-header-padding` | `1rem 1.25rem`                                       | *(same)*                        | Header slot wrapper padding                       |
 | `--x-drawer-body-padding`   | `1rem 1.25rem`                                       | *(same)*                        | Body slot wrapper padding                         |
 | `--x-drawer-footer-padding` | `0.75rem 1.25rem`                                    | *(same)*                        | Footer slot wrapper padding                       |
-| `--x-drawer-border`         | `color-mix(in srgb, currentColor 12%, transparent)`  | `rgb(255 255 255 / 0.08)`       | Separator border between header/body/footer       |
+| `--x-drawer-border`         | `var(--x-color-border,color-mix(in srgb,currentColor 12%,transparent))` | `rgb(255 255 255 / 0.08)`       | Separator border between header/body/footer       |
 
 ## Animation
 

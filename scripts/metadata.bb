@@ -180,13 +180,14 @@
 ;; that could disagree with it.
 
 (defn component-source
-  "Every .cljs in `dir`, concatenated. The custom properties are written into the
-   CSS the implementation installs, and a part is named in whichever file stamps
-   it, which for some components is the model."
+  "Every .cljs in `dir`, concatenated in the order of the file names. The custom
+   properties are written into the CSS the implementation installs, and a part is
+   named in whichever file stamps it, which for some components is the model."
   [dir]
   (->> (.listFiles ^java.io.File dir)
        (filter (fn [^java.io.File f]
                  (and (.isFile f) (str/ends-with? (.getName f) ".cljs"))))
+       (sort-by (fn [^java.io.File f] (.getName f)))
        (map slurp)
        (str/join "\n")))
 
@@ -287,10 +288,13 @@
 ;; ── Model discovery ─────────────────────────────────────────────────────────
 ;; Two passes: a tag cannot be attributed a custom property until every tag is
 ;; known, because ownership is decided by the longest tag that prefixes it.
-(defn- component-dirs []
+(defn- component-dirs
+  "The directories of the components, in the order of their names."
+  []
   (->> (.listFiles (io/file components-dir))
        (filter (fn [^java.io.File f] (.isDirectory f)))
-       (filter (fn [^java.io.File d] (.exists (io/file d "model.cljs"))))))
+       (filter (fn [^java.io.File d] (.exists (io/file d "model.cljs"))))
+       (sort-by (fn [^java.io.File d] (.getName d)))))
 
 (defn all-tag-names
   "Every tag the component directories declare."
@@ -299,12 +303,10 @@
         (component-dirs)))
 
 (defn discover-models
-  "Find all model.cljs files and extract metadata."
+  "Find all model.cljs files and extract metadata, in the order of the component names."
   []
-  (let [comps-dir (io/file components-dir)
-        tags      (all-tag-names)]
-    (->> (.listFiles comps-dir)
-         (filter #(.isDirectory %))
+  (let [tags (all-tag-names)]
+    (->> (component-dirs)
          (map (fn [dir]
                 (let [model-file (io/file dir "model.cljs")]
                   (when (.exists model-file)

@@ -59,24 +59,24 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 | `--x-select-height-sm`          | `2rem`                                | —                |
 | `--x-select-height-md`          | `2.5rem`                              | —                |
 | `--x-select-height-lg`          | `3rem`                                | —                |
-| `--x-select-radius`             | `0.5rem`                              | —                |
-| `--x-select-font-size-sm`       | `var(--x-font-size-xs, 0.75rem)`      | —                |
-| `--x-select-font-size-md`       | `0.875rem`                            | —                |
-| `--x-select-font-size-lg`       | `1rem`                                | —                |
+| `--x-select-radius`             | `var(--x-radius-md,0.5rem)`           | —                |
+| `--x-select-font-size-sm`       | `var(--x-font-size-xs,0.75rem)`       | —                |
+| `--x-select-font-size-md`       | `var(--x-font-size-sm,0.875rem)`      | —                |
+| `--x-select-font-size-lg`       | `var(--x-font-size-base,1rem)`        | —                |
 | `--x-select-padding-inline`     | `0.75rem`                             | —                |
-| `--x-select-bg`                 | `#ffffff`                             | `#1f2937`        |
-| `--x-select-bg-disabled`        | `#f8fafc`                             | `#111827`        |
-| `--x-select-fg`                 | `#0f172a`                             | `#f1f5f9`        |
-| `--x-select-fg-disabled`        | `#94a3b8`                             | —                |
-| `--x-select-placeholder-fg`     | `#94a3b8`                             | —                |
-| `--x-select-border`             | `#cbd5e1`                             | `#374151`        |
-| `--x-select-border-hover`       | `#94a3b8`                             | `#4b5563`        |
-| `--x-select-border-focus`       | `#3b82f6`                             | `#60a5fa`        |
-| `--x-select-chevron`            | `#64748b`                             | `#94a3b8`        |
-| `--x-select-focus-ring`         | `#93c5fd`                             | —                |
-| `--x-select-error-color`        | `#dc2626`                             | `#f87171`        |
-| `--x-select-shadow`             | `0 1px 2px rgba(15,23,42,0.06)`       | —                |
-| `--x-select-transition-duration`| `140ms`                               | —                |
+| `--x-select-bg`                 | `var(--x-color-bg,#ffffff)`           | `#1f2937`        |
+| `--x-select-bg-disabled`        | `var(--x-color-bg,#f8fafc)`           | `#111827`        |
+| `--x-select-fg`                 | `var(--x-color-text,#0f172a)`         | `#f1f5f9`        |
+| `--x-select-fg-disabled`        | `var(--x-color-text-muted,#94a3b8)`   | —                |
+| `--x-select-placeholder-fg`     | `var(--x-color-text-muted,#94a3b8)`   | —                |
+| `--x-select-border`             | `var(--x-color-border,#cbd5e1)`       | `#374151`        |
+| `--x-select-border-hover`       | `var(--x-color-border,#94a3b8)`       | `#4b5563`        |
+| `--x-select-border-focus`       | `var(--x-color-primary,#3b82f6)`      | `#60a5fa`        |
+| `--x-select-chevron`            | `var(--x-color-text-muted,#64748b)`   | `#94a3b8`        |
+| `--x-select-focus-ring`         | `var(--x-color-focus-ring,#93c5fd)`   | —                |
+| `--x-select-error-color`        | `var(--x-color-danger,#dc2626)`       | `#f87171`        |
+| `--x-select-shadow`             | `var(--x-shadow-sm,0 1px 2px rgba(15,23,42,0.06))` | —                |
+| `--x-select-transition-duration`| `var(--x-transition-duration,140ms)`  | —                |
 
 ## CSS Parts
 

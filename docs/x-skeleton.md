@@ -80,9 +80,9 @@ None. The component is purely presentational.
 
 | Property                    | Default (light)           | Default (dark)               | Description                          |
 |-----------------------------|---------------------------|------------------------------|--------------------------------------|
-| `--x-skeleton-color`        | `rgba(0,0,0,0.08)`        | `rgba(255,255,255,0.10)`     | Base fill color of the placeholder.  |
+| `--x-skeleton-color`        | `var(--x-color-border,rgba(0,0,0,0.08))` | `rgba(255,255,255,0.10)`     | Base fill color of the placeholder.  |
 | `--x-skeleton-highlight`    | `rgba(255,255,255,0.65)`  | `rgba(255,255,255,0.18)`     | Gradient highlight for wave animation. |
-| `--x-skeleton-border-radius`| `4px`                     | `4px`                        | Corner radius (overridden to `50%` for `circle`, `3px` for `text`). |
+| `--x-skeleton-border-radius`| `var(--x-radius-sm,4px)`  | `4px`                        | Corner radius (overridden to `50%` for `circle`, `3px` for `text`). |
 | `--x-skeleton-duration`     | `1.5s`                    | `1.5s`                       | Duration of the pulse or wave cycle. |
 
 ## Default sizing

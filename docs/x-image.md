@@ -92,18 +92,18 @@ When no `slot="error"` content is provided, a default `⚠ Image unavailable` me
 
 | Variable                        | Default                                  | Description                    |
 |---------------------------------|------------------------------------------|--------------------------------|
-| `--x-image-radius`              | `var(--x-radius-md, 8px)`                | Frame border radius            |
-| `--x-image-bg`                  | `var(--x-color-surface, #f3f4f6)`        | Frame background / placeholder |
+| `--x-image-radius`              | `var(--x-radius-md,8px)`                 | Frame border radius            |
+| `--x-image-bg`                  | `var(--x-color-surface,#f3f4f6)`         | Frame background / placeholder |
 | `--x-image-border`              | `0`                                      | Frame border shorthand         |
-| `--x-image-shimmer-color`       | `var(--x-color-border, rgba(0,0,0,.08))` | Shimmer base colour            |
-| `--x-image-shimmer-highlight`   | `rgba(255,255,255,.65)`                  | Shimmer sweep highlight        |
+| `--x-image-shimmer-color`       | `var(--x-color-border,rgba(0,0,0,0.08))` | Shimmer base colour            |
+| `--x-image-shimmer-highlight`   | `rgba(255,255,255,0.65)`                 | Shimmer sweep highlight        |
 | `--x-image-shimmer-duration`    | `1.5s`                                   | Shimmer animation duration     |
-| `--x-image-fade-duration`       | `var(--x-transition-duration, 200ms)`    | Fade-in duration               |
-| `--x-image-fade-easing`         | `var(--x-transition-easing, ease)`       | Fade-in easing                 |
-| `--x-image-text`                | `var(--x-color-text-muted, …)`           | Error text colour              |
-| `--x-image-font-family`         | `var(--x-font-family, …)`                | Error text font                |
-| `--x-image-font-size`           | `var(--x-font-size-sm, 0.875rem)`        | Error text size                |
-| `--x-image-error-gap`           | `var(--x-space-xs, 6px)`                 | Gap between glyph and text     |
+| `--x-image-fade-duration`       | `var(--x-transition-duration,200ms)`     | Fade-in duration               |
+| `--x-image-fade-easing`         | `var(--x-transition-easing,ease)`        | Fade-in easing                 |
+| `--x-image-text`                | `var(--x-color-text-muted,rgba(0,0,0,0.55))` | Error text colour              |
+| `--x-image-font-family`         | `var(--x-font-family,system-ui,sans-serif)` | Error text font                |
+| `--x-image-font-size`           | `var(--x-font-size-sm,0.875rem)`         | Error text size                |
+| `--x-image-error-gap`           | `var(--x-space-xs,6px)`                  | Gap between glyph and text     |
 
 Dark-mode variants for `--x-image-bg`, `--x-image-shimmer-*`, and `--x-image-text` are applied automatically via `@media (prefers-color-scheme: dark)`.
 

@@ -124,7 +124,7 @@ Fired on every `disconnectedCallback`.
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-table-cell-padding` | `0.5rem 0.75rem` | Cell padding. |
-| `--x-table-cell-border-width` | `var(--x-border-width, 1px)` | Border width (bottom border). |
+| `--x-table-cell-border-width` | `var(--x-border-width,1px)`  | Border width (bottom border). |
 | `--x-table-cell-min-width` | `0` | Minimum cell width. |
 | `--x-table-cell-max-width` | `none` | Maximum cell width. |
 
@@ -133,27 +133,27 @@ Fired on every `disconnectedCallback`.
 | Property | Default (light) | Default (dark) | Description |
 |----------|-----------------|----------------|-------------|
 | `--x-table-cell-bg` | `transparent` | `transparent` | Data cell background. |
-| `--x-table-cell-header-bg` | `color-mix(in srgb, var(--x-color-text, #000) 4%, transparent)` | `color-mix(in srgb, var(--x-color-text, #fff) 6%, transparent)` | Header cell background. |
-| `--x-table-cell-border-color` | `rgba(0,0,0,0.1)` | `rgba(255,255,255,0.1)` | Border color. |
-| `--x-table-cell-color` | `inherit` | `inherit` | Data cell text color. |
-| `--x-table-cell-header-color` | `inherit` | `inherit` | Header cell text color. |
-| `--x-table-cell-sort-color` | `rgba(0,0,0,0.4)` | `rgba(255,255,255,0.4)` | Sort icon default color. |
-| `--x-table-cell-sort-hover-color` | `rgba(0,0,0,0.7)` | `rgba(255,255,255,0.7)` | Sort icon hover color. |
-| `--x-table-cell-sticky-bg` | `#ffffff` | `#1f2937` | Sticky cell background (must be opaque). |
-| `--x-table-cell-focus-ring` | `rgba(59,130,246,0.5)` | same | Sort button focus ring. |
+| `--x-table-cell-header-bg` | `color-mix(in srgb,var(--x-color-text,#000) 4%,transparent)`    | `color-mix(in srgb, var(--x-color-text, #fff) 6%, transparent)` | Header cell background. |
+| `--x-table-cell-border-color` | `var(--x-color-border,rgba(0,0,0,0.1))` | `rgba(255,255,255,0.1)` | Border color. |
+| `--x-table-cell-color` | `var(--x-color-text,inherit)` | `inherit` | Data cell text color. |
+| `--x-table-cell-header-color` | `var(--x-color-text,inherit)` | `inherit` | Header cell text color. |
+| `--x-table-cell-sort-color` | `var(--x-color-text-muted,rgba(0,0,0,0.4))` | `rgba(255,255,255,0.4)` | Sort icon default color. |
+| `--x-table-cell-sort-hover-color` | `var(--x-color-text,rgba(0,0,0,0.7))` | `rgba(255,255,255,0.7)` | Sort icon hover color. |
+| `--x-table-cell-sticky-bg` | `var(--x-color-bg,#ffffff)` | `#1f2937` | Sticky cell background (must be opaque). |
+| `--x-table-cell-focus-ring` | `var(--x-color-focus-ring,rgba(59,130,246,0.5))` | same | Sort button focus ring. |
 
 ### Typography
 
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-table-cell-font-size` | `inherit` | Cell font size. |
-| `--x-table-cell-header-font-weight` | `var(--x-font-weight-semibold, 600)` | Header cell font weight. |
+| `--x-table-cell-header-font-weight` | `var(--x-font-weight-semibold,600)`  | Header cell font weight. |
 
 ### Motion
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `--x-table-cell-transition-duration` | `150ms` | Sort button color transition duration. |
+| `--x-table-cell-transition-duration` | `var(--x-transition-duration,150ms)` | Sort button color transition duration. |
 
 ### State
 

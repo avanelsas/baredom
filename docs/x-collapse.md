@@ -76,18 +76,18 @@ A disclosure widget that shows or hides a content panel via an animated toggle. 
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--x-collapse-border-radius` | `8px` | Corner radius of the outer container. |
-| `--x-collapse-border` | `var(--x-border-width, 1px) solid #e2e8f0` | Border of the outer container. |
-| `--x-collapse-bg` | `#ffffff` | Background of the outer container. |
-| `--x-collapse-trigger-bg` | `#f8fafc` | Background of the trigger button. |
-| `--x-collapse-trigger-bg-hover` | `#f1f5f9` | Trigger background on hover. |
-| `--x-collapse-trigger-color` | `#0f172a` | Trigger text colour. |
+| `--x-collapse-border-radius` | `var(--x-radius-md, 8px)` | Corner radius of the outer container. |
+| `--x-collapse-border` | `var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)` | Border of the outer container. |
+| `--x-collapse-bg` | `var(--x-color-surface, #ffffff)` | Background of the outer container. |
+| `--x-collapse-trigger-bg` | `var(--x-color-surface-hover, #f8fafc)` | Background of the trigger button. |
+| `--x-collapse-trigger-bg-hover` | `var(--x-color-surface-active,#f1f5f9)` | Trigger background on hover. |
+| `--x-collapse-trigger-color` | `var(--x-color-text, #0f172a)` | Trigger text colour. |
 | `--x-collapse-trigger-padding` | `0.75rem 1rem` | Padding inside the trigger button. |
 | `--x-collapse-content-padding` | `1rem` | Padding inside the content panel. |
-| `--x-collapse-font-size` | `var(--x-font-size-sm, 0.9375rem)` | Font size of the trigger label. |
-| `--x-collapse-font-weight` | `var(--x-font-weight-semibold, 600)` | Font weight of the trigger label. |
-| `--x-collapse-chevron-color` | `#64748b` | Colour of the chevron indicator. |
-| `--x-collapse-focus-ring` | `#60a5fa` | Inset focus ring colour on the trigger. |
+| `--x-collapse-font-size` | `var(--x-font-size-sm,0.9375rem)`  | Font size of the trigger label. |
+| `--x-collapse-font-weight` | `var(--x-font-weight-semibold,600)`  | Font weight of the trigger label. |
+| `--x-collapse-chevron-color` | `var(--x-color-text-muted, #64748b)` | Colour of the chevron indicator. |
+| `--x-collapse-focus-ring` | `var(--x-color-focus-ring, #60a5fa)` | Inset focus ring colour on the trigger. |
 
 ---
 

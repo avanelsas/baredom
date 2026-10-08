@@ -104,24 +104,24 @@ Token spans inside `line-content` carry classes `tok-comment`, `tok-string`,
 
 | Variable                    | Default                          | Description                  |
 |-----------------------------|----------------------------------|------------------------------|
-| `--x-code-bg`               | `var(--x-color-surface, …)`      | Block background.            |
-| `--x-code-fg`               | `var(--x-color-text, …)`         | Default text colour.         |
-| `--x-code-border`           | `var(--x-color-border, …)`       | Border colour.               |
-| `--x-code-muted`            | `var(--x-color-text-muted, …)`   | Gutter / badge colour.       |
-| `--x-code-radius`           | `var(--x-radius-md, 8px)`        | Corner radius.               |
-| `--x-code-font`             | `var(--x-font-family-mono, …)`   | Monospace font stack.        |
-| `--x-code-font-size`        | `var(--x-font-size-sm, 0.8125rem)` | Code font size.              |
+| `--x-code-bg`               | `var(--x-color-surface,#f6f8fa)` | Block background.            |
+| `--x-code-fg`               | `var(--x-color-text,#1f2328)`    | Default text colour.         |
+| `--x-code-border`           | `var(--x-color-border,#d0d7de)`  | Border colour.               |
+| `--x-code-muted`            | `var(--x-color-text-muted,#656d76)` | Gutter / badge colour.       |
+| `--x-code-radius`           | `var(--x-radius-md,8px)`         | Corner radius.               |
+| `--x-code-font`             | `var(--x-font-family-mono,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace)` | Monospace font stack.        |
+| `--x-code-font-size`        | `var(--x-font-size-sm,0.8125rem)`  | Code font size.              |
 | `--x-code-line-height`      | `1.6`                            | Code line height.            |
 | `--x-code-tab-size`         | `2`                              | Tab width.                   |
-| `--x-code-token-comment`    | grey                             | Comment colour.              |
-| `--x-code-token-string`     | green                            | String / template colour.    |
-| `--x-code-token-keyword`    | red                              | Keyword / at-rule colour.    |
-| `--x-code-token-number`     | blue                             | Number colour.               |
-| `--x-code-token-punct`      | muted                            | Punctuation colour.          |
-| `--x-code-token-tag`        | green                            | HTML tag colour.             |
-| `--x-code-token-property`   | blue                             | CSS property / JSON key.     |
-| `--x-code-token-attr-value` | dark blue                        | HTML attribute value.        |
-| `--x-code-token-entity`     | blue                             | HTML entity colour.          |
+| `--x-code-token-comment`    | `#6a737d`                        | Comment colour.              |
+| `--x-code-token-string`     | `#0a7d33`                        | String / template colour.    |
+| `--x-code-token-keyword`    | `#cf222e`                        | Keyword / at-rule colour.    |
+| `--x-code-token-number`     | `#0550ae`                        | Number colour.               |
+| `--x-code-token-punct`      | `#57606a`                        | Punctuation colour.          |
+| `--x-code-token-tag`        | `#116329`                        | HTML tag colour.             |
+| `--x-code-token-property`   | `#0550ae`                        | CSS property / JSON key.     |
+| `--x-code-token-attr-value` | `#0a3069`                        | HTML attribute value.        |
+| `--x-code-token-entity`     | `#0550ae`                        | HTML entity colour.          |
 
 All token colours have separate light and dark fallbacks via
 `@media (prefers-color-scheme: dark)` and can be overridden per instance.

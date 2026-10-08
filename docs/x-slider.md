@@ -83,16 +83,16 @@ All events bubble and are composed (cross shadow-DOM boundary).
 
 | Property | Default (light) | Description |
 |----------|----------------|-------------|
-| `--x-slider-track-color` | `var(--x-color-border, rgba(0,0,0,0.15))` | Unfilled track color |
-| `--x-slider-fill-color` | `#3b82f6` | Filled portion color |
-| `--x-slider-thumb-color` | `#ffffff` | Thumb background color |
-| `--x-slider-thumb-border` | `2px solid #3b82f6` | Thumb border |
-| `--x-slider-thumb-shadow` | `var(--x-shadow-sm, 0 1px 4px rgba(0,0,0,0.20))` | Thumb drop shadow |
-| `--x-slider-focus-ring` | `#60a5fa` | Focus ring color |
+| `--x-slider-track-color` | `var(--x-color-border,rgba(0,0,0,0.15))`  | Unfilled track color |
+| `--x-slider-fill-color` | `var(--x-color-primary,#3b82f6)` | Filled portion color |
+| `--x-slider-thumb-color` | `var(--x-color-surface,#ffffff)` | Thumb background color |
+| `--x-slider-thumb-border` | `2px solid var(--x-color-primary,#3b82f6)` | Thumb border |
+| `--x-slider-thumb-shadow` | `var(--x-shadow-sm,0 1px 4px rgba(0,0,0,0.20))`  | Thumb drop shadow |
+| `--x-slider-focus-ring` | `var(--x-color-focus-ring,#60a5fa)` | Focus ring color |
 | `--x-slider-disabled-opacity` | `0.45` | Opacity when disabled |
-| `--x-slider-label-color` | `var(--x-color-text-muted, rgba(0,0,0,0.60))` | Label text color |
-| `--x-slider-value-color` | `var(--x-color-text-muted, rgba(0,0,0,0.50))` | Value text color |
-| `--x-slider-radius` | `9999px` | Track and fill border-radius |
+| `--x-slider-label-color` | `var(--x-color-text-muted,rgba(0,0,0,0.60))`  | Label text color |
+| `--x-slider-value-color` | `var(--x-color-text-muted,rgba(0,0,0,0.50))`  | Value text color |
+| `--x-slider-radius` | `var(--x-radius-full,9999px)` | Track and fill border-radius |
 
 All properties have sensible dark-mode overrides applied automatically via `@media (prefers-color-scheme: dark)`.
 

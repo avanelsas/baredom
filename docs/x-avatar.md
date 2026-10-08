@@ -83,22 +83,22 @@ None. `x-avatar` is a display-only component.
 
 | Variable               | Default | Description                          |
 |------------------------|---------|--------------------------------------|
-| `--x-avatar-size`      | —       | Override avatar size completely      |
+| `--x-avatar-size`      | `var(--x-avatar-size-md)` | Override avatar size completely      |
 | `--x-avatar-size-xs`   | `20px`  | xs size token                        |
 | `--x-avatar-size-sm`   | `24px`  | sm size token                        |
 | `--x-avatar-size-md`   | `32px`  | md size token                        |
 | `--x-avatar-size-lg`   | `40px`  | lg size token                        |
 | `--x-avatar-size-xl`   | `48px`  | xl size token                        |
-| `--x-avatar-radius`    | `var(--x-radius-md, 10px)` | Border radius for `shape="rounded"`  |
+| `--x-avatar-radius`    | `var(--x-radius-md,10px)`  | Border radius for `shape="rounded"`  |
 
 ### Colour tokens (light mode defaults)
 
 | Variable                       | Default                        |
 |--------------------------------|--------------------------------|
-| `--x-avatar-bg`                | `rgba(0,0,0,0.06)`            |
-| `--x-avatar-border`            | `rgba(0,0,0,0.14)`            |
-| `--x-avatar-color`             | `rgba(0,0,0,0.86)`            |
-| `--x-avatar-ring`              | `#ffffff`                      |
+| `--x-avatar-bg`                | `var(--x-color-surface, rgba(0,0,0,0.06))` |
+| `--x-avatar-border`            | `var(--x-color-border, rgba(0,0,0,0.14))` |
+| `--x-avatar-color`             | `var(--x-color-text, rgba(0,0,0,0.86))` |
+| `--x-avatar-ring`              | `var(--x-color-bg, #ffffff)`   |
 | `--x-avatar-disabled-opacity`  | `0.55`                         |
 | `--x-avatar-status-online`     | `rgba(16,140,72,0.95)`        |
 | `--x-avatar-status-offline`    | `rgba(0,0,0,0.45)`            |

@@ -99,16 +99,16 @@ Calling `preventDefault()` on the event prevents the slide change.
 |-----------------------------------|----------------------------------------|----------------------|
 | `--x-carousel-height`            | `300px`                                | Viewport height      |
 | `--x-carousel-arrow-size`        | `40px`                                 | Arrow button size    |
-| `--x-carousel-arrow-bg`          | `var(--x-color-surface, ...)`          | Arrow background     |
-| `--x-carousel-arrow-color`       | `var(--x-color-text, ...)`             | Arrow icon color     |
-| `--x-carousel-arrow-hover-bg`    | `var(--x-color-surface-hover, ...)`    | Arrow hover bg       |
+| `--x-carousel-arrow-bg`          | `var(--x-color-surface,rgba(255,255,255,0.9))` | Arrow background     |
+| `--x-carousel-arrow-color`       | `var(--x-color-text,#1e293b)`          | Arrow icon color     |
+| `--x-carousel-arrow-hover-bg`    | `var(--x-color-surface-hover,rgba(255,255,255,1))` | Arrow hover bg       |
 | `--x-carousel-dot-size`          | `10px`                                 | Dot indicator size   |
-| `--x-carousel-dot-color`         | `var(--x-color-border, ...)`           | Inactive dot color   |
-| `--x-carousel-dot-active-color`  | `var(--x-color-primary, ...)`          | Active dot color     |
-| `--x-carousel-transition-duration`| `var(--x-transition-duration, 300ms)` | Slide/fade duration  |
-| `--x-carousel-radius`            | `var(--x-radius-md, 8px)`             | Border radius        |
+| `--x-carousel-dot-color`         | `var(--x-color-border,#cbd5e1)`        | Inactive dot color   |
+| `--x-carousel-dot-active-color`  | `var(--x-color-primary,#3b82f6)`       | Active dot color     |
+| `--x-carousel-transition-duration`| `var(--x-transition-duration,300ms)`  | Slide/fade duration  |
+| `--x-carousel-radius`            | `var(--x-radius-md,8px)`              | Border radius        |
 | `--x-carousel-gap`               | `16px`                                 | Dot gap spacing      |
-| `--x-carousel-focus-ring`        | `var(--x-color-focus-ring, #60a5fa)`   | Focus ring color     |
+| `--x-carousel-focus-ring`        | `var(--x-color-focus-ring,#60a5fa)`    | Focus ring color     |
 | `--x-carousel-disabled-opacity`  | `0.5`                                  | Opacity when disabled|
 
 ---

@@ -66,9 +66,9 @@ Fires when the user clicks or activates an `x-timeline-item` child. The coordina
 | Property                            | Default      | Description |
 |-------------------------------------|--------------|-------------|
 | `--x-timeline-gap`                  | `0`          | Gap between label and first item |
-| `--x-timeline-label-color`          | `inherit`    | Label text color |
-| `--x-timeline-label-font-size`      | `0.875rem`   | Label font size |
-| `--x-timeline-label-font-weight`    | `var(--x-font-weight-semibold, 600)` | Label font weight |
+| `--x-timeline-label-color`          | `var(--x-color-text,inherit)` | Label text color |
+| `--x-timeline-label-font-size`      | `var(--x-font-size-sm,0.875rem)` | Label font size |
+| `--x-timeline-label-font-weight`    | `var(--x-font-weight-semibold,600)`  | Label font weight |
 | `--x-timeline-label-padding`        | `0 0 0.5rem` | Label padding |
 
 ## Shadow DOM parts

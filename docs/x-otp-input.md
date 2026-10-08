@@ -84,17 +84,17 @@ This component does not expose any light-DOM slots. The visible slot inputs are 
 | Property                              | Default                                                                    | Description |
 |---------------------------------------|----------------------------------------------------------------------------|-------------|
 | `--x-otp-input-slot-size`             | `2.75rem`                                                                  | Width and height of each slot box. |
-| `--x-otp-input-gap`                   | `var(--x-space-sm, 0.5rem)`                                                | Gap between slots. |
-| `--x-otp-input-bg`                    | `var(--x-color-surface, #ffffff)`                                          | Slot background. |
-| `--x-otp-input-color`                 | `var(--x-color-text, #111827)`                                             | Slot text colour. |
-| `--x-otp-input-border`                | `var(--x-border-width, 1px) solid var(--x-color-border, #d1d5db)`                                 | Slot border. |
-| `--x-otp-input-border-radius`         | `var(--x-radius-md, 6px)`                                                  | Slot corner radius. |
-| `--x-otp-input-focus-ring-color`      | `var(--x-color-primary, #2563eb)`                                          | Focus border + ring colour. |
-| `--x-otp-input-error-color`           | `var(--x-color-danger, #dc2626)`                                           | Error border + ring colour. |
-| `--x-otp-input-disabled-opacity`      | `var(--x-opacity-disabled, 0.45)`                                          | Opacity for the disabled state. |
-| `--x-otp-input-font-family`           | `var(--x-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace)`| Slot font. |
+| `--x-otp-input-gap`                   | `var(--x-space-sm,0.5rem)`                                                 | Gap between slots. |
+| `--x-otp-input-bg`                    | `var(--x-color-surface,#ffffff)`                                           | Slot background. |
+| `--x-otp-input-color`                 | `var(--x-color-text,#111827)`                                              | Slot text colour. |
+| `--x-otp-input-border`                | `var(--x-border-width,1px) solid var(--x-color-border,#d1d5db)`                                   | Slot border. |
+| `--x-otp-input-border-radius`         | `var(--x-radius-md,6px)`                                                   | Slot corner radius. |
+| `--x-otp-input-focus-ring-color`      | `var(--x-color-primary,#2563eb)`                                           | Focus border + ring colour. |
+| `--x-otp-input-error-color`           | `var(--x-color-danger,#dc2626)`                                            | Error border + ring colour. |
+| `--x-otp-input-disabled-opacity`      | `var(--x-opacity-disabled,0.45)`                                           | Opacity for the disabled state. |
+| `--x-otp-input-font-family`           | `var(--x-font-family-mono,ui-monospace,SFMono-Regular,Menlo,monospace)`    | Slot font. |
 | `--x-otp-input-font-size`             | `1.25rem`                                                                  | Slot font size. |
-| `--x-otp-input-font-weight`           | `var(--x-font-weight-semibold, 600)`                                       | Slot font weight. |
+| `--x-otp-input-font-weight`           | `var(--x-font-weight-semibold,600)`                                        | Slot font weight. |
 
 ---
 

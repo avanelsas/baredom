@@ -76,13 +76,13 @@ el.addEventListener('x-radio-change', (e) => {
 |---|---|---|
 | `--x-radio-size` | `16px` | Width and height of the radio circle |
 | `--x-radio-border-width` | `2px` | Border thickness |
-| `--x-radio-border-color` | `#6b7280` | Border color (unchecked) |
-| `--x-radio-bg` | `#ffffff` | Background color |
-| `--x-radio-checked-color` | `#2563eb` | Border and dot color when checked |
+| `--x-radio-border-color` | `var(--x-color-border,#6b7280)` | Border color (unchecked) |
+| `--x-radio-bg` | `var(--x-color-surface,#ffffff)` | Background color |
+| `--x-radio-checked-color` | `var(--x-color-primary,#2563eb)` | Border and dot color when checked |
 | `--x-radio-dot-size` | `6px` | Inner dot diameter |
-| `--x-radio-focus-ring` | `#60a5fa` | Focus ring color |
+| `--x-radio-focus-ring` | `var(--x-color-focus-ring,#60a5fa)` | Focus ring color |
 | `--x-radio-disabled-opacity` | `0.45` | Opacity when disabled |
-| `--x-radio-transition` | `background 120ms ease, border-color 120ms ease` | Transition for state changes |
+| `--x-radio-transition` | `background var(--x-transition-duration,120ms) var(--x-transition-easing,ease),border-color var(--x-transition-duration,120ms) var(--x-transition-easing,ease)` | Transition for state changes |
 
 Dark mode overrides are applied automatically via `@media (prefers-color-scheme: dark)`.
 Animations are suppressed when `@media (prefers-reduced-motion: reduce)` is active.

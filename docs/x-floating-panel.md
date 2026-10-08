@@ -105,13 +105,13 @@ The built-in close button is excluded automatically.
 | `--x-floating-panel-min-width` | `12rem` | Minimum width when `resizable`. |
 | `--x-floating-panel-min-height` | `8rem` | Minimum height when `resizable`. |
 | `--x-floating-panel-handle-size` | `1.25rem` | Minimum height of the handle bar. |
-| `--x-floating-panel-bg` | `var(--x-color-bg, Canvas)` | Panel background. Always opaque — the panel floats over arbitrary content. |
-| `--x-floating-panel-fg` | `var(--x-color-text, CanvasText)` | Text colour. |
-| `--x-floating-panel-border` | `var(--x-color-border, …)` | Border and handle-bar divider. |
-| `--x-floating-panel-radius` | `var(--x-radius-lg, 12px)` | Corner radius. |
-| `--x-floating-panel-shadow` | `var(--x-shadow-lg, …)` | Drop shadow. |
-| `--x-floating-panel-duration` | `var(--x-transition-duration, 150ms)` | Open/close transition. |
-| `--x-floating-panel-accent` | `var(--x-color-primary, #2563eb)` | Focus-ring colour. |
+| `--x-floating-panel-bg` | `var(--x-color-bg,Canvas)`  | Panel background. Always opaque — the panel floats over arbitrary content. |
+| `--x-floating-panel-fg` | `var(--x-color-text,CanvasText)`  | Text colour. |
+| `--x-floating-panel-border` | `var(--x-color-border,color-mix(in srgb,currentColor 12%,transparent))` | Border and handle-bar divider. |
+| `--x-floating-panel-radius` | `var(--x-radius-lg,12px)`  | Corner radius. |
+| `--x-floating-panel-shadow` | `var(--x-shadow-lg,0 10px 25px rgb(15 23 42/0.18))` | Drop shadow. |
+| `--x-floating-panel-duration` | `var(--x-transition-duration,150ms)`  | Open/close transition. |
+| `--x-floating-panel-accent` | `var(--x-color-primary,#2563eb)`  | Focus-ring colour. |
 
 ## Positioning
 

@@ -85,6 +85,19 @@ jobs:
           bb scripts/audit_tokens.bb doc
           git diff --exit-code docs/TOKEN-COVERAGE.md || (echo "docs/TOKEN-COVERAGE.md is out of date. Run: bb scripts/audit_tokens.bb doc" && exit 1)
 
+      - name: Check the manifest is current
+        run: |
+          bb scripts/generate_types.bb
+          git diff --exit-code custom-elements.json src/baredom/requests.cljs || (echo "The manifest is out of date. Run: bb scripts/generate_types.bb" && exit 1)
+
+      - name: Test the script that writes defaults into the docs
+        run: bb scripts/sync_doc_defaults_test.bb
+
+      - name: Check the defaults in the component docs are current
+        run: |
+          bb scripts/sync_doc_defaults.bb
+          git diff --exit-code docs/ || (echo "A component doc states a stale default. Run: bb scripts/sync_doc_defaults.bb" && exit 1)
+
       - name: Build ESM library
         run: npm run build
 

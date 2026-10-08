@@ -43,18 +43,18 @@ When elements are assigned to the `icon` slot, the `has-icon` attribute is set o
 
 | Property                            | Light default   | Dark default    |
 |-------------------------------------|-----------------|-----------------|
-| `--x-menu-item-color`               | `#111827`       | `#f9fafb`       |
-| `--x-menu-item-hover-bg`            | `#f3f4f6`       | `#1f2937`       |
-| `--x-menu-item-focus-bg`            | `#eff6ff`       | `#1e3a5f`       |
-| `--x-menu-item-focus-color`         | `#1d4ed8`       | `#60a5fa`       |
+| `--x-menu-item-color`               | `var(--x-color-text,#111827)` | `#f9fafb`       |
+| `--x-menu-item-hover-bg`            | `var(--x-color-surface-hover,#f3f4f6)` | `#1f2937`       |
+| `--x-menu-item-focus-bg`            | `var(--x-color-surface-hover,#eff6ff)` | `#1e3a5f`       |
+| `--x-menu-item-focus-color`         | `var(--x-color-primary-hover,#1d4ed8)` | `#60a5fa`       |
 | `--x-menu-item-disabled-opacity`    | `0.45`          | `0.45`          |
-| `--x-menu-item-danger-color`        | `#dc2626`       | `#f87171`       |
+| `--x-menu-item-danger-color`        | `var(--x-color-danger,#dc2626)` | `#f87171`       |
 | `--x-menu-item-danger-hover-bg`     | `#fef2f2`       | `#2d1515`       |
 | `--x-menu-item-padding`             | `8px 12px`      | `8px 12px`      |
-| `--x-menu-item-border-radius`       | `4px`           | `4px`           |
-| `--x-menu-item-font-size`           | `var(--x-font-size-sm, 0.9375rem)` | `0.9375rem`     |
+| `--x-menu-item-border-radius`       | `var(--x-radius-sm,4px)` | `4px`           |
+| `--x-menu-item-font-size`           | `var(--x-font-size-sm,0.9375rem)`  | `0.9375rem`     |
 | `--x-menu-item-icon-gap`            | `8px`           | `8px`           |
-| `--x-menu-item-divider-color`       | `#e5e7eb`       | `#374151`       |
+| `--x-menu-item-divider-color`       | `var(--x-color-border,#e5e7eb)` | `#374151`       |
 
 ## Divider rendering
 

@@ -63,10 +63,10 @@ A viscous, floating navigation dock that uses SVG filters to create organic gooe
 
 | Property | Default (light) | Default (dark) | Description |
 |---|---|---|---|
-| `--x-liquid-dock-bg` | `var(--x-color-surface, rgba(255,255,255,0.88))` | `var(--x-color-surface, rgba(15,23,42,0.84))` | Dock background |
-| `--x-liquid-dock-color` | `#6366f1` | `#818cf8` | Liquid/accent color |
-| `--x-liquid-dock-border` | `var(--x-color-border, rgba(148,163,184,0.22))` | `var(--x-color-border, rgba(51,65,85,0.9))` | Border color |
-| `--x-liquid-dock-shadow` | `0 8px 24px rgba(15,23,42,0.12)` | `0 14px 36px rgba(0,0,0,0.35)` | Box shadow |
+| `--x-liquid-dock-bg` | `var(--x-color-surface,rgba(15,23,42,0.84))`     | `var(--x-color-surface, rgba(15,23,42,0.84))` | Dock background |
+| `--x-liquid-dock-color` | `var(--x-color-primary,#818cf8)` | `#818cf8` | Liquid/accent color |
+| `--x-liquid-dock-border` | `var(--x-color-border,rgba(51,65,85,0.9))`      | `var(--x-color-border, rgba(51,65,85,0.9))` | Border color |
+| `--x-liquid-dock-shadow` | `var(--x-shadow-lg,0 14px 36px rgba(0,0,0,0.35))` | `0 14px 36px rgba(0,0,0,0.35)` | Box shadow |
 | `--x-liquid-dock-z-index` | `50` | `50` | Stacking order |
 | `--x-liquid-dock-item-size` | `48px` | `48px` | Default item size |
 | `--x-liquid-dock-item-active-scale` | `1.3` | `1.3` | Scale factor for hovered item |

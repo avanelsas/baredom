@@ -40,7 +40,7 @@ None. `x-spinner` is a display-only component.
 
 | Property                    | Default              | Description                        |
 |-----------------------------|----------------------|------------------------------------|
-| `--x-spinner-size`          | size-enum driven     | Override ring diameter directly    |
+| `--x-spinner-size`          | `24px`               | Override ring diameter directly    |
 | `--x-spinner-color`         | `currentColor`       | Arc colour (overridden by variant) |
 | `--x-spinner-track-color`   | `rgba(0,0,0,0.12)`   | Background track colour            |
 | `--x-spinner-thickness`     | `2px`                | Border / stroke width              |

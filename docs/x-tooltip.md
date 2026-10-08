@@ -86,29 +86,29 @@ Fired after the tooltip is hidden. Not cancelable.
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `--x-tooltip-padding` | `var(--x-space-xs) var(--x-space-sm)` | Panel padding |
-| `--x-tooltip-radius` | `var(--x-radius-md, 6px)` | Border radius |
-| `--x-tooltip-max-width` | `min(200px, calc(100% - 2rem))` | Maximum width |
-| `--x-tooltip-font-size` | `var(--x-font-size-xs, 0.75rem)` | Font size |
+| `--x-tooltip-padding` | `var(--x-space-xs,4px) var(--x-space-sm,8px)` | Panel padding |
+| `--x-tooltip-radius` | `var(--x-radius-md,6px)`  | Border radius |
+| `--x-tooltip-max-width` | `min(280px,calc(100vw - 2rem))` | Maximum width |
+| `--x-tooltip-font-size` | `var(--x-font-size-xs,0.75rem)`  | Font size |
 | `--x-tooltip-arrow-size` | `6px` | Arrow size |
 | `--x-tooltip-offset` | `4px` | Gap between trigger and panel |
-| `--x-tooltip-z` | `var(--x-z-dropdown, 1000)` | z-index |
+| `--x-tooltip-z` | `var(--x-z-dropdown,1000)`  | z-index |
 
 ### Colors
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `--x-tooltip-bg` | `var(--x-color-bg, #ffffff)` | Panel background |
-| `--x-tooltip-text` | `var(--x-color-text, #0f172a)` | Text color |
-| `--x-tooltip-border` | `var(--x-border-width, 1px) solid var(--x-color-border, #e2e8f0)` | Panel border |
-| `--x-tooltip-shadow` | `var(--x-shadow-md, 0 4px 16px rgba(0,0,0,0.12))` | Box shadow |
+| `--x-tooltip-bg` | `var(--x-color-bg,#ffffff)`  | Panel background |
+| `--x-tooltip-text` | `var(--x-color-text,#0f172a)`  | Text color |
+| `--x-tooltip-border` | `var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)`   | Panel border |
+| `--x-tooltip-shadow` | `var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.12))`  | Box shadow |
 
 ### Motion
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `--x-tooltip-transition-duration` | `var(--x-transition-duration, 150ms)` | Transition duration |
-| `--x-tooltip-transition-easing` | `var(--x-transition-easing, ease)` | Transition easing |
+| `--x-tooltip-transition-duration` | `var(--x-transition-duration,150ms)`  | Transition duration |
+| `--x-tooltip-transition-easing` | `var(--x-transition-easing,ease)`  | Transition easing |
 
 ## Accessibility
 

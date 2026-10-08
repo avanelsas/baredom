@@ -131,9 +131,9 @@ When `mode="html"`:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--x-copy-tooltip-bg` | `#1a1a1a` (light) / `#f0f0f0` (dark) | Tooltip background color. |
-| `--x-copy-tooltip-fg` | `#f0f0f0` (light) / `#1a1a1a` (dark) | Tooltip text color. |
-| `--x-copy-tooltip-radius` | `4px` | Tooltip border-radius. |
+| `--x-copy-tooltip-bg` | `var(--x-color-bg,#1e293b)` (light) / `#f0f0f0` (dark) | Tooltip background color. |
+| `--x-copy-tooltip-fg` | `var(--x-color-text,#f8fafc)` (light) / `#1a1a1a` (dark) | Tooltip text color. |
+| `--x-copy-tooltip-radius` | `var(--x-radius-md,6px)` | Tooltip border-radius. |
 | `--x-copy-tooltip-offset` | `6px` | Gap between trigger and tooltip. |
 
 ---

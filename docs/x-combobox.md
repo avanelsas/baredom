@@ -121,34 +121,34 @@ Fired before the panel opens or closes. **Cancelable** — call `event.preventDe
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-combobox-height` | `2.25rem` | Input height |
-| `--x-combobox-radius` | `var(--x-radius-md, 6px)` | Border radius |
-| `--x-combobox-font-size` | `var(--x-font-size-sm, 0.9375rem)` | Font size |
+| `--x-combobox-radius` | `var(--x-radius-md,6px)`  | Border radius |
+| `--x-combobox-font-size` | `var(--x-font-size-sm,0.9375rem)`  | Font size |
 | `--x-combobox-padding` | `0 0.625rem` | Input padding |
 | `--x-combobox-panel-max-height` | `16rem` | Max dropdown height |
 | `--x-combobox-panel-offset` | `4px` | Gap between input and panel |
-| `--x-combobox-panel-radius` | `var(--x-radius-md, 8px)` | Panel border radius |
+| `--x-combobox-panel-radius` | `var(--x-radius-md,8px)`  | Panel border radius |
 | `--x-combobox-option-padding` | `0.5rem 0.625rem` | Option padding |
 
 ### Colors
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `--x-combobox-bg` | `var(--x-color-surface)` | Input background |
-| `--x-combobox-fg` | `var(--x-color-text)` | Text color |
-| `--x-combobox-placeholder` | `var(--x-color-text-muted)` | Placeholder color |
-| `--x-combobox-border` | `var(--x-border-width, 1px) solid var(--x-color-border)` | Input border |
-| `--x-combobox-focus-ring` | `var(--x-color-focus-ring)` | Focus ring color |
-| `--x-combobox-panel-bg` | `var(--x-color-bg)` | Panel background |
-| `--x-combobox-option-hover-bg` | `var(--x-color-surface-hover)` | Option hover |
-| `--x-combobox-option-active-bg` | `var(--x-color-primary)` | Active/highlighted option |
-| `--x-combobox-error-color` | `var(--x-color-danger)` | Inline error text + invalid border |
+| `--x-combobox-bg` | `var(--x-color-surface,#ffffff)` | Input background |
+| `--x-combobox-fg` | `var(--x-color-text,#0f172a)` | Text color |
+| `--x-combobox-placeholder` | `var(--x-color-text-muted,#94a3b8)` | Placeholder color |
+| `--x-combobox-border` | `var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)` | Input border |
+| `--x-combobox-focus-ring` | `var(--x-color-focus-ring,#60a5fa)` | Focus ring color |
+| `--x-combobox-panel-bg` | `var(--x-color-bg,#ffffff)` | Panel background |
+| `--x-combobox-option-hover-bg` | `var(--x-color-surface-hover,#f1f5f9)` | Option hover |
+| `--x-combobox-option-active-bg` | `var(--x-color-primary,#3b82f6)` | Active/highlighted option |
+| `--x-combobox-error-color` | `var(--x-color-danger,#dc2626)` | Inline error text + invalid border |
 
 ### Motion
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `--x-combobox-transition-duration` | `var(--x-transition-duration, 150ms)` | Animation duration |
-| `--x-combobox-transition-easing` | `var(--x-transition-easing, ease)` | Animation easing |
+| `--x-combobox-transition-duration` | `var(--x-transition-duration,150ms)`  | Animation duration |
+| `--x-combobox-transition-easing` | `var(--x-transition-easing,ease)`  | Animation easing |
 
 ## Accessibility
 

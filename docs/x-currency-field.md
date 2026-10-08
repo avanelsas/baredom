@@ -78,15 +78,15 @@ The `value` getter always returns the raw numeric string stored in the `value` a
 
 | Property                              | Default (light)      | Default (dark)       |
 |---------------------------------------|----------------------|----------------------|
-| `--x-currency-field-bg`               | `#ffffff`            | `#1f2937`            |
-| `--x-currency-field-color`            | `#111827`            | `#f9fafb`            |
-| `--x-currency-field-border`           | `var(--x-border-width, 1px) solid #d1d5db`  | `var(--x-border-width, 1px) solid #4b5563`  |
-| `--x-currency-field-border-radius`    | `6px`                | `6px`                |
-| `--x-currency-field-focus-ring-color` | `#2563eb`            | `#3b82f6`            |
-| `--x-currency-field-symbol-color`     | `#6b7280`            | `#9ca3af`            |
-| `--x-currency-field-label-color`      | `#374151`            | `#d1d5db`            |
-| `--x-currency-field-hint-color`       | `#6b7280`            | `#9ca3af`            |
-| `--x-currency-field-error-color`      | `#dc2626`            | `#f87171`            |
+| `--x-currency-field-bg`               | `var(--x-color-surface,#ffffff)` | `#1f2937`            |
+| `--x-currency-field-color`            | `var(--x-color-text,#111827)` | `#f9fafb`            |
+| `--x-currency-field-border`           | `var(--x-border-width,1px) solid var(--x-color-border,#d1d5db)` | `var(--x-border-width, 1px) solid #4b5563`  |
+| `--x-currency-field-border-radius`    | `var(--x-radius-md,6px)` | `6px`                |
+| `--x-currency-field-focus-ring-color` | `var(--x-color-primary,#2563eb)` | `#3b82f6`            |
+| `--x-currency-field-symbol-color`     | `var(--x-color-text-muted,#6b7280)` | `#9ca3af`            |
+| `--x-currency-field-label-color`      | `var(--x-color-text-muted,#374151)` | `#d1d5db`            |
+| `--x-currency-field-hint-color`       | `var(--x-color-text-muted,#6b7280)` | `#9ca3af`            |
+| `--x-currency-field-error-color`      | `var(--x-color-danger,#dc2626)` | `#f87171`            |
 | `--x-currency-field-disabled-opacity` | `0.45`               | `0.45`               |
 
 ## Validity states

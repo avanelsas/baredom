@@ -206,6 +206,11 @@ name is the attribute in camel case. `role`, `aria-` attributes and the attribut
 - **`docs/<name>.md`** — Developer documentation (API contract, a11y, examples)
 - **`demo/<name>.html`** — Standalone demo with live controls and event logging
 
+In a component doc, the default cell of a custom property is generated from the manifest. Run
+`bb scripts/generate_types.bb` and then `bb scripts/sync_doc_defaults.bb` after a change to a
+default. The row, its description and a dark column are written by hand. CI fails when a default
+cell is out of date.
+
 ### Shadow DOM and styling
 
 All components use open shadow DOM (`mode: "open"`). Styles are inline ClojureScript strings. CSS custom properties follow `--x-<component>-<property>` naming. Light/dark mode via `@media (prefers-color-scheme: dark)`. Animations must respect `@media (prefers-reduced-motion: reduce)`.

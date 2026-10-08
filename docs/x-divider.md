@@ -77,8 +77,8 @@ A themeable, accessible divider that separates content sections. Supports horizo
 
 | Variable                | Default                          | Description                          |
 |-------------------------|----------------------------------|--------------------------------------|
-| `--x-divider-color`     | `var(--x-color-border, rgba(0,0,0,0.12))` / dark-mode adjusted | Line color                  |
-| `--x-divider-thickness` | `var(--x-border-width, 1px)`                            | Line thickness                       |
+| `--x-divider-color`     | `var(--x-color-border,rgba(0,0,0,0.12))` / dark-mode adjusted  | Line color                  |
+| `--x-divider-thickness` | `var(--x-border-width,1px)`                             | Line thickness                       |
 | `--x-divider-inset`     | `0px`                            | Inset applied to both ends of the line |
 | `--x-divider-length`    | `auto`                           | Constrains the main-axis size        |
 

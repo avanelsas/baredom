@@ -38,15 +38,15 @@ None. `x-fieldset` is a structural container with no user interactions.
 
 | Property                          | Default (light)    | Dark override |
 |-----------------------------------|--------------------|---------------|
-| `--x-fieldset-border-color`       | `#d1d5db`          | `#374151`     |
-| `--x-fieldset-border-width`       | `var(--x-border-width, 1px)`              | —             |
-| `--x-fieldset-border-radius`      | `8px`              | —             |
+| `--x-fieldset-border-color`       | `var(--x-color-border, #d1d5db)` | `#374151`     |
+| `--x-fieldset-border-width`       | `var(--x-border-width,1px)`               | —             |
+| `--x-fieldset-border-radius`      | `var(--x-radius-md, 8px)` | —             |
 | `--x-fieldset-padding`            | `1rem`             | —             |
 | `--x-fieldset-gap`                | `0.75rem`          | —             |
-| `--x-fieldset-bg`                 | `transparent`      | —             |
-| `--x-fieldset-legend-color`       | `#374151`          | `#d1d5db`     |
-| `--x-fieldset-legend-font-size`   | `0.875rem`         | —             |
-| `--x-fieldset-legend-font-weight` | `var(--x-font-weight-semibold, 600)` | —             |
+| `--x-fieldset-bg`                 | `var(--x-color-surface,transparent)` | —             |
+| `--x-fieldset-legend-color`       | `var(--x-color-text-muted,#374151)` | `#d1d5db`     |
+| `--x-fieldset-legend-font-size`   | `var(--x-font-size-sm, 0.875rem)` | —             |
+| `--x-fieldset-legend-font-weight` | `var(--x-font-weight-semibold,600)`  | —             |
 | `--x-fieldset-legend-padding`     | `0 0.375rem`       | —             |
 | `--x-fieldset-disabled-opacity`   | `0.45`             | —             |
 
