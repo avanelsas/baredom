@@ -30,7 +30,7 @@
    "color-scheme:light dark;"
    "--x-table-cell-padding:0.5rem 0.75rem;"
    "--x-table-cell-bg:transparent;"
-   "--x-table-cell-header-bg:rgba(0,0,0,0.04);"
+   "--x-table-cell-header-bg:color-mix(in srgb,var(--x-color-text,#000) 4%,transparent);"
    "--x-table-cell-border-color:var(--x-color-border,rgba(0,0,0,0.1));"
    "--x-table-cell-border-width:1px;"
    "--x-table-cell-color:var(--x-color-text,inherit);"
@@ -52,7 +52,7 @@
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-table-cell-header-bg:rgba(255,255,255,0.06);"
+   "--x-table-cell-header-bg:color-mix(in srgb,var(--x-color-text,#fff) 6%,transparent);"
    "--x-table-cell-border-color:var(--x-color-border,rgba(255,255,255,0.1));"
    "--x-table-cell-sort-color:var(--x-color-text-muted,rgba(255,255,255,0.4));"
    "--x-table-cell-sort-hover-color:var(--x-color-text,rgba(255,255,255,0.7));"

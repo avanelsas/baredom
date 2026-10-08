@@ -19,7 +19,7 @@
    "box-sizing:border-box;"
    "color-scheme:light dark;"
    "--x-table-row-bg:transparent;"
-   "--x-table-row-hover-bg:rgba(0,0,0,0.03);"
+   "--x-table-row-hover-bg:color-mix(in srgb,var(--x-color-text,#000) 3%,transparent);"
    "--x-table-row-selected-bg:rgba(59,130,246,0.08);"
    "--x-table-row-selected-hover-bg:rgba(59,130,246,0.12);"
    "--x-table-row-focus-ring:var(--x-color-focus-ring,rgba(59,130,246,0.5));"
@@ -32,7 +32,7 @@
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-table-row-hover-bg:rgba(255,255,255,0.04);"
+   "--x-table-row-hover-bg:color-mix(in srgb,var(--x-color-text,#fff) 4%,transparent);"
    "--x-table-row-selected-bg:rgba(99,160,255,0.12);"
    "--x-table-row-selected-hover-bg:rgba(99,160,255,0.16);}}"
 

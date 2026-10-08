@@ -163,7 +163,6 @@
   [["x-button" "--x-button-danger-fg" "#ffffff"]
    ["x-button" "--x-button-fg" "#eff6ff"]
    ["x-button" "--x-button-fg" "#ffffff"]
-   ["x-button" "--x-button-fg-disabled" "#ffffff"]
    ["x-calendar" "--x-calendar-selected-text" "#fff"]
    ["x-cancel-dialogue" "--x-cancel-dialogue-confirm-fg" "#ffffff"]
    ["x-cancel-dialogue" "--x-cancel-dialogue-danger-fg" "#ffffff"]
@@ -178,7 +177,6 @@
    ["x-particle-button" "--x-particle-button-danger-fg" "#ffffff"]
    ["x-particle-button" "--x-particle-button-fg" "#eff6ff"]
    ["x-particle-button" "--x-particle-button-fg" "#ffffff"]
-   ["x-particle-button" "--x-particle-button-fg-disabled" "#ffffff"]
    ["x-particle-button" "--x-particle-button-success-fg" "#ffffff"]
    ["x-particle-button" "--x-particle-button-warning-fg" "#ffffff"]
    ["x-stepper" "--x-stepper-complete-color" "#000"]
@@ -235,4 +233,6 @@
    ["x-drawer" "--x-drawer-backdrop" "rgb(0 0 0/0.4)"]
    ["x-drawer" "--x-drawer-backdrop" "rgb(0 0 0/0.55)"]
    ["x-modal" "--x-modal-backdrop" "rgb(0 0 0/0.45)"]
-   ["x-sidebar" "--x-sidebar-backdrop" "rgb(0 0 0 / 0.4)"]]]]
+   ["x-sidebar" "--x-sidebar-backdrop" "rgb(0 0 0 / 0.4)"]]]
+ ["A mix of the text colour around it."
+  [["x-floating-panel" "background" "color-mix(in srgb,currentColor 12%,transparent)"]]]]

@@ -47,7 +47,7 @@
    "color-scheme:light dark;"
    "--x-table-border-color:var(--x-color-border,rgba(0,0,0,0.1));"
    "--x-table-border-radius:var(--x-radius-md,8px);"
-   "--x-table-stripe-bg:rgba(0,0,0,0.025);"
+   "--x-table-stripe-bg:color-mix(in srgb,var(--x-color-text,#000) 2.5%,transparent);"
    "--x-table-caption-color:var(--x-color-text,inherit);"
    "--x-table-caption-font-size:var(--x-font-size-sm,0.875rem);"
    "--x-table-caption-font-weight:var(--x-font-weight-semibold,600);"
@@ -58,7 +58,7 @@
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-table-border-color:var(--x-color-border,rgba(255,255,255,0.1));"
-   "--x-table-stripe-bg:rgba(255,255,255,0.03);}}"
+   "--x-table-stripe-bg:color-mix(in srgb,var(--x-color-text,#fff) 3%,transparent);}}"
 
    ":host([data-bordered]){"
    "border:1px solid var(--x-table-border-color);"

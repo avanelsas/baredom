@@ -59,6 +59,11 @@ All components must consume the shared design tokens defined by `x-theme` (`src/
 - **Overlays** (modals, drawers, menus, popovers, toasts, dropdowns, command palette): use `--x-color-bg` (always opaque), never `--x-color-surface` (can be semi-transparent in Aurora theme)
 - **Inline surfaces** (cards, fieldsets, collapse panels): use `--x-color-surface`
 
+## Hover and subtle fill rules
+
+- **On a surface the component paints itself** (a card, a menu panel, a picker): use `--x-color-surface-hover` for hover and `--x-color-surface-active` for press or for a subtle fill. On a panel painted with `--x-color-bg`, use `--x-color-surface-active` for hover, because the hover surface equals the background in some presets.
+- **On a background the component does not own** (a table row, a tab, a badge, a button on a tint): mix the text colour, so the fill stays see-through and contrasts with every theme. Write `color-mix(in srgb,var(--x-color-text,#000) 6%,transparent)`, with `#fff` as the fallback in the dark block.
+
 ## What NOT to theme
 
 - Decorative palette colours (e.g. x-liquid-fill gold)

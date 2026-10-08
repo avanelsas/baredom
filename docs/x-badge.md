@@ -118,7 +118,7 @@ A small indicator that displays a count, a text label, or a dot. Supports five s
 
 | Property               | Default (light)          | Description                    |
 |------------------------|--------------------------|--------------------------------|
-| `--x-badge-bg`         | `rgba(0,0,0,0.08)`       | Background colour              |
+| `--x-badge-bg`         | `color-mix(in srgb, var(--x-color-text, #000) 8%, transparent)`       | Background colour              |
 | `--x-badge-color`      | `rgba(0,0,0,0.80)`       | Text colour                    |
 | `--x-badge-border`     | `rgba(0,0,0,0.12)`       | Border colour                  |
 | `--x-badge-font-size`  | `var(--x-font-size-xs, 0.75rem)` | Font size (`sm`: `0.6875rem`)  |
