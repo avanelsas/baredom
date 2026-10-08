@@ -119,14 +119,14 @@ Dark-mode overrides for these tokens are set automatically via `@media (prefers-
 | `--x-alert-info-bg`         | `rgba(0,102,204,0.08)`           |
 | `--x-alert-info-border`     | `rgba(0,102,204,0.35)`           |
 | `--x-alert-info-color`      | `rgba(0,60,120,0.95)`            |
-| `--x-alert-success-bg`      | `rgba(16,140,72,0.10)`           |
-| `--x-alert-success-border`  | `rgba(16,140,72,0.35)`           |
+| `--x-alert-success-bg`      | `color-mix(in srgb, var(--x-color-success, rgb(16,140,72)) 10%, transparent)`           |
+| `--x-alert-success-border`  | `color-mix(in srgb, var(--x-color-success, rgb(16,140,72)) 35%, transparent)`           |
 | `--x-alert-success-color`   | `rgba(10,90,46,0.95)`            |
-| `--x-alert-warning-bg`      | `rgba(204,120,0,0.12)`           |
-| `--x-alert-warning-border`  | `rgba(204,120,0,0.45)`           |
+| `--x-alert-warning-bg`      | `color-mix(in srgb, var(--x-color-warning, rgb(204,120,0)) 12%, transparent)`           |
+| `--x-alert-warning-border`  | `color-mix(in srgb, var(--x-color-warning, rgb(204,120,0)) 45%, transparent)`           |
 | `--x-alert-warning-color`   | `rgba(120,70,0,0.95)`            |
-| `--x-alert-error-bg`        | `rgba(190,20,40,0.10)`           |
-| `--x-alert-error-border`    | `rgba(190,20,40,0.45)`           |
+| `--x-alert-error-bg`        | `color-mix(in srgb, var(--x-color-danger, rgb(190,20,40)) 10%, transparent)`           |
+| `--x-alert-error-border`    | `color-mix(in srgb, var(--x-color-danger, rgb(190,20,40)) 45%, transparent)`           |
 | `--x-alert-error-color`     | `rgba(120,10,20,0.95)`           |
 
 Dark-mode variants are set automatically via `@media (prefers-color-scheme: dark)`.

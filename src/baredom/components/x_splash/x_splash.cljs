@@ -83,13 +83,13 @@
 
    ;; Overlay: blur
    ":host([data-overlay='blur']) [part=overlay]{"
-   "background:rgba(255,255,255,0.7);"
+   "background:color-mix(in srgb,var(--x-color-bg,#fff) 70%,transparent);"
    "backdrop-filter:blur(var(--x-splash-blur-amount));"
    "-webkit-backdrop-filter:blur(var(--x-splash-blur-amount));}"
 
    "@media (prefers-color-scheme:dark){"
    ":host([data-overlay='blur']) [part=overlay]{"
-   "background:rgba(15,23,42,0.7);}}"
+   "background:color-mix(in srgb,var(--x-color-bg,rgb(15,23,42)) 70%,transparent);}}"
 
    ;; Overlay: transparent
    ":host([data-overlay='transparent']) [part=overlay]{"

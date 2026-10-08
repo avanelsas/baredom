@@ -98,7 +98,7 @@ Fired when a file is removed from the list.
 | `--x-file-upload-muted` | `var(--x-color-text-muted)` | Muted text color |
 | `--x-file-upload-border` | `2px dashed var(--x-color-border)` | Drop zone border |
 | `--x-file-upload-border-hover` | `2px dashed var(--x-color-primary)` | Hover/drag border |
-| `--x-file-upload-drag-bg` | `rgba(59,130,246,0.05)` | Drag-over background tint |
+| `--x-file-upload-drag-bg` | `color-mix(in srgb, var(--x-color-primary, rgb(59,130,246)) 5%, transparent)` | Drag-over background tint |
 | `--x-file-upload-radius` | `var(--x-radius-md, 8px)` | Border radius |
 | `--x-file-upload-padding` | `var(--x-space-lg, 24px)` | Drop zone padding |
 | `--x-file-upload-thumb-size` | `48px` | Thumbnail dimensions |

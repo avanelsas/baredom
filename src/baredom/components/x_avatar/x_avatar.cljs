@@ -93,8 +93,8 @@
    ":host([data-size='xl']){--x-avatar-size:var(--x-avatar-size-xl);--x-avatar-font-size:var(--x-font-size-lg,1.125rem);}"
 
    ":host([data-variant='brand']){"
-   "--x-avatar-bg:rgba(0,102,204,0.10);"
-   "--x-avatar-border:rgba(0,102,204,0.30);"
+   "--x-avatar-bg:color-mix(in srgb,var(--x-color-primary,rgb(0,102,204)) 10%,transparent);"
+   "--x-avatar-border:color-mix(in srgb,var(--x-color-primary,rgb(0,102,204)) 30%,transparent);"
    "--x-avatar-color:rgba(0,60,120,0.90);}"
 
    ":host([data-variant='subtle']){"
@@ -104,8 +104,8 @@
 
    "@media (prefers-color-scheme:dark){"
    ":host([data-variant='brand']){"
-   "--x-avatar-bg:rgba(80,160,255,0.18);"
-   "--x-avatar-border:rgba(80,160,255,0.40);"
+   "--x-avatar-bg:color-mix(in srgb,var(--x-color-primary,rgb(80,160,255)) 18%,transparent);"
+   "--x-avatar-border:color-mix(in srgb,var(--x-color-primary,rgb(80,160,255)) 40%,transparent);"
    "--x-avatar-color:rgba(210,235,255,0.92);}"
    ":host([data-variant='subtle']){"
    "--x-avatar-bg:color-mix(in srgb,var(--x-color-text,#fff) 4%,transparent);"
