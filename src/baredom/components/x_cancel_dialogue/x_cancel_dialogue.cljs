@@ -149,7 +149,7 @@
    "[part=body]{display:flex;flex-direction:column;gap:8px;}"
    "[part=message]{"
    "font-size:var(--x-cancel-dialogue-message-size);"
-   "line-height:1.5;"
+   "line-height:var(--x-line-height-normal,1.5);"
    "margin:0;"
    "opacity:0.8;"
    "}"
