@@ -162,14 +162,12 @@ document.body.appendChild(alert);
 
 ## Theming
 
-Every visual detail is exposed as a CSS custom property following the pattern `--x-<component>-<property>`. Override at any scope:
+Every visual detail is exposed as a CSS custom property following the pattern `--x-<component>-<property>`. Set it on the component itself, by tag, class or id. A value on `:root` or on a wrapper has no effect, because the component declares the property on itself.
 
 ```css
-/* Global overrides */
-:root {
-  --x-button-radius: 4px;
-  --x-alert-radius: 8px;
-}
+/* Every button and every alert */
+x-button { --x-button-radius: 4px; }
+x-alert  { --x-alert-radius: 8px; }
 
 /* Per-instance */
 .brand-button {
@@ -184,6 +182,8 @@ Every visual detail is exposed as a CSS custom property following the pattern `-
 ```
 
 All components support light and dark mode automatically via `prefers-color-scheme`. No JavaScript or class toggling required.
+
+For a whole site, use the tokens of [`<x-theme>`](./x-theme.md). The [styling guide](./styling.md) says which level to use and where each value goes.
 
 ### Shadow parts
 
