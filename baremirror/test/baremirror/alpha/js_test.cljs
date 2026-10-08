@@ -1,12 +1,7 @@
-(ns baremirror.js-test
-  (:require [baremirror.js :as mjs]
+(ns baremirror.alpha.js-test
+  (:require [baremirror.alpha.js :as mjs]
+            [baremirror.alpha.test-stage :refer [remove-stages! stage!]]
             [clojure.test :refer [deftest is testing use-fixtures]]))
-
-(def ^:private stage-attr "data-baremirror-js-test")
-
-(defn- remove-stages! []
-  (run! (fn [^js node] (.remove node))
-        (array-seq (.querySelectorAll js/document (str "[" stage-attr "]")))))
 
 (use-fixtures :each {:after remove-stages!})
 
@@ -14,8 +9,7 @@
   "The node of the fixed template `array`, in the document."
   [array]
   (let [node (mjs/make-node array)]
-    (.setAttribute node stage-attr "")
-    (.append (.-body js/document) node)
+    (.append (stage!) node)
     node))
 
 (defn- data
@@ -35,8 +29,8 @@
        #js ["b" text-of]
        #js ["button" #js {:on #js {"press" "remove"}} "Remove"]])
 
-(deftest split-returns-javascript-values
-  (let [^js row (mjs/split "row" (row-template))]
+(deftest split-template-returns-javascript-values
+  (let [^js row (mjs/split-template "row" (row-template))]
     (testing "the fixed template is an array with the part names"
       (is (= ["li"
               ["span" {"role" "checkbox" "data-x-part" "row.0"}]
@@ -76,12 +70,12 @@
 (defn- items [^js parent ks]
   [#js {:items #js {:parent parent}} #js {:items (into-array ks)}])
 
-(deftest sync-brings-a-parent-to-the-wanted-keys
+(deftest sync-places-brings-a-parent-to-the-wanted-keys
   (let [parent         (staged! #js ["ul"])
         [containers a] (items parent ["a" "b"])
         [_ b]          (items parent ["b" "a" "c"])
-        first-nodes    (mjs/sync containers a make-item)
-        later-nodes    (mjs/sync containers b make-item)]
+        first-nodes    (mjs/sync-places containers a make-item)
+        later-nodes    (mjs/sync-places containers b make-item)]
     (testing "the parent holds the wanted keys in order"
       (is (= ["b" "a" "c"] (keys-in parent))))
     (testing "the result is an object of key to node, and a node that stays is the same node"
@@ -96,19 +90,19 @@
     (is (= ["a" "b"] (keys-in parent)))
     (is (= #{"a" "b"} (set (js-keys nodes))))))
 
-(deftest write-applies-an-object-of-writes-to-an-object-of-parts
+(deftest write-parts-applies-an-object-of-writes-to-an-object-of-parts
   (let [node  (staged! #js ["div" #js ["b" #js {:data-x-part "count"} "0"]
                             #js ["i" #js {:data-x-part "state"}]])
         parts (mjs/read-parts node)]
-    (mjs/write parts #js {:count #js {:text 3} :state #js {:attrs #js {:hidden true}}})
+    (mjs/write-parts parts #js {:count #js {:text 3} :state #js {:attrs #js {:hidden true}}})
     (testing "text and attributes are written"
       (is (= "3" (.-textContent (.-count parts))))
       (is (= "" (.getAttribute (.-state parts) "hidden"))))
     (testing "a text of null clears the part"
-      (mjs/write parts #js {:count #js {:text nil}})
+      (mjs/write-parts parts #js {:count #js {:text nil}})
       (is (= "" (.-textContent (.-count parts)))))
     (testing "a part name that no node has is refused"
-      (is (thrown? ExceptionInfo (mjs/write parts #js {:gone #js {:text "x"}}))))))
+      (is (thrown? ExceptionInfo (mjs/write-parts parts #js {:gone #js {:text "x"}}))))))
 
 (deftest set-attrs-takes-an-object
   (let [node (mjs/make-node #js ["div" #js {:hidden true}])]
@@ -155,7 +149,7 @@
       (is (= [["remove" "t1"] ["toggle" 1]] (mapv data @messages))))))
 
 (deftest a-meaning-with-a-function-in-a-template-reaches-the-dispatch-function
-  (let [^js tag  (mjs/split "tag" #js ["button" #js {:on #js {"click" #js ["untag" key-count]}} "x"])
+  (let [^js tag  (mjs/split-template "tag" #js ["button" #js {:on #js {"click" #js ["untag" key-count]}} "x"])
         button   (staged! (.-fixed tag))
         messages (atom [])]
     (mjs/listen button #js {:dispatch (partial swap! messages conj) :events (.-events tag)})

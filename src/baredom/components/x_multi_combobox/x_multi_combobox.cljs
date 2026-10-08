@@ -6,7 +6,7 @@
             [baredom.utils.dom :as du]
             [baredom.utils.forms :as forms]
             [baredom.utils.overlay :as overlay]
-            [baremirror.core :as mirror]
+            [baremirror.alpha.places :as places]
             [clojure.string :as str]))
 
 ;; ---------------------------------------------------------------------------
@@ -466,7 +466,7 @@
 (defn- chip-nodes
   "The node of each chip, by value."
   [refs]
-  (:nodes (mirror/read-places (chip-containers refs))))
+  (:nodes (places/read-places (chip-containers refs))))
 
 (defn- chip-of
   "The chip that shows `value`."
@@ -502,7 +502,7 @@
   (when-let [refs (du/getv el k-refs)]
     (run! (partial keep-focus! el) (leaving-chips refs value-set))
     (let [values (vec (sort value-set))
-          nodes  (mirror/sync! (chip-containers refs) {:chips values} make-chip!)]
+          nodes  (places/sync! (chip-containers refs) {:chips values} make-chip!)]
       (run! (partial apply-chip! (du/getv el k-options) disabled? nodes) values))))
 
 ;; ---------------------------------------------------------------------------
@@ -559,7 +559,7 @@
                              (or (du/getv el k-query) "")
                              (du/getv el k-active-idx)
                              (read-model el))
-          nodes (mirror/sync! {:panel {:parent panel-el}} {:panel (mapv :key items)}
+          nodes (places/sync! {:panel {:parent panel-el}} {:panel (mapv :key items)}
                               make-panel-item!)]
       (run! (partial apply-panel-item! nodes) items)
       (du/set-attr-to! input-el attr-aria-activedescendant active-id))))
@@ -687,7 +687,7 @@
   "Gives `chip` up and writes the values that remain. The chip stays in the page to fade."
   [^js el ^js chip remaining]
   (keep-focus! el chip)
-  (mirror/release! chip)
+  (places/release! chip)
   (commit-values! el remaining))
 
 (defn- remove-item!

@@ -3,7 +3,7 @@
             [baredom.utils.dom :as du]
             [baredom.utils.dates :as dates]
             [baredom.utils.forms :as forms]
-            [baremirror.core :as mirror]
+            [baremirror.alpha.places :as places]
             [goog.object :as gobj]
             [baredom.utils.model :as mu]
             [baredom.components.x-date-picker.model :as model]))
@@ -103,7 +103,7 @@
   (let [state     (du/getv el k-state)
         ^js month (when state (gobj/get state "month"))
         days      (model/shown-days month canon (du/getv el k-grid-focus))
-        nodes     (mirror/sync! {:days {:parent grid}} {:days (mapv :key days)} make-day-cell!)]
+        nodes     (places/sync! {:days {:parent grid}} {:days (mapv :key days)} make-day-cell!)]
     (run! (partial apply-day-cell! nodes) days)))
 
 (defn- focus-grid-date!

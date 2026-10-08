@@ -4,8 +4,8 @@
             [goog.object :as gobj]
             [baredom.components.x-file-upload.model :as model]
             [baredom.utils.dom :as du]
-            [baremirror.core :as mirror]
-            [baremirror.plan :as plan]))
+            [baremirror.alpha.places :as places]
+            [baremirror.alpha.plan :as plan]))
 
 ;; ---------------------------------------------------------------------------
 ;; Instance field keys
@@ -368,11 +368,11 @@
   "Brings the rows of `file-list` to what `shown` gives for `files`. A row that stays keeps its
    node and its thumbnail, and a row that leaves gives the blob URL of its thumbnail back."
   [^js file-list files shown]
-  (let [reading (mirror/read-places {:files {:parent file-list}})
+  (let [reading (places/read-places {:files {:parent file-list}})
         steps   (plan/plan (:places reading) {:files (mapv :key shown)})
         make    (partial make-file-item! (zipmap (map :key shown) files))]
     (run! (comp revoke-thumbnail! (:nodes reading)) (:remove steps))
-    (run! (partial apply-file-item! (mirror/perform! reading steps make)) shown)))
+    (run! (partial apply-file-item! (places/perform! reading steps make)) shown)))
 
 (defn- render-file-list! [^js el]
   (when-let [refs (du/getv el k-refs)]

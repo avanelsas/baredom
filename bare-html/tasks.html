@@ -52,8 +52,8 @@
     import { init as initFormField } from '../dist/x-form-field.js';
     import { init as initSelect }    from '../dist/x-select.js';
     import { init as initSwitch }    from '../dist/x-switch.js';
-    import { split, makeNode, readParts, sync, write, listen, dispatcher }
-      from '../dist/baremirror.js';
+    import { splitTemplate, makeNode, readParts, syncPlaces, writeParts, listen, dispatcher }
+      from '../dist/baremirror-alpha.js';
     import { requests } from '../dist/requests.js';
 
     [initButton, initCheckbox, initFormField, initSelect, initSwitch].forEach(init => init());
@@ -102,7 +102,7 @@
 
     // 2. One template for a row: its shape, its holes and what its events mean.
 
-    const row = split('row',
+    const row = splitTemplate('row',
       ['li',
         ['x-checkbox', { checked: task => task.done, 'aria-label': task => task.text,
                          on: { 'x-checkbox-change-request': 'toggle' } }],
@@ -140,9 +140,9 @@
 
     function render(vm) {
       const parts = readParts(page);
-      const nodes = sync({ tasks: { parent: parts.tasks } }, { tasks: vm.order }, makeRow);
-      write(parts, vm.fixed);
-      vm.order.forEach(key => write(readParts(nodes[key]), vm.rows[key]));
+      const nodes = syncPlaces({ tasks: { parent: parts.tasks } }, { tasks: vm.order }, makeRow);
+      writeParts(parts, vm.fixed);
+      vm.order.forEach(key => writeParts(readParts(nodes[key]), vm.rows[key]));
     }
 
     // The wiring: one place for the state, one table of events.

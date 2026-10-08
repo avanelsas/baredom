@@ -2,7 +2,8 @@
   (:require [baredom.components.x-checkbox.model :as checkbox-model]
             [baredom.components.x-checkbox.x-checkbox :as x-checkbox]
             [baredom.requests :as requests]
-            [baremirror.core :as mirror]
+            [baremirror.alpha.events :as events]
+            [baremirror.alpha.parts :as parts]
             [cljs.test :refer-macros [deftest is testing use-fixtures]]))
 
 (x-checkbox/init!)
@@ -18,7 +19,7 @@
 (defn- page!
   "A page in the document with one x-checkbox as the part `check`."
   []
-  (let [page (mirror/make-node! [:div {page-attr ""} [:x-checkbox {:data-x-part "check"}]])]
+  (let [page (parts/make-node! [:div {page-attr ""} [:x-checkbox {:data-x-part "check"}]])]
     (.append (.-body js/document) page)
     page))
 
@@ -29,7 +30,7 @@
   (assoc state :refused? true))
 
 (defn- render-check! [^js checkbox {:keys [checked? refused?]}]
-  (mirror/set-attrs! checkbox {:checked checked? :data-refused refused?}))
+  (parts/set-attrs! checkbox {:checked checked? :data-refused refused?}))
 
 (defn- after-a-click
   "What the x-checkbox of a page shows after a click, with `step` as the application."
@@ -37,7 +38,7 @@
   (let [page     (page!)
         checkbox (.-firstElementChild page)
         state    (atom {:checked? false})]
-    (mirror/listen! page {:dispatch! (mirror/dispatcher state step identity
+    (events/listen! page {:dispatch! (events/dispatcher state step identity
                                                         (partial render-check! checkbox))
                           :requests  requests/requests
                           :events    {[checkbox-model/event-change-request "check"] :toggle}})

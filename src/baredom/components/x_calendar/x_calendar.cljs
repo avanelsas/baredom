@@ -7,7 +7,7 @@
             [baredom.utils.dom :as du]
             [baredom.utils.dates :as dates]
             [baredom.components.x-calendar.model :as model]
-            [baremirror.core :as mirror]
+            [baremirror.alpha.places :as places]
             [goog.object :as gobj]))
 
 ;; ── Instance-field keys ──────────────────────────────────────────────────────
@@ -377,7 +377,7 @@
   (let [^js grid  (gobj/get (du/getv el k-refs) rk-grid)
         today-iso (dates/date->iso (js/Date. (js/Date.now)))
         {:keys [cells focus-iso]} (model/shown-grid m today-iso (du/getv el k-grid-focus))
-        nodes     (mirror/sync! {:cells {:parent grid}} {:cells (mapv :key cells)}
+        nodes     (places/sync! {:cells {:parent grid}} {:cells (mapv :key cells)}
                                 make-grid-cell!)]
     (run! (partial apply-grid-cell! nodes) cells)
     (du/setv! el k-grid-focus focus-iso)))

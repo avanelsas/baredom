@@ -3,7 +3,7 @@
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
    [baredom.utils.forms :as forms]
-   [baremirror.core :as mirror]
+   [baremirror.alpha.places :as places]
    [goog.object :as gobj]
    [baredom.components.x-combobox.model :as model]))
 
@@ -457,7 +457,7 @@
                              (or (du/getv el k-query) "")
                              (or (du/getv el k-active-idx) 0)
                              (or (du/get-attr el model/attr-value) ""))
-          nodes (mirror/sync! {:panel {:parent panel-el}} {:panel (mapv :key items)}
+          nodes (places/sync! {:panel {:parent panel-el}} {:panel (mapv :key items)}
                               make-panel-item!)]
       (run! (partial apply-panel-item! nodes) items)
       (du/set-attr-to! input-el attr-aria-activedescendant active-id))))

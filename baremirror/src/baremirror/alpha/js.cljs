@@ -1,9 +1,12 @@
-(ns baremirror.js
+(ns baremirror.alpha.js
   "The functions for JavaScript. JavaScript values go in and come out: a template is an array,
    attributes and containers are objects, and a hole is a function."
-  (:require [baremirror.core :as mirror]
-            [baremirror.plan :as places-plan]
-            [baremirror.template :as template]))
+  (:require [baremirror.alpha.element :as mirror-element]
+            [baremirror.alpha.events :as mirror-events]
+            [baremirror.alpha.parts :as mirror-parts]
+            [baremirror.alpha.places :as mirror-places]
+            [baremirror.alpha.plan :as places-plan]
+            [baremirror.alpha.template :as template]))
 
 (defn- own-entry [^js o k]
   [k (unchecked-get o k)])
@@ -55,7 +58,7 @@
           (map (partial ->child hole))
           (if attrs (rest more) more))))
 
-(defn split
+(defn split-template
   "Splits the template `array`. Returns a frozen object with `fixed`, `holes`, `events` as pairs
    of an event type with a part name and a meaning, and `writes`, a function of an item."
   [template-name array]
@@ -68,12 +71,12 @@
 (defn make-node
   "Makes one detached HTML element from the fixed template `array`."
   [array]
-  (mirror/make-node! (->template identity array)))
+  (mirror-parts/make-node! (->template identity array)))
 
 (defn read-parts
   "The parts of `node` as an object of part name to node."
   [node]
-  (clj->js (mirror/read-parts node)))
+  (clj->js (mirror-parts/read-parts node)))
 
 (defn- ->write
   "One write: `text` when the object has it, and `attrs` as a map."
@@ -82,30 +85,30 @@
     (js-in "text" write)        (assoc :text (.-text write))
     (some? (.-attrs write))     (assoc :attrs (object-map (.-attrs write)))))
 
-(defn write
+(defn write-parts
   "Applies the object `writes` to the object `parts`, both by part name."
   [parts writes]
-  (mirror/write! (object-map parts) (update-vals (object-map writes) ->write)))
+  (mirror-parts/write-parts! (object-map parts) (update-vals (object-map writes) ->write)))
 
 (defn set-text
   "Makes `text` the whole content of `el`, and writes only where it differs."
   [el text]
-  (mirror/set-text! el text))
+  (mirror-parts/set-text! el text))
 
 (defn with-one-render
   "Calls `f` with `el` while `el` holds its attribute changes, when it offers that."
   [el f]
-  (mirror/with-one-render! el f))
+  (mirror-parts/with-one-render! el f))
 
 (defn release
   "Gives `node` up: it keeps its place in the document and loses its key."
   [node]
-  (mirror/release! node))
+  (mirror-places/release! node))
 
 (defn set-attrs
   "Brings the attributes of `el` that the object `attrs` names to their values."
   [el attrs]
-  (mirror/set-attrs! el (object-map attrs)))
+  (mirror-parts/set-attrs! el (object-map attrs)))
 
 (defn- ->container [^js container]
   {:parent (.-parent container) :before (.-before container)})
@@ -137,19 +140,19 @@
   "The current places of `containers`, with the node of each key: an object with `containers`,
    `places` and `nodes`."
   [containers]
-  (clj->js (mirror/read-places (->containers containers))))
+  (clj->js (mirror-places/read-places (->containers containers))))
 
 (defn perform
   "Performs the plan `steps` on what `read-places` returned, with `make` making the node of a
    new key. Returns an object of key to node."
   [reading steps make]
-  (clj->js (mirror/perform! (->reading reading) (->plan steps) make)))
+  (clj->js (mirror-places/perform! (->reading reading) (->plan steps) make)))
 
-(defn sync
+(defn sync-places
   "Brings `containers` to the `wanted` places, with `make` making the node of a new key.
    Returns an object of key to node."
   [containers wanted make]
-  (clj->js (mirror/sync! (->containers containers) (->places wanted) make)))
+  (clj->js (mirror-places/sync! (->containers containers) (->places wanted) make)))
 
 (defn- origin->js [{:keys [key-path part node]}]
   #js {:keyPath (clj->js key-path) :part part :node node})
@@ -157,7 +160,7 @@
 (defn read-origin
   "The origin of the event `e`: an object with `keyPath`, `part` and `node`."
   [e]
-  (origin->js (mirror/read-origin e)))
+  (origin->js (mirror-events/read-origin e)))
 
 (defn- ->arg-of
   "A function of an origin and an event that gives `f` the origin as an object."
@@ -185,7 +188,7 @@
    pairs of an event type with a part name and a meaning, and `requests`, an object from an event
    type to the attributes it asks to change."
   [root ^js options]
-  (mirror/listen! root {:dispatch! (->message-handler (.-dispatch options))
+  (mirror-events/listen! root {:dispatch! (->message-handler (.-dispatch options))
                         :events    (->events (.-events options))
                         :requests  (update-vals (object-map (.-requests options)) vec)}))
 
@@ -202,7 +205,7 @@
   "A function of a message. It puts `step(store.value, message)` into `store.value`, renders the
    view of what `store` then holds, and returns the new state."
   [store step view render]
-  (mirror/dispatcher (holder store) step view render))
+  (mirror-events/dispatcher (holder store) step view render))
 
 (defn- with-object-item
   "A hole that gives `f` its item as an object."
@@ -212,6 +215,6 @@
 (defn define-element
   "Registers `tag` as an element with no state, from an object with `attrs`, `template` and `css`."
   [tag ^js options]
-  (mirror/define-element! tag {:attrs    (vec (.-attrs options))
+  (mirror-element/define-element! tag {:attrs    (vec (.-attrs options))
                                :template (->template with-object-item (.-template options))
                                :css      (.-css options)}))

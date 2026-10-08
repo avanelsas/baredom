@@ -1,6 +1,6 @@
-(ns baremirror.plan-test
-  (:require [baremirror.generators :as generators]
-            [baremirror.plan :as plan]
+(ns baremirror.alpha.plan-test
+  (:require [baremirror.alpha.generators :as generators]
+            [baremirror.alpha.plan :as plan]
             [clojure.test :refer [deftest is testing]]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]

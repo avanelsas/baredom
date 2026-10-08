@@ -118,7 +118,7 @@ Reference by name when discussing architecture:
   - Don't invent a third shape — pick whichever matches the removability requirement.
 - **`form-validity`** — a form-associated control composes `baredom.utils.forms` for its ElementInternals constraint validation rather than hand-writing the `error → customError` / `required+empty → valueMissing` / `else → clear` decision. The decision is a pure function (`forms/validity`) split from its effect (`forms/set-validity!`/`forms/sync!`); the component supplies only its per-control variation (empty predicate, anchor, value, non-default message). The popup-selection controls additionally compose `forms/apply-error-display!` + the pure `forms/error-describedby` for the inline `[part=error]` / `data-invalid` / `aria-invalid` / `aria-describedby` recipe. Golden samples: `x-select` (`forms/sync!` + `forms/apply-error-display!`), `x-form-field` (`forms/set-validity!`; keeps its own labeled-field error display). A form-associated control also installs the instance-level validation API via `forms/install-validity-api!` — see the shared-utilities list below.
 - **`keyed-list`**: a list in a component whose items come and go. The model gives each item a
-  `:key`. The component hands the keys to `mirror/sync!` with a function that makes the node of
+  `:key`. The component hands the keys to `places/sync!` with a function that makes the node of
   a new key, then brings each node to its item with `du/set-attr-to!`. A node that stays is never
   made again, so it keeps focus and state. References: `x-pagination` (`render-items!`),
   `x-multi-combobox` (`render-chips!`).
@@ -167,7 +167,7 @@ Use `component/register!` with a declarative options map. **Do not create `eleme
 
 - Only add manual `.defineProperty` for properties with custom getter/setter logic
 - Use `this-as` inside property setter bodies — never reference `this` directly
-- **Forbidden:** manual `element-class` with `js*`, `js/Reflect.construct` with atoms, manual prototype composition. The one exception is `mirror/define-element!`, see _BareMirror_.
+- **Forbidden:** manual `element-class` with `js*`, `js/Reflect.construct` with atoms, manual prototype composition. The one exception is `element/define-element!`, see _BareMirror_.
 
 See [`docs/REGISTRATION.md`](docs/REGISTRATION.md) for the full template and rules.
 
@@ -316,6 +316,11 @@ places of keyed nodes, the nodes of templates, and the attributes and text of th
 **The boundary.** BareMirror requires nothing from `baredom.*`. `bb scripts/check_baremirror_boundary.bb`
 enforces it in CI. BareDOM may require BareMirror.
 
+**It is an alpha.** The namespaces are `baremirror.alpha.plan`, `template`, `places`, `parts`,
+`events` and `element`, and JavaScript gets `@vanelsas/baredom/baremirror-alpha`. A name there
+may still change. A BareDOM component requires `baremirror.alpha.places` and `plan` only, so
+that nothing else lands in the shared `base.js`. The same script checks it.
+
 **The words.** Use these and no others:
 
 - **Key**: text in `data-x-key`. **Container**: a parent with an optional `:before` anchor.
@@ -336,16 +341,16 @@ data, and it holds no logic.
 `make-node!` refuses a template that is not fixed.
 
 **The requests map is generated.** An application passes `baredom.requests/requests`, or
-`requests` from `@vanelsas/baredom/requests`, as the `:requests` of `mirror/listen!`. It comes
+`requests` from `@vanelsas/baredom/requests`, as the `:requests` of `events/listen!`. It comes
 from the `:requests` key of each model's `event-schema`, see [`docs/MODEL-LAYER.md`](docs/MODEL-LAYER.md).
 Never edit `src/baredom/requests.cljs`. The map holds attribute requests only. A cancelable
 event with no `:requests` is an action, and `listen!` cannot refuse it.
 
-**A component keeps its own writer.** A BareDOM component uses `mirror/sync!` for places and
+**A component keeps its own writer.** A BareDOM component uses `places/sync!` for places and
 `du/set-attr-to!` for attributes, so its writes reach the trace recorder. It does not call
-`mirror/set-attrs!`, which is for applications.
+`parts/set-attrs!`, which is for applications.
 
-**A component keeps `component/register!`.** `mirror/define-element!` makes an element class by
+**A component keeps `component/register!`.** `element/define-element!` makes an element class by
 hand, because BareMirror cannot require BareDOM. It is the one place that may. It is for an
 application's own elements with no state, never for a BareDOM component.
 

@@ -177,7 +177,7 @@ Each log entry records a timestamp, event type, and source tag name. Entries are
 ## The task list with BareMirror
 
 `tasks.html` is a task list in plain JavaScript on BareDOM components. It imports the functions of
-BareMirror from `dist/baremirror.js`, with no build step. Serve the project root as above and open
+BareMirror from `dist/baremirror-alpha.js`, with no build step. Serve the project root as above and open
 [http://localhost:8000/bare-html/tasks.html](http://localhost:8000/bare-html/tasks.html).
 
 The script has four parts and a few lines of wiring:
