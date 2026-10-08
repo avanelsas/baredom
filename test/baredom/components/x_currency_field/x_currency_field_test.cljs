@@ -304,3 +304,112 @@
             (done))
           0))
        0))))
+
+;; ---------------------------------------------------------------------------
+;; Value while typing
+;; ---------------------------------------------------------------------------
+
+(defn type! [^js input-el text]
+  (set! (.-value input-el) text)
+  (.dispatchEvent input-el (js/Event. "input" #js {:bubbles true})))
+
+(defn commit! [^js input-el]
+  (.dispatchEvent input-el (js/Event. "change" #js {:bubbles true})))
+
+(defn error-shown? [^js el]
+  (not (.contains (.-classList (shadow-part el "[part=error]")) "error-hidden")))
+
+(deftest value-follows-typing-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.focus input-el)
+    (type! input-el "12")
+    (is (= "12" (.-value el)))
+    (is (= "12" (.getAttribute el model/attr-value)))
+    (is (= "12" (.-value input-el)))))
+
+(deftest a-cancelled-request-leaves-the-value-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-value "10")
+    (.addEventListener el model/event-change-request
+                       (fn [^js ev] (.preventDefault ev)))
+    (.focus input-el)
+    (type! input-el "99")
+    (is (= "10" (.-value el)))))
+
+(deftest computed-error-waits-while-typing-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-min "10")
+    (.focus input-el)
+    (type! input-el "1")
+    (is (not (error-shown? el)))
+    (is (not (.hasAttribute el "data-invalid")))
+    (is (not (.checkValidity el)))))
+
+(deftest computed-error-shows-on-blur-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-min "10")
+    (.focus input-el)
+    (type! input-el "1")
+    (.blur input-el)
+    (is (error-shown? el))
+    (is (.hasAttribute el "data-invalid"))))
+
+(deftest computed-error-shows-on-change-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-min "10")
+    (.focus input-el)
+    (type! input-el "1")
+    (commit! input-el)
+    (is (error-shown? el))
+    (is (= "1" (.-value input-el)))))
+
+(deftest error-attribute-shows-while-typing-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-error "Too much")
+    (.focus input-el)
+    (type! input-el "1")
+    (is (error-shown? el))))
+
+(deftest blur-formats-typed-text-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.focus input-el)
+    (type! input-el "100")
+    (.blur input-el)
+    (is (re-find #"^100[.,]00$" (.-value input-el)))))
+
+(deftest blur-without-typing-formats-the-display-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-value "100")
+    (.focus input-el)
+    (is (= "100" (.-value input-el)))
+    (.blur input-el)
+    (is (re-find #"^100[.,]00$" (.-value input-el)))))
+
+(deftest input-without-focus-formats-the-display-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (type! input-el "100")
+    (is (= "100" (.-value el)))
+    (is (re-find #"^100[.,]00$" (.-value input-el)))))
+
+(deftest previous-value-on-change-is-the-typed-text-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")
+        seen     (atom nil)]
+    (.setAttribute el model/attr-value "10")
+    (.focus input-el)
+    (type! input-el "20.50")
+    (.addEventListener el model/event-change-request
+                       (fn [^js ev]
+                         (reset! seen [(.. ev -detail -previousValue)
+                                       (.. ev -detail -value)])))
+    (commit! input-el)
+    (is (= ["20.50" "20.5"] @seen))))

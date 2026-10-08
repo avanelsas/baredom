@@ -46,7 +46,7 @@ All properties reflect to/from their corresponding attributes.
 | `required`    | boolean | `required`         |
 | `readOnly`    | boolean | `readonly`         |
 
-The `value` getter always returns the raw numeric string stored in the `value` attribute (not the formatted display value).
+The `value` getter always returns the raw numeric string stored in the `value` attribute (not the formatted display value). The attribute follows the text on each keystroke, so `value` is current while the user types.
 
 ## Events
 
@@ -56,7 +56,7 @@ The `value` getter always returns the raw numeric string stored in the `value` a
 | `x-currency-field-input`    | yes     | yes      | no         | `{ name: string, value: string }` |
 | `x-currency-field-change`   | yes     | yes      | no         | `{ name: string, value: string }` |
 
-- **`x-currency-field-change-request`** — fires before the value updates. Call `preventDefault()` to block the change (controlled mode).
+- **`x-currency-field-change-request`** — fires before the value updates. Call `preventDefault()` to block the change (controlled mode). `previousValue` is the `value` attribute before the write.
 
 `value` in the event detail is always the raw numeric string (what will be submitted with the form). On `x-currency-field-change`, the value is canonicalized via `parseFloat` (e.g. `"1234.5"` not `"1,234.50"`).
 
@@ -99,6 +99,8 @@ The `value` getter always returns the raw numeric string stored in the `value` a
 | `rangeUnderflow`| `value` parses to a number less than `min` (when `min` is set) |
 | `rangeOverflow` | `value` parses to a number greater than `max` (when `max` is set) |
 
+Validity follows each keystroke. The inline message for `badInput`, `rangeUnderflow` and `rangeOverflow` waits while the user types and shows on change or blur. A message from the `error` attribute shows at once.
+
 ## Form association
 
 `x-currency-field` is a form-associated custom element (`static formAssociated = true`). It integrates with native `<form>` elements and with `x-form` via `ElementInternals`:
@@ -113,9 +115,10 @@ Like a native form control, `x-currency-field` exposes read-only `validity`, `va
 
 ## Formatting behavior
 
-- **Blurred**: `input.value` shows the value formatted with `Intl.NumberFormat` (e.g. `"1,234.56"` for USD/en-US)
+- **Blurred**: `input.value` shows the value formatted with `Intl.NumberFormat` (e.g. `"1,234.56"` for USD/en-US). The display is reformatted on blur
 - **Focused**: `input.value` shows the raw numeric string (e.g. `"1234.56"`) so the user can edit it naturally
-- **On change** (blur-with-change): the raw value is canonicalized via `parseFloat` and stored as the `value` attribute; the display is reformatted
+- **On input**: the raw text is stored as the `value` attribute
+- **On change**: the raw value is canonicalized via `parseFloat` and stored as the `value` attribute
 
 The currency symbol is displayed in `span[part=symbol]` and is never included in the input value.
 
