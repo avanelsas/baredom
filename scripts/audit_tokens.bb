@@ -394,23 +394,39 @@
    "Each cell says how many values of that family follow a token of `x-theme`, out of all the"
    "values of that family in the component's CSS. A value follows the theme when it is a token,"
    "or the component's own property whose default is a token. Structural values such as `0`,"
-   "`none` and `inherit` are not counted, and neither are the values listed at the end as not"
-   "themed by design. An empty cell means the component has no value of that family."
+   "`none` and `inherit` are not counted, and neither are the values that are not themed by"
+   "design, for the reasons at the end. An empty cell means the component has no value of that"
+   "family."
    ""
    (str "Closed families, in which CI allows no value that follows no token: "
         (str/join ", " (sort closed)) ".")
    ""])
 
-(def ^:private by-design-lines
-  "The values that are not themed by design, as lines of Markdown."
-  (concat
-   ["## Not themed by design" ""]
-   (mapcat (fn [[reason values]]
-             (concat [reason ""]
-                     (for [[tag prop value] values]
-                       (str "- `" tag "`: `" prop ": " value "`"))
-                     [""]))
-           by-design)))
+(def ^:private reason-of
+  "A map from each value that is not themed by design to its reason."
+  (into {} (for [[reason values] by-design, value values] [value reason])))
+
+(defn- reason-lines
+  "A reason with how many of `rows` it covers and their components, as lines of Markdown."
+  [reason rows]
+  (let [tags (sort (distinct (map :tag rows)))]
+    [reason
+     ""
+     (str (count rows) (if (= 1 (count rows)) " value in " " values in ")
+          (str/join ", " (map #(str "`" % "`") tags)) ".")
+     ""]))
+
+(defn- by-design-lines
+  "The reasons for which a value of `rows` is not themed by design, as lines of Markdown."
+  [rows]
+  (let [found (group-by (comp reason-of (juxt :tag :prop :value))
+                        (filter #(= :by-design (:kind %)) rows))]
+    (concat
+     ["## Not themed by design"
+      ""
+      "The values are in `scripts/tokens_by_design.edn`."
+      ""]
+     (mapcat #(reason-lines % (found %)) (map first by-design)))))
 
 (defn- cell
   "How many of `rows` follow the theme, as `themed/all`, or nothing when there are none."
@@ -439,7 +455,7 @@
        ""
        (str "CSS not read, or not in full: " (if (seq missing) (str/join ", " missing) "none") ".")
        ""]
-      by-design-lines))))
+      (by-design-lines (mapcat :rows components))))))
 
 (defn- write-doc! [components]
   (spit doc-file (coverage-doc components))
