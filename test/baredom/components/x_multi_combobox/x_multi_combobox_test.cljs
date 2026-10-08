@@ -417,6 +417,87 @@
          (is (false? (.hasAttribute apple "disabled"))))
        (done)))))
 
+(defn- focus-remove-button! [^js chip-el]
+  (.focus (.querySelector (.-shadowRoot chip-el) "[part=remove]")))
+
+(defn- with-reported-errors
+  "Calls `f` and returns the messages of the errors the window reports meanwhile."
+  [f]
+  (let [errors   (atom [])
+        on-error (fn [^js evt]
+                   (.preventDefault evt)
+                   (swap! errors conj (.-message evt)))]
+    (.addEventListener js/window "error" on-error)
+    (try
+      (f)
+      (finally
+        (.removeEventListener js/window "error" on-error)))
+    @errors))
+
+(defn- with-focused-chip
+  "Calls `f` with a mounted element, its input and a chip that holds focus while the panel is open."
+  [f]
+  (after-options
+   (fn [^js el]
+     (.setAttribute el model/attr-value "apple,banana")
+     (let [input  (shadow-part el "[part=input]")
+           banana (chip el "banana")]
+       (.focus input)
+       (focus-remove-button! banana)
+       (is (identical? banana (.-activeElement (.-shadowRoot el))))
+       (f el input banana)))))
+
+(defn- remove-by-user! [^js chip-el]
+  (press-remove! chip-el)
+  (end-animation! chip-el))
+
+(deftest focus-moves-to-the-input-when-the-user-removes-the-focused-chip-test
+  (async done
+    (with-focused-chip
+      (fn [^js el input banana]
+        (remove-by-user! banana)
+        (is (= ["apple"] (chip-values el)))
+        (is (identical? input (.-activeElement (.-shadowRoot el))))
+        (is (.hasAttribute el model/attr-open))
+        (done)))))
+
+(deftest no-error-is-reported-when-the-user-removes-the-focused-chip-test
+  (async done
+    (with-focused-chip
+      (fn [_ _ banana]
+        (is (= [] (with-reported-errors (fn [] (remove-by-user! banana)))))
+        (done)))))
+
+(deftest focus-moves-to-the-input-when-the-focused-chip-is-removed-from-outside-test
+  (async done
+    (with-focused-chip
+      (fn [^js el input _]
+        (.setAttribute el model/attr-value "apple")
+        (is (= ["apple"] (chip-values el)))
+        (is (identical? input (.-activeElement (.-shadowRoot el))))
+        (is (.hasAttribute el model/attr-open))
+        (done)))))
+
+(deftest no-error-is-reported-when-the-focused-chip-is-removed-from-outside-test
+  (async done
+    (with-focused-chip
+      (fn [^js el _ _]
+        (is (= [] (with-reported-errors
+                    (fn [] (.setAttribute el model/attr-value "apple")))))
+        (done)))))
+
+(deftest the-panel-opens-when-the-focused-chip-leaves-a-closed-panel-test
+  (async done
+    (with-focused-chip
+      (fn [^js el input _]
+        (.removeAttribute el model/attr-open)
+        (is (= [] (with-reported-errors
+                    (fn [] (.setAttribute el model/attr-value "apple")))))
+        (is (= ["apple"] (chip-values el)))
+        (is (identical? input (.-activeElement (.-shadowRoot el))))
+        (is (.hasAttribute el model/attr-open))
+        (done)))))
+
 ;; ── Options keep their nodes ─────────────────────────────────────────────────
 (defn- option-nodes [^js el]
   (vec (array-seq (.querySelectorAll (shadow-part el "[part=panel]") "[part=option]"))))
