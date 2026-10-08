@@ -463,10 +463,15 @@
   {:chips {:parent (gobj/get refs "chipArea")
            :before (gobj/get refs "input")}})
 
+(defn- chip-nodes
+  "The node of each chip, by value."
+  [refs]
+  (:nodes (mirror/read-places (chip-containers refs))))
+
 (defn- chip-of
   "The chip that shows `value`."
   [^js el value]
-  (get-in (mirror/read-places (chip-containers (du/getv el k-refs))) [:nodes value]))
+  (get (chip-nodes (du/getv el k-refs)) value))
 
 (defn- make-chip! [value]
   (doto (.createElement js/document "x-chip")
@@ -480,10 +485,22 @@
     (du/set-attr-to! chip "label" (model/chip-label options value))
     (du/set-attr-to! chip "disabled" (when disabled? ""))))
 
+(defn- keep-focus!
+  "Moves focus to the input when `chip` holds it."
+  [^js el ^js chip]
+  (when (identical? chip (.-activeElement (.-shadowRoot el)))
+    (.focus (gobj/get (du/getv el k-refs) "input"))))
+
+(defn- leaving-chips
+  "The chips whose value is not in `value-set`."
+  [refs value-set]
+  (vals (apply dissoc (chip-nodes refs) value-set)))
+
 (defn- render-chips!
   "Brings the chips in step with `value-set`. A chip that stays keeps its node."
   [^js el value-set disabled?]
   (when-let [refs (du/getv el k-refs)]
+    (run! (partial keep-focus! el) (leaving-chips refs value-set))
     (let [values (vec (sort value-set))
           nodes  (mirror/sync! (chip-containers refs) {:chips values} make-chip!)]
       (run! (partial apply-chip! (du/getv el k-options) disabled? nodes) values))))
@@ -669,6 +686,7 @@
 (defn- let-chip-leave!
   "Gives `chip` up and writes the values that remain. The chip stays in the page to fade."
   [^js el ^js chip remaining]
+  (keep-focus! el chip)
   (mirror/release! chip)
   (commit-values! el remaining))
 

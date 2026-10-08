@@ -154,6 +154,7 @@ Chip styling is owned by `x-chip`. Use `--x-chip-*` custom properties to theme c
 - Options: `role="option"`, `aria-disabled` when max reached
 - Chip area: `role="group"`, `aria-label="Selected values"`
 - Active option tracked via `aria-activedescendant`
+- When the chip that holds focus is removed, focus moves to the input
 - When the `error` attribute is set, the input gets `aria-invalid="true"` and `aria-describedby="error"`, and the `error` part is an assertive live region (`role="alert"`) so screen readers announce the validation message
 
 ## Form participation
