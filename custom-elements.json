@@ -8028,6 +8028,8 @@
       }, {
         "name" : "--x-font-size-xs"
       }, {
+        "name" : "--x-font-weight-bold"
+      }, {
         "name" : "--x-font-weight-medium"
       }, {
         "name" : "--x-font-weight-normal"

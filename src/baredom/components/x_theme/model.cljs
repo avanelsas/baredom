@@ -57,6 +57,7 @@
 (def tk-font-weight-normal     "--x-font-weight-normal")
 (def tk-font-weight-medium     "--x-font-weight-medium")
 (def tk-font-weight-semibold   "--x-font-weight-semibold")
+(def tk-font-weight-bold       "--x-font-weight-bold")
 (def tk-line-height-normal     "--x-line-height-normal")
 
 (def tk-space-xs               "--x-space-xs")
@@ -89,6 +90,7 @@
    tk-font-weight-normal      "400"
    tk-font-weight-medium      "500"
    tk-font-weight-semibold    "600"
+   tk-font-weight-bold        "700"
    tk-line-height-normal      "1.5"})
 
 (def ^:private base-shape

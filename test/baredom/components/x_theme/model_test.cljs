@@ -55,18 +55,26 @@
     (is (re-find #"--x-font-weight-semibold:" css))
     (is (re-find #"--x-line-height-normal:" css))))
 
-(defn- radius-scale
-  "The values of the five radius tokens in the CSS of `preset`, from the smallest to full."
-  [preset]
+(defn- scale
+  "The values of the tokens `--x-<family>-<step>` in the CSS of `preset`, one for each step."
+  [preset family steps]
   (let [css (model/preset->css preset)]
-    (mapv #(second (re-find (re-pattern (str "--x-radius-" % ":([^;]+);")) css))
-          ["sm" "md" "lg" "xl" "full"])))
+    (mapv #(second (re-find (re-pattern (str "--x-" family "-" % ":([^;]+);")) css)) steps)))
+
+(def ^:private weight-steps ["normal" "medium" "semibold" "bold"])
+
+(def ^:private radius-steps ["sm" "md" "lg" "xl" "full"])
+
+(deftest the-weight-scale-ends-in-bold
+  (is (= ["400" "500" "600" "700"] (scale "default" "font-weight" weight-steps)))
+  (is (= ["400" "500" "700" "700"] (scale "neo-brutalist" "font-weight" weight-steps))))
 
 (deftest the-radius-scale-has-five-steps
-  (is (= ["0.375rem" "0.75rem" "1rem" "1.5rem" "9999px"] (radius-scale "default"))))
+  (is (= ["0.375rem" "0.75rem" "1rem" "1.5rem" "9999px"]
+         (scale "default" "radius" radius-steps))))
 
 (deftest the-neo-brutalist-preset-has-no-radius
-  (is (= ["0" "0" "0" "0" "0"] (radius-scale "neo-brutalist"))))
+  (is (= ["0" "0" "0" "0" "0"] (scale "neo-brutalist" "radius" radius-steps))))
 
 (deftest preset->css-contains-spacing-tokens-test
   (let [css (model/preset->css "default")]

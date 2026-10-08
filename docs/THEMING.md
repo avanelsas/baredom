@@ -28,7 +28,7 @@ All components must consume the shared design tokens defined by `x-theme` (`src/
 ### Typography
 - `--x-font-family`, `--x-font-family-mono`
 - `--x-font-size-xs`, `--x-font-size-sm`, `--x-font-size-base`, `--x-font-size-lg`
-- `--x-font-weight-normal`, `--x-font-weight-medium`, `--x-font-weight-semibold`
+- `--x-font-weight-normal`, `--x-font-weight-medium`, `--x-font-weight-semibold`, `--x-font-weight-bold`
 - `--x-line-height-normal`
 
 ### Spacing
