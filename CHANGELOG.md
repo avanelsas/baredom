@@ -2,6 +2,29 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [3.12.1] - 2026-10-08
+
+### Fixed
+
+- **`x-multi-combobox` reports no `NotFoundError` when a chip is removed with the pointer.** A
+  click on the remove button of a chip, while the panel was open, moved focus into that chip.
+  Removing the chip then closed the panel from inside the render, and the browser reported
+  `Failed to execute 'removeChild' on 'Node'`. The selection was correct, but an ordinary gesture
+  left an error in the console. Focus now moves to the input before the chip leaves, so the panel
+  stays open and focus stays in the control. (#376)
+
+- **`x-currency-field` keeps `value` current while the user types.** The `value` attribute was
+  written on change only, so the property was stale during an edit, and with it the values that
+  `x-form` collects on a submit with Enter. The attribute now follows each keystroke. (#264)
+
+  Three things follow from that:
+
+  - The inline message for a bad number or a value out of range waits while the user types, and
+    shows on change or blur. Validity itself follows each keystroke, as before.
+  - The display is formatted on every blur, also when the value did not change.
+  - On a change, `previousValue` of `x-currency-field-change-request` is the typed text. It was
+    the value before the edit.
+
 ## [3.12.0] - 2026-09-15
 
 ### Added
