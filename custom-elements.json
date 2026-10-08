@@ -1174,7 +1174,7 @@
         "default" : "var(--x-radius-md,6px)"
       }, {
         "name" : "--x-search-field-clear-color",
-        "default" : "var(--x-color-border,#9ca3af)"
+        "default" : "var(--x-color-text-muted,#9ca3af)"
       }, {
         "name" : "--x-search-field-color",
         "default" : "var(--x-color-text,#111827)"
@@ -1186,7 +1186,7 @@
         "default" : "var(--x-color-primary,#2563eb)"
       }, {
         "name" : "--x-search-field-icon-color",
-        "default" : "var(--x-color-border,#9ca3af)"
+        "default" : "var(--x-color-text-muted,#9ca3af)"
       } ],
       "cssParts" : [ {
         "name" : "clear"

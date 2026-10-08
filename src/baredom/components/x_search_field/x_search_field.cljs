@@ -26,8 +26,8 @@
    "--x-search-field-border:1px solid var(--x-color-border,#d1d5db);"
    "--x-search-field-border-radius:var(--x-radius-md,6px);"
    "--x-search-field-focus-ring-color:var(--x-color-primary,#2563eb);"
-   "--x-search-field-icon-color:var(--x-color-border,#9ca3af);"
-   "--x-search-field-clear-color:var(--x-color-border,#9ca3af);"
+   "--x-search-field-icon-color:var(--x-color-text-muted,#9ca3af);"
+   "--x-search-field-clear-color:var(--x-color-text-muted,#9ca3af);"
    "--x-search-field-disabled-opacity:0.45;"
    "}"
    du/control-font-rule

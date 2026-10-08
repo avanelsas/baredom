@@ -40,7 +40,7 @@
    du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-text-area-label-color:var(--x-color-border,#d1d5db);"
+   "--x-text-area-label-color:var(--x-color-text-muted,#d1d5db);"
    "--x-text-area-bg:var(--x-color-surface,#1f2937);"
    "--x-text-area-color:var(--x-color-text,#f9fafb);"
    "--x-text-area-border:1px solid var(--x-color-border,#4b5563);"
