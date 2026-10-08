@@ -100,7 +100,8 @@
 (def ^:private families
   "The token families of x-theme and the CSS properties each one answers for."
   (array-map
-   "color"        (re-pattern (str "^(color|background|background-color|border-color"
+   "color"        (re-pattern (str "^(color|background|background-color|background-image"
+                                   "|border-color|border-(top|right|bottom|left)-color"
                                    "|outline-color|fill|stroke|caret-color)$"))
    "font-family"  #"^font-family$"
    "font-size"    #"^font-size$"
@@ -368,7 +369,7 @@
 
 (def ^:private closed
   "The families in which every value follows the theme or is listed as not themed by design."
-  #{"font-family" "font-size" "font-weight" "line-height" "radius" "shadow" "transition"})
+  #{"color" "font-family" "font-size" "font-weight" "line-height" "radius" "shadow" "transition"})
 
 (defn- reopened
   "The values of a closed family that follow no token, as a message for each."

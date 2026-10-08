@@ -105,8 +105,8 @@ The component does **not** update `page` itself — the consumer must reflect th
 | `--x-pagination-button-border`      | `1px solid var(--x-color-border, rgba(0,0,0,0.15))`       | Default button border |
 | `--x-pagination-button-hover-bg`    | `color-mix(in srgb, var(--x-color-text, #000) 6%, transparent)`                 | Hover background |
 | `--x-pagination-button-hover-color` | `var(--x-color-text, rgba(0,0,0,0.9))`                  | Hover text colour |
-| `--x-pagination-current-bg`         | `rgba(0,0,0,0.88)`                 | Current page button background |
-| `--x-pagination-current-color`      | `#fff`                             | Current page button text colour |
+| `--x-pagination-current-bg`         | `color-mix(in srgb, var(--x-color-text, #000) 88%, transparent)`                 | Current page button background |
+| `--x-pagination-current-color`      | `var(--x-color-bg, #fff)`                             | Current page button text colour |
 | `--x-pagination-current-border`     | `1px solid transparent`            | Current page button border |
 | `--x-pagination-disabled-opacity`   | `0.4`                              | Opacity for disabled buttons |
 | `--x-pagination-font-size`          | `var(--x-font-size-sm, 0.875rem)`  | Font size (overridden by `size`) |

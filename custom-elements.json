@@ -2170,13 +2170,13 @@
         "default" : "2rem"
       }, {
         "name" : "--x-pagination-current-bg",
-        "default" : "rgba(0,0,0,0.88)"
+        "default" : "color-mix(in srgb,var(--x-color-text,#000) 88%,transparent)"
       }, {
         "name" : "--x-pagination-current-border",
         "default" : "1px solid transparent"
       }, {
         "name" : "--x-pagination-current-color",
-        "default" : "#fff"
+        "default" : "var(--x-color-bg,#fff)"
       }, {
         "name" : "--x-pagination-disabled-opacity",
         "default" : "0.4"
@@ -7670,10 +7670,10 @@
         "default" : "color-mix(in srgb,var(--x-color-text,#000) 3%,transparent)"
       }, {
         "name" : "--x-table-row-selected-bg",
-        "default" : "rgba(59,130,246,0.08)"
+        "default" : "color-mix(in srgb,var(--x-color-primary,rgb(59,130,246)) 8%,transparent)"
       }, {
         "name" : "--x-table-row-selected-hover-bg",
-        "default" : "rgba(59,130,246,0.12)"
+        "default" : "color-mix(in srgb,var(--x-color-primary,rgb(59,130,246)) 12%,transparent)"
       }, {
         "name" : "--x-table-row-transition-duration",
         "default" : "var(--x-transition-duration,150ms)"
@@ -15018,10 +15018,10 @@
         "default" : "color-mix(in srgb,var(--x-color-text,#000) 3%,transparent)"
       }, {
         "name" : "--x-table-row-selected-bg",
-        "default" : "rgba(59,130,246,0.08)"
+        "default" : "color-mix(in srgb,var(--x-color-primary,rgb(59,130,246)) 8%,transparent)"
       }, {
         "name" : "--x-table-row-selected-hover-bg",
-        "default" : "rgba(59,130,246,0.12)"
+        "default" : "color-mix(in srgb,var(--x-color-primary,rgb(59,130,246)) 12%,transparent)"
       }, {
         "name" : "--x-table-row-transition-duration",
         "default" : "var(--x-transition-duration,150ms)"
@@ -17865,8 +17865,7 @@
         "name" : "--x-tab-disabled-opacity",
         "default" : "0.5"
       }, {
-        "name" : "--x-tab-focus-ring",
-        "default" : "rgba(59,130,246,0.4)"
+        "name" : "--x-tab-focus-ring"
       }, {
         "name" : "--x-tab-hover-background",
         "default" : "color-mix(in srgb,var(--x-color-text,rgb(15,23,42)) 5%,transparent)"
@@ -17884,7 +17883,7 @@
         "default" : "var(--x-radius-md,8px)"
       }, {
         "name" : "--x-tab-selected-background",
-        "default" : "rgba(59,130,246,0.12)"
+        "default" : "color-mix(in srgb,var(--x-color-primary,rgb(59,130,246)) 12%,transparent)"
       }, {
         "name" : "--x-tab-selected-border-color",
         "default" : "transparent"
@@ -19756,10 +19755,10 @@
       } ],
       "cssProperties" : [ {
         "name" : "--x-liquid-dock-bg",
-        "default" : "rgba(15,23,42,0.84)"
+        "default" : "var(--x-color-surface,rgba(15,23,42,0.84))"
       }, {
         "name" : "--x-liquid-dock-border",
-        "default" : "rgba(51,65,85,0.9)"
+        "default" : "var(--x-color-border,rgba(51,65,85,0.9))"
       }, {
         "name" : "--x-liquid-dock-color",
         "default" : "var(--x-color-primary,#818cf8)"
@@ -20938,8 +20937,7 @@
         "name" : "--x-tab-disabled-opacity",
         "default" : "0.5"
       }, {
-        "name" : "--x-tab-focus-ring",
-        "default" : "rgba(59,130,246,0.4)"
+        "name" : "--x-tab-focus-ring"
       }, {
         "name" : "--x-tab-hover-background",
         "default" : "color-mix(in srgb,var(--x-color-text,rgb(15,23,42)) 5%,transparent)"
@@ -20957,7 +20955,7 @@
         "default" : "var(--x-radius-md,8px)"
       }, {
         "name" : "--x-tab-selected-background",
-        "default" : "rgba(59,130,246,0.12)"
+        "default" : "color-mix(in srgb,var(--x-color-primary,rgb(59,130,246)) 12%,transparent)"
       }, {
         "name" : "--x-tab-selected-border-color",
         "default" : "transparent"
@@ -21950,8 +21948,7 @@
         "name" : "--x-command-palette-bg",
         "default" : "var(--x-color-bg,#fff)"
       }, {
-        "name" : "--x-command-palette-divider",
-        "default" : "rgba(255,255,255,0.08)"
+        "name" : "--x-command-palette-divider"
       }, {
         "name" : "--x-command-palette-empty-text",
         "default" : "var(--x-color-text-muted,#94a3b8)"

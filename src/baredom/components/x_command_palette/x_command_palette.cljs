@@ -192,7 +192,7 @@
    "[part=empty][hidden]{display:none;}"
    "@media (prefers-color-scheme:dark){"
    "[part=panel]{background:var(--x-command-palette-bg,var(--x-color-bg,#1e293b));box-shadow:var(--x-command-palette-shadow,var(--x-shadow-lg,0 20px 60px rgba(0,0,0,0.6),0 4px 16px rgba(0,0,0,0.4)));}"
-   "[part=search-wrap]{border-bottom-color:var(--x-command-palette-divider,rgba(255,255,255,0.08));}"
+   "[part=search-wrap]{border-bottom-color:var(--x-command-palette-divider,var(--x-color-border,rgba(255,255,255,0.08)));}"
    "[part=item]:hover,[part=item]:focus{background:var(--x-command-palette-item-hover,var(--x-color-text-muted,#334155));}"
    "[part=item][aria-selected=true]{background:var(--x-command-palette-item-active,#312e81);color:var(--x-command-palette-item-active-text,#c7d2fe);}"
    "}"

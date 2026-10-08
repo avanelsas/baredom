@@ -34,5 +34,10 @@
                 {:family "color" :value "#fff"}
                 {:family "space" :value "240px"}]))))
 
+(deftest a-colour-on-one-side-of-a-border-is-in-the-colour-family
+  (is (= ["color" "color" "color" "border-width" nil]
+         (mapv family-of ["border-bottom-color" "background-image" "border-color"
+                          "border-bottom-width" "border-bottom-style"]))))
+
 (let [{:keys [fail error]} (run-tests)]
   (System/exit (if (zero? (+ fail error)) 0 1)))

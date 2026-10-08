@@ -9,12 +9,12 @@ or the component's own property whose default is a token. Structural values such
 design, for the reasons at the end. An empty cell means the component has no value of that
 family.
 
-Closed families, in which CI allows no value that follows no token: font-family, font-size, font-weight, line-height, radius, shadow, transition.
+Closed families, in which CI allows no value that follows no token: color, font-family, font-size, font-weight, line-height, radius, shadow, transition.
 
 | Component | color | font-family | font-size | font-weight | line-height | radius | shadow | transition | space | z | border-width |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `x-alert` | 18/18 |  | 1/1 |  |  | 2/2 |  | 4/4 | 0/4 |  | 0/1 |
-| `x-avatar` | 14/20 |  | 4/4 | 1/1 |  | 2/2 |  |  | 0/1 |  | 0/2 |
+| `x-avatar` | 18/18 |  | 4/4 | 1/1 |  | 2/2 |  |  | 0/1 |  | 0/2 |
 | `x-avatar-group` | 8/8 |  | 4/4 | 1/1 |  | 1/1 |  |  |  |  | 0/1 |
 | `x-badge` | 18/18 |  | 1/1 | 1/1 |  | 3/3 |  |  | 0/2 |  | 0/1 |
 | `x-bento-grid` |  |  |  |  |  |  |  |  |  |  |  |
@@ -32,7 +32,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-collapse` | 14/14 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  |  |
 | `x-color-picker` | 10/10 | 1/1 | 1/1 |  |  | 2/2 | 3/3 |  | 0/5 | 0/1 | 0/8 |
 | `x-combobox` | 26/26 |  | 2/2 | 1/1 |  | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 0/2 |
-| `x-command-palette` | 10/14 |  | 4/4 | 1/1 |  | 1/1 | 2/2 |  | 0/6 | 0/2 | 0/1 |
+| `x-command-palette` | 11/11 |  | 4/4 | 1/1 |  | 1/1 | 2/2 |  | 0/6 | 0/2 | 0/1 |
 | `x-confetti` |  |  |  |  |  |  |  |  |  | 0/1 |  |
 | `x-container` | 2/2 |  |  |  |  |  |  |  | 0/3 |  | 0/1 |
 | `x-context-menu` | 4/4 |  |  |  |  |  |  | 1/1 |  |  |  |
@@ -46,7 +46,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-dropdown` | 18/18 |  | 1/1 | 1/1 |  | 2/2 | 2/2 | 3/3 | 0/3 | 0/1 |  |
 | `x-fieldset` | 11/11 |  | 1/1 | 1/1 |  | 2/2 | 2/2 |  | 0/4 |  | 0/2 |
 | `x-file-download` | 9/9 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
-| `x-file-upload` | 21/22 |  | 2/2 | 1/1 |  | 4/4 |  | 1/1 | 1/5 |  |  |
+| `x-file-upload` | 22/22 |  | 2/2 | 1/1 |  | 4/4 |  | 1/1 | 1/5 |  |  |
 | `x-floating-panel` | 8/8 |  |  |  |  | 3/3 | 2/2 | 1/1 | 3/3 | 0/1 | 0/1 |
 | `x-form` |  |  |  |  |  |  |  |  | 0/1 |  |  |
 | `x-form-field` | 14/14 |  | 4/4 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
@@ -60,7 +60,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-kinetic-canvas` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-kinetic-font` | 1/1 |  |  |  |  |  |  |  | 0/1 |  |  |
 | `x-kinetic-typography` | 4/4 | 1/1 |  | 1/1 |  |  |  |  | 0/1 |  |  |
-| `x-liquid-dock` | 2/6 |  |  |  |  | 1/1 | 2/2 |  | 0/2 | 0/1 | 0/1 |
+| `x-liquid-dock` | 4/4 |  |  |  |  | 1/1 | 2/2 |  | 0/2 | 0/1 | 0/1 |
 | `x-liquid-fill` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-liquid-glass` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-menu` | 4/4 |  |  |  |  | 1/1 | 2/2 |  | 0/5 | 0/1 |  |
@@ -69,14 +69,14 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-modal` | 3/3 |  |  |  |  | 1/1 | 1/1 | 2/2 | 0/3 | 0/1 | 0/2 |
 | `x-morph-stack` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-multi-combobox` | 26/26 |  | 2/2 | 1/1 |  | 3/3 | 4/4 | 3/3 | 0/8 | 1/1 | 0/2 |
-| `x-navbar` | 8/12 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 0/1 |
+| `x-navbar` | 8/8 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 0/1 |
 | `x-neural-glow` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-notification-center` |  |  |  |  |  |  |  |  | 0/1 | 0/1 |  |
 | `x-organic-divider` | 2/2 |  |  |  |  |  |  |  |  |  |  |
 | `x-organic-progress` | 2/2 |  |  |  |  |  |  |  |  |  |  |
 | `x-organic-shape` |  |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-otp-input` | 8/8 | 1/1 |  | 1/1 |  | 1/1 |  | 1/1 | 1/1 |  |  |
-| `x-pagination` | 10/13 |  | 3/3 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
+| `x-pagination` | 14/14 |  | 3/3 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
 | `x-particle-button` | 54/54 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 4/4 | 0/2 |  | 0/1 |
 | `x-popover` | 48/48 |  | 4/4 | 2/2 |  | 4/4 | 4/4 | 5/5 | 0/8 | 0/1 | 0/8 |
 | `x-progress` | 10/10 |  | 2/2 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
@@ -100,16 +100,16 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-soft-body` | 4/4 |  |  |  |  |  | 2/2 |  | 0/1 |  | 0/1 |
 | `x-spacer` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-spinner` | 4/4 |  |  |  |  |  |  |  |  |  |  |
-| `x-splash` | 8/10 |  |  |  |  | 1/1 |  | 3/3 | 0/1 | 0/1 |  |
+| `x-splash` | 10/10 |  |  |  |  | 1/1 |  | 3/3 | 0/1 | 0/1 |  |
 | `x-split-pane` | 5/5 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-spotlight-card` | 6/6 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
 | `x-stat` | 10/10 |  | 2/2 | 2/2 |  | 1/1 |  | 2/2 | 0/2 |  | 0/1 |
 | `x-stepper` | 22/22 |  | 5/5 | 2/2 |  | 1/1 |  | 1/1 | 0/3 |  |  |
 | `x-switch` | 8/8 |  |  |  |  | 1/1 | 1/1 | 2/2 |  |  |  |
-| `x-tab` | 7/10 |  |  |  |  | 1/1 |  | 2/2 | 0/4 |  | 0/2 |
+| `x-tab` | 10/10 |  |  |  |  | 1/1 |  | 2/2 | 0/4 |  | 0/2 |
 | `x-table` | 5/5 |  | 1/1 | 1/1 |  | 1/1 |  |  | 0/2 |  | 0/1 |
 | `x-table-cell` | 13/13 |  |  | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  | 0/1 |
-| `x-table-row` | 3/7 |  |  |  |  |  |  | 1/1 |  |  |  |
+| `x-table-row` | 7/7 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-tabs` |  |  |  |  |  |  |  |  | 0/2 |  |  |
 | `x-text-area` | 14/14 |  | 4/4 | 1/1 | 1/1 | 1/1 |  | 1/1 | 0/2 |  |  |
 | `x-timeline` | 1/1 |  | 1/1 | 1/1 |  |  |  |  | 0/1 |  |  |
@@ -117,10 +117,10 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-toast` | 42/42 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 4/4 | 0/5 |  | 0/1 |
 | `x-toaster` |  |  |  |  |  |  |  |  | 0/1 | 0/1 |  |
 | `x-tooltip` | 6/6 |  | 1/1 |  |  | 1/1 | 2/2 | 2/2 | 1/1 | 1/1 |  |
-| `x-typography` | 6/6 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 0/2 |
+| `x-typography` | 7/7 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 0/2 |
 | `x-welcome-tour` | 26/26 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 0/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 960/991 | 10/10 | 117/117 | 69/69 | 7/7 | 110/110 | 73/73 | 107/107 | 15/236 | 3/26 | 0/69 |
+| **All** | 982/982 | 10/10 | 117/117 | 69/69 | 7/7 | 110/110 | 73/73 | 107/107 | 15/236 | 3/26 | 0/69 |
 
 CSS not read, or not in full: x-liquid-glass.
 
@@ -182,7 +182,7 @@ The height of a one-line control.
 
 Text on a tint, chosen for contrast with it.
 
-16 values in `x-alert`, `x-badge`.
+18 values in `x-alert`, `x-avatar`, `x-badge`.
 
 A colour of the info status. The theme has no token for it.
 
@@ -194,7 +194,7 @@ A tint of the danger colour, written as a solid colour.
 
 Text or a mark on a filled colour, chosen for contrast with the fill.
 
-33 values in `x-button`, `x-calendar`, `x-cancel-dialogue`, `x-combobox`, `x-copy`, `x-date-picker`, `x-multi-combobox`, `x-pagination`, `x-particle-button`, `x-stepper`, `x-timeline-item`, `x-welcome-tour`.
+31 values in `x-button`, `x-calendar`, `x-cancel-dialogue`, `x-combobox`, `x-copy`, `x-date-picker`, `x-multi-combobox`, `x-particle-button`, `x-stepper`, `x-timeline-item`, `x-welcome-tour`.
 
 A colour of the syntax palette.
 
@@ -202,7 +202,7 @@ A colour of the syntax palette.
 
 A colour that an effect or a tool draws with. The theme has no role for it.
 
-17 values in `x-chart`, `x-color-picker`, `x-metaball-cursor`, `x-organic-shape`, `x-particle-button`, `x-scroll-story`, `x-scroll-timeline`, `x-skeleton`.
+21 values in `x-chart`, `x-color-picker`, `x-image`, `x-metaball-cursor`, `x-organic-shape`, `x-particle-button`, `x-scroll-story`, `x-scroll-timeline`, `x-skeleton`.
 
 A scrim. It darkens what is behind it in every theme.
 
@@ -211,3 +211,15 @@ A scrim. It darkens what is behind it in every theme.
 A mix of the text colour around it.
 
 1 value in `x-floating-panel`.
+
+The inverted bar. It is dark in every theme and mode.
+
+6 values in `x-navbar`.
+
+The active item of the command palette. Its accent is the same in every theme.
+
+4 values in `x-command-palette`.
+
+A transparent border. It holds the place of a border.
+
+1 value in `x-pagination`.
