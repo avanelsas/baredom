@@ -8,7 +8,7 @@ or the component's own property whose default is a token. Structural values such
 `none` and `inherit` are not counted, and neither are the values listed at the end as not
 themed by design. An empty cell means the component has no value of that family.
 
-Closed families, in which CI allows no value that follows no token: radius, shadow, transition.
+Closed families, in which CI allows no value that follows no token: font-family, radius, shadow, transition.
 
 | Component | color | font-family | font-size | font-weight | line-height | radius | shadow | transition | space | z | border-width |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
