@@ -112,14 +112,12 @@ Wire everything together in your `init!`:
 
 ## 5. Theming
 
-Override CSS custom properties at any scope:
+Set a component's CSS custom properties on the component itself, by tag, class or id. A value on `:root` or on a wrapper has no effect, because the component declares the property on itself.
 
 ```css
-/* Global overrides */
-:root {
-  --x-button-radius: 4px;
-  --x-alert-radius:  8px;
-}
+/* Every button and every alert */
+x-button { --x-button-radius: 4px; }
+x-alert  { --x-alert-radius:  8px; }
 
 /* Per-instance override */
 #sidebar-save-btn {
@@ -127,7 +125,7 @@ Override CSS custom properties at any scope:
 }
 ```
 
-For centralised theming with presets, see [`<x-theme>`](./x-theme.md).
+For centralised theming with presets, see [`<x-theme>`](./x-theme.md). The [styling guide](./styling.md) says which level to use and where each value goes.
 
 ---
 

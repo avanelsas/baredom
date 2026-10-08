@@ -54,7 +54,7 @@ All components can be explored in the [live demo](https://avanelsas.github.io/ba
 
 **Zero runtime, tree-shakeable.** Each component is a self-contained ES module compiled with Google Closure Advanced. The only JavaScript in your bundle is the components you import — no framework, no utility belt, no runtime library.
 
-**Predictable theming.** Every visual detail is exposed as a `--x-<component>-<property>` CSS custom property — override at any scope, or wrap in [`<x-theme>`](./docs/x-theme.md) for coordinated palettes with built-in presets. Light/dark mode adapts automatically via `prefers-color-scheme`.
+**Predictable theming.** Every visual detail is exposed as a `--x-<component>-<property>` CSS custom property. Set it on the component, or wrap the page in [`<x-theme>`](./docs/x-theme.md) for coordinated palettes with built-in presets. Light/dark mode adapts automatically via `prefers-color-scheme`.
 
 **Accessible & mobile-first.** ARIA roles, keyboard navigation, focus management, and `prefers-reduced-motion` support are part of every component. All components are tested on viewports from 320px up; touch targets meet the 44px minimum on coarse-pointer devices, and pointer events handle mouse + touch uniformly.
 
@@ -148,7 +148,7 @@ See [`docs/x-trace-history.md`](./docs/x-trace-history.md) for the full guide �
 
 Wrap any subtree in `<x-theme>` to apply a coordinated palette across every BareDOM component inside it. Eight presets ship in the box — `default`, `ocean`, `forest`, `sunset`, `neo-brutalist`, `aurora`, `mono-ai`, `warm-mineral` — each with light and dark variants that follow `prefers-color-scheme`.
 
-Register your own preset, override individual tokens via CSS, or nest themes for per-section palettes. See [`docs/x-theme.md`](./docs/x-theme.md) for the full API (presets, `registerPreset`, CSS overrides) and [`docs/THEMING.md`](./docs/THEMING.md) for the token catalogue.
+Register your own preset, override individual tokens via CSS, or nest themes for per-section palettes. See [`docs/x-theme.md`](./docs/x-theme.md) for the full API (presets, `registerPreset`, CSS overrides) and [`docs/THEMING.md`](./docs/THEMING.md) for the token catalogue. [`docs/styling.md`](./docs/styling.md) says where each value goes so that it works.
 
 ---
 

@@ -6,6 +6,8 @@ All BareDom components are theme-aware out of the box. Each component references
 
 Every component demo page includes a theme preset picker for live preview.
 
+For where to set a token, a component's own property or a part, see the [styling guide](styling.md).
+
 ## Tag
 
 ```html
@@ -198,7 +200,7 @@ Then use it like any built-in preset:
 <x-theme preset="acme-brand">...</x-theme>
 ```
 
-Partial presets are supported. Any tokens not specified fall back to the `default` preset values.
+Partial presets are supported. Any tokens not specified fall back to the `default` preset values. This holds for each map by itself, so a preset with only a `light` map shows the dark colours of `default` in dark mode. Give both maps.
 
 ## Multiple Themes Per Page
 
