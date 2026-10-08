@@ -87,7 +87,7 @@ An action-menu dropdown: a styled trigger button that toggles a positioned panel
 | `--x-dropdown-trigger-padding`      | `0 0.75rem`                  |
 | `--x-dropdown-trigger-height`       | `2.25rem`                    |
 | `--x-dropdown-trigger-font-size`    | `0.9375rem`                  |
-| `--x-dropdown-trigger-font-weight`  | `500`                        |
+| `--x-dropdown-trigger-font-weight`  | `var(--x-font-weight-medium, 500)` |
 | `--x-dropdown-chevron-color`        | `#64748b`                    |
 | `--x-dropdown-focus-ring`           | `#60a5fa`                    |
 

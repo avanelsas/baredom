@@ -116,7 +116,7 @@ All events bubble and are composed (cross shadow DOM). None are cancelable.
 | `--x-scroll-timeline-entry-gap` | `2rem` | Vertical spacing between entries |
 | `--x-scroll-timeline-date-color` | `rgba(0,0,0,0.5)` | Date label text color |
 | `--x-scroll-timeline-date-font-size` | `0.8125rem` | Date label font size |
-| `--x-scroll-timeline-transition-duration` | `300ms` | Activation transition duration |
+| `--x-scroll-timeline-transition-duration` | `var(--x-transition-duration, 300ms)` | Activation transition duration |
 | `--x-scroll-timeline-curve-amplitude` | `60` | SVG curve horizontal amplitude (pixels, curved mode) |
 | `--x-scroll-timeline-disabled-opacity` | `0.55` | Opacity when disabled |
 

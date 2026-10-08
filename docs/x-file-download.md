@@ -98,7 +98,7 @@ el.addEventListener('x-file-download-error', (e) => {
 | `--x-file-download-border-radius`    | `6px`                  | —              |
 | `--x-file-download-padding`          | `0.5rem 1rem`          | —              |
 | `--x-file-download-font-size`        | `0.875rem`             | —              |
-| `--x-file-download-font-weight`      | `500`                  | —              |
+| `--x-file-download-font-weight`      | `var(--x-font-weight-medium, 500)` | —              |
 | `--x-file-download-gap`              | `0.375rem`             | —              |
 | `--x-file-download-icon-size`        | `1em`                  | —              |
 | `--x-file-download-focus-ring`       | `#60a5fa`              | `#93c5fd`      |

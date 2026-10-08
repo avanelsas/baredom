@@ -46,7 +46,7 @@ None. `x-fieldset` is a structural container with no user interactions.
 | `--x-fieldset-bg`                 | `transparent`      | —             |
 | `--x-fieldset-legend-color`       | `#374151`          | `#d1d5db`     |
 | `--x-fieldset-legend-font-size`   | `0.875rem`         | —             |
-| `--x-fieldset-legend-font-weight` | `600`              | —             |
+| `--x-fieldset-legend-font-weight` | `var(--x-font-weight-semibold, 600)` | —             |
 | `--x-fieldset-legend-padding`     | `0 0.375rem`       | —             |
 | `--x-fieldset-disabled-opacity`   | `0.45`             | —             |
 

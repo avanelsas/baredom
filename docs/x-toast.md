@@ -141,7 +141,7 @@ toast.addEventListener('x-toast-dismiss', e => {
 | `--x-toast-gap` | `12px` | Gap between icon, body, dismiss |
 | `--x-toast-font-size` | `0.875rem` | Message font size |
 | `--x-toast-heading-font-size` | `0.9375rem` | Heading font size |
-| `--x-toast-heading-weight` | `600` | Heading font weight |
+| `--x-toast-heading-weight` | `var(--x-font-weight-semibold, 600)` | Heading font weight |
 | `--x-toast-min-width` | `280px` | Minimum card width |
 | `--x-toast-max-width` | `480px` | Maximum card width |
 | `--x-toast-border-width` | `1px` | Border width |
@@ -156,8 +156,8 @@ toast.addEventListener('x-toast-dismiss', e => {
 
 | Property | Default | Description |
 |---|---|---|
-| `--x-toast-enter-duration` | `200ms` | Enter slide-in animation duration |
-| `--x-toast-exit-duration` | `180ms` | Exit slide-out animation duration |
+| `--x-toast-enter-duration` | `var(--x-transition-duration, 200ms)` | Enter slide-in animation duration |
+| `--x-toast-exit-duration` | `var(--x-transition-duration, 180ms)` | Exit slide-out animation duration |
 | `--x-toast-motion-fast` | `120ms` | Transition speed for micro-interactions |
 | `--x-toast-motion-ease` | `cubic-bezier(0.2,0,0,1)` | Easing function |
 

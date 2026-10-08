@@ -68,7 +68,7 @@ Animated typography that renders text along SVG paths with motion, visual effect
 | `--x-kinetic-typography-color` | `currentColor` | Text fill color. |
 | `--x-kinetic-typography-font-family` | `var(--x-font-family, inherit)` | Font family. The theme's font, or else the font of the page. |
 | `--x-kinetic-typography-font-size` | `24px` | Default font size. |
-| `--x-kinetic-typography-font-weight` | `400` | Font weight. |
+| `--x-kinetic-typography-font-weight` | `var(--x-font-weight-normal, 400)` | Font weight. |
 | `--x-kinetic-typography-letter-spacing` | `0` | Base letter spacing. |
 | `--x-kinetic-typography-opacity` | `1` | Text opacity. |
 | `--x-kinetic-typography-stroke` | `none` | Text stroke color. |

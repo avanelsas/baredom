@@ -60,7 +60,7 @@ Fires after the fade-out animation completes (or immediately when `prefers-reduc
 | `--x-splash-color`                | `#0f172a` / `#f8fafc`| Text / foreground color |
 | `--x-splash-z-index`              | `9999`               | Overlay stacking order |
 | `--x-splash-fade-duration`        | `400ms`              | Fade-out transition duration |
-| `--x-splash-fade-ease`            | `cubic-bezier(0.4,0,0.2,1)` | Fade easing curve |
+| `--x-splash-fade-ease`            | `var(--x-transition-easing, cubic-bezier(0.4,0,0.2,1))` | Fade easing curve |
 | `--x-splash-spinner-size`         | `40px`               | Spinner diameter |
 | `--x-splash-spinner-color`        | `currentColor`       | Spinner arc color |
 | `--x-splash-spinner-track-color`  | `rgba(0,0,0,0.12)`  | Spinner track ring color |

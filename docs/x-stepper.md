@@ -93,9 +93,9 @@ All properties cascade from `:host` and can be overridden per-instance.
 | `--x-stepper-indicator-size` | `2rem` | Width and height of the circular indicator |
 | `--x-stepper-connector-thickness` | `2px` | Thickness of the connector line |
 | `--x-stepper-step-gap` | `0.75rem` | Gap between indicator and step content (horizontal: padding-top; vertical: padding-bottom) |
-| `--x-stepper-font-size` | `0.875rem` | Label font size |
-| `--x-stepper-label-font-weight` | `500` | Font weight of the current step label |
-| `--x-stepper-desc-font-size` | `0.75rem` | Description font size |
+| `--x-stepper-font-size` | `var(--x-font-size-sm, 0.875rem)` | Label font size |
+| `--x-stepper-label-font-weight` | `var(--x-font-weight-medium, 500)` | Font weight of the current step label |
+| `--x-stepper-desc-font-size` | `var(--x-font-size-xs, 0.75rem)` | Description font size |
 | `--x-stepper-radius` | `999px` | Border radius of the indicator |
 | `--x-stepper-motion` | `120ms` | Duration for background/color transitions |
 | `--x-stepper-press-scale` | `0.93` | Scale applied on `:active` |

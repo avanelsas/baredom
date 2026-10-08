@@ -76,7 +76,7 @@ These are set by the future `x-timeline` parent and are observed for reactive re
 | `--x-timeline-item-title-font-size`    | `0.9375rem`                                      | Title font size |
 | `--x-timeline-item-stripe-bg`          | `rgba(0,0,0,0.025)`                              | Background when `data-striped` is present |
 | `--x-timeline-item-motion`             | `150ms`                                          | Transition duration for color changes |
-| `--x-timeline-item-enter-duration`     | `160ms`                                          | Duration of the enter animation |
+| `--x-timeline-item-enter-duration`     | `var(--x-transition-duration, 160ms)`            | Duration of the enter animation |
 
 ### Status color defaults
 

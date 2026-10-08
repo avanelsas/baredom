@@ -124,7 +124,7 @@ thumb moved.
 | `--x-range-slider-fill-color` | `#3b82f6` | Selected-segment color |
 | `--x-range-slider-thumb-color` | `#ffffff` | Thumb background color |
 | `--x-range-slider-thumb-border` | `2px solid #3b82f6` | Thumb border |
-| `--x-range-slider-thumb-shadow` | `0 1px 4px rgba(0,0,0,0.20)` | Thumb drop shadow |
+| `--x-range-slider-thumb-shadow` | `var(--x-shadow-sm, 0 1px 4px rgba(0,0,0,0.20))` | Thumb drop shadow |
 | `--x-range-slider-focus-ring` | `#60a5fa` | Focus ring color |
 | `--x-range-slider-disabled-opacity` | `0.45` | Opacity when disabled |
 | `--x-range-slider-label-color` | `rgba(0,0,0,0.60)` | Label text color |

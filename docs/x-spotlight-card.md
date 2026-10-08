@@ -64,7 +64,7 @@ x-spotlight-card {
 | `--x-spotlight-card-padding-{none,sm,md,lg}` | `0`, `0.5rem`, `1rem`, `1.5rem` | Padding tokens |
 | `--x-spotlight-card-radius-{none,sm,md,lg,xl}` | matches x-card scale | Radius tokens |
 | `--x-spotlight-card-transition-duration` | `var(--x-transition-duration, 200ms)` | Spotlight fade-in / fade-out speed |
-| `--x-spotlight-card-transition-timing` | `ease` | Easing |
+| `--x-spotlight-card-transition-timing` | `var(--x-transition-easing, ease)` | Easing |
 
 Dark mode values are set automatically via `@media (prefers-color-scheme: dark)`. Animations are suppressed via `@media (prefers-reduced-motion: reduce)` (which also forces the spotlight static).
 
