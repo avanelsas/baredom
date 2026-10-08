@@ -23,7 +23,7 @@ All components must consume the shared design tokens defined by `x-theme` (`src/
 - `--x-color-text`, `--x-color-text-muted`
 - `--x-color-border`
 - `--x-color-focus-ring`
-- `--x-color-danger`, `--x-color-success`, `--x-color-warning`
+- `--x-color-danger`, `--x-color-success`, `--x-color-warning`, each with `-hover` and `-active`
 
 ### Typography
 - `--x-font-family`, `--x-font-family-mono`
