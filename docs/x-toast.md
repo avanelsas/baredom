@@ -174,7 +174,7 @@ toast.addEventListener('x-toast-dismiss', e => {
 |---|---|
 | `--x-toast-info-bg` | `#ffffff` |
 | `--x-toast-info-border` | `rgba(0,102,204,0.30)` |
-| `--x-toast-info-color` | `rgba(15,23,42,0.92)` |
+| `--x-toast-info-color` | `var(--x-color-text, rgba(15,23,42,0.92))` |
 | `--x-toast-info-icon-color` | `rgba(0,102,204,0.85)` |
 | `--x-toast-info-progress-fill` | `rgba(0,102,204,0.70)` |
 | `--x-toast-success-*` | (green palette) |

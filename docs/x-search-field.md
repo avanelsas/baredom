@@ -83,12 +83,12 @@ Only the **outward** `x-search-field-input` event is delayed. Local UI feedback 
 | Property                            | Default (light)       |
 |-------------------------------------|-----------------------|
 | `--x-search-field-bg`               | `#ffffff`             |
-| `--x-search-field-color`            | `#111827`             |
+| `--x-search-field-color`            | `var(--x-color-text, #111827)`             |
 | `--x-search-field-border`           | `1px solid #d1d5db`   |
 | `--x-search-field-border-radius`    | `6px`                 |
 | `--x-search-field-focus-ring-color` | `#2563eb`             |
-| `--x-search-field-icon-color`       | `#9ca3af`             |
-| `--x-search-field-clear-color`      | `#9ca3af`             |
+| `--x-search-field-icon-color`       | `var(--x-color-text-muted, #9ca3af)`             |
+| `--x-search-field-clear-color`      | `var(--x-color-text-muted, #9ca3af)`             |
 | `--x-search-field-disabled-opacity` | `0.45`                |
 
 Dark mode values are applied automatically via `@media (prefers-color-scheme: dark)` inside the shadow style.

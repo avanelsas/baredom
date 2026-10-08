@@ -106,15 +106,15 @@ All events bubble and are composed (cross shadow DOM). None are cancelable.
 
 | Property | Default | Description |
 |---|---|---|
-| `--x-scroll-timeline-track-color` | `rgba(0,0,0,0.12)` | Unfilled track color |
+| `--x-scroll-timeline-track-color` | `var(--x-color-border, rgba(0,0,0,0.12))` | Unfilled track color |
 | `--x-scroll-timeline-track-fill-color` | `#3b82f6` | Filled/progress track color |
 | `--x-scroll-timeline-track-width` | `3px` | Track line thickness |
 | `--x-scroll-timeline-marker-size` | `14px` | Marker diameter |
-| `--x-scroll-timeline-marker-color` | `rgba(0,0,0,0.15)` | Inactive marker fill |
+| `--x-scroll-timeline-marker-color` | `var(--x-color-border, rgba(0,0,0,0.15))` | Inactive marker fill |
 | `--x-scroll-timeline-marker-active-color` | `#3b82f6` | Active marker fill |
 | `--x-scroll-timeline-marker-border-color` | `#3b82f6` | Marker border color |
 | `--x-scroll-timeline-entry-gap` | `2rem` | Vertical spacing between entries |
-| `--x-scroll-timeline-date-color` | `rgba(0,0,0,0.5)` | Date label text color |
+| `--x-scroll-timeline-date-color` | `var(--x-color-text-muted, rgba(0,0,0,0.5))` | Date label text color |
 | `--x-scroll-timeline-date-font-size` | `var(--x-font-size-sm, 0.8125rem)` | Date label font size |
 | `--x-scroll-timeline-transition-duration` | `var(--x-transition-duration, 300ms)` | Activation transition duration |
 | `--x-scroll-timeline-curve-amplitude` | `60` | SVG curve horizontal amplitude (pixels, curved mode) |

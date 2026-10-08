@@ -107,7 +107,7 @@ Calling `event.preventDefault()` cancels the removal — the alert stays in the 
 |--------------------------------|--------------------------|------------------------------------------|
 | `--x-alert-disabled-opacity`   | `0.55`                   | Opacity when `disabled`                  |
 | `--x-alert-focus-ring`         | `rgba(0,0,0,0.6)`        | Focus outline colour on dismiss button   |
-| `--x-alert-dismiss-color`      | `rgba(0,0,0,0.62)`       | Dismiss × icon colour                    |
+| `--x-alert-dismiss-color`      | `var(--x-color-text-muted, rgba(0,0,0,0.62))`       | Dismiss × icon colour                    |
 | `--x-alert-dismiss-hover-bg`   | `rgba(0,0,0,0.06)`       | Dismiss button hover background          |
 
 Dark-mode overrides for these tokens are set automatically via `@media (prefers-color-scheme: dark)`.
