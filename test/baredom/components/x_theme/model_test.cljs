@@ -124,6 +124,36 @@
         (is (re-find #"--x-border-width:" css))
         (is (re-find #"--x-font-weight-semibold:" css))))))
 
+(def ^:private status-shades
+  ["--x-color-danger-hover" "--x-color-danger-active"
+   "--x-color-success-hover" "--x-color-success-active"
+   "--x-color-warning-hover" "--x-color-warning-active"])
+
+(defn- missing-shades
+  "The status shades that the CSS of `preset` does not declare, each with the preset."
+  [preset]
+  (let [css (model/preset->css preset)]
+    (for [token status-shades
+          :when (not (re-find (re-pattern (str token ":")) css))]
+      [preset token])))
+
+(deftest every-preset-has-the-six-status-shades
+  (is (empty? (mapcat missing-shades model/allowed-presets))))
+
+(deftest a-status-shade-is-mixed-from-its-colour
+  (is (re-find #"--x-color-danger-hover:color-mix\(in srgb,var\(--x-color-danger\) 85%,#000\);"
+               (model/preset->css "default")))
+  (is (re-find #"--x-color-warning-active:color-mix\(in srgb,var\(--x-color-warning\) 70%,#000\);"
+               (model/preset->css "ocean"))))
+
+(deftest a-custom-preset-with-only-a-status-colour-has-its-shades
+  (model/register-preset! "test-status" #js {:light #js {"--x-color-danger" "#ab1234"}})
+  (is (empty? (missing-shades "test-status"))))
+
+(deftest a-preset-can-name-its-own-status-shade
+  (model/register-preset! "test-own-shade" #js {:light #js {"--x-color-danger-hover" "#010203"}})
+  (is (re-find #"--x-color-danger-hover:#010203;" (model/preset->css "test-own-shade"))))
+
 ;; ── register-preset! ────────────────────────────────────────────────────────
 (deftest register-preset-basic-test
   (model/register-preset!

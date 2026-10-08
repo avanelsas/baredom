@@ -2,7 +2,7 @@
 
 Centralised theming wrapper for BareDom web components. Wrap any subtree with `<x-theme>` to apply a consistent design token palette to all descendant components.
 
-All BareDom components are theme-aware out of the box. Each component references the 52 design tokens defined by `x-theme` via `var(--x-token, fallback)` — they work identically with or without a theme wrapper.
+All BareDom components are theme-aware out of the box. Each component references the 58 design tokens defined by `x-theme` via `var(--x-token, fallback)` — they work identically with or without a theme wrapper.
 
 Every component demo page includes a theme preset picker for live preview.
 
@@ -41,7 +41,7 @@ None.
 
 These tokens are set by `x-theme` on its `:host` and inherited by all descendant components via CSS custom property inheritance through shadow DOM.
 
-### Colors (20 tokens)
+### Colors (26 tokens)
 
 | Token                          | Description                    |
 |--------------------------------|--------------------------------|
@@ -63,8 +63,19 @@ These tokens are set by `x-theme` on its `:host` and inherited by all descendant
 | `--x-color-border`             | Default border color           |
 | `--x-color-focus-ring`         | Focus indicator color          |
 | `--x-color-danger`             | Destructive/error actions      |
+| `--x-color-danger-hover`       | Danger hover state             |
+| `--x-color-danger-active`      | Danger active/pressed state    |
 | `--x-color-success`            | Success/positive states        |
+| `--x-color-success-hover`      | Success hover state            |
+| `--x-color-success-active`     | Success active/pressed state   |
 | `--x-color-warning`            | Warning/caution states         |
+| `--x-color-warning-hover`      | Warning hover state            |
+| `--x-color-warning-active`     | Warning active/pressed state   |
+
+The hover and active tokens of danger, success and warning are mixed from their colour. A preset
+that names only `--x-color-danger` gets both shades in that colour. A preset can also name a shade.
+A status colour set on the `x-theme` element gets its shades too. One set on an element deeper in
+the page keeps the shades of the theme.
 
 ### Typography (11 tokens)
 

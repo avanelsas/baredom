@@ -111,3 +111,35 @@
   (let [^js el (append! (make-el))
         css    (.-textContent (.querySelector (.-shadowRoot el) "style"))]
     (is (re-find #"display:contents" css))))
+
+;; ── Status shades ───────────────────────────────────────────────────────────
+(defn- themed
+  "A theme in the document with `value` as its attribute `attr`."
+  [attr value]
+  (doto (make-el)
+    (.setAttribute attr value)
+    (append!)))
+
+(defn- background
+  "The computed background that `value` gives a child of the theme `el`."
+  [^js el value]
+  (let [^js child (.createElement js/document "div")]
+    (set! (.. child -style -background) value)
+    (.appendChild el child)
+    (.-backgroundColor (js/getComputedStyle child))))
+
+(deftest a-status-shade-follows-the-colour-of-a-custom-preset
+  (model/register-preset!
+   "test-blue-danger"
+   #js {:light #js {"--x-color-danger" "#0000ff"}
+        :dark  #js {"--x-color-danger" "#0000ff"}})
+  (let [el (themed "preset" "test-blue-danger")]
+    (is (= (background el "color-mix(in srgb,#0000ff 85%,#000)")
+           (background el "var(--x-color-danger-hover)")))
+    (is (= (background el "color-mix(in srgb,#0000ff 70%,#000)")
+           (background el "var(--x-color-danger-active)")))))
+
+(deftest a-status-shade-follows-a-colour-set-on-the-theme-element
+  (let [el (themed "style" "--x-color-success:#0000ff")]
+    (is (= (background el "color-mix(in srgb,#0000ff 85%,#000)")
+           (background el "var(--x-color-success-hover)")))))

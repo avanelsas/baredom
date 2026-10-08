@@ -7982,6 +7982,10 @@
       }, {
         "name" : "--x-color-danger"
       }, {
+        "name" : "--x-color-danger-active"
+      }, {
+        "name" : "--x-color-danger-hover"
+      }, {
         "name" : "--x-color-focus-ring"
       }, {
         "name" : "--x-color-primary"
@@ -7997,6 +8001,10 @@
         "name" : "--x-color-secondary-hover"
       }, {
         "name" : "--x-color-success"
+      }, {
+        "name" : "--x-color-success-active"
+      }, {
+        "name" : "--x-color-success-hover"
       }, {
         "name" : "--x-color-surface"
       }, {
@@ -8015,6 +8023,10 @@
         "name" : "--x-color-text-muted"
       }, {
         "name" : "--x-color-warning"
+      }, {
+        "name" : "--x-color-warning-active"
+      }, {
+        "name" : "--x-color-warning-hover"
       }, {
         "name" : "--x-font-family"
       }, {

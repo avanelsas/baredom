@@ -34,8 +34,14 @@
 (def tk-color-border           "--x-color-border")
 (def tk-color-focus-ring       "--x-color-focus-ring")
 (def tk-color-danger           "--x-color-danger")
+(def tk-color-danger-hover     "--x-color-danger-hover")
+(def tk-color-danger-active    "--x-color-danger-active")
 (def tk-color-success          "--x-color-success")
+(def tk-color-success-hover    "--x-color-success-hover")
+(def tk-color-success-active   "--x-color-success-active")
 (def tk-color-warning          "--x-color-warning")
+(def tk-color-warning-hover    "--x-color-warning-hover")
+(def tk-color-warning-active   "--x-color-warning-active")
 
 (def tk-font-family            "--x-font-family")
 (def tk-font-family-mono       "--x-font-family-mono")
@@ -121,6 +127,20 @@
   {tk-opacity-disabled    "0.5"
    tk-opacity-placeholder "0.6"})
 
+(defn- shade
+  "A CSS colour that is `percent` of the colour of `token` and black for the rest."
+  [token percent]
+  (str "color-mix(in srgb,var(" token ") " percent "%,#000)"))
+
+(def ^:private base-status-shades
+  "The hover and the active shade of each status colour, mixed from that colour."
+  {tk-color-danger-hover   (shade tk-color-danger 85)
+   tk-color-danger-active  (shade tk-color-danger 70)
+   tk-color-success-hover  (shade tk-color-success 85)
+   tk-color-success-active (shade tk-color-success 70)
+   tk-color-warning-hover  (shade tk-color-warning 85)
+   tk-color-warning-active (shade tk-color-warning 70)})
+
 (def ^:private base-shadow-light
   {tk-shadow-sm "0 1px 2px rgba(15,23,42,0.08)"
    tk-shadow-md "0 4px 10px rgba(15,23,42,0.10),0 2px 4px rgba(15,23,42,0.06)"
@@ -135,7 +155,7 @@
 
 (def ^:private preset-default
   {:light (merge base-typography base-shape base-motion base-shadow-light
-                 base-spacing base-z-index base-opacity
+                 base-spacing base-z-index base-opacity base-status-shades
                  {tk-color-primary          "#2563eb"
                   tk-color-primary-hover    "#1d4ed8"
                   tk-color-primary-active   "#1e40af"
@@ -180,7 +200,7 @@
 
 (def ^:private preset-ocean
   {:light (merge base-typography base-shape base-motion base-shadow-light
-                 base-spacing base-z-index base-opacity
+                 base-spacing base-z-index base-opacity base-status-shades
                  {tk-color-primary          "#0891b2"
                   tk-color-primary-hover    "#0e7490"
                   tk-color-primary-active   "#155e75"
@@ -225,7 +245,7 @@
 
 (def ^:private preset-forest
   {:light (merge base-typography base-shape base-motion base-shadow-light
-                 base-spacing base-z-index base-opacity
+                 base-spacing base-z-index base-opacity base-status-shades
                  {tk-color-primary          "#15803d"
                   tk-color-primary-hover    "#166534"
                   tk-color-primary-active   "#14532d"
@@ -270,7 +290,7 @@
 
 (def ^:private preset-sunset
   {:light (merge base-typography base-shape base-motion base-shadow-light
-                 base-spacing base-z-index base-opacity
+                 base-spacing base-z-index base-opacity base-status-shades
                  {tk-color-primary          "#ea580c"
                   tk-color-primary-hover    "#c2410c"
                   tk-color-primary-active   "#9a3412"
@@ -315,7 +335,7 @@
 
 (def ^:private preset-neo-brutalist
   {:light (merge base-typography base-motion
-                 base-spacing base-z-index base-opacity
+                 base-spacing base-z-index base-opacity base-status-shades
                  {tk-color-primary          "#000000"
                   tk-color-primary-hover    "#1a1a1a"
                   tk-color-primary-active   "#333333"
@@ -374,7 +394,7 @@
 
 (def ^:private preset-aurora
   {:light (merge base-typography base-shape base-motion
-                 base-spacing base-z-index base-opacity
+                 base-spacing base-z-index base-opacity base-status-shades
                  {tk-color-primary          "#7c3aed"
                   tk-color-primary-hover    "#6d28d9"
                   tk-color-primary-active   "#5b21b6"
@@ -425,7 +445,7 @@
 
 (def ^:private preset-mono-ai
   {:light (merge base-shape base-motion
-                 base-spacing base-z-index base-opacity
+                 base-spacing base-z-index base-opacity base-status-shades
                  {tk-color-primary          "#18181b"
                   tk-color-primary-hover    "#27272a"
                   tk-color-primary-active   "#3f3f46"
@@ -485,7 +505,7 @@
 
 (def ^:private preset-warm-mineral
   {:light (merge base-typography base-shape base-motion base-shadow-light
-                 base-spacing base-z-index base-opacity
+                 base-spacing base-z-index base-opacity base-status-shades
                  {tk-color-primary          "#b45309"
                   tk-color-primary-hover    "#92400e"
                   tk-color-primary-active   "#78350f"
