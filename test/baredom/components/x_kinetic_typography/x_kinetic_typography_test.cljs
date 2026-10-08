@@ -433,3 +433,27 @@
   (let [el ^js (append! (make-el))]
     (set! (.-endSize el) "48px")
     (is (= "48px" (.getAttribute el model/attr-end-size)))))
+
+;; ── The font family ──────────────────────────────────────────────────────────
+
+(defn- text-font-in!
+  "The font family of the text part of a new element inside a wrapper with `style`. Removes
+   the wrapper."
+  [style]
+  (let [wrapper (.createElement js/document "div")
+        el      (make-el)]
+    (.setAttribute wrapper "style" style)
+    (.setAttribute el "text" "Hello")
+    (.appendChild wrapper el)
+    (.appendChild (.-body js/document) wrapper)
+    (let [font (.-fontFamily (js/getComputedStyle (shadow-query el "[part=text]")))]
+      (.remove wrapper)
+      font)))
+
+(deftest the-text-takes-the-font-family-of-the-page
+  (is (.includes (text-font-in! "font-family:PageFontTest,serif") "PageFontTest")))
+
+(deftest the-text-takes-the-font-family-of-the-theme-over-the-page
+  (is (.includes (text-font-in! "font-family:PageFontTest,serif;--x-font-family:ThemeFontTest")
+                 "ThemeFontTest")))
+

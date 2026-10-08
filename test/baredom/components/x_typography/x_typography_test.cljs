@@ -172,3 +172,25 @@
     (set! (.-textContent el) "Hello world")
     (append! el)
     (is (= "Hello world" (.-textContent el)))))
+
+;; ── The font family ──────────────────────────────────────────────────────────
+
+(defn- font-in!
+  "The font family of a new element inside a wrapper with `style`. Removes the wrapper."
+  [style]
+  (let [wrapper (.createElement js/document "div")
+        el      (make-el)]
+    (.setAttribute wrapper "style" style)
+    (.appendChild wrapper el)
+    (.appendChild (.-body js/document) wrapper)
+    (let [font (.-fontFamily (js/getComputedStyle el))]
+      (.remove wrapper)
+      font)))
+
+(deftest the-text-takes-the-font-family-of-the-page
+  (is (.includes (font-in! "font-family:PageFontTest,serif") "PageFontTest")))
+
+(deftest the-text-takes-the-font-family-of-the-theme-over-the-page
+  (is (.includes (font-in! "font-family:PageFontTest,serif;--x-font-family:ThemeFontTest")
+                 "ThemeFontTest")))
+

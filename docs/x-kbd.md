@@ -72,7 +72,7 @@ No events, no public methods.
 | `--x-kbd-border-color`     | `var(--x-typography-kbd-border, rgba(0,0,0,0.15))`                 | Cap border colour.                |
 | `--x-kbd-border-radius`    | `var(--x-typography-kbd-radius, 0.25rem)`                          | Cap corner radius.                |
 | `--x-kbd-padding`          | `var(--x-typography-kbd-padding, 0.1em 0.4em)`                     | Padding inside the cap.           |
-| `--x-kbd-font-family`      | `ui-monospace, "SF Mono", Menlo, Consolas, monospace`              | Cap font family.                  |
+| `--x-kbd-font-family`      | `var(--x-font-family-mono, ui-monospace, "SF Mono", Menlo, Consolas, monospace)` | Cap font family.                  |
 | `--x-kbd-font-size`        | `0.875em` (size variant overrides)                                 | Cap font size.                    |
 | `--x-kbd-shadow`           | `inset 0 -1px 0 rgba(0,0,0,0.08)`                                  | Cap shadow.                       |
 | `--x-kbd-gap`              | `0.25rem`                                                          | Gap between caps and separators.  |

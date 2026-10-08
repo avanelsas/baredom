@@ -9023,7 +9023,7 @@
         "default" : "10s"
       }, {
         "name" : "--x-kinetic-typography-font-family",
-        "default" : "system-ui,sans-serif"
+        "default" : "var(--x-font-family,inherit)"
       }, {
         "name" : "--x-kinetic-typography-font-size",
         "default" : "24px"
@@ -15117,7 +15117,7 @@
         "default" : "var(--x-color-text,inherit)"
       }, {
         "name" : "--x-kbd-font-family",
-        "default" : "ui-monospace,\\"
+        "default" : "var(--x-font-family-mono,"
       }, {
         "name" : "--x-kbd-font-size",
         "default" : "1em"
