@@ -77,7 +77,7 @@
    "border:var(--x-text-area-border);"
    "border-radius:var(--x-text-area-border-radius);"
    "font-size:var(--x-text-area-font-size);"
-   "line-height:1.5;"
+   "line-height:var(--x-line-height-normal,1.5);"
    "font-family:inherit;"
    "outline:none;"
    "resize:var(--x-text-area-resize);"
