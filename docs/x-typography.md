@@ -93,8 +93,8 @@ None.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--x-typography-font-family` | `system-ui, -apple-system, sans-serif` | Base font family |
-| `--x-typography-mono-font-family` | `ui-monospace, "SFMono-Regular", ...` | Monospace font for code/kbd |
+| `--x-typography-font-family` | `var(--x-font-family, inherit)` | Base font family. The theme's font, or else the font of the page |
+| `--x-typography-mono-font-family` | `var(--x-font-family-mono, ui-monospace, "SFMono-Regular", ...)` | Monospace font for code/kbd |
 | `--x-typography-color` | `inherit` | Text color |
 
 ### Code variant

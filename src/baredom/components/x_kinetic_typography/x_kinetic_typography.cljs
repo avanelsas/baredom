@@ -51,7 +51,7 @@
    "box-sizing:border-box;"
    "color-scheme:light dark;"
    "--x-kinetic-typography-color:var(--x-color-text,currentColor);"
-   "--x-kinetic-typography-font-family:system-ui,sans-serif;"
+   "--x-kinetic-typography-font-family:var(--x-font-family,inherit);"
    "--x-kinetic-typography-font-size:24px;"
    "--x-kinetic-typography-font-weight:400;"
    "--x-kinetic-typography-letter-spacing:0;"

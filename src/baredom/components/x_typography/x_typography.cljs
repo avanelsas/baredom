@@ -9,9 +9,10 @@
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
 (def ^:private style-text
-  ;; Shorthand for the default font stacks — used in var() fallbacks
-  (let [sans  "system-ui,-apple-system,sans-serif"
-        mono  "ui-monospace,\"SFMono-Regular\",\"SF Mono\",Menlo,Consolas,monospace"
+  ;; Shorthand for the default fonts, used in var() fallbacks
+  (let [text-font       "var(--x-font-family,inherit)"
+        mono-font       (str "var(--x-font-family-mono,ui-monospace,"
+                             "\"SFMono-Regular\",\"SF Mono\",Menlo,Consolas,monospace)")
         ;; Light-mode defaults for variant-specific tokens
         code-bg-light   "rgba(0,0,0,0.06)"
         code-bg-dark    "rgba(255,255,255,0.1)"
@@ -28,7 +29,7 @@
      ":host{"
      "display:block;"
      "color-scheme:light dark;"
-     "font-family:var(--x-typography-font-family," sans ");"
+     "font-family:var(--x-typography-font-family," text-font ");"
      "color:var(--x-typography-color,var(--x-color-text,inherit));}"
      du/hidden-rule
 
@@ -91,7 +92,7 @@
 
      ;; Code: inherited props on :host, box props on container
      ":host([data-variant='code']){"
-     "font-family:var(--x-typography-mono-font-family," mono ");"
+     "font-family:var(--x-typography-mono-font-family," mono-font ");"
      "font-size:0.875rem;font-weight:400;line-height:1.5;}"
      ":host([data-variant='code']) [part=container]{"
      "background:var(--x-typography-code-bg,var(--x-color-surface," code-bg-light "));"
@@ -103,7 +104,7 @@
 
      ;; Kbd: inherited props on :host, box props on container
      ":host([data-variant='kbd']){"
-     "font-family:var(--x-typography-mono-font-family," mono ");"
+     "font-family:var(--x-typography-mono-font-family," mono-font ");"
      "font-size:0.875rem;font-weight:400;line-height:1.5;}"
      ":host([data-variant='kbd']) [part=container]{"
      "background:var(--x-typography-kbd-bg,var(--x-color-surface," kbd-bg-light "));"

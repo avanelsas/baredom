@@ -233,3 +233,17 @@
     (set! (.-size el) "lg")
     (is (= "lg" (.getAttribute el model/attr-size)))
     (is (= "lg" (.-size el)))))
+
+;; ── The font family ──────────────────────────────────────────────────────────
+
+(deftest a-key-takes-the-monospace-font-of-the-theme
+  (let [wrapper (.createElement js/document "div")
+        el      (make-el)]
+    (.setAttribute wrapper "style" "--x-font-family-mono:ThemeMonoTest")
+    (.setAttribute el model/attr-keys "Ctrl+C")
+    (.appendChild wrapper el)
+    (.appendChild (.-body js/document) wrapper)
+    (let [font (.-fontFamily (js/getComputedStyle (shadow-q el "[part=key]")))]
+      (.remove wrapper)
+      (is (.includes font "ThemeMonoTest")))))
+

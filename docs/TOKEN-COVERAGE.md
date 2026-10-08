@@ -55,10 +55,10 @@ Closed families, in which CI allows no value that follows no token: radius, shad
 | `x-i18n-provider` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-icon` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-image` | 6/6 | 1/1 | 1/2 |  | 0/1 | 1/1 |  | 2/2 | 1/2 |  |  |
-| `x-kbd` | 2/2 | 0/1 | 0/3 | 0/1 | 0/1 |  |  |  | 0/4 |  | 0/1 |
+| `x-kbd` | 2/2 | 1/1 | 0/3 | 0/1 | 0/1 |  |  |  | 0/4 |  | 0/1 |
 | `x-kinetic-canvas` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-kinetic-font` | 1/1 | 0/2 | 0/2 |  | 0/1 |  |  |  | 0/1 |  |  |
-| `x-kinetic-typography` | 4/4 | 0/1 | 0/1 | 0/1 | 0/1 |  |  |  | 0/1 |  |  |
+| `x-kinetic-font` | 1/1 |  | 0/2 |  | 0/1 |  |  |  | 0/1 |  |  |
+| `x-kinetic-typography` | 4/4 | 1/1 | 0/1 | 0/1 | 0/1 |  |  |  | 0/1 |  |  |
 | `x-liquid-dock` | 2/9 |  | 0/1 |  |  | 1/1 | 2/2 |  | 0/2 | 0/1 | 0/1 |
 | `x-liquid-fill` | 0/1 |  |  |  |  |  |  |  |  |  |  |
 | `x-liquid-glass` |  |  |  |  |  |  |  |  |  |  |  |
@@ -116,10 +116,10 @@ Closed families, in which CI allows no value that follows no token: radius, shad
 | `x-toast` | 16/48 |  | 1/2 | 0/1 | 0/2 | 2/2 | 2/2 | 4/4 | 0/5 |  | 0/1 |
 | `x-toaster` |  |  |  |  |  |  |  |  | 0/1 | 0/1 |  |
 | `x-tooltip` | 6/6 |  | 1/1 |  | 0/1 | 1/1 | 2/2 | 2/2 | 1/1 | 1/1 |  |
-| `x-typography` | 6/6 | 0/3 | 0/16 | 0/16 | 0/16 | 2/2 |  |  | 0/3 |  | 0/2 |
+| `x-typography` | 6/6 | 3/3 | 0/16 | 0/16 | 0/16 | 2/2 |  |  | 0/3 |  | 0/2 |
 | `x-welcome-tour` | 26/27 | 1/1 | 4/5 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 0/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 793/1179 | 5/12 | 31/154 | 3/70 | 1/42 | 110/110 | 73/73 | 107/107 | 15/241 | 3/29 | 0/69 |
+| **All** | 793/1179 | 10/10 | 31/154 | 3/70 | 1/42 | 110/110 | 73/73 | 107/107 | 15/241 | 3/29 | 0/69 |
 
 CSS not read, or not in full: x-liquid-glass.
 
@@ -164,6 +164,11 @@ An outline or an edge drawn with a shadow. It is not an elevation.
 The shape of a mark. It is not a corner.
 
 - `x-checkbox`: `border-radius: 1px`
+
+The effect needs a variable font. system-ui is the safest default for one.
+
+- `x-kinetic-font`: `--x-kinetic-font-family: system-ui,sans-serif`
+- `x-kinetic-font`: `font-family: system-ui,sans-serif`
 
 Smoothing tied to scrolling. It follows the pointer and no design default.
 
