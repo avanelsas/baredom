@@ -11090,10 +11090,10 @@
         "default" : "var(--x-transition-duration,140ms)"
       }, {
         "name" : "--x-alert-error-bg",
-        "default" : "rgba(190,20,40,0.10)"
+        "default" : "color-mix(in srgb,var(--x-color-danger,rgb(190,20,40)) 10%,transparent)"
       }, {
         "name" : "--x-alert-error-border",
-        "default" : "rgba(190,20,40,0.45)"
+        "default" : "color-mix(in srgb,var(--x-color-danger,rgb(190,20,40)) 45%,transparent)"
       }, {
         "name" : "--x-alert-error-color",
         "default" : "rgba(120,10,20,0.95)"
@@ -11138,19 +11138,19 @@
         "default" : "var(--x-radius-md,10px)"
       }, {
         "name" : "--x-alert-success-bg",
-        "default" : "rgba(16,140,72,0.10)"
+        "default" : "color-mix(in srgb,var(--x-color-success,rgb(16,140,72)) 10%,transparent)"
       }, {
         "name" : "--x-alert-success-border",
-        "default" : "rgba(16,140,72,0.35)"
+        "default" : "color-mix(in srgb,var(--x-color-success,rgb(16,140,72)) 35%,transparent)"
       }, {
         "name" : "--x-alert-success-color",
         "default" : "rgba(10,90,46,0.95)"
       }, {
         "name" : "--x-alert-warning-bg",
-        "default" : "rgba(204,120,0,0.12)"
+        "default" : "color-mix(in srgb,var(--x-color-warning,rgb(204,120,0)) 12%,transparent)"
       }, {
         "name" : "--x-alert-warning-border",
-        "default" : "rgba(204,120,0,0.45)"
+        "default" : "color-mix(in srgb,var(--x-color-warning,rgb(204,120,0)) 45%,transparent)"
       }, {
         "name" : "--x-alert-warning-color",
         "default" : "rgba(120,70,0,0.95)"
@@ -12559,16 +12559,16 @@
         "default" : "var(--x-color-bg,#ffffff)"
       }, {
         "name" : "--x-toast-error-border",
-        "default" : "rgba(190,20,40,0.40)"
+        "default" : "color-mix(in srgb,var(--x-color-danger,rgb(190,20,40)) 40%,transparent)"
       }, {
         "name" : "--x-toast-error-color",
         "default" : "var(--x-color-text,rgba(15,23,42,0.92))"
       }, {
         "name" : "--x-toast-error-icon-color",
-        "default" : "rgba(190,20,40,0.85)"
+        "default" : "color-mix(in srgb,var(--x-color-danger,rgb(190,20,40)) 85%,transparent)"
       }, {
         "name" : "--x-toast-error-progress-fill",
-        "default" : "rgba(190,20,40,0.70)"
+        "default" : "color-mix(in srgb,var(--x-color-danger,rgb(190,20,40)) 70%,transparent)"
       }, {
         "name" : "--x-toast-exit-duration",
         "default" : "var(--x-transition-duration,180ms)"
@@ -12646,16 +12646,16 @@
         "default" : "var(--x-color-bg,#ffffff)"
       }, {
         "name" : "--x-toast-success-border",
-        "default" : "rgba(16,140,72,0.30)"
+        "default" : "color-mix(in srgb,var(--x-color-success,rgb(16,140,72)) 30%,transparent)"
       }, {
         "name" : "--x-toast-success-color",
         "default" : "var(--x-color-text,rgba(15,23,42,0.92))"
       }, {
         "name" : "--x-toast-success-icon-color",
-        "default" : "rgba(16,140,72,0.85)"
+        "default" : "color-mix(in srgb,var(--x-color-success,rgb(16,140,72)) 85%,transparent)"
       }, {
         "name" : "--x-toast-success-progress-fill",
-        "default" : "rgba(16,140,72,0.70)"
+        "default" : "color-mix(in srgb,var(--x-color-success,rgb(16,140,72)) 70%,transparent)"
       }, {
         "name" : "--x-toast-timeout",
         "default" : "0ms"
@@ -12664,16 +12664,16 @@
         "default" : "var(--x-color-bg,#ffffff)"
       }, {
         "name" : "--x-toast-warning-border",
-        "default" : "rgba(204,120,0,0.40)"
+        "default" : "color-mix(in srgb,var(--x-color-warning,rgb(204,120,0)) 40%,transparent)"
       }, {
         "name" : "--x-toast-warning-color",
         "default" : "var(--x-color-text,rgba(15,23,42,0.92))"
       }, {
         "name" : "--x-toast-warning-icon-color",
-        "default" : "rgba(180,100,0,0.85)"
+        "default" : "color-mix(in srgb,var(--x-color-warning,rgb(180,100,0)) 85%,transparent)"
       }, {
         "name" : "--x-toast-warning-progress-fill",
-        "default" : "rgba(204,120,0,0.70)"
+        "default" : "color-mix(in srgb,var(--x-color-warning,rgb(204,120,0)) 70%,transparent)"
       } ],
       "cssParts" : [ {
         "name" : "body"

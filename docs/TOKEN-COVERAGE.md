@@ -13,10 +13,10 @@ Closed families, in which CI allows no value that follows no token: font-family,
 
 | Component | color | font-family | font-size | font-weight | line-height | radius | shadow | transition | space | z | border-width |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `x-alert` | 6/6 |  | 1/1 |  |  | 2/2 |  | 4/4 | 0/4 |  | 0/1 |
+| `x-alert` | 18/18 |  | 1/1 |  |  | 2/2 |  | 4/4 | 0/4 |  | 0/1 |
 | `x-avatar` | 14/20 |  | 4/4 | 1/1 |  | 2/2 |  |  | 0/1 |  | 0/2 |
 | `x-avatar-group` | 8/8 |  | 4/4 | 1/1 |  | 1/1 |  |  |  |  | 0/1 |
-| `x-badge` | 6/6 |  | 1/1 | 1/1 |  | 3/3 |  |  | 0/2 |  | 0/1 |
+| `x-badge` | 18/18 |  | 1/1 | 1/1 |  | 3/3 |  |  | 0/2 |  | 0/1 |
 | `x-bento-grid` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-bento-item` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-breadcrumbs` | 8/8 |  | 3/3 | 1/1 |  |  |  |  | 0/1 |  |  |
@@ -114,13 +114,13 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-text-area` | 14/14 |  | 4/4 | 1/1 | 1/1 | 1/1 |  | 1/1 | 0/2 |  |  |
 | `x-timeline` | 1/1 |  | 1/1 | 1/1 |  |  |  |  | 0/1 |  |  |
 | `x-timeline-item` | 28/28 |  | 2/2 | 1/1 |  | 1/1 |  | 3/3 | 0/3 |  |  |
-| `x-toast` | 24/40 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 4/4 | 0/5 |  | 0/1 |
+| `x-toast` | 42/42 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 4/4 | 0/5 |  | 0/1 |
 | `x-toaster` |  |  |  |  |  |  |  |  | 0/1 | 0/1 |  |
 | `x-tooltip` | 6/6 |  | 1/1 |  |  | 1/1 | 2/2 | 2/2 | 1/1 | 1/1 |  |
 | `x-typography` | 6/6 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 0/2 |
 | `x-welcome-tour` | 26/26 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 0/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 918/965 | 10/10 | 117/117 | 69/69 | 7/7 | 110/110 | 73/73 | 107/107 | 15/236 | 3/26 | 0/69 |
+| **All** | 960/991 | 10/10 | 117/117 | 69/69 | 7/7 | 110/110 | 73/73 | 107/107 | 15/236 | 3/26 | 0/69 |
 
 CSS not read, or not in full: x-liquid-glass.
 
@@ -180,9 +180,17 @@ The height of a one-line control.
 
 4 values in `x-command-palette`, `x-currency-field`, `x-form-field`, `x-search-field`.
 
-A tint of a status colour, or the text on one.
+Text on a tint, chosen for contrast with it.
 
-58 values in `x-alert`, `x-badge`, `x-menu-item`, `x-toast`.
+16 values in `x-alert`, `x-badge`.
+
+A colour of the info status. The theme has no token for it.
+
+14 values in `x-alert`, `x-badge`, `x-toast`.
+
+A tint of the danger colour, written as a solid colour.
+
+2 values in `x-menu-item`.
 
 Text or a mark on a filled colour, chosen for contrast with the fill.
 

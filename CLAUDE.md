@@ -227,7 +227,8 @@ All components must consume shared design tokens from `x-theme`. Wrap hardcoded 
 
 - **Overlays** (modals, drawers, menus, popovers, toasts, dropdowns): use `--x-color-bg` (always opaque), never `--x-color-surface`
 - **Inline surfaces** (cards, fieldsets, collapse panels): use `--x-color-surface`
-- **Do not theme** decorative palette colours, white-on-coloured-button foreground, or rgba variant tints
+- **Do not theme** decorative palette colours, white-on-coloured-button foreground, info colours, or the text on a tint
+- **Hover fills and tints** follow the rules in `docs/THEMING.md`: a surface token on a surface the component paints, a mix of the text colour elsewhere, and a mix of its token for a tint of a status or primary colour
 
 See [`docs/THEMING.md`](docs/THEMING.md) for the full token catalogue and demo page requirements.
 
