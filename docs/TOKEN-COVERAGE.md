@@ -20,8 +20,8 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-bento-item` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-breadcrumbs` | 0/8 |  | 3/3 | 1/1 |  |  |  |  | 0/1 |  |  |
 | `x-button` | 34/46 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 0/1 |
-| `x-calendar` | 17/41 |  | 4/4 | 4/4 |  | 7/7 | 1/1 | 1/1 | 0/11 |  | 0/2 |
-| `x-cancel-dialogue` | 17/22 |  | 3/3 | 2/2 | 1/1 | 2/2 | 2/2 |  | 0/6 | 0/3 |  |
+| `x-calendar` | 17/18 |  | 4/4 | 4/4 |  | 7/7 | 1/1 | 1/1 | 0/11 |  | 0/2 |
+| `x-cancel-dialogue` | 17/22 |  | 3/3 | 2/2 | 1/1 | 2/2 | 2/2 |  | 0/6 | 0/1 |  |
 | `x-card` | 8/14 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
 | `x-carousel` | 12/12 |  |  |  |  | 1/1 | 1/1 | 3/3 | 0/3 |  |  |
 | `x-chart` | 14/16 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 1/1 | 0/6 | 0/1 | 0/2 |
@@ -37,8 +37,8 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-context-menu` | 2/4 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-copy` | 8/12 |  | 1/1 |  |  | 1/1 |  |  | 0/1 | 0/1 |  |
 | `x-currency-field` | 16/16 |  | 5/5 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  |  |
-| `x-date-picker` | 25/51 |  | 5/5 | 4/4 |  | 4/4 | 1/1 |  | 0/9 | 0/1 | 0/3 |
-| `x-divider` | 0/3 |  | 1/1 | 1/1 |  |  |  |  | 0/2 |  |  |
+| `x-date-picker` | 25/26 |  | 5/5 | 4/4 |  | 4/4 | 1/1 |  | 0/9 | 0/1 | 0/3 |
+| `x-divider` | 0/2 |  | 1/1 | 1/1 |  |  |  |  | 0/2 |  |  |
 | `x-drag-panel` | 7/7 |  |  |  |  | 2/2 | 2/2 | 1/1 | 0/4 | 0/1 |  |
 | `x-drawer` | 6/8 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 0/2 |
 | `x-drop-zone` | 9/9 |  | 1/1 |  |  | 2/2 |  | 1/1 | 0/3 |  |  |
@@ -59,7 +59,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-kinetic-canvas` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-kinetic-font` | 1/1 |  |  |  |  |  |  |  | 0/1 |  |  |
 | `x-kinetic-typography` | 4/4 | 1/1 |  | 1/1 |  |  |  |  | 0/1 |  |  |
-| `x-liquid-dock` | 2/9 |  |  |  |  | 1/1 | 2/2 |  | 0/2 | 0/1 | 0/1 |
+| `x-liquid-dock` | 2/6 |  |  |  |  | 1/1 | 2/2 |  | 0/2 | 0/1 | 0/1 |
 | `x-liquid-fill` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-liquid-glass` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-menu` | 4/4 |  |  |  |  | 1/1 | 2/2 |  | 0/5 | 0/1 |  |
@@ -70,9 +70,9 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-multi-combobox` | 26/27 |  | 2/2 | 1/1 |  | 3/3 | 4/4 | 3/3 | 0/8 | 1/1 | 0/2 |
 | `x-navbar` | 8/12 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 0/1 |
 | `x-neural-glow` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-notification-center` |  |  |  |  |  |  |  |  | 0/1 | 0/2 |  |
+| `x-notification-center` |  |  |  |  |  |  |  |  | 0/1 | 0/1 |  |
 | `x-organic-divider` | 2/2 |  |  |  |  |  |  |  |  |  |  |
-| `x-organic-progress` | 2/3 |  |  |  |  |  |  |  |  |  |  |
+| `x-organic-progress` | 2/2 |  |  |  |  |  |  |  |  |  |  |
 | `x-organic-shape` | 0/2 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-otp-input` | 8/8 | 1/1 |  | 1/1 |  | 1/1 |  | 1/1 | 1/1 |  |  |
 | `x-pagination` | 0/15 |  | 3/3 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
@@ -80,7 +80,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-popover` | 48/48 |  | 4/4 | 2/2 |  | 4/4 | 4/4 | 5/5 | 0/8 | 0/1 | 0/8 |
 | `x-progress` | 4/10 |  | 2/2 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
 | `x-progress-circle` | 4/8 |  |  | 1/1 |  |  |  | 1/1 |  |  |  |
-| `x-proximity-list` | 1/1 |  |  |  |  |  |  |  | 0/2 |  |  |
+| `x-proximity-list` | 1/1 |  |  |  |  |  |  |  | 0/1 |  |  |
 | `x-radio` | 8/8 |  |  |  |  |  |  | 2/2 |  |  | 0/1 |
 | `x-range-slider` | 5/11 |  | 2/2 | 1/1 |  | 1/1 | 1/1 | 1/1 | 0/1 |  |  |
 | `x-rating` | 3/7 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
@@ -96,7 +96,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-skeleton` | 2/4 |  |  |  |  | 2/2 |  |  |  |  |  |
 | `x-skeleton-group` |  |  |  |  |  |  |  |  | 0/1 |  |  |
 | `x-slider` | 8/14 |  | 2/2 | 1/1 |  | 1/1 | 1/1 | 2/2 | 0/2 |  |  |
-| `x-soft-body` | 4/6 |  |  |  |  |  | 2/2 |  | 0/2 |  | 0/1 |
+| `x-soft-body` | 4/4 |  |  |  |  |  | 2/2 |  | 0/1 |  | 0/1 |
 | `x-spacer` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-spinner` | 4/4 |  |  |  |  |  |  |  |  |  |  |
 | `x-splash` | 8/10 |  |  |  |  | 1/1 |  | 3/3 | 0/1 | 0/1 |  |
@@ -119,7 +119,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-typography` | 6/6 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 0/2 |
 | `x-welcome-tour` | 26/27 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 0/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 793/1161 | 10/10 | 117/117 | 69/69 | 7/7 | 110/110 | 73/73 | 107/107 | 15/238 | 3/29 | 0/69 |
+| **All** | 793/1106 | 10/10 | 117/117 | 69/69 | 7/7 | 110/110 | 73/73 | 107/107 | 15/236 | 3/26 | 0/69 |
 
 CSS not read, or not in full: x-liquid-glass.
 
@@ -140,7 +140,6 @@ A loop that runs by itself. It is not a transition.
 - `x-progress`: `animation: x-progress-indeterminate 1.5s ease infinite`
 - `x-progress-circle`: `animation: x-progress-circle-spin 1.2s linear infinite`
 - `x-skeleton`: `--x-skeleton-duration: 1.5s`
-- `x-skeleton`: `animation: 1.5s`
 - `x-spinner`: `--x-spinner-duration: 0.75s`
 - `x-splash`: `--x-splash-spinner-duration: 0.75s`
 
@@ -182,7 +181,6 @@ A step between two steps of the theme. It keeps the variants of its component ap
 A display size. It belongs to the scale of its component.
 
 - `x-kinetic-font`: `--x-kinetic-font-size: 2rem`
-- `x-kinetic-font`: `font-size: 2rem`
 - `x-kinetic-typography`: `--x-kinetic-typography-font-size: 24px`
 - `x-otp-input`: `--x-otp-input-font-size: 1.25rem`
 - `x-stat`: `--x-stat-value-size: 20px`
@@ -206,7 +204,6 @@ A size below the smallest step of the theme, chosen to fit its place.
 The effect needs a variable font. system-ui is the safest default for one.
 
 - `x-kinetic-font`: `--x-kinetic-font-family: system-ui,sans-serif`
-- `x-kinetic-font`: `font-family: system-ui,sans-serif`
 
 Smoothing tied to scrolling. It follows the pointer and no design default.
 

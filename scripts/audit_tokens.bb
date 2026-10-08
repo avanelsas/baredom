@@ -254,21 +254,32 @@
       {:tag tag :family (family prop) :prop prop :value value
        :kind (own-kind (family prop) value)})))
 
+(def ^:private media-block #"@media[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}")
+
+(defn- always-declared
+  "The own properties that `css` declares on the host outside every media block."
+  [css]
+  (set (for [rule     (re-seq #"(?:^|\})\s*:host\s*\{[^{}]*\}" (str/replace css media-block ""))
+             [prop _] (declarations rule)
+             :when    (own? prop)]
+         prop)))
+
 (defn- used-rows
-  "One row for each declaration of a family: its own value, or the fallback of each own
-   property it reads, in the family that the name of that property says. An own property read
-   with no fallback is left to its declaration."
-  [tag decls]
-  (for [[prop value] decls
-        :let  [family (family-of prop)]
-        :when family
-        row   (if (seq (own-in value))
-                (for [[own fallback] (fallbacks value)
-                      :when (empty? (own-in fallback))
-                      :let  [named (or (family-by-name own) family)]]
-                  {:family named :value fallback :kind (own-kind named fallback)})
-                [{:value value :kind (value-kind family value)}])]
-    (merge {:tag tag :family family :prop prop} row)))
+  "One row for each declaration of a family in `css`: its own value, or the fallback of each
+   own property it reads, in the family that the name of that property says. An own property
+   read with no fallback, or one that `css` always declares, is left to its declaration."
+  [tag css]
+  (let [declared (always-declared css)]
+    (for [[prop value] (mapcat longhand (declarations css))
+          :let  [family (family-of prop)]
+          :when family
+          row   (if (seq (own-in value))
+                  (for [[own fallback] (fallbacks value)
+                        :when (and (empty? (own-in fallback)) (not (declared own)))
+                        :let  [named (or (family-by-name own) family)]]
+                    {:family named :value fallback :kind (own-kind named fallback)})
+                  [{:value value :kind (value-kind family value)}])]
+      (merge {:tag tag :family family :prop prop} row))))
 
 (def ^:private by-design
   "The values that follow no token on purpose: pairs of a reason and its values, each value a
@@ -297,7 +308,7 @@
     {:tag    tag-name
      :read?  (boolean (seq texts))
      :unread unread
-     :rows   (->> (concat (declared-rows tag-name decls) (used-rows tag-name decls))
+     :rows   (->> (concat (declared-rows tag-name decls) (mapcat #(used-rows tag-name %) texts))
                   (remove measure-as-colour?)
                   (map marked))}))
 

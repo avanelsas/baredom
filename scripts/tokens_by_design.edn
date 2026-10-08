@@ -17,7 +17,6 @@
    ["x-progress" "animation" "x-progress-indeterminate 1.5s ease infinite"]
    ["x-progress-circle" "animation" "x-progress-circle-spin 1.2s linear infinite"]
    ["x-skeleton" "--x-skeleton-duration" "1.5s"]
-   ["x-skeleton" "animation" "1.5s"]
    ["x-spinner" "--x-spinner-duration" "0.75s"]
    ["x-splash" "--x-splash-spinner-duration" "0.75s"]]]
  ["An effect that plays once. Its length is part of the effect."
@@ -46,7 +45,6 @@
   [["x-typography" "font-size" "0.8125rem"]]]
  ["A display size. It belongs to the scale of its component."
   [["x-kinetic-font" "--x-kinetic-font-size" "2rem"]
-   ["x-kinetic-font" "font-size" "2rem"]
    ["x-kinetic-typography" "--x-kinetic-typography-font-size" "24px"]
    ["x-otp-input" "--x-otp-input-font-size" "1.25rem"]
    ["x-stat" "--x-stat-value-size" "20px"]
@@ -65,8 +63,7 @@
    ["x-stepper" "--x-stepper-desc-font-size" "0.6875rem"]
    ["x-typography" "font-size" "0.625rem"]]]
  ["The effect needs a variable font. system-ui is the safest default for one."
-  [["x-kinetic-font" "--x-kinetic-font-family" "system-ui,sans-serif"]
-   ["x-kinetic-font" "font-family" "system-ui,sans-serif"]]]
+  [["x-kinetic-font" "--x-kinetic-font-family" "system-ui,sans-serif"]]]
  ["Smoothing tied to scrolling. It follows the pointer and no design default."
   [["x-scroll-parallax" "--x-scroll-parallax-smooth-duration" "80ms"]
    ["x-scroll-stack" "transition" "transform 60ms linear"]
