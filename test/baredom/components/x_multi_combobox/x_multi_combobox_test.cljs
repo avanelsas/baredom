@@ -273,3 +273,26 @@
     (is (true? (.. el -validity -customError))
         "error attribute drives customError")
     (is (= "Pick at least one" (.-validationMessage el)))))
+
+;; ── Chip removal while the chip holds focus ──────────────────────────────────
+(deftest removing-the-chip-that-holds-focus-keeps-focus-and-reports-no-error-test
+  (let [^js el    (append! (doto (make-el)
+                             (.setAttribute model/attr-value "apple,banana")))
+        ^js input (shadow-part el "[part=input]")
+        errors    (atom [])
+        on-error  (fn [^js evt]
+                    (.preventDefault evt)
+                    (swap! errors conj (.-message evt)))]
+    (.focus input)
+    (let [^js chip       (shadow-part el "x-chip")
+          ^js remove-btn (.querySelector (.-shadowRoot chip) "[part=remove]")]
+      (.focus remove-btn)
+      (is (.hasAttribute el model/attr-open))
+      (.addEventListener js/window "error" on-error)
+      (.click remove-btn)
+      (.removeEventListener js/window "error" on-error))
+    (is (= [] @errors))
+    (is (= "banana" (.getAttribute el model/attr-value)))
+    (is (= 1 (.-length (shadow-parts el "x-chip"))))
+    (is (identical? input (.-activeElement (.-shadowRoot el))))
+    (is (.hasAttribute el model/attr-open))))
