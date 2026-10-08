@@ -284,6 +284,11 @@
   [{:keys [tag prop value] :as row}]
   (cond-> row (exempt [tag prop value]) (assoc :kind :by-design)))
 
+(defn- measure-as-colour?
+  "True when `row` is in the colour family and its value is a number or a length."
+  [{:keys [family value]}]
+  (and (= "color" family) (re-find #"^[\d.]+(px|rem|em|%)?$" value)))
+
 (defn- audited
   "A component with every value of its CSS that a token family answers for."
   [{:keys [tag-name dir-name]}]
@@ -292,7 +297,9 @@
     {:tag    tag-name
      :read?  (boolean (seq texts))
      :unread unread
-     :rows   (map marked (concat (declared-rows tag-name decls) (used-rows tag-name decls)))}))
+     :rows   (->> (concat (declared-rows tag-name decls) (used-rows tag-name decls))
+                  (remove measure-as-colour?)
+                  (map marked))}))
 
 ;; ── the report ──────────────────────────────────────────────────────────────
 

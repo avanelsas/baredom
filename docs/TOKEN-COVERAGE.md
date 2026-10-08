@@ -19,7 +19,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-bento-grid` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-bento-item` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-breadcrumbs` | 0/8 |  | 3/3 | 1/1 |  |  |  |  | 0/1 |  |  |
-| `x-button` | 34/47 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 0/1 |
+| `x-button` | 34/46 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 0/1 |
 | `x-calendar` | 17/41 |  | 4/4 | 4/4 |  | 7/7 | 1/1 | 1/1 | 0/11 |  | 0/2 |
 | `x-cancel-dialogue` | 17/22 |  | 3/3 | 2/2 | 1/1 | 2/2 | 2/2 |  | 0/6 | 0/3 |  |
 | `x-card` | 8/14 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
@@ -29,7 +29,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-chip` | 7/7 |  | 1/1 |  |  | 1/1 |  | 1/1 | 0/4 |  | 0/1 |
 | `x-code` | 9/33 | 1/1 | 3/3 | 1/1 |  | 2/2 |  | 1/1 | 0/8 |  | 0/4 |
 | `x-collapse` | 14/14 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  |  |
-| `x-color-picker` | 8/22 | 1/1 | 1/1 |  |  | 2/2 | 3/3 |  | 0/5 | 0/1 | 0/8 |
+| `x-color-picker` | 8/17 | 1/1 | 1/1 |  |  | 2/2 | 3/3 |  | 0/5 | 0/1 | 0/8 |
 | `x-combobox` | 26/27 |  | 2/2 | 1/1 |  | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 0/2 |
 | `x-command-palette` | 10/16 |  | 4/4 | 1/1 |  | 1/1 | 2/2 |  | 0/6 | 0/2 | 0/1 |
 | `x-confetti` |  |  |  |  |  |  |  |  |  | 0/1 |  |
@@ -38,7 +38,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-copy` | 8/12 |  | 1/1 |  |  | 1/1 |  |  | 0/1 | 0/1 |  |
 | `x-currency-field` | 16/16 |  | 5/5 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  |  |
 | `x-date-picker` | 25/51 |  | 5/5 | 4/4 |  | 4/4 | 1/1 |  | 0/9 | 0/1 | 0/3 |
-| `x-divider` | 0/8 |  | 1/1 | 1/1 |  |  |  |  | 0/2 |  |  |
+| `x-divider` | 0/3 |  | 1/1 | 1/1 |  |  |  |  | 0/2 |  |  |
 | `x-drag-panel` | 7/7 |  |  |  |  | 2/2 | 2/2 | 1/1 | 0/4 | 0/1 |  |
 | `x-drawer` | 6/8 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 0/2 |
 | `x-drop-zone` | 9/9 |  | 1/1 |  |  | 2/2 |  | 1/1 | 0/3 |  |  |
@@ -60,7 +60,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-kinetic-font` | 1/1 |  |  |  |  |  |  |  | 0/1 |  |  |
 | `x-kinetic-typography` | 4/4 | 1/1 |  | 1/1 |  |  |  |  | 0/1 |  |  |
 | `x-liquid-dock` | 2/9 |  |  |  |  | 1/1 | 2/2 |  | 0/2 | 0/1 | 0/1 |
-| `x-liquid-fill` | 0/1 |  |  |  |  |  |  |  |  |  |  |
+| `x-liquid-fill` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-liquid-glass` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-menu` | 4/4 |  |  |  |  | 1/1 | 2/2 |  | 0/5 | 0/1 |  |
 | `x-menu-item` | 12/14 |  | 1/1 |  |  | 1/1 |  | 1/1 | 0/3 |  | 0/1 |
@@ -76,10 +76,10 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-organic-shape` | 0/2 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-otp-input` | 8/8 | 1/1 |  | 1/1 |  | 1/1 |  | 1/1 | 1/1 |  |  |
 | `x-pagination` | 0/15 |  | 3/3 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
-| `x-particle-button` | 38/64 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 4/4 | 0/2 |  | 0/1 |
+| `x-particle-button` | 38/63 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 4/4 | 0/2 |  | 0/1 |
 | `x-popover` | 48/48 |  | 4/4 | 2/2 |  | 4/4 | 4/4 | 5/5 | 0/8 | 0/1 | 0/8 |
 | `x-progress` | 4/10 |  | 2/2 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
-| `x-progress-circle` | 4/9 |  |  | 1/1 |  |  |  | 1/1 |  |  |  |
+| `x-progress-circle` | 4/8 |  |  | 1/1 |  |  |  | 1/1 |  |  |  |
 | `x-proximity-list` | 1/1 |  |  |  |  |  |  |  | 0/2 |  |  |
 | `x-radio` | 8/8 |  |  |  |  |  |  | 2/2 |  |  | 0/1 |
 | `x-range-slider` | 5/11 |  | 2/2 | 1/1 |  | 1/1 | 1/1 | 1/1 | 0/1 |  |  |
@@ -98,10 +98,10 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-slider` | 8/14 |  | 2/2 | 1/1 |  | 1/1 | 1/1 | 2/2 | 0/2 |  |  |
 | `x-soft-body` | 4/6 |  |  |  |  |  | 2/2 |  | 0/2 |  | 0/1 |
 | `x-spacer` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-spinner` | 4/5 |  |  |  |  |  |  |  |  |  |  |
-| `x-splash` | 8/11 |  |  |  |  | 1/1 |  | 3/3 | 0/1 | 0/1 |  |
+| `x-spinner` | 4/4 |  |  |  |  |  |  |  |  |  |  |
+| `x-splash` | 8/10 |  |  |  |  | 1/1 |  | 3/3 | 0/1 | 0/1 |  |
 | `x-split-pane` | 5/5 |  |  |  |  |  |  | 1/1 |  |  |  |
-| `x-spotlight-card` | 6/8 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
+| `x-spotlight-card` | 6/6 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
 | `x-stat` | 10/10 |  | 2/2 | 2/2 |  | 1/1 |  | 2/2 | 0/2 |  | 0/1 |
 | `x-stepper` | 20/26 |  | 5/5 | 2/2 |  | 1/1 |  | 1/1 | 0/3 |  |  |
 | `x-switch` | 8/8 |  |  |  |  | 1/1 | 1/1 | 2/2 |  |  |  |
@@ -119,7 +119,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-typography` | 6/6 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 0/2 |
 | `x-welcome-tour` | 26/27 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 0/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 793/1179 | 10/10 | 117/117 | 69/69 | 7/7 | 110/110 | 73/73 | 107/107 | 15/238 | 3/29 | 0/69 |
+| **All** | 793/1161 | 10/10 | 117/117 | 69/69 | 7/7 | 110/110 | 73/73 | 107/107 | 15/238 | 3/29 | 0/69 |
 
 CSS not read, or not in full: x-liquid-glass.
 
