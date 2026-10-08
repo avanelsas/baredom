@@ -109,7 +109,7 @@ The component does **not** update `page` itself — the consumer must reflect th
 | `--x-pagination-current-color`      | `#fff`                             | Current page button text colour |
 | `--x-pagination-current-border`     | `1px solid transparent`            | Current page button border |
 | `--x-pagination-disabled-opacity`   | `0.4`                              | Opacity for disabled buttons |
-| `--x-pagination-font-size`          | `0.875rem`                         | Font size (overridden by `size`) |
+| `--x-pagination-font-size`          | `var(--x-font-size-sm, 0.875rem)`  | Font size (overridden by `size`) |
 | `--x-pagination-ellipsis-color`     | `rgba(0,0,0,0.45)`                 | Ellipsis symbol colour |
 
 Dark mode defaults are applied automatically via `@media (prefers-color-scheme: dark)`.

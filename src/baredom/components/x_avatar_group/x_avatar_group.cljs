@@ -41,7 +41,7 @@
    "--x-avatar-group-overflow-border:var(--x-color-border, rgba(0,0,0,0.14));"
    "--x-avatar-group-overflow-ring:var(--x-color-bg, #ffffff);"
    "--x-avatar-group-size:32px;"
-   "--x-avatar-group-font-size:0.75rem;}"
+   "--x-avatar-group-font-size:var(--x-font-size-xs,0.75rem);}"
    du/hidden-rule
 
    "@media (prefers-color-scheme:dark){"
@@ -53,9 +53,9 @@
 
    ":host([data-size='xs']){--x-avatar-group-size:20px;--x-avatar-group-font-size:0.625rem;}"
    ":host([data-size='sm']){--x-avatar-group-size:24px;--x-avatar-group-font-size:0.6875rem;}"
-   ":host([data-size='md']){--x-avatar-group-size:32px;--x-avatar-group-font-size:0.75rem;}"
-   ":host([data-size='lg']){--x-avatar-group-size:40px;--x-avatar-group-font-size:0.875rem;}"
-   ":host([data-size='xl']){--x-avatar-group-size:48px;--x-avatar-group-font-size:1rem;}"
+   ":host([data-size='md']){--x-avatar-group-size:32px;--x-avatar-group-font-size:var(--x-font-size-xs,0.75rem);}"
+   ":host([data-size='lg']){--x-avatar-group-size:40px;--x-avatar-group-font-size:var(--x-font-size-sm,0.875rem);}"
+   ":host([data-size='xl']){--x-avatar-group-size:48px;--x-avatar-group-font-size:var(--x-font-size-base,1rem);}"
 
    ;; RTL reverses stacking order (last avatar on left, first on right)
    ":host([data-direction='rtl']){flex-direction:row-reverse;}"

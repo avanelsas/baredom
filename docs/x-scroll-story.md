@@ -86,7 +86,7 @@ The `id` field is the step element's `id` attribute if present, otherwise `null`
 | `--x-scroll-story-step-padding` | `2rem` | Padding inside each step |
 | `--x-scroll-story-active-opacity` | `1` | Opacity of the active step |
 | `--x-scroll-story-inactive-opacity` | `0.3` | Opacity of inactive steps |
-| `--x-scroll-story-transition-duration` | `300ms` | Opacity transition duration |
+| `--x-scroll-story-transition-duration` | `var(--x-transition-duration, 300ms)` | Opacity transition duration |
 | `--x-scroll-story-disabled-opacity` | `0.55` | Opacity when `disabled` is set |
 | `--x-scroll-story-media-top` | `0` | Top offset for sticky media positioning |
 

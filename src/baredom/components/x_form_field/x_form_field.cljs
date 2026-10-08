@@ -103,7 +103,7 @@
    "color:var(--x-form-field-input-color);"
    "border:var(--x-form-field-input-border);"
    "border-radius:var(--x-form-field-input-border-radius);"
-   "font-size:1rem;line-height:1.5;font-family:inherit;outline:none;"
+   "font-size:var(--x-font-size-base,1rem);line-height:1.5;font-family:inherit;outline:none;"
    "transition:border-color var(--x-transition-duration,120ms) var(--x-transition-easing,ease),"
    "box-shadow var(--x-transition-duration,120ms) var(--x-transition-easing,ease);"
    "}"
@@ -116,9 +116,10 @@
    "box-shadow:0 0 0 3px color-mix(in srgb,var(--x-form-field-error-color) 20%,transparent);"
    "}"
    "[part=input]:disabled{opacity:var(--x-form-field-disabled-opacity);cursor:not-allowed;}"
-   "[part=hint]{display:block;font-size:0.8125rem;color:var(--x-form-field-hint-color);}"
+   "[part=hint]{display:block;font-size:var(--x-font-size-sm,0.8125rem);color:var(--x-form-field-hint-color);}"
    ".hint-hidden{display:none;}"
-   "[part=error]{display:block;font-size:0.8125rem;color:var(--x-form-field-error-color);}"
+   "[part=error]{display:block;"
+   "font-size:var(--x-font-size-sm,0.8125rem);color:var(--x-form-field-error-color);}"
    ".error-hidden{display:none;}"
    "@media (prefers-reduced-motion:reduce){[part=input]{transition:none;}}"))
 

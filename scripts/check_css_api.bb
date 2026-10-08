@@ -46,6 +46,20 @@
          :when (not (re-matches #"[a-z0-9-]+" name))]
      (str tag-name " published a malformed part name " (pr-str name)))))
 
+(defn- cut-off?
+  "True when a default was read in part: its parentheses do not balance, or it ends in a comma."
+  [default]
+  (or (not= (count (re-seq #"\(" default)) (count (re-seq #"\)" default)))
+      (str/ends-with? (str/trim default) ",")))
+
+(defn- cut-off-defaults
+  "The custom properties of a component whose default was read in part."
+  [{:keys [tag-name css-properties]}]
+  (for [{:keys [name default]} css-properties
+        :when (and default (cut-off? default))]
+    (str tag-name " publishes " name " with the default " (pr-str default)
+         ", which is cut off. Write the declaration in one string.")))
+
 (defn- problems
   "Where the manifest and the source disagree about `model`."
   [{:keys [tag-name dir-name css-properties css-parts] :as model}]
@@ -70,7 +84,9 @@
                             (str n " is published by " (pr-str (vec (sort ts)))))))))
 
 (let [models (discover-models)
-      found  (concat (mapcat problems models) (claimed-twice models))
+      found  (concat (mapcat problems models)
+                     (mapcat cut-off-defaults models)
+                     (claimed-twice models))
       props  (reduce + (map (comp count :css-properties) models))
       parts  (reduce + (map (comp count :css-parts) models))]
   (if (seq found)

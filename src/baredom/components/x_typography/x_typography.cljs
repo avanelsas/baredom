@@ -40,7 +40,8 @@
      ;; Default / body1
      ":host(:not([data-variant])),"
      ":host([data-variant='body1']){"
-     "font-size:1rem;font-weight:var(--x-font-weight-normal,400);line-height:1.5;letter-spacing:normal;}"
+     "font-size:var(--x-font-size-base,1rem);"
+     "font-weight:var(--x-font-weight-normal,400);line-height:1.5;letter-spacing:normal;}"
 
      ":host([data-variant='h1']){"
      "font-size:2.5rem;font-weight:var(--x-font-weight-bold,700);line-height:1.2;letter-spacing:-0.02em;}"
@@ -58,19 +59,24 @@
      "font-size:1.25rem;font-weight:var(--x-font-weight-semibold,600);line-height:1.4;letter-spacing:normal;}"
 
      ":host([data-variant='h6']){"
-     "font-size:1.125rem;font-weight:var(--x-font-weight-semibold,600);line-height:1.4;letter-spacing:normal;}"
+     "font-size:var(--x-font-size-lg,1.125rem);"
+     "font-weight:var(--x-font-weight-semibold,600);line-height:1.4;letter-spacing:normal;}"
 
      ":host([data-variant='subtitle1']){"
-     "font-size:1.125rem;font-weight:var(--x-font-weight-medium,500);line-height:1.4;letter-spacing:0.005em;}"
+     "font-size:var(--x-font-size-lg,1.125rem);"
+     "font-weight:var(--x-font-weight-medium,500);line-height:1.4;letter-spacing:0.005em;}"
 
      ":host([data-variant='subtitle2']){"
-     "font-size:0.875rem;font-weight:var(--x-font-weight-medium,500);line-height:1.4;letter-spacing:0.01em;}"
+     "font-size:var(--x-font-size-sm,0.875rem);"
+     "font-weight:var(--x-font-weight-medium,500);line-height:1.4;letter-spacing:0.01em;}"
 
      ":host([data-variant='body2']){"
-     "font-size:0.875rem;font-weight:var(--x-font-weight-normal,400);line-height:1.5;letter-spacing:normal;}"
+     "font-size:var(--x-font-size-sm,0.875rem);"
+     "font-weight:var(--x-font-weight-normal,400);line-height:1.5;letter-spacing:normal;}"
 
      ":host([data-variant='caption']){"
-     "font-size:0.75rem;font-weight:var(--x-font-weight-normal,400);line-height:1.4;letter-spacing:0.02em;}"
+     "font-size:var(--x-font-size-xs,0.75rem);"
+     "font-weight:var(--x-font-weight-normal,400);line-height:1.4;letter-spacing:0.02em;}"
 
      ":host([data-variant='overline']){"
      "font-size:0.625rem;font-weight:var(--x-font-weight-semibold,600);line-height:1.5;letter-spacing:0.1em;"
@@ -81,7 +87,8 @@
 
      ;; Blockquote: inherited props on :host, box props on container
      ":host([data-variant='blockquote']){"
-     "font-size:1.125rem;font-weight:var(--x-font-weight-normal,400);line-height:1.6;letter-spacing:normal;"
+     "font-size:var(--x-font-size-lg,1.125rem);"
+     "font-weight:var(--x-font-weight-normal,400);line-height:1.6;letter-spacing:normal;"
      "font-style:italic;}"
      ":host([data-variant='blockquote']) [part=container]{"
      "border-left:3px solid var(--x-typography-blockquote-border-color,var(--x-color-border," bq-bd-light "));"
@@ -93,7 +100,7 @@
      ;; Code: inherited props on :host, box props on container
      ":host([data-variant='code']){"
      "font-family:var(--x-typography-mono-font-family," mono-font ");"
-     "font-size:0.875rem;font-weight:var(--x-font-weight-normal,400);line-height:1.5;}"
+     "font-size:var(--x-font-size-sm,0.875rem);font-weight:var(--x-font-weight-normal,400);line-height:1.5;}"
      ":host([data-variant='code']) [part=container]{"
      "background:var(--x-typography-code-bg,var(--x-color-surface," code-bg-light "));"
      "border-radius:var(--x-typography-code-radius,var(--x-radius-sm,4px));"
@@ -105,7 +112,7 @@
      ;; Kbd: inherited props on :host, box props on container
      ":host([data-variant='kbd']){"
      "font-family:var(--x-typography-mono-font-family," mono-font ");"
-     "font-size:0.875rem;font-weight:var(--x-font-weight-normal,400);line-height:1.5;}"
+     "font-size:var(--x-font-size-sm,0.875rem);font-weight:var(--x-font-weight-normal,400);line-height:1.5;}"
      ":host([data-variant='kbd']) [part=container]{"
      "background:var(--x-typography-kbd-bg,var(--x-color-surface," kbd-bg-light "));"
      "border:1px solid var(--x-typography-kbd-border,var(--x-color-border," kbd-bd-light "));"

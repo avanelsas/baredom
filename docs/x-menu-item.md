@@ -52,7 +52,7 @@ When elements are assigned to the `icon` slot, the `has-icon` attribute is set o
 | `--x-menu-item-danger-hover-bg`     | `#fef2f2`       | `#2d1515`       |
 | `--x-menu-item-padding`             | `8px 12px`      | `8px 12px`      |
 | `--x-menu-item-border-radius`       | `4px`           | `4px`           |
-| `--x-menu-item-font-size`           | `0.9375rem`     | `0.9375rem`     |
+| `--x-menu-item-font-size`           | `var(--x-font-size-sm, 0.9375rem)` | `0.9375rem`     |
 | `--x-menu-item-icon-gap`            | `8px`           | `8px`           |
 | `--x-menu-item-divider-color`       | `#e5e7eb`       | `#374151`       |
 

@@ -110,7 +110,7 @@ Token spans inside `line-content` carry classes `tok-comment`, `tok-string`,
 | `--x-code-muted`            | `var(--x-color-text-muted, …)`   | Gutter / badge colour.       |
 | `--x-code-radius`           | `var(--x-radius-md, 8px)`        | Corner radius.               |
 | `--x-code-font`             | `var(--x-font-family-mono, …)`   | Monospace font stack.        |
-| `--x-code-font-size`        | `0.8125rem`                      | Code font size.              |
+| `--x-code-font-size`        | `var(--x-font-size-sm, 0.8125rem)` | Code font size.              |
 | `--x-code-line-height`      | `1.6`                            | Code line height.            |
 | `--x-code-tab-size`         | `2`                              | Tab width.                   |
 | `--x-code-token-comment`    | grey                             | Comment colour.              |

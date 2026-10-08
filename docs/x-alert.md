@@ -94,8 +94,8 @@ Calling `event.preventDefault()` cancels the removal — the alert stays in the 
 
 | Variable                    | Default | Description               |
 |-----------------------------|---------|---------------------------|
-| `--x-alert-enter-duration`  | `140ms` | Enter animation duration  |
-| `--x-alert-exit-duration`   | `160ms` | Exit animation duration   |
+| `--x-alert-enter-duration`  | `var(--x-transition-duration, 140ms)` | Enter animation duration  |
+| `--x-alert-exit-duration`   | `var(--x-transition-duration, 160ms)` | Exit animation duration   |
 | `--x-alert-motion-fast`     | `120ms` | Transition speed          |
 | `--x-alert-motion-ease`     | cubic-bezier | Easing function      |
 | `--x-alert-press-scale`     | `0.98`  | Dismiss button press scale |

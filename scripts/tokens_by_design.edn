@@ -1,0 +1,74 @@
+;; The values in the CSS of the components that follow no token of x-theme on purpose.
+;; Pairs of a reason and its values. Each value is a component, a property and the value.
+;; scripts/audit_tokens.bb reads this file, leaves these values out of its counts, prints them
+;; in docs/TOKEN-COVERAGE.md and fails when a value listed here no longer exists.
+
+[["A loop that runs by itself. It is not a transition."
+  [["x-button" "animation" "x-button-spin 0.7s linear infinite"]
+   ["x-chart" "animation" "x-chart-shimmer 1.4s ease infinite"]
+   ["x-drop-zone" "animation" "x-drop-zone-pulse 1.1s ease-in-out infinite"]
+   ["x-image" "--x-image-shimmer-duration" "1.5s"]
+   ["x-kinetic-typography" "--x-kinetic-typography-duration" "10s"]
+   ["x-organic-divider" "--x-organic-divider-animate-duration" "6s"]
+   ["x-organic-divider" "--x-organic-divider-animate-timing" "ease-in-out"]
+   ["x-organic-shape" "--x-organic-shape-animate-duration" "8s"]
+   ["x-organic-shape" "--x-organic-shape-animate-timing" "ease-in-out"]
+   ["x-particle-button" "animation" "x-particle-button-spin 0.7s linear infinite"]
+   ["x-progress" "animation" "x-progress-indeterminate 1.5s ease infinite"]
+   ["x-progress-circle" "animation" "x-progress-circle-spin 1.2s linear infinite"]
+   ["x-skeleton" "--x-skeleton-duration" "1.5s"]
+   ["x-skeleton" "animation" "1.5s"]
+   ["x-spinner" "--x-spinner-duration" "0.75s"]
+   ["x-splash" "--x-splash-spinner-duration" "0.75s"]]]
+ ["An effect that plays once. Its length is part of the effect."
+  [["x-particle-button" "animation" "x-pb-glow-pulse 400ms ease-out"]]]
+ ["A ring or a dot. Its roundness is its shape."
+  [["x-avatar" "border-radius" "999px"]
+   ["x-button" "border-radius" "999px"]
+   ["x-particle-button" "border-radius" "999px"]
+   ["x-timeline-item" "border-radius" "999px"]]]
+ ["An outline or an edge drawn with a shadow. It is not an elevation."
+  [["x-color-picker" "box-shadow"
+    "0 0 0 1px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(0,0,0,0.3)"]
+   ["x-kbd" "--x-kbd-shadow" "inset 0 -1px 0 rgba(0,0,0,0.08)"]
+   ["x-kbd" "--x-kbd-shadow" "inset 0 -1px 0 rgba(0,0,0,0.4)"]]]
+ ["The shape of a mark. It is not a corner, a weight or a size of text."
+  [["x-checkbox" "border-radius" "1px"]
+   ["x-checkbox" "font-size" "10px"]
+   ["x-checkbox" "font-weight" "700"]]]
+ ["A glyph that stands for an icon. Its size is the size of the icon."
+  [["x-chip" "font-size" "1rem"]
+   ["x-combobox" "font-size" "0.875rem"]
+   ["x-file-upload" "font-size" "1rem"]
+   ["x-search-field" "font-size" "1.125rem"]
+   ["x-welcome-tour" "font-size" "1.125rem"]]]
+ ["A step between two steps of the theme. It keeps the variants of its component apart."
+  [["x-typography" "font-size" "0.8125rem"]]]
+ ["A display size. It belongs to the scale of its component."
+  [["x-kinetic-font" "--x-kinetic-font-size" "2rem"]
+   ["x-kinetic-font" "font-size" "2rem"]
+   ["x-kinetic-typography" "--x-kinetic-typography-font-size" "24px"]
+   ["x-otp-input" "--x-otp-input-font-size" "1.25rem"]
+   ["x-stat" "--x-stat-value-size" "20px"]
+   ["x-typography" "font-size" "1.25rem"]
+   ["x-typography" "font-size" "1.5rem"]
+   ["x-typography" "font-size" "1.75rem"]
+   ["x-typography" "font-size" "2rem"]
+   ["x-typography" "font-size" "2.5rem"]]]
+ ["A size below the smallest step of the theme, chosen to fit its place."
+  [["x-avatar" "--x-avatar-font-size" "0.625rem"]
+   ["x-avatar-group" "--x-avatar-group-font-size" "0.625rem"]
+   ["x-avatar-group" "--x-avatar-group-font-size" "0.6875rem"]
+   ["x-badge" "--x-badge-font-size" "0.6875rem"]
+   ["x-calendar" "font-size" "0.6875rem"]
+   ["x-code" "font-size" "0.7rem"]
+   ["x-stepper" "--x-stepper-desc-font-size" "0.6875rem"]
+   ["x-typography" "font-size" "0.625rem"]]]
+ ["The effect needs a variable font. system-ui is the safest default for one."
+  [["x-kinetic-font" "--x-kinetic-font-family" "system-ui,sans-serif"]
+   ["x-kinetic-font" "font-family" "system-ui,sans-serif"]]]
+ ["Smoothing tied to scrolling. It follows the pointer and no design default."
+  [["x-scroll-parallax" "--x-scroll-parallax-smooth-duration" "80ms"]
+   ["x-scroll-stack" "transition" "transform 60ms linear"]
+   ["x-scroll-timeline" "transition" "height 60ms linear"]
+   ["x-scroll-timeline" "transition" "stroke-dashoffset 60ms linear"]]]]

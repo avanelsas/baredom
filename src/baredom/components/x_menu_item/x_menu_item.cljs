@@ -51,7 +51,7 @@
    "--x-menu-item-danger-hover-bg:#fef2f2;"
    "--x-menu-item-padding:8px 12px;"
    "--x-menu-item-border-radius:var(--x-radius-sm,4px);"
-   "--x-menu-item-font-size:0.9375rem;"
+   "--x-menu-item-font-size:var(--x-font-size-sm,0.9375rem);"
    "--x-menu-item-icon-gap:8px;"
    "--x-menu-item-divider-color:var(--x-color-border,#e5e7eb);}"
    du/hidden-rule

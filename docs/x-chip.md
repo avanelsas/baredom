@@ -70,7 +70,7 @@ A compact, themeable chip component for displaying tags, filters, or selection t
 | `--x-chip-padding-x`      | `0.625rem`                   | `0.625rem`                   | Horizontal padding             |
 | `--x-chip-padding-y`      | `0.25rem`                    | `0.25rem`                    | Vertical padding               |
 | `--x-chip-remove-size`    | `1rem`                       | `1rem`                       | Remove button size             |
-| `--x-chip-exit-duration`  | `300ms`                      | `300ms`                      | Exit animation duration        |
+| `--x-chip-exit-duration`  | `var(--x-transition-duration, 300ms)` | `300ms`                      | Exit animation duration        |
 
 Dark-mode defaults are set automatically via `@media (prefers-color-scheme: dark)`.
 

@@ -60,7 +60,7 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 | `--x-select-height-md`          | `2.5rem`                              | —                |
 | `--x-select-height-lg`          | `3rem`                                | —                |
 | `--x-select-radius`             | `0.5rem`                              | —                |
-| `--x-select-font-size-sm`       | `0.75rem`                             | —                |
+| `--x-select-font-size-sm`       | `var(--x-font-size-xs, 0.75rem)`      | —                |
 | `--x-select-font-size-md`       | `0.875rem`                            | —                |
 | `--x-select-font-size-lg`       | `1rem`                                | —                |
 | `--x-select-padding-inline`     | `0.75rem`                             | —                |

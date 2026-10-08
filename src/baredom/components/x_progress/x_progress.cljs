@@ -61,7 +61,7 @@
    "font-weight:var(--x-font-weight-medium,500);}"
 
    "[part=value-text]{"
-   "font-size:0.8125rem;"
+   "font-size:var(--x-font-size-sm,0.8125rem);"
    "color:var(--x-progress-value-color);}"
 
    ;; Track

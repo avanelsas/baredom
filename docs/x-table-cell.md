@@ -147,7 +147,7 @@ Fired on every `disconnectedCallback`.
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-table-cell-font-size` | `inherit` | Cell font size. |
-| `--x-table-cell-header-font-weight` | `600` | Header cell font weight. |
+| `--x-table-cell-header-font-weight` | `var(--x-font-weight-semibold, 600)` | Header cell font weight. |
 
 ### Motion
 

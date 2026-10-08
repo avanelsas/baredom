@@ -145,8 +145,8 @@ All custom properties are set on `:host` with automatic light/dark defaults.
 | `--x-table-border-radius` | `8px` | `8px` | Border radius (when `bordered`) |
 | `--x-table-stripe-bg` | `rgba(0,0,0,0.025)` | `rgba(255,255,255,0.03)` | Even-row background (when `striped`) |
 | `--x-table-caption-color` | `inherit` | `inherit` | Caption text color |
-| `--x-table-caption-font-size` | `0.875rem` | `0.875rem` | Caption font size |
-| `--x-table-caption-font-weight` | `600` | `600` | Caption font weight |
+| `--x-table-caption-font-size` | `var(--x-font-size-sm, 0.875rem)` | `0.875rem` | Caption font size |
+| `--x-table-caption-font-weight` | `var(--x-font-weight-semibold, 600)` | `600` | Caption font weight |
 | `--x-table-caption-padding` | `0 0 0.5rem` | `0 0 0.5rem` | Caption padding |
 | `--x-table-compact-padding` | `0.25rem 0.5rem` | `0.25rem 0.5rem` | Cell padding override when `compact` |
 

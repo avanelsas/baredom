@@ -89,7 +89,7 @@ None. `x-avatar` is a display-only component.
 | `--x-avatar-size-md`   | `32px`  | md size token                        |
 | `--x-avatar-size-lg`   | `40px`  | lg size token                        |
 | `--x-avatar-size-xl`   | `48px`  | xl size token                        |
-| `--x-avatar-radius`    | `10px`  | Border radius for `shape="rounded"`  |
+| `--x-avatar-radius`    | `var(--x-radius-md, 10px)` | Border radius for `shape="rounded"`  |
 
 ### Colour tokens (light mode defaults)
 

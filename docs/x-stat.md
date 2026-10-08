@@ -103,11 +103,11 @@ None. This component is a pure display element.
 | Variable                       | Default       | Description             |
 |--------------------------------|---------------|-------------------------|
 | `--x-stat-label-color`         | muted-color   | Label text colour       |
-| `--x-stat-label-size`          | `12px`        | Label font size         |
+| `--x-stat-label-size`          | `var(--x-font-size-xs, 12px)` | Label font size         |
 | `--x-stat-value-color`         | color         | Value text colour       |
 | `--x-stat-value-size`          | `20px`        | Value font size         |
 | `--x-stat-hint-color`          | muted-color   | Hint text colour        |
-| `--x-stat-hint-size`           | `12px`        | Hint font size          |
+| `--x-stat-hint-size`           | `var(--x-font-size-xs, 12px)` | Hint font size          |
 | `--x-stat-icon-color`          | color         | Icon colour             |
 
 ### Semantic colour tokens

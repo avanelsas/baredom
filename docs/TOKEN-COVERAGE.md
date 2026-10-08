@@ -8,118 +8,118 @@ or the component's own property whose default is a token. Structural values such
 `none` and `inherit` are not counted, and neither are the values listed at the end as not
 themed by design. An empty cell means the component has no value of that family.
 
-Closed families, in which CI allows no value that follows no token: font-family, font-weight, radius, shadow, transition.
+Closed families, in which CI allows no value that follows no token: font-family, font-size, font-weight, radius, shadow, transition.
 
 | Component | color | font-family | font-size | font-weight | line-height | radius | shadow | transition | space | z | border-width |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `x-alert` | 2/30 |  | 1/1 |  | 0/1 | 2/2 |  | 4/4 | 0/4 |  | 0/1 |
-| `x-avatar` | 8/20 |  | 1/5 | 1/1 |  | 2/2 |  |  | 0/1 |  | 0/2 |
-| `x-avatar-group` | 8/8 |  | 0/6 | 1/1 |  | 1/1 |  |  |  |  | 0/1 |
-| `x-badge` | 4/30 |  | 1/2 | 1/1 |  | 3/3 |  |  | 0/2 |  | 0/1 |
+| `x-avatar` | 8/20 |  | 4/4 | 1/1 |  | 2/2 |  |  | 0/1 |  | 0/2 |
+| `x-avatar-group` | 8/8 |  | 4/4 | 1/1 |  | 1/1 |  |  |  |  | 0/1 |
+| `x-badge` | 4/30 |  | 1/1 | 1/1 |  | 3/3 |  |  | 0/2 |  | 0/1 |
 | `x-bento-grid` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-bento-item` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-breadcrumbs` | 0/8 |  | 1/3 | 1/1 |  |  |  |  | 0/1 |  |  |
-| `x-button` | 34/47 |  | 0/3 | 1/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 0/1 |
-| `x-calendar` | 17/41 |  | 0/5 | 4/4 |  | 7/7 | 1/1 | 1/1 | 0/11 |  | 0/2 |
-| `x-cancel-dialogue` | 17/22 |  | 0/3 | 2/2 | 0/2 | 2/2 | 2/2 |  | 0/6 | 0/3 |  |
+| `x-breadcrumbs` | 0/8 |  | 3/3 | 1/1 |  |  |  |  | 0/1 |  |  |
+| `x-button` | 34/47 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 0/1 |
+| `x-calendar` | 17/41 |  | 4/4 | 4/4 |  | 7/7 | 1/1 | 1/1 | 0/11 |  | 0/2 |
+| `x-cancel-dialogue` | 17/22 |  | 3/3 | 2/2 | 0/2 | 2/2 | 2/2 |  | 0/6 | 0/3 |  |
 | `x-card` | 8/14 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
-| `x-carousel` | 12/12 |  |  |  |  | 1/1 | 1/1 | 3/3 | 0/4 |  |  |
-| `x-chart` | 14/16 |  | 0/2 | 1/1 | 0/1 | 2/2 | 2/2 | 1/1 | 0/6 | 0/1 | 0/2 |
-| `x-checkbox` | 15/15 |  | 0/1 |  |  | 1/1 |  | 3/3 |  |  | 0/1 |
-| `x-chip` | 7/7 |  | 1/2 |  |  | 1/1 |  | 1/1 | 0/4 |  | 0/1 |
-| `x-code` | 9/33 | 1/1 | 0/4 | 1/1 | 0/1 | 2/2 |  | 1/1 | 0/8 |  | 0/4 |
-| `x-collapse` | 14/14 |  | 0/1 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  |  |
+| `x-carousel` | 12/12 |  |  |  |  | 1/1 | 1/1 | 3/3 | 0/3 |  |  |
+| `x-chart` | 14/16 |  | 2/2 | 1/1 | 0/1 | 2/2 | 2/2 | 1/1 | 0/6 | 0/1 | 0/2 |
+| `x-checkbox` | 15/15 |  |  |  |  | 1/1 |  | 3/3 |  |  | 0/1 |
+| `x-chip` | 7/7 |  | 1/1 |  |  | 1/1 |  | 1/1 | 0/4 |  | 0/1 |
+| `x-code` | 9/33 | 1/1 | 3/3 | 1/1 | 0/1 | 2/2 |  | 1/1 | 0/8 |  | 0/4 |
+| `x-collapse` | 14/14 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  |  |
 | `x-color-picker` | 8/22 | 1/1 | 1/1 |  |  | 2/2 | 3/3 |  | 0/5 | 0/1 | 0/8 |
-| `x-combobox` | 26/27 |  | 1/3 | 1/1 | 0/1 | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 0/2 |
-| `x-command-palette` | 10/16 |  | 1/4 | 1/1 | 0/2 | 1/1 | 2/2 |  | 0/6 | 0/2 | 0/1 |
+| `x-combobox` | 26/27 |  | 2/2 | 1/1 | 0/1 | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 0/2 |
+| `x-command-palette` | 10/16 |  | 4/4 | 1/1 | 0/2 | 1/1 | 2/2 |  | 0/6 | 0/2 | 0/1 |
 | `x-confetti` |  |  |  |  |  |  |  |  |  | 0/1 |  |
 | `x-container` | 2/2 |  |  |  |  |  |  |  | 0/3 |  | 0/1 |
 | `x-context-menu` | 2/4 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-copy` | 8/12 |  | 1/1 |  |  | 1/1 |  |  | 0/1 | 0/1 |  |
-| `x-currency-field` | 16/16 |  | 0/5 | 1/1 | 0/1 | 1/1 |  | 1/1 | 0/3 |  |  |
-| `x-date-picker` | 25/51 |  | 0/5 | 4/4 | 0/1 | 4/4 | 1/1 |  | 0/9 | 0/1 | 0/3 |
-| `x-divider` | 0/8 |  | 0/1 | 1/1 |  |  |  |  | 0/2 |  |  |
+| `x-currency-field` | 16/16 |  | 5/5 | 1/1 | 0/1 | 1/1 |  | 1/1 | 0/3 |  |  |
+| `x-date-picker` | 25/51 |  | 5/5 | 4/4 | 0/1 | 4/4 | 1/1 |  | 0/9 | 0/1 | 0/3 |
+| `x-divider` | 0/8 |  | 1/1 | 1/1 |  |  |  |  | 0/2 |  |  |
 | `x-drag-panel` | 7/7 |  |  |  |  | 2/2 | 2/2 | 1/1 | 0/4 | 0/1 |  |
 | `x-drawer` | 6/8 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 0/2 |
-| `x-drop-zone` | 9/9 |  | 0/1 |  |  | 2/2 |  | 1/1 | 0/3 |  |  |
+| `x-drop-zone` | 9/9 |  | 1/1 |  |  | 2/2 |  | 1/1 | 0/3 |  |  |
 | `x-dropdown` | 18/18 |  | 1/1 | 1/1 |  | 2/2 | 2/2 | 3/3 | 0/3 | 0/1 |  |
 | `x-fieldset` | 11/11 |  | 1/1 | 1/1 |  | 2/2 | 2/2 |  | 0/4 |  | 0/2 |
 | `x-file-download` | 9/9 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
-| `x-file-upload` | 21/22 |  | 1/3 | 1/1 |  | 4/4 |  | 1/1 | 1/5 |  |  |
+| `x-file-upload` | 21/22 |  | 2/2 | 1/1 |  | 4/4 |  | 1/1 | 1/5 |  |  |
 | `x-floating-panel` | 8/9 |  |  |  |  | 3/3 | 2/2 | 1/1 | 3/3 | 0/1 | 0/1 |
 | `x-form` |  |  |  |  |  |  |  |  | 0/1 |  |  |
-| `x-form-field` | 14/14 |  | 1/4 | 1/1 | 0/1 | 1/1 |  | 1/1 | 0/2 |  |  |
+| `x-form-field` | 14/14 |  | 4/4 | 1/1 | 0/1 | 1/1 |  | 1/1 | 0/2 |  |  |
 | `x-gaussian-blur` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-grid` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-i18n` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-i18n-provider` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-icon` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-image` | 6/6 | 1/1 | 1/2 |  | 0/1 | 1/1 |  | 2/2 | 1/2 |  |  |
-| `x-kbd` | 2/2 | 1/1 | 0/3 | 1/1 | 0/1 |  |  |  | 0/4 |  | 0/1 |
+| `x-image` | 6/6 | 1/1 | 1/1 |  | 0/1 | 1/1 |  | 2/2 | 1/2 |  |  |
+| `x-kbd` | 2/2 | 1/1 |  | 1/1 | 0/1 |  |  |  | 0/4 |  | 0/1 |
 | `x-kinetic-canvas` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-kinetic-font` | 1/1 |  | 0/2 |  | 0/1 |  |  |  | 0/1 |  |  |
-| `x-kinetic-typography` | 4/4 | 1/1 | 0/1 | 1/1 | 0/1 |  |  |  | 0/1 |  |  |
-| `x-liquid-dock` | 2/9 |  | 0/1 |  |  | 1/1 | 2/2 |  | 0/2 | 0/1 | 0/1 |
+| `x-kinetic-font` | 1/1 |  |  |  | 0/1 |  |  |  | 0/1 |  |  |
+| `x-kinetic-typography` | 4/4 | 1/1 |  | 1/1 | 0/1 |  |  |  | 0/1 |  |  |
+| `x-liquid-dock` | 2/9 |  |  |  |  | 1/1 | 2/2 |  | 0/2 | 0/1 | 0/1 |
 | `x-liquid-fill` | 0/1 |  |  |  |  |  |  |  |  |  |  |
 | `x-liquid-glass` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-menu` | 4/4 |  |  |  |  | 1/1 | 2/2 |  | 0/5 | 0/1 |  |
-| `x-menu-item` | 12/14 |  | 0/1 |  |  | 1/1 |  | 1/1 | 0/3 |  | 0/1 |
+| `x-menu-item` | 12/14 |  | 1/1 |  |  | 1/1 |  | 1/1 | 0/3 |  | 0/1 |
 | `x-metaball-cursor` | 0/1 |  |  |  |  |  |  |  |  | 0/1 |  |
 | `x-modal` | 3/4 |  |  |  |  | 1/1 | 1/1 | 2/2 | 0/3 | 0/1 | 0/2 |
 | `x-morph-stack` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-multi-combobox` | 26/27 |  | 1/2 | 1/1 | 0/1 | 3/3 | 4/4 | 3/3 | 0/8 | 1/1 | 0/2 |
+| `x-multi-combobox` | 26/27 |  | 2/2 | 1/1 | 0/1 | 3/3 | 4/4 | 3/3 | 0/8 | 1/1 | 0/2 |
 | `x-navbar` | 8/12 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 0/1 |
 | `x-neural-glow` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-notification-center` |  |  |  |  |  |  |  |  | 0/1 | 0/2 |  |
 | `x-organic-divider` | 2/2 |  |  |  |  |  |  |  |  |  |  |
 | `x-organic-progress` | 2/3 |  |  |  |  |  |  |  |  |  |  |
 | `x-organic-shape` | 0/2 |  |  |  |  |  |  | 1/1 |  |  |  |
-| `x-otp-input` | 8/8 | 1/1 | 0/1 | 1/1 |  | 1/1 |  | 1/1 | 1/1 |  |  |
-| `x-pagination` | 0/15 |  | 1/3 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
-| `x-particle-button` | 38/64 |  | 0/3 | 1/1 |  | 1/1 | 6/6 | 4/4 | 0/2 |  | 0/1 |
-| `x-popover` | 48/48 |  | 0/4 | 2/2 |  | 4/4 | 4/4 | 5/5 | 0/8 | 0/1 | 0/8 |
-| `x-progress` | 4/10 |  | 1/2 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
-| `x-progress-circle` | 4/9 |  | 0/4 | 1/1 |  |  |  | 1/1 |  |  |  |
+| `x-otp-input` | 8/8 | 1/1 |  | 1/1 |  | 1/1 |  | 1/1 | 1/1 |  |  |
+| `x-pagination` | 0/15 |  | 3/3 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
+| `x-particle-button` | 38/64 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 4/4 | 0/2 |  | 0/1 |
+| `x-popover` | 48/48 |  | 4/4 | 2/2 |  | 4/4 | 4/4 | 5/5 | 0/8 | 0/1 | 0/8 |
+| `x-progress` | 4/10 |  | 2/2 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
+| `x-progress-circle` | 4/9 |  |  | 1/1 |  |  |  | 1/1 |  |  |  |
 | `x-proximity-list` | 1/1 |  |  |  |  |  |  |  | 0/2 |  |  |
 | `x-radio` | 8/8 |  |  |  |  |  |  | 2/2 |  |  | 0/1 |
-| `x-range-slider` | 5/11 |  | 0/2 | 1/1 |  | 1/1 | 1/1 | 1/1 | 0/1 |  |  |
-| `x-rating` | 3/7 |  | 0/1 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
+| `x-range-slider` | 5/11 |  | 2/2 | 1/1 |  | 1/1 | 1/1 | 1/1 | 0/1 |  |  |
+| `x-rating` | 3/7 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
 | `x-ripple-effect` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-scroll` | 12/12 |  | 0/1 |  |  |  | 2/2 | 3/3 | 0/2 |  |  |
+| `x-scroll` | 12/12 |  |  |  |  |  | 2/2 | 3/3 | 0/2 |  |  |
 | `x-scroll-parallax` |  |  |  |  |  |  |  |  | 0/1 |  |  |
 | `x-scroll-stack` |  |  |  |  |  |  |  |  | 0/2 |  |  |
 | `x-scroll-story` | 0/1 |  |  |  |  | 1/1 |  | 1/1 | 0/2 |  |  |
-| `x-scroll-timeline` | 2/9 |  | 0/1 | 1/1 |  | 3/3 |  | 1/1 | 0/8 |  | 0/2 |
-| `x-search-field` | 8/12 |  | 0/2 |  | 0/1 | 2/2 |  | 1/1 | 0/2 |  |  |
-| `x-select` | 19/19 |  | 2/4 |  | 0/1 | 1/1 | 1/1 | 1/1 | 0/2 |  | 0/1 |
+| `x-scroll-timeline` | 2/9 |  | 1/1 | 1/1 |  | 3/3 |  | 1/1 | 0/6 |  | 0/2 |
+| `x-search-field` | 8/12 |  | 1/1 |  | 0/1 | 2/2 |  | 1/1 | 0/2 |  |  |
+| `x-select` | 19/19 |  | 4/4 |  | 0/1 | 1/1 | 1/1 | 1/1 | 0/2 |  | 0/1 |
 | `x-sidebar` | 4/5 |  |  |  |  |  | 2/2 | 2/2 |  | 0/2 |  |
 | `x-skeleton` | 2/4 |  |  |  |  | 2/2 |  |  |  |  |  |
 | `x-skeleton-group` |  |  |  |  |  |  |  |  | 0/1 |  |  |
-| `x-slider` | 8/14 |  | 0/2 | 1/1 |  | 1/1 | 1/1 | 2/2 | 0/2 |  |  |
+| `x-slider` | 8/14 |  | 2/2 | 1/1 |  | 1/1 | 1/1 | 2/2 | 0/2 |  |  |
 | `x-soft-body` | 4/6 |  |  |  |  |  | 2/2 |  | 0/2 |  | 0/1 |
 | `x-spacer` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-spinner` | 4/5 |  |  |  |  |  |  |  |  |  |  |
 | `x-splash` | 8/11 |  |  |  |  | 1/1 |  | 3/3 | 0/1 | 0/1 |  |
 | `x-split-pane` | 5/5 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-spotlight-card` | 6/8 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
-| `x-stat` | 10/10 |  | 0/3 | 2/2 |  | 1/1 |  | 2/2 | 0/2 |  | 0/1 |
-| `x-stepper` | 20/26 |  | 1/7 | 2/2 | 0/2 | 1/1 |  | 1/1 | 0/3 |  |  |
+| `x-stat` | 10/10 |  | 2/2 | 2/2 |  | 1/1 |  | 2/2 | 0/2 |  | 0/1 |
+| `x-stepper` | 20/26 |  | 5/5 | 2/2 | 0/2 | 1/1 |  | 1/1 | 0/3 |  |  |
 | `x-switch` | 8/8 |  |  |  |  | 1/1 | 1/1 | 2/2 |  |  |  |
 | `x-tab` | 5/10 |  |  |  |  | 1/1 |  | 2/2 | 0/4 |  | 0/2 |
-| `x-table` | 3/5 |  | 0/1 | 1/1 |  | 1/1 |  |  | 0/2 |  | 0/1 |
+| `x-table` | 3/5 |  | 1/1 | 1/1 |  | 1/1 |  |  | 0/2 |  | 0/1 |
 | `x-table-cell` | 11/13 |  |  | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  | 0/1 |
 | `x-table-row` | 1/7 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-tabs` |  |  |  |  |  |  |  |  | 0/2 |  |  |
-| `x-text-area` | 10/14 |  | 2/4 | 1/1 | 0/1 | 1/1 |  | 1/1 | 0/2 |  |  |
+| `x-text-area` | 10/14 |  | 4/4 | 1/1 | 0/1 | 1/1 |  | 1/1 | 0/2 |  |  |
 | `x-timeline` | 1/1 |  | 1/1 | 1/1 |  |  |  |  | 0/1 |  |  |
-| `x-timeline-item` | 28/32 |  | 1/3 | 1/1 | 0/1 | 1/1 |  | 3/3 | 0/3 |  |  |
-| `x-toast` | 16/48 |  | 1/2 | 1/1 | 0/2 | 2/2 | 2/2 | 4/4 | 0/5 |  | 0/1 |
+| `x-timeline-item` | 28/32 |  | 2/2 | 1/1 | 0/1 | 1/1 |  | 3/3 | 0/3 |  |  |
+| `x-toast` | 16/48 |  | 2/2 | 1/1 | 0/2 | 2/2 | 2/2 | 4/4 | 0/5 |  | 0/1 |
 | `x-toaster` |  |  |  |  |  |  |  |  | 0/1 | 0/1 |  |
 | `x-tooltip` | 6/6 |  | 1/1 |  | 0/1 | 1/1 | 2/2 | 2/2 | 1/1 | 1/1 |  |
-| `x-typography` | 6/6 | 3/3 | 0/16 | 16/16 | 0/16 | 2/2 |  |  | 0/3 |  | 0/2 |
-| `x-welcome-tour` | 26/27 | 1/1 | 4/5 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 0/1 |
+| `x-typography` | 6/6 | 3/3 | 9/9 | 16/16 | 0/16 | 2/2 |  |  | 0/3 |  | 0/2 |
+| `x-welcome-tour` | 26/27 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 0/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 793/1179 | 10/10 | 31/154 | 69/69 | 1/42 | 110/110 | 73/73 | 107/107 | 15/241 | 3/29 | 0/69 |
+| **All** | 793/1179 | 10/10 | 117/117 | 69/69 | 1/42 | 110/110 | 73/73 | 107/107 | 15/238 | 3/29 | 0/69 |
 
 CSS not read, or not in full: x-liquid-glass.
 
@@ -161,10 +161,47 @@ An outline or an edge drawn with a shadow. It is not an elevation.
 - `x-kbd`: `--x-kbd-shadow: inset 0 -1px 0 rgba(0,0,0,0.08)`
 - `x-kbd`: `--x-kbd-shadow: inset 0 -1px 0 rgba(0,0,0,0.4)`
 
-The shape of a mark. It is not a corner and not a weight of text.
+The shape of a mark. It is not a corner, a weight or a size of text.
 
 - `x-checkbox`: `border-radius: 1px`
+- `x-checkbox`: `font-size: 10px`
 - `x-checkbox`: `font-weight: 700`
+
+A glyph that stands for an icon. Its size is the size of the icon.
+
+- `x-chip`: `font-size: 1rem`
+- `x-combobox`: `font-size: 0.875rem`
+- `x-file-upload`: `font-size: 1rem`
+- `x-search-field`: `font-size: 1.125rem`
+- `x-welcome-tour`: `font-size: 1.125rem`
+
+A step between two steps of the theme. It keeps the variants of its component apart.
+
+- `x-typography`: `font-size: 0.8125rem`
+
+A display size. It belongs to the scale of its component.
+
+- `x-kinetic-font`: `--x-kinetic-font-size: 2rem`
+- `x-kinetic-font`: `font-size: 2rem`
+- `x-kinetic-typography`: `--x-kinetic-typography-font-size: 24px`
+- `x-otp-input`: `--x-otp-input-font-size: 1.25rem`
+- `x-stat`: `--x-stat-value-size: 20px`
+- `x-typography`: `font-size: 1.25rem`
+- `x-typography`: `font-size: 1.5rem`
+- `x-typography`: `font-size: 1.75rem`
+- `x-typography`: `font-size: 2rem`
+- `x-typography`: `font-size: 2.5rem`
+
+A size below the smallest step of the theme, chosen to fit its place.
+
+- `x-avatar`: `--x-avatar-font-size: 0.625rem`
+- `x-avatar-group`: `--x-avatar-group-font-size: 0.625rem`
+- `x-avatar-group`: `--x-avatar-group-font-size: 0.6875rem`
+- `x-badge`: `--x-badge-font-size: 0.6875rem`
+- `x-calendar`: `font-size: 0.6875rem`
+- `x-code`: `font-size: 0.7rem`
+- `x-stepper`: `--x-stepper-desc-font-size: 0.6875rem`
+- `x-typography`: `font-size: 0.625rem`
 
 The effect needs a variable font. system-ui is the safest default for one.
 

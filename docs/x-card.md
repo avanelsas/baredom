@@ -82,9 +82,9 @@ x-card {
 | `--x-card-radius-sm` | `0.375rem` | Radius token — sm |
 | `--x-card-radius-md` | `0.75rem` | Radius token — md |
 | `--x-card-radius-lg` | `1rem` | Radius token — lg |
-| `--x-card-radius-xl` | `1.5rem` | Radius token — xl |
+| `--x-card-radius-xl` | `var(--x-radius-xl, 1.5rem)` | Radius token — xl |
 | `--x-card-transition-duration` | `140ms` | Hover/press transition speed |
-| `--x-card-transition-timing` | `ease` | Hover/press transition easing |
+| `--x-card-transition-timing` | `var(--x-transition-easing, ease)` | Hover/press transition easing |
 
 Dark mode values are set automatically via `@media (prefers-color-scheme: dark)`.
 Transition animations are suppressed via `@media (prefers-reduced-motion: reduce)`.

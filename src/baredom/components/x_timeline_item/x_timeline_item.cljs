@@ -30,7 +30,7 @@
    "--x-timeline-item-label-width:6rem;"
    "--x-timeline-item-label-color:var(--x-color-text-muted,rgba(0,0,0,0.5));"
    "--x-timeline-item-label-font-size:var(--x-font-size-sm,0.8125rem);"
-   "--x-timeline-item-title-font-size:0.9375rem;"
+   "--x-timeline-item-title-font-size:var(--x-font-size-sm,0.9375rem);"
    "--x-timeline-item-stripe-bg:var(--x-color-surface,rgba(0,0,0,0.025));"
    "--x-timeline-item-motion:var(--x-transition-duration,150ms);"
    "--x-timeline-item-motion-ease:var(--x-transition-easing,cubic-bezier(0.2,0,0,1));"

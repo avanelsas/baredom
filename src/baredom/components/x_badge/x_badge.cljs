@@ -41,7 +41,7 @@
    "--x-badge-bg:rgba(0,0,0,0.08);"
    "--x-badge-color:var(--x-color-text,rgba(0,0,0,0.80));"
    "--x-badge-border:var(--x-color-border,rgba(0,0,0,0.12));"
-   "--x-badge-font-size:var(--x-font-size-sm,0.75rem);"
+   "--x-badge-font-size:var(--x-font-size-xs,0.75rem);"
    "--x-badge-height:1.25rem;"
    "--x-badge-padding:0 0.375rem;"
    "--x-badge-radius:var(--x-radius-sm,0.25rem);}"
