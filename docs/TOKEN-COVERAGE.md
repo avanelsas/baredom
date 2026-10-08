@@ -8,11 +8,11 @@ or the component's own property whose default is a token. Structural values such
 `none` and `inherit` are not counted, and neither are the values listed at the end as not
 themed by design. An empty cell means the component has no value of that family.
 
-Closed families, in which CI allows no value that follows no token: font-family, font-size, font-weight, radius, shadow, transition.
+Closed families, in which CI allows no value that follows no token: font-family, font-size, font-weight, line-height, radius, shadow, transition.
 
 | Component | color | font-family | font-size | font-weight | line-height | radius | shadow | transition | space | z | border-width |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `x-alert` | 2/30 |  | 1/1 |  | 0/1 | 2/2 |  | 4/4 | 0/4 |  | 0/1 |
+| `x-alert` | 2/30 |  | 1/1 |  |  | 2/2 |  | 4/4 | 0/4 |  | 0/1 |
 | `x-avatar` | 8/20 |  | 4/4 | 1/1 |  | 2/2 |  |  | 0/1 |  | 0/2 |
 | `x-avatar-group` | 8/8 |  | 4/4 | 1/1 |  | 1/1 |  |  |  |  | 0/1 |
 | `x-badge` | 4/30 |  | 1/1 | 1/1 |  | 3/3 |  |  | 0/2 |  | 0/1 |
@@ -21,23 +21,23 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-breadcrumbs` | 0/8 |  | 3/3 | 1/1 |  |  |  |  | 0/1 |  |  |
 | `x-button` | 34/47 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 0/1 |
 | `x-calendar` | 17/41 |  | 4/4 | 4/4 |  | 7/7 | 1/1 | 1/1 | 0/11 |  | 0/2 |
-| `x-cancel-dialogue` | 17/22 |  | 3/3 | 2/2 | 1/2 | 2/2 | 2/2 |  | 0/6 | 0/3 |  |
+| `x-cancel-dialogue` | 17/22 |  | 3/3 | 2/2 | 1/1 | 2/2 | 2/2 |  | 0/6 | 0/3 |  |
 | `x-card` | 8/14 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
 | `x-carousel` | 12/12 |  |  |  |  | 1/1 | 1/1 | 3/3 | 0/3 |  |  |
-| `x-chart` | 14/16 |  | 2/2 | 1/1 | 0/1 | 2/2 | 2/2 | 1/1 | 0/6 | 0/1 | 0/2 |
+| `x-chart` | 14/16 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 1/1 | 0/6 | 0/1 | 0/2 |
 | `x-checkbox` | 15/15 |  |  |  |  | 1/1 |  | 3/3 |  |  | 0/1 |
 | `x-chip` | 7/7 |  | 1/1 |  |  | 1/1 |  | 1/1 | 0/4 |  | 0/1 |
-| `x-code` | 9/33 | 1/1 | 3/3 | 1/1 | 0/1 | 2/2 |  | 1/1 | 0/8 |  | 0/4 |
+| `x-code` | 9/33 | 1/1 | 3/3 | 1/1 |  | 2/2 |  | 1/1 | 0/8 |  | 0/4 |
 | `x-collapse` | 14/14 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  |  |
 | `x-color-picker` | 8/22 | 1/1 | 1/1 |  |  | 2/2 | 3/3 |  | 0/5 | 0/1 | 0/8 |
-| `x-combobox` | 26/27 |  | 2/2 | 1/1 | 0/1 | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 0/2 |
-| `x-command-palette` | 10/16 |  | 4/4 | 1/1 | 0/2 | 1/1 | 2/2 |  | 0/6 | 0/2 | 0/1 |
+| `x-combobox` | 26/27 |  | 2/2 | 1/1 |  | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 0/2 |
+| `x-command-palette` | 10/16 |  | 4/4 | 1/1 |  | 1/1 | 2/2 |  | 0/6 | 0/2 | 0/1 |
 | `x-confetti` |  |  |  |  |  |  |  |  |  | 0/1 |  |
 | `x-container` | 2/2 |  |  |  |  |  |  |  | 0/3 |  | 0/1 |
 | `x-context-menu` | 2/4 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-copy` | 8/12 |  | 1/1 |  |  | 1/1 |  |  | 0/1 | 0/1 |  |
-| `x-currency-field` | 16/16 |  | 5/5 | 1/1 | 0/1 | 1/1 |  | 1/1 | 0/3 |  |  |
-| `x-date-picker` | 25/51 |  | 5/5 | 4/4 | 0/1 | 4/4 | 1/1 |  | 0/9 | 0/1 | 0/3 |
+| `x-currency-field` | 16/16 |  | 5/5 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  |  |
+| `x-date-picker` | 25/51 |  | 5/5 | 4/4 |  | 4/4 | 1/1 |  | 0/9 | 0/1 | 0/3 |
 | `x-divider` | 0/8 |  | 1/1 | 1/1 |  |  |  |  | 0/2 |  |  |
 | `x-drag-panel` | 7/7 |  |  |  |  | 2/2 | 2/2 | 1/1 | 0/4 | 0/1 |  |
 | `x-drawer` | 6/8 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 0/2 |
@@ -48,17 +48,17 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-file-upload` | 21/22 |  | 2/2 | 1/1 |  | 4/4 |  | 1/1 | 1/5 |  |  |
 | `x-floating-panel` | 8/9 |  |  |  |  | 3/3 | 2/2 | 1/1 | 3/3 | 0/1 | 0/1 |
 | `x-form` |  |  |  |  |  |  |  |  | 0/1 |  |  |
-| `x-form-field` | 14/14 |  | 4/4 | 1/1 | 0/1 | 1/1 |  | 1/1 | 0/2 |  |  |
+| `x-form-field` | 14/14 |  | 4/4 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
 | `x-gaussian-blur` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-grid` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-i18n` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-i18n-provider` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-icon` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-image` | 6/6 | 1/1 | 1/1 |  | 0/1 | 1/1 |  | 2/2 | 1/2 |  |  |
-| `x-kbd` | 2/2 | 1/1 |  | 1/1 | 0/1 |  |  |  | 0/4 |  | 0/1 |
+| `x-image` | 6/6 | 1/1 | 1/1 |  |  | 1/1 |  | 2/2 | 1/2 |  |  |
+| `x-kbd` | 2/2 | 1/1 |  | 1/1 |  |  |  |  | 0/4 |  | 0/1 |
 | `x-kinetic-canvas` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-kinetic-font` | 1/1 |  |  |  | 0/1 |  |  |  | 0/1 |  |  |
-| `x-kinetic-typography` | 4/4 | 1/1 |  | 1/1 | 0/1 |  |  |  | 0/1 |  |  |
+| `x-kinetic-font` | 1/1 |  |  |  |  |  |  |  | 0/1 |  |  |
+| `x-kinetic-typography` | 4/4 | 1/1 |  | 1/1 |  |  |  |  | 0/1 |  |  |
 | `x-liquid-dock` | 2/9 |  |  |  |  | 1/1 | 2/2 |  | 0/2 | 0/1 | 0/1 |
 | `x-liquid-fill` | 0/1 |  |  |  |  |  |  |  |  |  |  |
 | `x-liquid-glass` |  |  |  |  |  |  |  |  |  |  |  |
@@ -67,7 +67,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-metaball-cursor` | 0/1 |  |  |  |  |  |  |  |  | 0/1 |  |
 | `x-modal` | 3/4 |  |  |  |  | 1/1 | 1/1 | 2/2 | 0/3 | 0/1 | 0/2 |
 | `x-morph-stack` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-multi-combobox` | 26/27 |  | 2/2 | 1/1 | 0/1 | 3/3 | 4/4 | 3/3 | 0/8 | 1/1 | 0/2 |
+| `x-multi-combobox` | 26/27 |  | 2/2 | 1/1 |  | 3/3 | 4/4 | 3/3 | 0/8 | 1/1 | 0/2 |
 | `x-navbar` | 8/12 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 0/1 |
 | `x-neural-glow` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-notification-center` |  |  |  |  |  |  |  |  | 0/1 | 0/2 |  |
@@ -90,8 +90,8 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-scroll-stack` |  |  |  |  |  |  |  |  | 0/2 |  |  |
 | `x-scroll-story` | 0/1 |  |  |  |  | 1/1 |  | 1/1 | 0/2 |  |  |
 | `x-scroll-timeline` | 2/9 |  | 1/1 | 1/1 |  | 3/3 |  | 1/1 | 0/6 |  | 0/2 |
-| `x-search-field` | 8/12 |  | 1/1 |  | 0/1 | 2/2 |  | 1/1 | 0/2 |  |  |
-| `x-select` | 19/19 |  | 4/4 |  | 0/1 | 1/1 | 1/1 | 1/1 | 0/2 |  | 0/1 |
+| `x-search-field` | 8/12 |  | 1/1 |  |  | 2/2 |  | 1/1 | 0/2 |  |  |
+| `x-select` | 19/19 |  | 4/4 |  |  | 1/1 | 1/1 | 1/1 | 0/2 |  | 0/1 |
 | `x-sidebar` | 4/5 |  |  |  |  |  | 2/2 | 2/2 |  | 0/2 |  |
 | `x-skeleton` | 2/4 |  |  |  |  | 2/2 |  |  |  |  |  |
 | `x-skeleton-group` |  |  |  |  |  |  |  |  | 0/1 |  |  |
@@ -103,7 +103,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-split-pane` | 5/5 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-spotlight-card` | 6/8 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
 | `x-stat` | 10/10 |  | 2/2 | 2/2 |  | 1/1 |  | 2/2 | 0/2 |  | 0/1 |
-| `x-stepper` | 20/26 |  | 5/5 | 2/2 | 0/2 | 1/1 |  | 1/1 | 0/3 |  |  |
+| `x-stepper` | 20/26 |  | 5/5 | 2/2 |  | 1/1 |  | 1/1 | 0/3 |  |  |
 | `x-switch` | 8/8 |  |  |  |  | 1/1 | 1/1 | 2/2 |  |  |  |
 | `x-tab` | 5/10 |  |  |  |  | 1/1 |  | 2/2 | 0/4 |  | 0/2 |
 | `x-table` | 3/5 |  | 1/1 | 1/1 |  | 1/1 |  |  | 0/2 |  | 0/1 |
@@ -112,14 +112,14 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-tabs` |  |  |  |  |  |  |  |  | 0/2 |  |  |
 | `x-text-area` | 10/14 |  | 4/4 | 1/1 | 1/1 | 1/1 |  | 1/1 | 0/2 |  |  |
 | `x-timeline` | 1/1 |  | 1/1 | 1/1 |  |  |  |  | 0/1 |  |  |
-| `x-timeline-item` | 28/32 |  | 2/2 | 1/1 | 0/1 | 1/1 |  | 3/3 | 0/3 |  |  |
-| `x-toast` | 16/48 |  | 2/2 | 1/1 | 0/2 | 2/2 | 2/2 | 4/4 | 0/5 |  | 0/1 |
+| `x-timeline-item` | 28/32 |  | 2/2 | 1/1 |  | 1/1 |  | 3/3 | 0/3 |  |  |
+| `x-toast` | 16/48 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 4/4 | 0/5 |  | 0/1 |
 | `x-toaster` |  |  |  |  |  |  |  |  | 0/1 | 0/1 |  |
-| `x-tooltip` | 6/6 |  | 1/1 |  | 0/1 | 1/1 | 2/2 | 2/2 | 1/1 | 1/1 |  |
-| `x-typography` | 6/6 | 3/3 | 9/9 | 16/16 | 4/16 | 2/2 |  |  | 0/3 |  | 0/2 |
+| `x-tooltip` | 6/6 |  | 1/1 |  |  | 1/1 | 2/2 | 2/2 | 1/1 | 1/1 |  |
+| `x-typography` | 6/6 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 0/2 |
 | `x-welcome-tour` | 26/27 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 0/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 793/1179 | 10/10 | 117/117 | 69/69 | 7/42 | 110/110 | 73/73 | 107/107 | 15/238 | 3/29 | 0/69 |
+| **All** | 793/1179 | 10/10 | 117/117 | 69/69 | 7/7 | 110/110 | 73/73 | 107/107 | 15/238 | 3/29 | 0/69 |
 
 CSS not read, or not in full: x-liquid-glass.
 
@@ -214,3 +214,38 @@ Smoothing tied to scrolling. It follows the pointer and no design default.
 - `x-scroll-stack`: `transition: transform 60ms linear`
 - `x-scroll-timeline`: `transition: height 60ms linear`
 - `x-scroll-timeline`: `transition: stroke-dashoffset 60ms linear`
+
+A line height set against the font size of its own text.
+
+- `x-alert`: `line-height: 1.25`
+- `x-cancel-dialogue`: `line-height: 1.3`
+- `x-chart`: `line-height: 1.5`
+- `x-code`: `--x-code-line-height: 1.6`
+- `x-combobox`: `line-height: 1.4`
+- `x-command-palette`: `line-height: 1.4`
+- `x-date-picker`: `line-height: 1.4`
+- `x-image`: `line-height: 1.25`
+- `x-kbd`: `line-height: 1.2`
+- `x-kinetic-font`: `line-height: 1.2`
+- `x-kinetic-typography`: `line-height: 1.6`
+- `x-multi-combobox`: `line-height: 1.4`
+- `x-select`: `line-height: 1.4`
+- `x-stepper`: `line-height: 1.3`
+- `x-timeline-item`: `line-height: 1.25`
+- `x-toast`: `line-height: 1.2`
+- `x-toast`: `line-height: 1.35`
+- `x-tooltip`: `line-height: 1.4`
+- `x-typography`: `line-height: 1.2`
+- `x-typography`: `line-height: 1.25`
+- `x-typography`: `line-height: 1.3`
+- `x-typography`: `line-height: 1.35`
+- `x-typography`: `line-height: 1.4`
+- `x-typography`: `line-height: 1.5`
+- `x-typography`: `line-height: 1.6`
+
+The height of a one-line control.
+
+- `x-command-palette`: `line-height: 1.5`
+- `x-currency-field`: `line-height: 1.5`
+- `x-form-field`: `line-height: 1.5`
+- `x-search-field`: `line-height: 1.5`

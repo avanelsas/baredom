@@ -350,7 +350,7 @@
 
 (def ^:private closed
   "The families in which every value follows the theme or is listed as not themed by design."
-  #{"font-family" "font-size" "font-weight" "radius" "shadow" "transition"})
+  #{"font-family" "font-size" "font-weight" "line-height" "radius" "shadow" "transition"})
 
 (defn- reopened
   "The values of a closed family that follow no token, as a message for each."
