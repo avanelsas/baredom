@@ -225,6 +225,4 @@
   [["x-command-palette" "background" "#312e81"]
    ["x-command-palette" "background" "#e0e7ff"]
    ["x-command-palette" "color" "#3730a3"]
-   ["x-command-palette" "color" "#c7d2fe"]]]
- ["A transparent border. It holds the place of a border."
-  [["x-pagination" "--x-pagination-current-border" "1px solid transparent"]]]]
+   ["x-command-palette" "color" "#c7d2fe"]]]]

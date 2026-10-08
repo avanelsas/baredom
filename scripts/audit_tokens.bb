@@ -149,17 +149,27 @@
 (def ^:private width-part #"^(\d|\.\d|thin|medium|thick|var\(--x-[a-z0-9-]*width)")
 (def ^:private colour-part #"(?i)^(#|rgb|hsl|var\(|currentcolor|transparent)")
 
+(def ^:private border-style #{"solid" "dashed" "dotted" "double"})
+
+(defn- holds-border?
+  "True when `prop` is a border or an outline shorthand, or a custom property whose `value` is
+   written as one."
+  [prop value]
+  (or (re-find shorthand prop)
+      (and (str/starts-with? prop "--") (some border-style (parts value)))))
+
 (defn- longhand
-  "The declarations a border or an outline shorthand stands for: its width and its colour."
+  "The declarations a border or an outline shorthand stands for: its width and its colour. A
+   custom property that holds such a shorthand stands for the same."
   [[prop value]]
-  (if (re-find shorthand prop)
+  (if (holds-border? prop value)
     (let [ps     (parts value)
           width  (first (filter #(re-find width-part %) ps))
           colour (first (filter #(re-find colour-part %) (remove #{width} ps)))]
       (cond-> []
-        (and width (str/starts-with? prop "border")) (conj ["border-width" width])
-        colour                                       (conj ["border-color" colour])
-        (and (not width) (not colour))               (conj ["border-width" value])))
+        (and width (not (str/starts-with? prop "outline"))) (conj ["border-width" width])
+        colour                                              (conj ["border-color" colour])
+        (and (not width) (not colour))                      (conj ["border-width" value])))
     [[prop value]]))
 
 ;; ── the tokens ──────────────────────────────────────────────────────────────
