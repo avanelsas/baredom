@@ -404,7 +404,7 @@
 (def ^:private closed
   "The families in which every value follows the theme or is listed as not themed by design."
   #{"border-width" "color" "font-family" "font-size" "font-weight" "line-height" "radius"
-    "shadow" "transition"})
+    "shadow" "transition" "z"})
 
 (defn- reopened
   "The values of a closed family that follow no token, as a message for each."

@@ -9,7 +9,7 @@ or the component's own property whose default is a token. Structural values such
 design, for the reasons at the end. An empty cell means the component has no value of that
 family.
 
-Closed families, in which CI allows no value that follows no token: border-width, color, font-family, font-size, font-weight, line-height, radius, shadow, transition.
+Closed families, in which CI allows no value that follows no token: border-width, color, font-family, font-size, font-weight, line-height, radius, shadow, transition, z.
 
 | Component | color | font-family | font-size | font-weight | line-height | radius | shadow | transition | space | z | border-width |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -22,32 +22,32 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-breadcrumbs` | 8/8 |  | 3/3 | 1/1 |  |  |  |  | 0/1 |  |  |
 | `x-button` | 42/42 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 1/1 |
 | `x-calendar` | 17/17 |  | 4/4 | 4/4 |  | 7/7 | 1/1 | 1/1 | 0/11 |  | 2/2 |
-| `x-cancel-dialogue` | 18/18 |  | 3/3 | 2/2 | 1/1 | 2/2 | 2/2 |  | 0/6 | 0/1 |  |
+| `x-cancel-dialogue` | 18/18 |  | 3/3 | 2/2 | 1/1 | 2/2 | 2/2 |  | 0/6 | 1/1 |  |
 | `x-card` | 14/14 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 1/1 |
 | `x-carousel` | 12/12 |  |  |  |  | 1/1 | 1/1 | 3/3 | 0/3 |  |  |
-| `x-chart` | 14/14 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 1/1 | 0/6 | 0/1 | 2/2 |
+| `x-chart` | 14/14 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 1/1 | 0/6 |  | 2/2 |
 | `x-checkbox` | 15/15 |  |  |  |  | 1/1 |  | 3/3 |  |  |  |
 | `x-chip` | 7/7 |  | 1/1 |  |  | 1/1 |  | 1/1 | 0/4 |  | 1/1 |
 | `x-code` | 9/9 | 1/1 | 3/3 | 1/1 |  | 2/2 |  | 1/1 | 0/8 |  | 4/4 |
 | `x-collapse` | 14/14 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  | 2/2 |
-| `x-color-picker` | 10/10 | 1/1 | 1/1 |  |  | 2/2 | 3/3 |  | 0/5 | 0/1 | 4/4 |
+| `x-color-picker` | 10/10 | 1/1 | 1/1 |  |  | 2/2 | 3/3 |  | 0/5 | 1/1 | 4/4 |
 | `x-combobox` | 26/26 |  | 2/2 | 1/1 |  | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 10/10 |
-| `x-command-palette` | 11/11 |  | 4/4 | 1/1 |  | 1/1 | 2/2 |  | 0/6 | 0/2 | 1/1 |
-| `x-confetti` |  |  |  |  |  |  |  |  |  | 0/1 |  |
+| `x-command-palette` | 11/11 |  | 4/4 | 1/1 |  | 1/1 | 2/2 |  | 0/6 | 2/2 | 1/1 |
+| `x-confetti` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-container` | 2/2 |  |  |  |  |  |  |  | 0/3 |  | 1/1 |
 | `x-context-menu` | 8/8 |  |  |  |  | 1/1 | 2/2 | 1/1 | 0/1 |  | 1/1 |
-| `x-copy` | 8/8 |  | 1/1 |  |  | 1/1 |  |  | 0/1 | 0/1 |  |
+| `x-copy` | 8/8 |  | 1/1 |  |  | 1/1 |  |  | 0/1 | 1/1 |  |
 | `x-currency-field` | 16/16 |  | 5/5 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  | 2/2 |
-| `x-date-picker` | 25/25 |  | 5/5 | 4/4 |  | 4/4 | 1/1 |  | 0/9 | 0/1 | 3/3 |
+| `x-date-picker` | 25/25 |  | 5/5 | 4/4 |  | 4/4 | 1/1 |  | 0/9 | 1/1 | 3/3 |
 | `x-divider` | 3/3 |  | 1/1 | 1/1 |  |  |  |  | 0/2 |  |  |
-| `x-drag-panel` | 7/7 |  |  |  |  | 2/2 | 2/2 | 1/1 | 0/4 | 0/1 | 2/2 |
-| `x-drawer` | 6/6 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 2/2 |
+| `x-drag-panel` | 7/7 |  |  |  |  | 2/2 | 2/2 | 1/1 | 0/4 | 1/1 | 2/2 |
+| `x-drawer` | 6/6 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 1/1 | 2/2 |
 | `x-drop-zone` | 9/9 |  | 1/1 |  |  | 2/2 |  | 1/1 | 0/3 |  | 1/1 |
-| `x-dropdown` | 18/18 |  | 1/1 | 1/1 |  | 2/2 | 2/2 | 3/3 | 0/3 | 0/1 | 4/4 |
+| `x-dropdown` | 18/18 |  | 1/1 | 1/1 |  | 2/2 | 2/2 | 3/3 | 0/3 | 1/1 | 4/4 |
 | `x-fieldset` | 11/11 |  | 1/1 | 1/1 |  | 2/2 | 2/2 |  | 0/4 |  | 2/2 |
 | `x-file-download` | 9/9 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
 | `x-file-upload` | 22/22 |  | 2/2 | 1/1 |  | 4/4 |  | 1/1 | 1/5 |  | 2/2 |
-| `x-floating-panel` | 8/8 |  |  |  |  | 3/3 | 2/2 | 1/1 | 3/3 | 0/1 | 2/2 |
+| `x-floating-panel` | 8/8 |  |  |  |  | 3/3 | 2/2 | 1/1 | 3/3 |  | 2/2 |
 | `x-form` |  |  |  |  |  |  |  |  | 0/1 |  |  |
 | `x-form-field` | 14/14 |  | 4/4 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  | 2/2 |
 | `x-gaussian-blur` |  |  |  |  |  |  |  |  |  |  |  |
@@ -60,25 +60,25 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-kinetic-canvas` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-kinetic-font` | 1/1 |  |  |  |  |  |  |  | 0/1 |  |  |
 | `x-kinetic-typography` | 4/4 | 1/1 |  | 1/1 |  |  |  |  | 0/1 |  |  |
-| `x-liquid-dock` | 4/4 |  |  |  |  | 1/1 | 2/2 |  | 0/2 | 0/1 | 1/1 |
+| `x-liquid-dock` | 4/4 |  |  |  |  | 1/1 | 2/2 |  | 0/2 |  | 1/1 |
 | `x-liquid-fill` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-liquid-glass` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-menu` | 4/4 |  |  |  |  | 1/1 | 2/2 |  | 0/5 | 0/1 | 2/2 |
+| `x-menu` | 4/4 |  |  |  |  | 1/1 | 2/2 |  | 0/5 | 1/1 | 2/2 |
 | `x-menu-item` | 12/12 |  | 1/1 |  |  | 1/1 |  | 1/1 | 0/3 |  | 1/1 |
-| `x-metaball-cursor` |  |  |  |  |  |  |  |  |  | 0/1 |  |
-| `x-modal` | 3/3 |  |  |  |  | 1/1 | 1/1 | 2/2 | 0/3 | 0/1 | 2/2 |
+| `x-metaball-cursor` |  |  |  |  |  |  |  |  |  |  |  |
+| `x-modal` | 3/3 |  |  |  |  | 1/1 | 1/1 | 2/2 | 0/3 | 1/1 | 2/2 |
 | `x-morph-stack` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-multi-combobox` | 26/26 |  | 2/2 | 1/1 |  | 3/3 | 4/4 | 3/3 | 0/8 | 1/1 | 10/10 |
-| `x-navbar` | 8/8 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 1/1 |
+| `x-navbar` | 8/8 |  |  |  |  |  | 2/2 | 2/2 | 0/3 |  | 1/1 |
 | `x-neural-glow` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-notification-center` |  |  |  |  |  |  |  |  | 0/1 | 0/1 |  |
+| `x-notification-center` |  |  |  |  |  |  |  |  | 0/1 | 1/1 |  |
 | `x-organic-divider` | 2/2 |  |  |  |  |  |  |  |  |  |  |
 | `x-organic-progress` | 2/2 |  |  |  |  |  |  |  |  |  |  |
 | `x-organic-shape` |  |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-otp-input` | 8/8 | 1/1 |  | 1/1 |  | 1/1 |  | 1/1 | 1/1 |  | 2/2 |
 | `x-pagination` | 14/14 |  | 3/3 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  | 3/3 |
 | `x-particle-button` | 54/54 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 4/4 | 0/2 |  | 1/1 |
-| `x-popover` | 48/48 |  | 4/4 | 2/2 |  | 4/4 | 4/4 | 5/5 | 0/8 | 0/1 | 20/20 |
+| `x-popover` | 48/48 |  | 4/4 | 2/2 |  | 4/4 | 4/4 | 5/5 | 0/8 | 1/1 | 20/20 |
 | `x-progress` | 10/10 |  | 2/2 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
 | `x-progress-circle` | 8/8 |  |  | 1/1 |  |  |  | 1/1 |  |  |  |
 | `x-proximity-list` | 1/1 |  |  |  |  |  |  |  | 0/1 |  |  |
@@ -93,14 +93,14 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-scroll-timeline` | 8/8 |  | 1/1 | 1/1 |  | 3/3 |  | 1/1 | 0/6 |  |  |
 | `x-search-field` | 12/12 |  | 1/1 |  |  | 2/2 |  | 1/1 | 0/2 |  | 2/2 |
 | `x-select` | 19/19 |  | 4/4 |  |  | 1/1 | 1/1 | 1/1 | 0/2 |  | 1/1 |
-| `x-sidebar` | 4/4 |  |  |  |  |  | 2/2 | 2/2 |  | 0/2 |  |
+| `x-sidebar` | 4/4 |  |  |  |  |  | 2/2 | 2/2 |  | 2/2 |  |
 | `x-skeleton` | 2/2 |  |  |  |  | 2/2 |  |  |  |  |  |
 | `x-skeleton-group` |  |  |  |  |  |  |  |  | 0/1 |  |  |
 | `x-slider` | 14/14 |  | 2/2 | 1/1 |  | 1/1 | 1/1 | 2/2 | 0/2 |  |  |
 | `x-soft-body` | 4/4 |  |  |  |  |  | 2/2 |  | 0/1 |  |  |
 | `x-spacer` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-spinner` | 4/4 |  |  |  |  |  |  |  |  |  |  |
-| `x-splash` | 10/10 |  |  |  |  | 1/1 |  | 3/3 | 0/1 | 0/1 |  |
+| `x-splash` | 10/10 |  |  |  |  | 1/1 |  | 3/3 | 0/1 |  |  |
 | `x-split-pane` | 5/5 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-spotlight-card` | 6/6 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 1/1 |
 | `x-stat` | 10/10 |  | 2/2 | 2/2 |  | 1/1 |  | 2/2 | 0/2 |  | 1/1 |
@@ -115,12 +115,12 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-timeline` | 1/1 |  | 1/1 | 1/1 |  |  |  |  | 0/1 |  |  |
 | `x-timeline-item` | 28/28 |  | 2/2 | 1/1 |  | 1/1 |  | 3/3 | 0/3 |  |  |
 | `x-toast` | 42/42 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 4/4 | 0/5 |  | 1/1 |
-| `x-toaster` |  |  |  |  |  |  |  |  | 0/1 | 0/1 |  |
+| `x-toaster` |  |  |  |  |  |  |  |  | 0/1 | 1/1 |  |
 | `x-tooltip` | 6/6 |  | 1/1 |  |  | 1/1 | 2/2 | 2/2 | 1/1 | 1/1 | 2/2 |
 | `x-typography` | 7/7 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 1/1 |
 | `x-welcome-tour` | 26/26 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 1/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 987/987 | 10/10 | 117/117 | 69/69 | 7/7 | 111/111 | 75/75 | 107/107 | 15/237 | 3/26 | 115/115 |
+| **All** | 987/987 | 10/10 | 117/117 | 69/69 | 7/7 | 111/111 | 75/75 | 107/107 | 15/237 | 19/19 | 115/115 |
 
 CSS not read, or not in full: x-liquid-glass.
 
@@ -231,3 +231,19 @@ The dashed edge of a drop target.
 A bar, an arrow or an outline drawn at its own width.
 
 3 values in `x-soft-body`, `x-typography`, `x-welcome-tour`.
+
+Above everything, by its purpose.
+
+3 values in `x-confetti`, `x-metaball-cursor`, `x-splash`.
+
+Page chrome. It sits below every floating layer.
+
+2 values in `x-liquid-dock`, `x-navbar`.
+
+A window that floats under dialogs.
+
+1 value in `x-floating-panel`.
+
+A layer inside its own component.
+
+1 value in `x-chart`.

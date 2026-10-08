@@ -62,7 +62,7 @@
    ":host{"
    "display:contents;"
    "color-scheme:light dark;"
-   "--x-cancel-dialogue-z-base:1000;"
+   "--x-cancel-dialogue-z-base:var(--x-z-modal,1000);"
    "--x-cancel-dialogue-backdrop-bg:rgba(0,0,0,0.45);"
    "--x-cancel-dialogue-bg:var(--x-color-bg,#ffffff);"
    "--x-cancel-dialogue-fg:var(--x-color-text,#0f172a);"

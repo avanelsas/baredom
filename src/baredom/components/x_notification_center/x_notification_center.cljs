@@ -29,7 +29,7 @@
    "--x-notification-center-gap:8px;"
    "--x-notification-center-offset-x:16px;"
    "--x-notification-center-offset-y:16px;"
-   "--x-notification-center-z-index:9999;"
+   "--x-notification-center-z-index:var(--x-z-toast,9999);"
    "pointer-events:none;"
    "}"
    du/hidden-rule

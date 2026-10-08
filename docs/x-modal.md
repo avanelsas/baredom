@@ -77,7 +77,7 @@ Centered overlay dialog with backdrop. Traps focus, dismisses on Escape or backd
 | `--x-modal-border`          | `color-mix(in srgb, currentColor 12%, transparent)` | Header/footer divider color. |
 | `--x-modal-duration`        | `180ms`                                 | Transition duration. |
 | `--x-modal-easing`          | `var(--x-transition-easing, ease)`      | Transition easing. |
-| `--x-modal-z`               | `1000`                                  | Backdrop z-index (dialog is z+1). |
+| `--x-modal-z`               | `var(--x-z-modal, 1000)`                                  | Backdrop z-index (dialog is z+1). |
 
 ## Accessibility
 

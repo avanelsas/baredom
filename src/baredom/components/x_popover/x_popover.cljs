@@ -33,7 +33,7 @@
    "--x-popover-panel-max-width:min(24rem,calc(100vw - 1rem));"
    "--x-popover-panel-max-height:24rem;"
    "--x-popover-panel-offset:4px;"
-   "--x-popover-panel-z:1000;"
+   "--x-popover-panel-z:var(--x-z-dropdown,1000);"
    "--x-popover-header-padding:0.625rem 0.75rem 0.625rem 0.875rem;"
    "--x-popover-header-border:var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0);"
    "--x-popover-heading-color:var(--x-color-text,#0f172a);"

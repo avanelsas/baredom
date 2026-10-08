@@ -16,7 +16,7 @@
    ":host{"
    "display:flex;"
    "position:fixed;"
-   "z-index:var(--x-toaster-z-index,9000);"
+   "z-index:var(--x-toaster-z-index,var(--x-z-toast,9000));"
    "gap:var(--x-toaster-gap,8px);"
    "width:max-content;"
    "max-width:var(--x-toaster-max-width,min(480px,calc(100vw - 2rem)));"

@@ -240,4 +240,15 @@
  ["A bar, an arrow or an outline drawn at its own width."
   [["x-soft-body" "--x-soft-body-border-width" "1.5"]
    ["x-typography" "border-width" "3px"]
-   ["x-welcome-tour" "border-width" "8px"]]]]
+   ["x-welcome-tour" "border-width" "8px"]]]
+ ["Above everything, by its purpose."
+  [["x-confetti" "z-index" "9999"]
+   ["x-metaball-cursor" "z-index" "9999"]
+   ["x-splash" "--x-splash-z-index" "9999"]]]
+ ["Page chrome. It sits below every floating layer."
+  [["x-liquid-dock" "z-index" "50"]
+   ["x-navbar" "--x-navbar-z-index" "40"]]]
+ ["A window that floats under dialogs."
+  [["x-floating-panel" "--x-floating-panel-z" "900"]]]
+ ["A layer inside its own component."
+  [["x-chart" "z-index" "10"]]]]

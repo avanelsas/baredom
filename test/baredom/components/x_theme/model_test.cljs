@@ -90,6 +90,16 @@
     (is (re-find #"--x-z-modal:" css))
     (is (re-find #"--x-z-toast:" css))))
 
+(defn- level
+  "The layer level that the CSS of `preset` gives `token`, as a number."
+  [preset token]
+  (js/parseInt (second (re-find (re-pattern (str token ":(\\d+);")) (model/preset->css preset)))))
+
+(deftest the-layers-of-every-preset-rise-from-popup-to-dialog-to-toast
+  (doseq [preset model/allowed-presets]
+    (is (< (level preset "--x-z-dropdown") (level preset "--x-z-modal") (level preset "--x-z-toast"))
+        preset)))
+
 (deftest preset->css-contains-opacity-tokens-test
   (let [css (model/preset->css "default")]
     (is (re-find #"--x-opacity-disabled:" css))

@@ -44,7 +44,7 @@ All components must consume the shared design tokens defined by `x-theme` (`src/
 ### Z-index
 - `--x-z-dropdown` (1000)
 - `--x-z-modal` (1100)
-- `--x-z-toast` (1200)
+- `--x-z-toast` (9000)
 
 ### Opacity
 - `--x-opacity-disabled` — for disabled states
@@ -69,6 +69,13 @@ All components must consume the shared design tokens defined by `x-theme` (`src/
 
 - **The edge of a component, a panel or an input, and a divider line**: write `var(--x-border-width,1px)` for the width. A size computed from that border, such as the offset of an arrow, uses it too.
 - **A ring, a thumb or an indicator** keeps its own width. It is part of its shape.
+
+## Layer rules
+
+- **An anchored popup** (a dropdown, a menu, a picker, a tooltip) uses `--x-z-dropdown`.
+- **A dialog with a backdrop** (a modal, a drawer, a command palette, an off-canvas sidebar) uses `--x-z-modal` for its backdrop and one above for its panel.
+- **A toast or a notification** uses `--x-z-toast`.
+- Page chrome, a window that floats under dialogs and a layer inside a component keep their own level. So does what must be above everything, such as a splash screen.
 
 ## What NOT to theme
 

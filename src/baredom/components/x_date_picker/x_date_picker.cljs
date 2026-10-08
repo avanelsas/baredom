@@ -527,7 +527,7 @@
    "[part=btn]:hover{background:var(--x-date-picker-btn-hover,#f1f5f9);}"
    "[part=btn]:focus-visible{outline:2px solid var(--x-date-picker-focus,#60a5fa);}"
    "[part=popover]{"
-   "display:none;position:absolute;z-index:1000;"
+   "display:none;position:absolute;z-index:var(--x-z-dropdown,1000);"
    "top:calc(100% + 8px);left:0;"
    "background:var(--x-date-picker-popover-bg,#fff);"
    "border:var(--x-border-width,1px) solid var(--x-date-picker-border,#e2e8f0);"
