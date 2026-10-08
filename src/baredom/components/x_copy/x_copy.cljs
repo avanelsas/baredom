@@ -46,7 +46,7 @@
    "--x-copy-tooltip-radius:var(--x-radius-md,6px);"
    "--x-copy-tooltip-padding:4px 8px;"
    "--x-copy-tooltip-font-size:var(--x-font-size-sm,0.8125rem);"
-   "--x-copy-tooltip-z:100;"
+   "--x-copy-tooltip-z:var(--x-z-dropdown,100);"
    "}"
    du/hidden-rule
    "@media (prefers-color-scheme:dark){"

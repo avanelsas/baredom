@@ -128,7 +128,7 @@ the page keeps the shades of the theme.
 |------------------|---------|
 | `--x-z-dropdown` | `1000`  |
 | `--x-z-modal`    | `1100`  |
-| `--x-z-toast`    | `1200`  |
+| `--x-z-toast`    | `9000`  |
 
 ### Opacity (2 tokens)
 

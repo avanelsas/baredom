@@ -107,7 +107,7 @@
    "}"
    "[part=panel]{"
    "position:absolute;"
-   "z-index:1000;"
+   "z-index:var(--x-z-dropdown,1000);"
    "box-sizing:border-box;"
    "background:var(--x-dropdown-panel-bg);"
    "border:var(--x-dropdown-panel-border);"

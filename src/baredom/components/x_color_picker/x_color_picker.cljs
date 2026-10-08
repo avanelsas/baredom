@@ -89,7 +89,7 @@
    ":host([data-mode=popover]) [part=panel]{"
    "display:none;"
    "position:absolute;"
-   "z-index:1000;"
+   "z-index:var(--x-z-dropdown,1000);"
    "top:calc(100% + 8px);"
    "left:0;"
    "max-width:calc(100vw - 1rem);"

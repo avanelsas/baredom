@@ -2355,7 +2355,7 @@
         "default" : "60rem"
       }, {
         "name" : "--x-modal-z",
-        "default" : "1000"
+        "default" : "var(--x-z-modal,1000)"
       } ],
       "cssParts" : [ {
         "name" : "backdrop"
@@ -4744,7 +4744,7 @@
         "default" : "var(--x-shadow-lg,0 20px 60px rgba(0,0,0,0.20),0 4px 12px rgba(0,0,0,0.10))"
       }, {
         "name" : "--x-cancel-dialogue-z-base",
-        "default" : "1000"
+        "default" : "var(--x-z-modal,1000)"
       } ],
       "cssParts" : [ {
         "name" : "actions"
@@ -4996,7 +4996,7 @@
         "default" : "#ffffff"
       }, {
         "name" : "--x-copy-tooltip-z",
-        "default" : "100"
+        "default" : "var(--x-z-dropdown,100)"
       } ],
       "cssParts" : [ {
         "name" : "tooltip"
@@ -8462,7 +8462,7 @@
         "default" : "var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.12))"
       }, {
         "name" : "--x-menu-z-index",
-        "default" : "1000"
+        "default" : "var(--x-z-dropdown,1000)"
       } ],
       "cssParts" : [ {
         "name" : "base"
@@ -9688,7 +9688,7 @@
         "default" : "var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.12))"
       }, {
         "name" : "--x-popover-panel-z",
-        "default" : "1000"
+        "default" : "var(--x-z-dropdown,1000)"
       }, {
         "name" : "--x-popover-transition-duration",
         "default" : "var(--x-transition-duration,150ms)"
@@ -11607,7 +11607,7 @@
         "default" : "20rem"
       }, {
         "name" : "--x-drawer-z",
-        "default" : "1000"
+        "default" : "var(--x-z-modal,1000)"
       } ],
       "cssParts" : [ {
         "name" : "backdrop"
@@ -15835,7 +15835,7 @@
         "default" : "360px"
       }, {
         "name" : "--x-notification-center-z-index",
-        "default" : "9999"
+        "default" : "var(--x-z-toast,9999)"
       } ],
       "cssParts" : [ {
         "name" : "container"
@@ -20116,7 +20116,7 @@
         "name" : "--x-toaster-max-width"
       }, {
         "name" : "--x-toaster-z-index",
-        "default" : "9000"
+        "default" : "var(--x-z-toast,9000)"
       } ],
       "cssParts" : [ ]
     } ],
@@ -21989,7 +21989,7 @@
         "default" : "560px"
       }, {
         "name" : "--x-command-palette-z",
-        "default" : "800"
+        "default" : "var(--x-z-modal,800)"
       } ],
       "cssParts" : [ {
         "name" : "clear-btn"

@@ -121,7 +121,7 @@
 (def ^:private base-z-index
   {tk-z-dropdown "1000"
    tk-z-modal    "1100"
-   tk-z-toast    "1200"})
+   tk-z-toast    "9000"})
 
 (def ^:private base-opacity
   {tk-opacity-disabled    "0.5"

@@ -99,7 +99,7 @@ Fired after the open state has changed. **Not cancelable.**
 | `--x-popover-panel-max-width` | `24rem` | Maximum panel width |
 | `--x-popover-panel-max-height` | `24rem` | Maximum panel height (scrollable) |
 | `--x-popover-panel-offset` | `4px` | Gap between trigger and arrow |
-| `--x-popover-panel-z` | `1000` | z-index |
+| `--x-popover-panel-z` | `var(--x-z-dropdown, 1000)` | z-index |
 
 ### Header
 | Property | Default | Description |

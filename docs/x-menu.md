@@ -47,7 +47,7 @@ A dropdown command menu that wraps a trigger element and a list of `x-menu-item`
 | `--x-menu-shadow`         | `0 4px 16px rgba(0,0,0,0.12)`   | `0 4px 16px rgba(0,0,0,0.4)`    |
 | `--x-menu-min-width`      | `160px`                          | `160px`                          |
 | `--x-menu-padding`        | `4px`                            | `4px`                            |
-| `--x-menu-z-index`        | `1000`                           | `1000`                           |
+| `--x-menu-z-index`        | `var(--x-z-dropdown, 1000)`                           | `var(--x-z-dropdown, 1000)`                           |
 
 ## Keyboard behaviour
 

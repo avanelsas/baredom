@@ -124,7 +124,7 @@ toaster.addEventListener('x-toaster-dismiss', e => {
 | `--x-toaster-inset` | `16px` | Distance from viewport edges |
 | `--x-toaster-gap` | `8px` | Vertical gap between toasts |
 | `--x-toaster-max-width` | `480px` | Max width of the overlay container |
-| `--x-toaster-z-index` | `9000` | Stack order above page content |
+| `--x-toaster-z-index` | `var(--x-z-toast, 9000)` | Stack order above page content |
 
 ## Stacking order
 

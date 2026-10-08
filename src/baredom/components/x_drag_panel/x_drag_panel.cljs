@@ -165,7 +165,7 @@
    ;; Lifted. The host keeps its box so the board never reflows mid-drag; only
    ;; the inner surface leaves the flow.
    ":host([data-dragging]) [part=panel]{"
-   "z-index:1000;"
+   "z-index:var(--x-z-dropdown,1000);"
    "pointer-events:none;"
    "cursor:grabbing;"
    "box-shadow:var(" css-lift-shadow ",var(--x-shadow-lg,0 12px 32px rgba(0,0,0,.22)));"

@@ -40,7 +40,7 @@
    "--x-menu-shadow:var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.12));"
    "--x-menu-min-width:160px;"
    "--x-menu-padding:4px;"
-   "--x-menu-z-index:1000;}"
+   "--x-menu-z-index:var(--x-z-dropdown,1000);}"
    du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
