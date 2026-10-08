@@ -98,7 +98,7 @@
 
    ".crumb[data-current] .crumb-content{"
    "color:var(--x-breadcrumbs-color-current);"
-   "font-weight:500;}"
+   "font-weight:var(--x-font-weight-medium,500);}"
 
    ":host([data-variant='subtle']) .crumb-content{"
    "opacity:0.75;}"

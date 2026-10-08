@@ -198,7 +198,7 @@
 
    ".tl-date[data-active]{"
    "color:var(--x-scroll-timeline-marker-active-color);"
-   "font-weight:600;}"
+   "font-weight:var(--x-font-weight-semibold,600);}"
 
    ;; Alternating date positioning — opposite side of entry
    ":host([data-layout=alternating]) .tl-date[data-side=left]{"

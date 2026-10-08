@@ -92,7 +92,7 @@
    "background:var(--x-pagination-current-bg);"
    "color:var(--x-pagination-current-color);"
    "border:var(--x-pagination-current-border);"
-   "font-weight:600;"
+   "font-weight:var(--x-font-weight-semibold,600);"
    "cursor:default;}"
 
    "[part~='button']:disabled{"

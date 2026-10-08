@@ -172,7 +172,7 @@
    "padding-bottom:var(--x-timeline-item-gap);}"
 
    ".title{"
-   "font-weight:600;"
+   "font-weight:var(--x-font-weight-semibold,600);"
    "font-size:var(--x-timeline-item-title-font-size);"
    "line-height:1.25;"
    "min-height:var(--x-timeline-item-marker-size);"

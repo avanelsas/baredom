@@ -264,7 +264,7 @@
    "[part=option]:hover{background:var(--x-combobox-option-hover-bg);}"
    "[part=option][data-active]{background:var(--x-combobox-option-active-bg);color:var(--x-combobox-option-active-fg);}"
    "[part=option][data-active] b{color:inherit;}"
-   "[part=option] b{font-weight:700;}"
+   "[part=option] b{font-weight:var(--x-font-weight-bold,700);}"
    "[part=empty-msg]{"
    "padding:var(--x-combobox-option-padding);"
    "font-size:var(--x-combobox-font-size);color:var(--x-combobox-placeholder);"

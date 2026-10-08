@@ -74,7 +74,7 @@
    "[part=label-text]{"
    "font-size:0.875rem;"
    "color:var(--x-rating-label-color);"
-   "font-weight:500;}"
+   "font-weight:var(--x-font-weight-medium,500);}"
 
    ;; The stars row is the focusable role=slider element.
    "[part=stars]{"

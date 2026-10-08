@@ -78,7 +78,7 @@
    "color:inherit;"
    "font-family:var(--x-kbd-font-family);"
    "font-size:var(--x-kbd-font-size);"
-   "font-weight:600;"
+   "font-weight:var(--x-font-weight-semibold,600);"
    "line-height:1.2;"
    "text-align:center;"
    "white-space:nowrap;"

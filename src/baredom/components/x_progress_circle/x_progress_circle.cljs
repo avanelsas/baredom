@@ -85,7 +85,7 @@
    "[part=value-text]{"
    "font-size:calc(var(--x-progress-circle-size) * 0.22);"
    "color:var(--x-progress-circle-value-color);"
-   "font-weight:500;"
+   "font-weight:var(--x-font-weight-medium,500);"
    "line-height:1;}"
 
    ;; Indeterminate animation

@@ -110,7 +110,7 @@
    "align-items:center;"
    "justify-content:center;"
    "border-radius:var(--x-file-upload-radius);"
-   "font-weight:600;"
+   "font-weight:var(--x-font-weight-semibold,600);"
    "color:var(--x-color-primary,#3b82f6);"
    "pointer-events:none;"
    "}"

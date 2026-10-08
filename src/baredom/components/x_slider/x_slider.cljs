@@ -69,7 +69,7 @@
    "[part=label-text]{"
    "font-size:0.875rem;"
    "color:var(--x-slider-label-color);"
-   "font-weight:500;}"
+   "font-weight:var(--x-font-weight-medium,500);}"
 
    "[part=value-text]{"
    "font-size:0.8125rem;"

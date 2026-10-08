@@ -57,7 +57,7 @@
    "[part=label]{"
    "display:block;"
    "font-size:var(--x-text-area-label-font-size);"
-   "font-weight:500;"
+   "font-weight:var(--x-font-weight-medium,500);"
    "color:var(--x-text-area-label-color);"
    "}"
    ".label-hidden{"

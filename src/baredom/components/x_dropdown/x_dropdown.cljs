@@ -29,7 +29,7 @@
    "--x-dropdown-trigger-padding:0 0.75rem;"
    "--x-dropdown-trigger-height:2.25rem;"
    "--x-dropdown-trigger-font-size:var(--x-font-size-sm,0.9375rem);"
-   "--x-dropdown-trigger-font-weight:500;"
+   "--x-dropdown-trigger-font-weight:var(--x-font-weight-medium,500);"
    "--x-dropdown-chevron-color:var(--x-color-text-muted,#64748b);"
    "--x-dropdown-focus-ring:var(--x-color-focus-ring,#60a5fa);"
    "--x-dropdown-panel-bg:var(--x-color-bg,#ffffff);"

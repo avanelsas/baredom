@@ -53,7 +53,7 @@
    "--x-kinetic-typography-color:var(--x-color-text,currentColor);"
    "--x-kinetic-typography-font-family:var(--x-font-family,inherit);"
    "--x-kinetic-typography-font-size:24px;"
-   "--x-kinetic-typography-font-weight:400;"
+   "--x-kinetic-typography-font-weight:var(--x-font-weight-normal,400);"
    "--x-kinetic-typography-letter-spacing:0;"
    "--x-kinetic-typography-opacity:1;"
    "--x-kinetic-typography-stroke:none;"

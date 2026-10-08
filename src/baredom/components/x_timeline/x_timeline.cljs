@@ -19,7 +19,7 @@
    "--x-timeline-gap:0;"
    "--x-timeline-label-color:var(--x-color-text,inherit);"
    "--x-timeline-label-font-size:var(--x-font-size-sm,0.875rem);"
-   "--x-timeline-label-font-weight:600;"
+   "--x-timeline-label-font-weight:var(--x-font-weight-semibold,600);"
    "--x-timeline-label-padding:0 0 0.5rem;}"
    du/hidden-rule
 

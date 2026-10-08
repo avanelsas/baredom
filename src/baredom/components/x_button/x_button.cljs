@@ -102,7 +102,7 @@
    "--x-button-font-size-sm:0.875rem;"
    "--x-button-font-size-md:0.9375rem;"
    "--x-button-font-size-lg:1rem;"
-   "--x-button-font-weight:600;"
+   "--x-button-font-weight:var(--x-font-weight-semibold,600);"
    "--x-button-icon-size-sm:0.875rem;"
    "--x-button-icon-size-md:1rem;"
    "--x-button-icon-size-lg:1.125rem;"

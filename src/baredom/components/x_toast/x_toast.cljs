@@ -25,7 +25,7 @@
    "--x-toast-gap:12px;"
    "--x-toast-font-size:var(--x-font-size-sm,0.875rem);"
    "--x-toast-heading-font-size:0.9375rem;"
-   "--x-toast-heading-weight:600;"
+   "--x-toast-heading-weight:var(--x-font-weight-semibold,600);"
    "--x-toast-min-width:min(280px,calc(100vw - 2rem));"
    "--x-toast-max-width:min(480px,calc(100vw - 2rem));"
    "--x-toast-border-width:1px;"

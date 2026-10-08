@@ -50,7 +50,7 @@
    "--x-table-stripe-bg:rgba(0,0,0,0.025);"
    "--x-table-caption-color:var(--x-color-text,inherit);"
    "--x-table-caption-font-size:0.875rem;"
-   "--x-table-caption-font-weight:600;"
+   "--x-table-caption-font-weight:var(--x-font-weight-semibold,600);"
    "--x-table-caption-padding:0 0 0.5rem;"
    "--x-table-compact-padding:0.25rem 0.5rem;}"
    du/hidden-rule

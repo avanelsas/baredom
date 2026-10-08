@@ -45,7 +45,7 @@
    "--x-fieldset-bg:var(--x-color-surface,transparent);"
    "--x-fieldset-legend-color:var(--x-color-text-muted,#374151);"
    "--x-fieldset-legend-font-size:var(--x-font-size-sm, 0.875rem);"
-   "--x-fieldset-legend-font-weight:600;"
+   "--x-fieldset-legend-font-weight:var(--x-font-weight-semibold,600);"
    "--x-fieldset-legend-padding:0 0.375rem;"
    "--x-fieldset-disabled-opacity:0.45;"
    "--x-fieldset-input-bg:var(--x-color-surface,#ffffff);"

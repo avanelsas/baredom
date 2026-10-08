@@ -135,7 +135,8 @@
    "flex-shrink:0;"
    "}"
    "[part=tooltip-label]{color:var(--x-chart-tooltip-label-color);}"
-   "[part=tooltip-value]{color:var(--x-chart-tooltip-value-color);font-weight:600;margin-left:auto;padding-left:0.5rem;}"))
+   "[part=tooltip-value]{color:var(--x-chart-tooltip-value-color);"
+   "font-weight:var(--x-font-weight-semibold,600);margin-left:auto;padding-left:0.5rem;}"))
 
 ;; ---- Read model from element ----
 
