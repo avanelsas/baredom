@@ -229,10 +229,19 @@
   (let [v (str/trim v)]
     (when-not (or (str/blank? v) (re-find #"[\"{}]" v)) v)))
 
+(defn- first-value
+  "`found` with `k` at `v`, unless `k` is there already."
+  [found [k v]]
+  (if (contains? found k) found (assoc found k v)))
+
+;; A property may be set again for a size, a state or the dark scheme. The first setting is
+;; the one on the host, which is its default.
 (defn- values-by-pattern
   [re text]
-  (into {} (keep (fn [[_ k v]] (when-let [lit (literal-value v)] [k lit])))
-        (re-seq re text)))
+  (reduce first-value
+          {}
+          (keep (fn [[_ k v]] (when-let [lit (literal-value v)] [k lit]))
+                (re-seq re text))))
 
 (defn- declared-values
   [text]
