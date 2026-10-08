@@ -202,29 +202,45 @@
               :when (and end (own? prop))]
           [prop (str/trim (subs value from end))])))
 
+(defn- structural?
+  "True when `value` states structure and no design default of `family`. A font size in `em` is
+   relative to the text around it."
+  [family value]
+  (or (re-find structural value)
+      (and (= "font-size" family) (re-find #"^[\d.]+em$" value))))
+
 (defn- value-kind
-  "How a value that names no own property relates to the tokens of x-theme."
-  [value]
+  "How a value of `family` that names no own property relates to the tokens of x-theme."
+  [family value]
   (cond
     (str/includes? value unread) :unread
     (names-token? value)         :token
-    (re-find structural value)   :structural
+    (structural? family value)   :structural
     :else                        :literal))
 
 (defn- own-kind
-  "The kind of an own property whose default is `value`."
-  [value]
-  (let [kind (value-kind value)]
+  "The kind of an own property of `family` whose default is `value`."
+  [family value]
+  (let [kind (value-kind family value)]
     (get {:token :own-token :literal :own-literal} kind kind)))
+
+(defn- outside-calc
+  "`value` without its `calc()` expressions."
+  [value]
+  (if-let [at (str/index-of value "calc(")]
+    (let [end (or (closing value (+ at 5)) (dec (count value)))]
+      (str (subs value 0 at) (outside-calc (subs value (inc end)))))
+    value))
 
 (defn- family-by-use
   "A map from each own property to its family: what its name says, or else the family of a
-   declaration that reads it."
+   declaration that reads it. A property that is an operand in `calc()` is not read as a
+   value of that declaration."
   [decls]
   (into {}
         (for [[prop value] decls
               :let  [family (family-of prop)]
-              used  (own-in value)
+              used  (own-in (outside-calc value))
               :let  [found (or (family-by-name used) family)]
               :when found]
           [used found])))
@@ -235,7 +251,8 @@
   (let [family (family-by-use decls)]
     (for [[prop value] decls
           :when (and (own? prop) (family prop) (empty? (own-in value)))]
-      {:tag tag :family (family prop) :prop prop :value value :kind (own-kind value)})))
+      {:tag tag :family (family prop) :prop prop :value value
+       :kind (own-kind (family prop) value)})))
 
 (defn- used-rows
   "One row for each declaration of a family: its own value, or the fallback of each own
@@ -247,56 +264,16 @@
         :when family
         row   (if (seq (own-in value))
                 (for [[own fallback] (fallbacks value)
-                      :when (empty? (own-in fallback))]
-                  {:family (or (family-by-name own) family)
-                   :value  fallback
-                   :kind   (own-kind fallback)})
-                [{:value value :kind (value-kind value)}])]
+                      :when (empty? (own-in fallback))
+                      :let  [named (or (family-by-name own) family)]]
+                  {:family named :value fallback :kind (own-kind named fallback)})
+                [{:value value :kind (value-kind family value)}])]
     (merge {:tag tag :family family :prop prop} row)))
 
 (def ^:private by-design
   "The values that follow no token on purpose: pairs of a reason and its values, each value a
    component, a property and the value."
-  [["A loop that runs by itself. It is not a transition."
-    [["x-button" "animation" "x-button-spin 0.7s linear infinite"]
-     ["x-chart" "animation" "x-chart-shimmer 1.4s ease infinite"]
-     ["x-drop-zone" "animation" "x-drop-zone-pulse 1.1s ease-in-out infinite"]
-     ["x-image" "--x-image-shimmer-duration" "1.5s"]
-     ["x-kinetic-typography" "--x-kinetic-typography-duration" "10s"]
-     ["x-organic-divider" "--x-organic-divider-animate-duration" "6s"]
-     ["x-organic-divider" "--x-organic-divider-animate-timing" "ease-in-out"]
-     ["x-organic-shape" "--x-organic-shape-animate-duration" "8s"]
-     ["x-organic-shape" "--x-organic-shape-animate-timing" "ease-in-out"]
-     ["x-particle-button" "animation" "x-particle-button-spin 0.7s linear infinite"]
-     ["x-progress" "animation" "x-progress-indeterminate 1.5s ease infinite"]
-     ["x-progress-circle" "animation" "x-progress-circle-spin 1.2s linear infinite"]
-     ["x-skeleton" "--x-skeleton-duration" "1.5s"]
-     ["x-skeleton" "animation" "1.5s"]
-     ["x-spinner" "--x-spinner-duration" "0.75s"]
-     ["x-splash" "--x-splash-spinner-duration" "0.75s"]]]
-   ["An effect that plays once. Its length is part of the effect."
-    [["x-particle-button" "animation" "x-pb-glow-pulse 400ms ease-out"]]]
-   ["A ring or a dot. Its roundness is its shape."
-    [["x-avatar" "border-radius" "999px"]
-     ["x-button" "border-radius" "999px"]
-     ["x-particle-button" "border-radius" "999px"]
-     ["x-timeline-item" "border-radius" "999px"]]]
-   ["An outline or an edge drawn with a shadow. It is not an elevation."
-    [["x-color-picker" "box-shadow"
-      "0 0 0 1px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(0,0,0,0.3)"]
-     ["x-kbd" "--x-kbd-shadow" "inset 0 -1px 0 rgba(0,0,0,0.08)"]
-     ["x-kbd" "--x-kbd-shadow" "inset 0 -1px 0 rgba(0,0,0,0.4)"]]]
-   ["The shape of a mark. It is not a corner and not a weight of text."
-    [["x-checkbox" "border-radius" "1px"]
-     ["x-checkbox" "font-weight" "700"]]]
-   ["The effect needs a variable font. system-ui is the safest default for one."
-    [["x-kinetic-font" "--x-kinetic-font-family" "system-ui,sans-serif"]
-     ["x-kinetic-font" "font-family" "system-ui,sans-serif"]]]
-   ["Smoothing tied to scrolling. It follows the pointer and no design default."
-    [["x-scroll-parallax" "--x-scroll-parallax-smooth-duration" "80ms"]
-     ["x-scroll-stack" "transition" "transform 60ms linear"]
-     ["x-scroll-timeline" "transition" "height 60ms linear"]
-     ["x-scroll-timeline" "transition"                          "stroke-dashoffset 60ms linear"]]]])
+  (edn/read-string (slurp "scripts/tokens_by_design.edn")))
 
 (def ^:private exempt
   "Every value that is not themed by design."
