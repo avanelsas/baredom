@@ -187,11 +187,12 @@ The script has four parts and a few lines of wiring:
 | `step` | What a message does to the state. A pure function. |
 | `row` | One template for a row: its shape, its holes and what its events mean. |
 | `view` | What the screen shows, as a value. A pure function. |
-| `render` | The effect. It places the rows with `sync` and writes the values with `write`. |
+| `render` | The effect. It places the rows with `syncPlaces` and writes the values with `writeParts`. |
 | The wiring | `dispatcher` ties the four together, and `listen` turns events into messages. |
 
 Nothing in the script compares the old screen with the new one. A row that stays on the screen
-keeps its node, so it keeps focus when it moves. With "The server says no" switched on, a tick
+keeps its node, so it keeps focus when it moves. [`docs/baremirror.md`](../docs/baremirror.md)
+describes the pattern and every function. With "The server says no" switched on, a tick
 on a checkbox is refused and the checkbox stays as it was.
 
 ## Project structure
