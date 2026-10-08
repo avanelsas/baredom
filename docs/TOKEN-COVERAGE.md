@@ -13,13 +13,13 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | Component | color | font-family | font-size | font-weight | line-height | radius | shadow | transition | space | z | border-width |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `x-alert` | 2/30 |  | 1/1 |  | 0/1 | 2/2 |  | 4/4 | 0/4 |  | 0/1 |
-| `x-avatar` | 8/20 |  | 1/4 | 1/1 |  | 2/2 |  |  | 0/1 |  | 0/2 |
-| `x-avatar-group` | 8/8 |  | 0/4 | 1/1 |  | 1/1 |  |  |  |  | 0/1 |
+| `x-avatar` | 8/20 |  | 4/4 | 1/1 |  | 2/2 |  |  | 0/1 |  | 0/2 |
+| `x-avatar-group` | 8/8 |  | 4/4 | 1/1 |  | 1/1 |  |  |  |  | 0/1 |
 | `x-badge` | 4/30 |  | 1/1 | 1/1 |  | 3/3 |  |  | 0/2 |  | 0/1 |
 | `x-bento-grid` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-bento-item` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-breadcrumbs` | 0/8 |  | 1/3 | 1/1 |  |  |  |  | 0/1 |  |  |
-| `x-button` | 34/47 |  | 0/3 | 1/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 0/1 |
+| `x-breadcrumbs` | 0/8 |  | 3/3 | 1/1 |  |  |  |  | 0/1 |  |  |
+| `x-button` | 34/47 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 0/1 |
 | `x-calendar` | 17/41 |  | 0/4 | 4/4 |  | 7/7 | 1/1 | 1/1 | 0/11 |  | 0/2 |
 | `x-cancel-dialogue` | 17/22 |  | 0/3 | 2/2 | 0/2 | 2/2 | 2/2 |  | 0/6 | 0/3 |  |
 | `x-card` | 8/14 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
@@ -75,8 +75,8 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-organic-progress` | 2/3 |  |  |  |  |  |  |  |  |  |  |
 | `x-organic-shape` | 0/2 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-otp-input` | 8/8 | 1/1 |  | 1/1 |  | 1/1 |  | 1/1 | 1/1 |  |  |
-| `x-pagination` | 0/15 |  | 1/3 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
-| `x-particle-button` | 38/64 |  | 0/3 | 1/1 |  | 1/1 | 6/6 | 4/4 | 0/2 |  | 0/1 |
+| `x-pagination` | 0/15 |  | 3/3 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
+| `x-particle-button` | 38/64 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 4/4 | 0/2 |  | 0/1 |
 | `x-popover` | 48/48 |  | 0/4 | 2/2 |  | 4/4 | 4/4 | 5/5 | 0/8 | 0/1 | 0/8 |
 | `x-progress` | 4/10 |  | 1/2 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
 | `x-progress-circle` | 4/9 |  |  | 1/1 |  |  |  | 1/1 |  |  |  |
@@ -91,7 +91,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-scroll-story` | 0/1 |  |  |  |  | 1/1 |  | 1/1 | 0/2 |  |  |
 | `x-scroll-timeline` | 2/9 |  | 0/1 | 1/1 |  | 3/3 |  | 1/1 | 0/6 |  | 0/2 |
 | `x-search-field` | 8/12 |  | 0/2 |  | 0/1 | 2/2 |  | 1/1 | 0/2 |  |  |
-| `x-select` | 19/19 |  | 2/4 |  | 0/1 | 1/1 | 1/1 | 1/1 | 0/2 |  | 0/1 |
+| `x-select` | 19/19 |  | 3/4 |  | 0/1 | 1/1 | 1/1 | 1/1 | 0/2 |  | 0/1 |
 | `x-sidebar` | 4/5 |  |  |  |  |  | 2/2 | 2/2 |  | 0/2 |  |
 | `x-skeleton` | 2/4 |  |  |  |  | 2/2 |  |  |  |  |  |
 | `x-skeleton-group` |  |  |  |  |  |  |  |  | 0/1 |  |  |
@@ -103,7 +103,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-split-pane` | 5/5 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-spotlight-card` | 6/8 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
 | `x-stat` | 10/10 |  | 0/2 | 2/2 |  | 1/1 |  | 2/2 | 0/2 |  | 0/1 |
-| `x-stepper` | 20/26 |  | 1/5 | 2/2 | 0/2 | 1/1 |  | 1/1 | 0/3 |  |  |
+| `x-stepper` | 20/26 |  | 5/5 | 2/2 | 0/2 | 1/1 |  | 1/1 | 0/3 |  |  |
 | `x-switch` | 8/8 |  |  |  |  | 1/1 | 1/1 | 2/2 |  |  |  |
 | `x-tab` | 5/10 |  |  |  |  | 1/1 |  | 2/2 | 0/4 |  | 0/2 |
 | `x-table` | 3/5 |  | 0/1 | 1/1 |  | 1/1 |  |  | 0/2 |  | 0/1 |
@@ -119,7 +119,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-typography` | 6/6 | 3/3 | 0/10 | 16/16 | 0/16 | 2/2 |  |  | 0/3 |  | 0/2 |
 | `x-welcome-tour` | 26/27 | 1/1 | 4/5 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 0/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 793/1179 | 10/10 | 31/123 | 69/69 | 1/42 | 110/110 | 73/73 | 107/107 | 15/238 | 3/29 | 0/69 |
+| **All** | 793/1179 | 10/10 | 53/123 | 69/69 | 1/42 | 110/110 | 73/73 | 107/107 | 15/238 | 3/29 | 0/69 |
 
 CSS not read, or not in full: x-liquid-glass.
 

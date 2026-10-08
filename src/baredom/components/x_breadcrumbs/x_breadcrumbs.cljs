@@ -63,8 +63,8 @@
    "--x-breadcrumbs-color-hover:rgba(255,255,255,0.75);"
    "--x-breadcrumbs-separator-color:rgba(255,255,255,0.30);}}"
 
-   ":host([data-size='sm']){--x-breadcrumbs-font-size:0.75rem;}"
-   ":host([data-size='lg']){--x-breadcrumbs-font-size:1rem;}"
+   ":host([data-size='sm']){--x-breadcrumbs-font-size:var(--x-font-size-xs,0.75rem);}"
+   ":host([data-size='lg']){--x-breadcrumbs-font-size:var(--x-font-size-base,1rem);}"
 
    ":host([disabled]){opacity:var(--x-breadcrumbs-disabled-opacity);pointer-events:none;}"
 

@@ -47,11 +47,11 @@
 
    ":host([data-size='sm']){"
    "--x-pagination-button-size:1.75rem;"
-   "--x-pagination-font-size:0.75rem;}"
+   "--x-pagination-font-size:var(--x-font-size-xs,0.75rem);}"
 
    ":host([data-size='lg']){"
    "--x-pagination-button-size:2.5rem;"
-   "--x-pagination-font-size:1rem;}"
+   "--x-pagination-font-size:var(--x-font-size-base,1rem);}"
 
    "[part~='nav']{"
    "display:block;}"

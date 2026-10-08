@@ -21,7 +21,7 @@
    "--x-stepper-step-gap:0.75rem;"
    "--x-stepper-font-size:var(--x-font-size-sm,0.875rem);"
    "--x-stepper-label-font-weight:var(--x-font-weight-medium,500);"
-   "--x-stepper-desc-font-size:0.75rem;"
+   "--x-stepper-desc-font-size:var(--x-font-size-xs,0.75rem);"
    "--x-stepper-radius:var(--x-radius-full,999px);"
    "--x-stepper-motion:var(--x-transition-duration,120ms);"
    "--x-stepper-press-scale:0.93;"
@@ -217,13 +217,13 @@
    ;; Size variants
    ":host([data-size=sm]){"
    "--x-stepper-indicator-size:1.5rem;"
-   "--x-stepper-font-size:0.8125rem;"
+   "--x-stepper-font-size:var(--x-font-size-xs,0.8125rem);"
    "--x-stepper-desc-font-size:0.6875rem;}"
 
    ":host([data-size=lg]){"
    "--x-stepper-indicator-size:2.5rem;"
-   "--x-stepper-font-size:1rem;"
-   "--x-stepper-desc-font-size:0.875rem;}"
+   "--x-stepper-font-size:var(--x-font-size-base,1rem);"
+   "--x-stepper-desc-font-size:var(--x-font-size-sm,0.875rem);}"
 
    ;; Reduced motion
    "@media (prefers-reduced-motion:reduce){"

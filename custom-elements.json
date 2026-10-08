@@ -816,13 +816,13 @@
         "default" : "var(--x-color-focus-ring,#93c5fd)"
       }, {
         "name" : "--x-button-font-size-lg",
-        "default" : "1rem"
+        "default" : "var(--x-font-size-base,1rem)"
       }, {
         "name" : "--x-button-font-size-md",
-        "default" : "0.9375rem"
+        "default" : "var(--x-font-size-sm,0.9375rem)"
       }, {
         "name" : "--x-button-font-size-sm",
-        "default" : "0.875rem"
+        "default" : "var(--x-font-size-xs,0.875rem)"
       }, {
         "name" : "--x-button-font-weight",
         "default" : "var(--x-font-weight-semibold,600)"
@@ -2185,7 +2185,7 @@
         "default" : "rgba(255,255,255,0.40)"
       }, {
         "name" : "--x-pagination-font-size",
-        "default" : "1rem"
+        "default" : "var(--x-font-size-base,1rem)"
       }, {
         "name" : "--x-pagination-gap",
         "default" : "0.25rem"
@@ -3250,7 +3250,7 @@
         "default" : "var(--x-color-focus-ring, rgba(59,130,246,0.55))"
       }, {
         "name" : "--x-avatar-font-size",
-        "default" : "1.125rem"
+        "default" : "var(--x-font-size-lg,1.125rem)"
       }, {
         "name" : "--x-avatar-radius",
         "default" : "var(--x-radius-md,10px)"
@@ -8306,7 +8306,7 @@
         "default" : "var(--x-font-size-sm,0.875rem)"
       }, {
         "name" : "--x-select-font-size-sm",
-        "default" : "0.75rem"
+        "default" : "var(--x-font-size-xs,0.75rem)"
       }, {
         "name" : "--x-select-height-lg",
         "default" : "3rem"
@@ -10789,7 +10789,7 @@
       } ],
       "cssProperties" : [ {
         "name" : "--x-avatar-group-font-size",
-        "default" : "1rem"
+        "default" : "var(--x-font-size-base,1rem)"
       }, {
         "name" : "--x-avatar-group-overflow-bg",
         "default" : "var(--x-color-surface, rgba(255,255,255,0.10))"
@@ -11282,7 +11282,7 @@
         "default" : "var(--x-color-text-muted,rgba(255,255,255,0.35))"
       }, {
         "name" : "--x-stepper-desc-font-size",
-        "default" : "0.875rem"
+        "default" : "var(--x-font-size-sm,0.875rem)"
       }, {
         "name" : "--x-stepper-disabled-opacity",
         "default" : "0.5"
@@ -11291,7 +11291,7 @@
         "default" : "var(--x-color-focus-ring,rgba(255,255,255,0.7))"
       }, {
         "name" : "--x-stepper-font-size",
-        "default" : "1rem"
+        "default" : "var(--x-font-size-base,1rem)"
       }, {
         "name" : "--x-stepper-idle-connector",
         "default" : "var(--x-color-border,rgba(255,255,255,0.12))"
@@ -16777,13 +16777,13 @@
         "default" : "var(--x-color-focus-ring,#93c5fd)"
       }, {
         "name" : "--x-particle-button-font-size-lg",
-        "default" : "1rem"
+        "default" : "var(--x-font-size-base,1rem)"
       }, {
         "name" : "--x-particle-button-font-size-md",
-        "default" : "0.9375rem"
+        "default" : "var(--x-font-size-sm,0.9375rem)"
       }, {
         "name" : "--x-particle-button-font-size-sm",
-        "default" : "0.875rem"
+        "default" : "var(--x-font-size-xs,0.875rem)"
       }, {
         "name" : "--x-particle-button-font-weight",
         "default" : "var(--x-font-weight-semibold,600)"
@@ -19230,7 +19230,7 @@
         "default" : "0.55"
       }, {
         "name" : "--x-breadcrumbs-font-size",
-        "default" : "1rem"
+        "default" : "var(--x-font-size-base,1rem)"
       }, {
         "name" : "--x-breadcrumbs-gap",
         "default" : "0.25rem"

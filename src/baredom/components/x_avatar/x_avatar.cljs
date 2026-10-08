@@ -87,10 +87,10 @@
    "--x-avatar-status-away:rgba(255,190,90,0.95);}}"
 
    ":host([data-size='xs']){--x-avatar-size:var(--x-avatar-size-xs);--x-avatar-font-size:0.625rem;}"
-   ":host([data-size='sm']){--x-avatar-size:var(--x-avatar-size-sm);--x-avatar-font-size:0.75rem;}"
+   ":host([data-size='sm']){--x-avatar-size:var(--x-avatar-size-sm);--x-avatar-font-size:var(--x-font-size-xs,0.75rem);}"
    ":host([data-size='md']){--x-avatar-size:var(--x-avatar-size-md);}"
-   ":host([data-size='lg']){--x-avatar-size:var(--x-avatar-size-lg);--x-avatar-font-size:1rem;}"
-   ":host([data-size='xl']){--x-avatar-size:var(--x-avatar-size-xl);--x-avatar-font-size:1.125rem;}"
+   ":host([data-size='lg']){--x-avatar-size:var(--x-avatar-size-lg);--x-avatar-font-size:var(--x-font-size-base,1rem);}"
+   ":host([data-size='xl']){--x-avatar-size:var(--x-avatar-size-xl);--x-avatar-font-size:var(--x-font-size-lg,1.125rem);}"
 
    ":host([data-variant='brand']){"
    "--x-avatar-bg:rgba(0,102,204,0.10);"
