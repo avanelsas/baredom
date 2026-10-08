@@ -457,11 +457,25 @@
 ;; ---------------------------------------------------------------------------
 ;; Chip rendering
 ;; ---------------------------------------------------------------------------
+;; A browser fires focusout inside removeChild when the removed node holds focus.
+;; The host then closes the panel and renders again inside that call.
+(defn- chip-holds-focus? [^js el ^js chip-area ^js input-el]
+  (let [^js active (.-activeElement (.-shadowRoot el))]
+    (and (some? active)
+         (not (identical? active input-el))
+         (.contains chip-area active))))
+
+(defn- move-focus-off-chips! [^js el ^js chip-area ^js input-el]
+  (when (chip-holds-focus? el chip-area input-el)
+    (.focus input-el)))
+
 (defn- render-chips! [^js el value-set disabled?]
   (when-let [refs (du/getv el k-refs)]
     (let [^js chip-area (gobj/get refs "chipArea")
           ^js input-el  (gobj/get refs "input")
           options       (du/getv el k-options)]
+
+      (move-focus-off-chips! el chip-area input-el)
 
       ;; Remove existing chips (keep input)
       (loop []
