@@ -243,7 +243,7 @@
    "--x-particle-button-font-size-sm:0.875rem;"
    "--x-particle-button-font-size-md:0.9375rem;"
    "--x-particle-button-font-size-lg:1rem;"
-   "--x-particle-button-font-weight:600;"
+   "--x-particle-button-font-weight:var(--x-font-weight-semibold,600);"
    "--x-particle-button-icon-size-sm:0.875rem;"
    "--x-particle-button-icon-size-md:1rem;"
    "--x-particle-button-icon-size-lg:1.125rem;"

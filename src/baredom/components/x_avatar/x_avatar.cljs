@@ -124,7 +124,7 @@
    "border:1px solid var(--x-avatar-border);"
    "box-shadow:0 0 0 2px var(--x-avatar-ring);"
    "font-size:var(--x-avatar-font-size);"
-   "font-weight:600;"
+   "font-weight:var(--x-font-weight-semibold,600);"
    "line-height:1;"
    "user-select:none;"
    "border-radius:var(--x-radius-full,999px);}"

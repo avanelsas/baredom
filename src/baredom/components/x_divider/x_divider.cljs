@@ -128,7 +128,7 @@
    "flex-shrink:0;"
    "padding:0 0.75em;"
    "font-size:0.75rem;"
-   "font-weight:500;"
+   "font-weight:var(--x-font-weight-medium,500);"
    "color:var(--x-divider-color);"
    "white-space:nowrap;}"
 

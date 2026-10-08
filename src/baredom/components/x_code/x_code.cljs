@@ -145,7 +145,7 @@
    "}"
    ":host([data-header]) [part=header]{display:flex;}"
    "[part=filename]{"
-   "font-weight:600;"
+   "font-weight:var(--x-font-weight-semibold,600);"
    "white-space:nowrap;"
    "overflow:hidden;"
    "text-overflow:ellipsis;"

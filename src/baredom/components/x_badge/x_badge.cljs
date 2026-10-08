@@ -111,7 +111,7 @@
    "background:var(--x-badge-bg);"
    "color:var(--x-badge-color);"
    "font-size:var(--x-badge-font-size);"
-   "font-weight:600;"
+   "font-weight:var(--x-font-weight-semibold,600);"
    "line-height:1;"
    "white-space:nowrap;"
    "user-select:none;"

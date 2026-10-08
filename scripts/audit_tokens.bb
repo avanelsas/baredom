@@ -286,8 +286,9 @@
       "0 0 0 1px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(0,0,0,0.3)"]
      ["x-kbd" "--x-kbd-shadow" "inset 0 -1px 0 rgba(0,0,0,0.08)"]
      ["x-kbd" "--x-kbd-shadow" "inset 0 -1px 0 rgba(0,0,0,0.4)"]]]
-   ["The shape of a mark. It is not a corner."
-    [["x-checkbox" "border-radius" "1px"]]]
+   ["The shape of a mark. It is not a corner and not a weight of text."
+    [["x-checkbox" "border-radius" "1px"]
+     ["x-checkbox" "font-weight" "700"]]]
    ["The effect needs a variable font. system-ui is the safest default for one."
     [["x-kinetic-font" "--x-kinetic-font-family" "system-ui,sans-serif"]
      ["x-kinetic-font" "font-family" "system-ui,sans-serif"]]]
@@ -372,7 +373,7 @@
 
 (def ^:private closed
   "The families in which every value follows the theme or is listed as not themed by design."
-  #{"font-family" "radius" "shadow" "transition"})
+  #{"font-family" "font-weight" "radius" "shadow" "transition"})
 
 (defn- reopened
   "The values of a closed family that follow no token, as a message for each."

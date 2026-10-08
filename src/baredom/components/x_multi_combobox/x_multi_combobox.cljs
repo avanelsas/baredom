@@ -287,7 +287,7 @@
    "pointer-events:none;"
    "}"
    "[part=option] b{"
-   "font-weight:700;"
+   "font-weight:var(--x-font-weight-bold,700);"
    "}"
    "[part=empty-msg]{"
    "padding:var(--x-multi-combobox-option-padding);"

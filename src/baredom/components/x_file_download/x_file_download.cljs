@@ -50,7 +50,7 @@
    "--x-file-download-border-radius:var(--x-radius-md,6px);"
    "--x-file-download-padding:0.5rem 1rem;"
    "--x-file-download-font-size:var(--x-font-size-sm,0.875rem);"
-   "--x-file-download-font-weight:500;"
+   "--x-file-download-font-weight:var(--x-font-weight-medium,500);"
    "--x-file-download-gap:0.375rem;"
    "--x-file-download-icon-size:1em;"
    "--x-file-download-focus-ring:var(--x-color-focus-ring,#60a5fa);"

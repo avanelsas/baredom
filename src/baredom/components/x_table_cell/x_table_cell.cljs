@@ -36,7 +36,7 @@
    "--x-table-cell-color:var(--x-color-text,inherit);"
    "--x-table-cell-header-color:var(--x-color-text,inherit);"
    "--x-table-cell-font-size:inherit;"
-   "--x-table-cell-header-font-weight:600;"
+   "--x-table-cell-header-font-weight:var(--x-font-weight-semibold,600);"
    "--x-table-cell-min-width:0;"
    "--x-table-cell-max-width:none;"
    "--x-table-cell-sort-color:var(--x-color-text-muted,rgba(0,0,0,0.4));"

@@ -118,14 +118,14 @@
 
    "[part=base][data-size='sm'] [part=value]{font-size:calc(var(--x-stat-value-size) * 0.8);}"
    "[part=base][data-size='lg'] [part=value]{font-size:calc(var(--x-stat-value-size) * 1.6);}"
-   "[part=base][data-emphasis='high'] [part=value]{font-weight:800;}"
+   "[part=base][data-emphasis='high'] [part=value]{font-weight:var(--x-font-weight-bold,800);}"
 
    "[part=icon]{flex:0 0 auto;color:var(--x-stat-icon-color);line-height:1;}"
    "slot[name=icon]::slotted(*){display:block;}"
 
    "[part=label]{font-size:var(--x-stat-label-size);color:var(--x-stat-label-color);}"
    "[part=value]{"
-   "font-weight:600;font-size:var(--x-stat-value-size);"
+   "font-weight:var(--x-font-weight-semibold,600);font-size:var(--x-stat-value-size);"
    "color:var(--x-stat-value-color);}"
    "[part=hint]{font-size:var(--x-stat-hint-size);color:var(--x-stat-hint-color);}"
 
