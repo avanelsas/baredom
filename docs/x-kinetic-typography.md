@@ -65,18 +65,18 @@ Animated typography that renders text along SVG paths with motion, visual effect
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `--x-kinetic-typography-color` | `currentColor` | Text fill color. |
-| `--x-kinetic-typography-font-family` | `var(--x-font-family, inherit)` | Font family. The theme's font, or else the font of the page. |
+| `--x-kinetic-typography-color` | `var(--x-color-text,currentColor)` | Text fill color. |
+| `--x-kinetic-typography-font-family` | `var(--x-font-family,inherit)`  | Font family. The theme's font, or else the font of the page. |
 | `--x-kinetic-typography-font-size` | `24px` | Default font size. |
-| `--x-kinetic-typography-font-weight` | `var(--x-font-weight-normal, 400)` | Font weight. |
+| `--x-kinetic-typography-font-weight` | `var(--x-font-weight-normal,400)`  | Font weight. |
 | `--x-kinetic-typography-letter-spacing` | `0` | Base letter spacing. |
 | `--x-kinetic-typography-opacity` | `1` | Text opacity. |
 | `--x-kinetic-typography-stroke` | `none` | Text stroke color. |
 | `--x-kinetic-typography-stroke-width` | `0` | Text stroke width. |
 | `--x-kinetic-typography-duration` | `10s` | Base animation cycle duration. |
 | `--x-kinetic-typography-timing` | `linear` | Animation timing function. |
-| `--x-kinetic-typography-color-shift-from` | `currentColor` | Color shift/wave start color. |
-| `--x-kinetic-typography-color-shift-to` | `#3b82f6` | Color shift/wave end color. |
+| `--x-kinetic-typography-color-shift-from` | `var(--x-color-text,currentColor)` | Color shift/wave start color. |
+| `--x-kinetic-typography-color-shift-to` | `var(--x-color-primary,#3b82f6)` | Color shift/wave end color. |
 | `--x-kinetic-typography-path-stroke` | `none` | Decorative path line stroke. |
 | `--x-kinetic-typography-path-stroke-width` | `0` | Decorative path line width. |
 | `--x-kinetic-typography-crawl-perspective` | `400px` | 3D perspective depth for crawl mode. |

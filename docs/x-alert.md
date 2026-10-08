@@ -84,20 +84,20 @@ Calling `event.preventDefault()` cancels the removal — the alert stays in the 
 
 | Variable                  | Default    | Description           |
 |---------------------------|------------|-----------------------|
-| `--x-alert-radius`        | `10px`     | Border radius         |
+| `--x-alert-radius`        | `var(--x-radius-md,10px)` | Border radius         |
 | `--x-alert-padding-y`     | `10px`     | Vertical padding      |
 | `--x-alert-padding-x`     | `12px`     | Horizontal padding    |
 | `--x-alert-gap`           | `10px`     | Gap between icon, text, button |
-| `--x-alert-font-size`     | `0.875rem` | Text size             |
+| `--x-alert-font-size`     | `var(--x-font-size-sm,0.875rem)` | Text size             |
 
 ### Motion
 
 | Variable                    | Default | Description               |
 |-----------------------------|---------|---------------------------|
-| `--x-alert-enter-duration`  | `var(--x-transition-duration, 140ms)` | Enter animation duration  |
-| `--x-alert-exit-duration`   | `var(--x-transition-duration, 160ms)` | Exit animation duration   |
-| `--x-alert-motion-fast`     | `120ms` | Transition speed          |
-| `--x-alert-motion-ease`     | cubic-bezier | Easing function      |
+| `--x-alert-enter-duration`  | `var(--x-transition-duration,140ms)`  | Enter animation duration  |
+| `--x-alert-exit-duration`   | `var(--x-transition-duration,160ms)`  | Exit animation duration   |
+| `--x-alert-motion-fast`     | `var(--x-transition-duration,120ms)` | Transition speed          |
+| `--x-alert-motion-ease`     | `var(--x-transition-easing,cubic-bezier(0.2,0,0,1))` | Easing function      |
 | `--x-alert-press-scale`     | `0.98`  | Dismiss button press scale |
 | `--x-motion-exit-duration`  | —       | Global design-token override for exit duration; takes effect only when `--x-alert-exit-duration` is unset |
 
@@ -106,9 +106,9 @@ Calling `event.preventDefault()` cancels the removal — the alert stays in the 
 | Variable                       | Default (light)          | Description                              |
 |--------------------------------|--------------------------|------------------------------------------|
 | `--x-alert-disabled-opacity`   | `0.55`                   | Opacity when `disabled`                  |
-| `--x-alert-focus-ring`         | `rgba(0,0,0,0.6)`        | Focus outline colour on dismiss button   |
-| `--x-alert-dismiss-color`      | `var(--x-color-text-muted, rgba(0,0,0,0.62))`       | Dismiss × icon colour                    |
-| `--x-alert-dismiss-hover-bg`   | `color-mix(in srgb, var(--x-color-text, #000) 6%, transparent)`       | Dismiss button hover background          |
+| `--x-alert-focus-ring`         | `var(--x-color-focus-ring,rgba(0,0,0,0.6))` | Focus outline colour on dismiss button   |
+| `--x-alert-dismiss-color`      | `var(--x-color-text-muted,rgba(0,0,0,0.62))`        | Dismiss × icon colour                    |
+| `--x-alert-dismiss-hover-bg`   | `color-mix(in srgb,var(--x-color-text,#000) 6%,transparent)`          | Dismiss button hover background          |
 
 Dark-mode overrides for these tokens are set automatically via `@media (prefers-color-scheme: dark)`.
 
@@ -119,14 +119,14 @@ Dark-mode overrides for these tokens are set automatically via `@media (prefers-
 | `--x-alert-info-bg`         | `rgba(0,102,204,0.08)`           |
 | `--x-alert-info-border`     | `rgba(0,102,204,0.35)`           |
 | `--x-alert-info-color`      | `rgba(0,60,120,0.95)`            |
-| `--x-alert-success-bg`      | `color-mix(in srgb, var(--x-color-success, rgb(16,140,72)) 10%, transparent)`           |
-| `--x-alert-success-border`  | `color-mix(in srgb, var(--x-color-success, rgb(16,140,72)) 35%, transparent)`           |
+| `--x-alert-success-bg`      | `color-mix(in srgb,var(--x-color-success,rgb(16,140,72)) 10%,transparent)`              |
+| `--x-alert-success-border`  | `color-mix(in srgb,var(--x-color-success,rgb(16,140,72)) 35%,transparent)`              |
 | `--x-alert-success-color`   | `rgba(10,90,46,0.95)`            |
-| `--x-alert-warning-bg`      | `color-mix(in srgb, var(--x-color-warning, rgb(204,120,0)) 12%, transparent)`           |
-| `--x-alert-warning-border`  | `color-mix(in srgb, var(--x-color-warning, rgb(204,120,0)) 45%, transparent)`           |
+| `--x-alert-warning-bg`      | `color-mix(in srgb,var(--x-color-warning,rgb(204,120,0)) 12%,transparent)`              |
+| `--x-alert-warning-border`  | `color-mix(in srgb,var(--x-color-warning,rgb(204,120,0)) 45%,transparent)`              |
 | `--x-alert-warning-color`   | `rgba(120,70,0,0.95)`            |
-| `--x-alert-error-bg`        | `color-mix(in srgb, var(--x-color-danger, rgb(190,20,40)) 10%, transparent)`           |
-| `--x-alert-error-border`    | `color-mix(in srgb, var(--x-color-danger, rgb(190,20,40)) 45%, transparent)`           |
+| `--x-alert-error-bg`        | `color-mix(in srgb,var(--x-color-danger,rgb(190,20,40)) 10%,transparent)`              |
+| `--x-alert-error-border`    | `color-mix(in srgb,var(--x-color-danger,rgb(190,20,40)) 45%,transparent)`              |
 | `--x-alert-error-color`     | `rgba(120,10,20,0.95)`           |
 
 Dark-mode variants are set automatically via `@media (prefers-color-scheme: dark)`.

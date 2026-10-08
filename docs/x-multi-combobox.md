@@ -106,19 +106,19 @@ Fired before the panel opens or closes. **Cancelable**.
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `--x-multi-combobox-bg` | `var(--x-color-surface)` | Wrapper background |
-| `--x-multi-combobox-fg` | `var(--x-color-text)` | Text color |
-| `--x-multi-combobox-placeholder` | `var(--x-color-text-muted)` | Placeholder color |
-| `--x-multi-combobox-border` | `var(--x-border-width, 1px) solid var(--x-color-border)` | Default border |
-| `--x-multi-combobox-border-focus` | `var(--x-border-width, 1px) solid var(--x-color-focus-ring)` | Focus border |
-| `--x-multi-combobox-radius` | `var(--x-radius-md)` | Border radius |
+| `--x-multi-combobox-bg` | `var(--x-color-surface,#ffffff)` | Wrapper background |
+| `--x-multi-combobox-fg` | `var(--x-color-text,#0f172a)` | Text color |
+| `--x-multi-combobox-placeholder` | `var(--x-color-text-muted,#94a3b8)` | Placeholder color |
+| `--x-multi-combobox-border` | `var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)` | Default border |
+| `--x-multi-combobox-border-focus` | `var(--x-border-width,1px) solid var(--x-color-focus-ring,#60a5fa)` | Focus border |
+| `--x-multi-combobox-radius` | `var(--x-radius-md,6px)` | Border radius |
 | `--x-multi-combobox-min-height` | `2.25rem` | Minimum wrapper height |
-| `--x-multi-combobox-font-size` | `var(--x-font-size-sm)` | Font size |
-| `--x-multi-combobox-panel-bg` | `var(--x-color-bg)` | Panel background |
+| `--x-multi-combobox-font-size` | `var(--x-font-size-sm,0.9375rem)` | Font size |
+| `--x-multi-combobox-panel-bg` | `var(--x-color-bg,#ffffff)` | Panel background |
 | `--x-multi-combobox-panel-max-height` | `16rem` | Panel max scroll height |
-| `--x-multi-combobox-option-active-bg` | `var(--x-color-primary)` | Keyboard-highlighted option |
+| `--x-multi-combobox-option-active-bg` | `var(--x-color-primary,#3b82f6)` | Keyboard-highlighted option |
 | `--x-multi-combobox-chip-gap` | `0.25rem` | Gap between chips |
-| `--x-multi-combobox-error-color` | `var(--x-color-danger)` | Inline error text + invalid border |
+| `--x-multi-combobox-error-color` | `var(--x-color-danger,#dc2626)` | Inline error text + invalid border |
 
 Chip styling is owned by `x-chip`. Use `--x-chip-*` custom properties to theme chips globally.
 

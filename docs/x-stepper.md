@@ -93,26 +93,26 @@ All properties cascade from `:host` and can be overridden per-instance.
 | `--x-stepper-indicator-size` | `2rem` | Width and height of the circular indicator |
 | `--x-stepper-connector-thickness` | `2px` | Thickness of the connector line |
 | `--x-stepper-step-gap` | `0.75rem` | Gap between indicator and step content (horizontal: padding-top; vertical: padding-bottom) |
-| `--x-stepper-font-size` | `var(--x-font-size-sm, 0.875rem)` | Label font size |
-| `--x-stepper-label-font-weight` | `var(--x-font-weight-medium, 500)` | Font weight of the current step label |
-| `--x-stepper-desc-font-size` | `var(--x-font-size-xs, 0.75rem)` | Description font size |
-| `--x-stepper-radius` | `999px` | Border radius of the indicator |
-| `--x-stepper-motion` | `120ms` | Duration for background/color transitions |
+| `--x-stepper-font-size` | `var(--x-font-size-sm,0.875rem)`  | Label font size |
+| `--x-stepper-label-font-weight` | `var(--x-font-weight-medium,500)`  | Font weight of the current step label |
+| `--x-stepper-desc-font-size` | `var(--x-font-size-xs,0.75rem)`  | Description font size |
+| `--x-stepper-radius` | `var(--x-radius-full,999px)` | Border radius of the indicator |
+| `--x-stepper-motion` | `var(--x-transition-duration,120ms)` | Duration for background/color transitions |
 | `--x-stepper-press-scale` | `0.93` | Scale applied on `:active` |
-| `--x-stepper-focus-ring` | `rgba(0,0,0,0.55)` | Focus ring colour |
+| `--x-stepper-focus-ring` | `var(--x-color-focus-ring,rgba(0,0,0,0.55))` | Focus ring colour |
 | `--x-stepper-disabled-opacity` | `0.5` | Opacity of the host when `disabled` |
-| `--x-stepper-complete-bg` | `rgba(16,140,72,1)` | Completed indicator background |
+| `--x-stepper-complete-bg` | `var(--x-color-success,rgba(16,140,72,1))` | Completed indicator background |
 | `--x-stepper-complete-color` | `#fff` | Completed indicator foreground |
-| `--x-stepper-complete-connector` | `rgba(16,140,72,1)` | Completed connector colour |
-| `--x-stepper-current-bg` | `rgba(0,102,204,1)` | Current indicator background |
+| `--x-stepper-complete-connector` | `var(--x-color-success,rgba(16,140,72,1))` | Completed connector colour |
+| `--x-stepper-current-bg` | `var(--x-color-primary,rgba(0,102,204,1))` | Current indicator background |
 | `--x-stepper-current-color` | `#fff` | Current indicator foreground |
-| `--x-stepper-upcoming-bg` | `color-mix(in srgb, var(--x-color-text, #000) 8%, transparent)` | Upcoming indicator background |
-| `--x-stepper-upcoming-color` | `rgba(0,0,0,0.45)` | Upcoming indicator foreground |
-| `--x-stepper-idle-connector` | `rgba(0,0,0,0.12)` | Current/upcoming connector colour |
-| `--x-stepper-label-done-color` | `rgba(0,0,0,0.85)` | Completed step label colour |
-| `--x-stepper-label-current-color` | `rgba(0,0,0,0.85)` | Current step label colour |
-| `--x-stepper-label-upcoming-color` | `rgba(0,0,0,0.4)` | Upcoming step label colour |
-| `--x-stepper-desc-color` | `rgba(0,0,0,0.4)` | Description text colour |
+| `--x-stepper-upcoming-bg` | `color-mix(in srgb,var(--x-color-text,#000) 8%,transparent)`    | Upcoming indicator background |
+| `--x-stepper-upcoming-color` | `var(--x-color-text-muted,rgba(0,0,0,0.45))` | Upcoming indicator foreground |
+| `--x-stepper-idle-connector` | `var(--x-color-border,rgba(0,0,0,0.12))` | Current/upcoming connector colour |
+| `--x-stepper-label-done-color` | `var(--x-color-text,rgba(0,0,0,0.85))` | Completed step label colour |
+| `--x-stepper-label-current-color` | `var(--x-color-text,rgba(0,0,0,0.85))` | Current step label colour |
+| `--x-stepper-label-upcoming-color` | `var(--x-color-text-muted,rgba(0,0,0,0.4))` | Upcoming step label colour |
+| `--x-stepper-desc-color` | `var(--x-color-text-muted,rgba(0,0,0,0.4))` | Description text colour |
 
 Dark-mode overrides are applied automatically via `@media (prefers-color-scheme: dark)` inside the shadow style.
 

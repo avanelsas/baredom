@@ -77,19 +77,19 @@ All properties are set on `:host` and can be overridden per-instance or globally
 
 | Property                          | Default (light)     | Description |
 |----------------------------------|---------------------|-------------|
-| `--x-text-area-label-color`      | `var(--x-color-text-muted, #374151)`           | Label text color. |
-| `--x-text-area-label-font-size`  | `0.875rem`          | Label font size. |
-| `--x-text-area-bg`               | `#ffffff`           | Textarea background color. |
-| `--x-text-area-color`            | `var(--x-color-text, #111827)`           | Textarea text color. |
-| `--x-text-area-border`           | `var(--x-border-width, 1px) solid #d1d5db` | Textarea border. |
-| `--x-text-area-border-radius`    | `6px`               | Corner radius. |
+| `--x-text-area-label-color`      | `var(--x-color-text-muted,#374151)`            | Label text color. |
+| `--x-text-area-label-font-size`  | `var(--x-font-size-sm,0.875rem)` | Label font size. |
+| `--x-text-area-bg`               | `var(--x-color-surface,#ffffff)` | Textarea background color. |
+| `--x-text-area-color`            | `var(--x-color-text,#111827)`            | Textarea text color. |
+| `--x-text-area-border`           | `var(--x-border-width,1px) solid var(--x-color-border,#d1d5db)` | Textarea border. |
+| `--x-text-area-border-radius`    | `var(--x-radius-md,6px)` | Corner radius. |
 | `--x-text-area-padding`          | `0.5rem 0.75rem`    | Inner padding. |
-| `--x-text-area-focus-ring-color` | `#2563eb`           | Focus ring and border color on focus. |
-| `--x-text-area-error-color`      | `#dc2626`           | Border and text color in error state. |
-| `--x-text-area-hint-color`       | `#6b7280`           | Hint text color. |
+| `--x-text-area-focus-ring-color` | `var(--x-color-primary,#2563eb)` | Focus ring and border color on focus. |
+| `--x-text-area-error-color`      | `var(--x-color-danger,#dc2626)` | Border and text color in error state. |
+| `--x-text-area-hint-color`       | `var(--x-color-text-muted,#6b7280)` | Hint text color. |
 | `--x-text-area-disabled-opacity` | `0.45`              | Opacity when disabled. |
 | `--x-text-area-min-height`       | `5rem`              | Minimum height of the textarea. |
-| `--x-text-area-font-size`        | `1rem`              | Font size of the textarea text. |
+| `--x-text-area-font-size`        | `var(--x-font-size-base,1rem)` | Font size of the textarea text. |
 | `--x-text-area-resize`           | `vertical`          | CSS `resize` property on the textarea. |
 
 Dark mode values are set automatically via `@media (prefers-color-scheme: dark)`.

@@ -93,18 +93,18 @@ Fired when a file is removed from the list.
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `--x-file-upload-bg` | `var(--x-color-surface)` | Drop zone background |
-| `--x-file-upload-fg` | `var(--x-color-text)` | Text color |
-| `--x-file-upload-muted` | `var(--x-color-text-muted)` | Muted text color |
-| `--x-file-upload-border` | `2px dashed var(--x-color-border)` | Drop zone border |
-| `--x-file-upload-border-hover` | `2px dashed var(--x-color-primary)` | Hover/drag border |
-| `--x-file-upload-drag-bg` | `color-mix(in srgb, var(--x-color-primary, rgb(59,130,246)) 5%, transparent)` | Drag-over background tint |
-| `--x-file-upload-radius` | `var(--x-radius-md, 8px)` | Border radius |
-| `--x-file-upload-padding` | `var(--x-space-lg, 24px)` | Drop zone padding |
+| `--x-file-upload-bg` | `var(--x-color-surface,#ffffff)` | Drop zone background |
+| `--x-file-upload-fg` | `var(--x-color-text,#0f172a)` | Text color |
+| `--x-file-upload-muted` | `var(--x-color-text-muted,#64748b)` | Muted text color |
+| `--x-file-upload-border` | `2px dashed var(--x-color-border,#cbd5e1)` | Drop zone border |
+| `--x-file-upload-border-hover` | `2px dashed var(--x-color-primary,#3b82f6)` | Hover/drag border |
+| `--x-file-upload-drag-bg` | `color-mix(in srgb,var(--x-color-primary,rgb(59,130,246)) 5%,transparent)`    | Drag-over background tint |
+| `--x-file-upload-radius` | `var(--x-radius-md,8px)`  | Border radius |
+| `--x-file-upload-padding` | `var(--x-space-lg,24px)`  | Drop zone padding |
 | `--x-file-upload-thumb-size` | `48px` | Thumbnail dimensions |
-| `--x-file-upload-item-bg` | `var(--x-color-surface)` | File item background |
-| `--x-file-upload-remove-color` | `var(--x-color-text-muted)` | Remove button color |
-| `--x-file-upload-remove-hover` | `var(--x-color-danger)` | Remove button hover color |
+| `--x-file-upload-item-bg` | `var(--x-color-surface,#f8fafc)` | File item background |
+| `--x-file-upload-remove-color` | `var(--x-color-text-muted,#64748b)` | Remove button color |
+| `--x-file-upload-remove-hover` | `var(--x-color-danger,#ef4444)` | Remove button hover color |
 
 ## Accessibility
 

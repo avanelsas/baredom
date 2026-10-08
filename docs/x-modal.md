@@ -61,23 +61,23 @@ Centered overlay dialog with backdrop. Traps focus, dismisses on Escape or backd
 
 | Property                    | Default                                 | Description |
 |-----------------------------|-----------------------------------------|-------------|
-| `--x-modal-bg`              | `Canvas`                                | Dialog background color. |
-| `--x-modal-fg`              | `CanvasText`                            | Dialog foreground color. |
-| `--x-modal-backdrop`        | `rgb(0 0 0 / 0.45)`                     | Backdrop background. |
-| `--x-modal-shadow`          | `0 20px 60px rgb(0 0 0 / 0.25)`         | Dialog box shadow. |
-| `--x-modal-radius`          | `0.75rem`                               | Dialog border radius. |
+| `--x-modal-bg`              | `var(--x-color-bg,Canvas)`              | Dialog background color. |
+| `--x-modal-fg`              | `var(--x-color-text,CanvasText)`        | Dialog foreground color. |
+| `--x-modal-backdrop`        | `rgb(0 0 0/0.45)`                       | Backdrop background. |
+| `--x-modal-shadow`          | `var(--x-shadow-lg,0 20px 60px rgb(0 0 0/0.25))` | Dialog box shadow. |
+| `--x-modal-radius`          | `var(--x-radius-md,0.75rem)`            | Dialog border radius. |
 | `--x-modal-width-sm`        | `22rem`                                 | Width for `size="sm"`. |
 | `--x-modal-width-md`        | `32rem`                                 | Width for `size="md"`. |
 | `--x-modal-width-lg`        | `44rem`                                 | Width for `size="lg"`. |
 | `--x-modal-width-xl`        | `60rem`                                 | Width for `size="xl"`. |
-| `--x-modal-max-height`      | `90vh`                                  | Maximum height for sm/md/lg/xl variants. |
+| `--x-modal-max-height`      | `90dvh`                                 | Maximum height for sm/md/lg/xl variants. |
 | `--x-modal-header-padding`  | `1rem 1.25rem`                          | Header padding. |
 | `--x-modal-body-padding`    | `1rem 1.25rem`                          | Body padding. |
 | `--x-modal-footer-padding`  | `0.75rem 1.25rem`                       | Footer padding. |
-| `--x-modal-border`          | `color-mix(in srgb, currentColor 12%, transparent)` | Header/footer divider color. |
-| `--x-modal-duration`        | `180ms`                                 | Transition duration. |
-| `--x-modal-easing`          | `var(--x-transition-easing, ease)`      | Transition easing. |
-| `--x-modal-z`               | `var(--x-z-modal, 1000)`                                  | Backdrop z-index (dialog is z+1). |
+| `--x-modal-border`          | `var(--x-color-border,color-mix(in srgb,currentColor 12%,transparent))` | Header/footer divider color. |
+| `--x-modal-duration`        | `var(--x-transition-duration,180ms)`    | Transition duration. |
+| `--x-modal-easing`          | `var(--x-transition-easing,ease)`       | Transition easing. |
+| `--x-modal-z`               | `var(--x-z-modal,1000)`                                   | Backdrop z-index (dialog is z+1). |
 
 ## Accessibility
 

@@ -118,13 +118,13 @@ A small indicator that displays a count, a text label, or a dot. Supports five s
 
 | Property               | Default (light)          | Description                    |
 |------------------------|--------------------------|--------------------------------|
-| `--x-badge-bg`         | `color-mix(in srgb, var(--x-color-text, #000) 8%, transparent)`       | Background colour              |
-| `--x-badge-color`      | `rgba(0,0,0,0.80)`       | Text colour                    |
-| `--x-badge-border`     | `rgba(0,0,0,0.12)`       | Border colour                  |
-| `--x-badge-font-size`  | `var(--x-font-size-xs, 0.75rem)` | Font size (`sm`: `0.6875rem`)  |
+| `--x-badge-bg`         | `color-mix(in srgb,var(--x-color-text,#000) 8%,transparent)`          | Background colour              |
+| `--x-badge-color`      | `var(--x-color-text,rgba(0,0,0,0.80))` | Text colour                    |
+| `--x-badge-border`     | `var(--x-color-border,rgba(0,0,0,0.12))` | Border colour                  |
+| `--x-badge-font-size`  | `var(--x-font-size-xs,0.75rem)`  | Font size (`sm`: `0.6875rem`)  |
 | `--x-badge-height`     | `1.25rem`                | Min height (`sm`: `1rem`)      |
 | `--x-badge-padding`    | `0 0.375rem`             | Inline padding (`sm`: `0 0.25rem`) |
-| `--x-badge-radius`     | `var(--x-radius-sm, 0.25rem)` | Border radius (`sm`: `0.1875rem`) |
+| `--x-badge-radius`     | `var(--x-radius-sm,0.25rem)`  | Border radius (`sm`: `0.1875rem`) |
 
 Variant attributes (`data-variant`) set these properties automatically. Override on the host to customise individual badges:
 

@@ -91,18 +91,18 @@ Calling `event.preventDefault()` on `x-scroll-loop` prevents the loop from occur
 | `--x-scroll-bg`                       | `transparent`              | Viewport background              |
 | `--x-scroll-slide-size`               | `100%`                     | Slide flex-basis (width or height) |
 | `--x-scroll-control-size`             | `36px`                     | Prev/next button size            |
-| `--x-scroll-control-bg`              | `rgba(255,255,255,0.9)`    | Button background                |
-| `--x-scroll-control-color`           | `rgba(0,0,0,0.7)`         | Button icon color                |
-| `--x-scroll-control-hover-bg`        | `rgba(255,255,255,1)`      | Button hover background          |
+| `--x-scroll-control-bg`              | `var(--x-color-bg,rgba(255,255,255,0.9))` | Button background                |
+| `--x-scroll-control-color`           | `var(--x-color-text,rgba(0,0,0,0.7))` | Button icon color                |
+| `--x-scroll-control-hover-bg`        | `var(--x-color-bg,rgba(255,255,255,1))` | Button hover background          |
 | `--x-scroll-control-border-radius`   | `50%`                      | Button border radius             |
-| `--x-scroll-control-shadow`          | `0 2px 8px rgba(0,0,0,.15)` | Button box shadow              |
+| `--x-scroll-control-shadow`          | `var(--x-shadow-md,0 2px 8px rgba(0,0,0,.15))` | Button box shadow              |
 | `--x-scroll-indicator-size`          | `8px`                      | Dot indicator diameter           |
 | `--x-scroll-indicator-gap`           | `6px`                      | Gap between indicators           |
-| `--x-scroll-indicator-color`         | `rgba(0,0,0,0.25)`        | Inactive dot color               |
-| `--x-scroll-indicator-active-color`  | `rgba(0,0,0,0.7)`         | Active dot color                 |
-| `--x-scroll-transition-duration`     | `300ms`                    | Scroll transition duration       |
+| `--x-scroll-indicator-color`         | `var(--x-color-text-muted,rgba(0,0,0,0.25))` | Inactive dot color               |
+| `--x-scroll-indicator-active-color`  | `var(--x-color-text,rgba(0,0,0,0.7))` | Active dot color                 |
+| `--x-scroll-transition-duration`     | `var(--x-transition-duration,300ms)` | Scroll transition duration       |
 | `--x-scroll-disabled-opacity`        | `0.55`                     | Opacity when disabled            |
-| `--x-scroll-focus-ring`              | `rgba(0,102,204,0.6)`     | Focus ring color                 |
+| `--x-scroll-focus-ring`              | `var(--x-color-focus-ring,rgba(0,102,204,0.6))` | Focus ring color                 |
 
 All color properties have automatic dark-mode overrides.
 

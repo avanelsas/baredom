@@ -54,17 +54,17 @@ x-spotlight-card {
 
 | Property | Default (light) | Purpose |
 |----------|-----------------|---------|
-| `--x-spotlight-card-color` | resolved from `color` attr | Spotlight tint |
-| `--x-spotlight-card-intensity` | resolved from `intensity` attr (`0.18` for `medium`) | Peak opacity at the cursor |
-| `--x-spotlight-card-size` | resolved from `size` attr (`200px` for `md`) | Spotlight radius |
-| `--x-spotlight-card-background` | `var(--x-color-surface, rgba(255,255,255,0.92))` | Card surface |
+| `--x-spotlight-card-color` | resolved from `transparent` attr | Spotlight tint |
+| `--x-spotlight-card-intensity` | resolved from `0.18` attr (`0.18` for `medium`)      | Peak opacity at the cursor |
+| `--x-spotlight-card-size` | resolved from `200px` attr (`200px` for `md`) | Spotlight radius |
+| `--x-spotlight-card-background` | `var(--x-color-surface, rgba(255, 255, 255, 0.92))` | Card surface |
 | `--x-spotlight-card-color-fg` | `var(--x-color-text, #111827)` | Text colour |
-| `--x-spotlight-card-border-color` | `var(--x-color-border, rgba(17,24,39,0.12))` | Bordered variant border |
-| `--x-spotlight-card-shadow` | `var(--x-shadow-md, …)` | Elevated variant shadow |
+| `--x-spotlight-card-border-color` | `var(--x-color-border, rgba(17, 24, 39, 0.12))` | Bordered variant border |
+| `--x-spotlight-card-shadow` | `var(--x-shadow-md, 0 10px 24px rgba(15, 23, 42, 0.10))` | Elevated variant shadow |
 | `--x-spotlight-card-padding-{none,sm,md,lg}` | `0`, `0.5rem`, `1rem`, `1.5rem` | Padding tokens |
 | `--x-spotlight-card-radius-{none,sm,md,lg,xl}` | matches x-card scale | Radius tokens |
 | `--x-spotlight-card-transition-duration` | `var(--x-transition-duration, 200ms)` | Spotlight fade-in / fade-out speed |
-| `--x-spotlight-card-transition-timing` | `var(--x-transition-easing, ease)` | Easing |
+| `--x-spotlight-card-transition-timing` | `var(--x-transition-easing,ease)`  | Easing |
 
 Dark mode values are set automatically via `@media (prefers-color-scheme: dark)`. Animations are suppressed via `@media (prefers-reduced-motion: reduce)` (which also forces the spotlight static).
 

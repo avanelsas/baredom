@@ -56,9 +56,9 @@ x-organic-progress
 
 | Custom Property                          | Default              | Description |
 |------------------------------------------|----------------------|-------------|
-| `--x-organic-progress-color-primary`     | `#22c55e` / `#4ade80`| Main branch color |
-| `--x-organic-progress-color-secondary`   | `#16a34a` / `#22c55e`| Secondary (deeper) branch color |
-| `--x-organic-progress-bloom-color`       | `#f472b6` / `#f9a8d4`| Bloom petal color |
+| `--x-organic-progress-color-primary`     | `var(--x-color-success,#4ade80)` / `#4ade80` | Main branch color |
+| `--x-organic-progress-color-secondary`   | `var(--x-color-success,#22c55e)` / `#22c55e` | Secondary (deeper) branch color |
+| `--x-organic-progress-bloom-color`       | `var(--x-color-danger,#f9a8d4)` / `#f9a8d4` | Bloom petal color |
 | `--x-organic-progress-bg`               | `transparent`        | Background color |
 | `--x-organic-progress-branch-width`     | `3`                  | Base branch stroke width |
 | `--x-organic-progress-glow`             | `2`                  | Gooey blur intensity |

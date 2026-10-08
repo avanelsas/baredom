@@ -44,11 +44,11 @@ None. This is a purely decorative component.
 
 | Property | Default (Light) | Default (Dark) | Description |
 |----------|-----------------|----------------|-------------|
-| `--x-organic-divider-color-1` | `rgba(99,102,241,0.15)` | `rgba(129,140,248,0.12)` | Back layer fill color |
-| `--x-organic-divider-color-2` | `rgba(99,102,241,0.25)` | `rgba(129,140,248,0.22)` | Layer 2 fill color |
-| `--x-organic-divider-color-3` | `rgba(99,102,241,0.40)` | `rgba(129,140,248,0.35)` | Layer 3 fill color |
-| `--x-organic-divider-color-4` | `rgba(99,102,241,0.60)` | `rgba(129,140,248,0.50)` | Layer 4 fill color |
-| `--x-organic-divider-color-5` | `rgba(99,102,241,0.85)` | `rgba(129,140,248,0.70)` | Front layer fill color |
+| `--x-organic-divider-color-1` | `color-mix(in srgb,var(--x-organic-divider-color) 15%,transparent)` | `rgba(129,140,248,0.12)` | Back layer fill color |
+| `--x-organic-divider-color-2` | `color-mix(in srgb,var(--x-organic-divider-color) 25%,transparent)` | `rgba(129,140,248,0.22)` | Layer 2 fill color |
+| `--x-organic-divider-color-3` | `color-mix(in srgb,var(--x-organic-divider-color) 40%,transparent)` | `rgba(129,140,248,0.35)` | Layer 3 fill color |
+| `--x-organic-divider-color-4` | `color-mix(in srgb,var(--x-organic-divider-color) 60%,transparent)` | `rgba(129,140,248,0.50)` | Layer 4 fill color |
+| `--x-organic-divider-color-5` | `color-mix(in srgb,var(--x-organic-divider-color) 85%,transparent)` | `rgba(129,140,248,0.70)` | Front layer fill color |
 | `--x-organic-divider-height` | `120px` | `120px` | Fallback height |
 | `--x-organic-divider-animate-duration` | `6s` | `6s` | Animation cycle duration |
 | `--x-organic-divider-animate-timing` | `ease-in-out` | `ease-in-out` | Animation timing function (morph only; drift always uses `linear`) |

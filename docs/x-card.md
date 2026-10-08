@@ -64,27 +64,27 @@ x-card {
 
 | Property | Default (light) | Purpose |
 |----------|-----------------|---------|
-| `--x-card-background` | `rgba(255,255,255,0.92)` | Base surface colour |
-| `--x-card-color` | `#111827` | Text colour |
-| `--x-card-border-color` | `rgba(17,24,39,0.12)` | Outlined variant border |
-| `--x-card-filled-background` | `var(--x-color-surface-active, rgba(241,245,249,0.96))` | Filled variant surface |
+| `--x-card-background` | `var(--x-color-surface, rgba(255, 255, 255, 0.92))` | Base surface colour |
+| `--x-card-color` | `var(--x-color-text, #111827)` | Text colour |
+| `--x-card-border-color` | `var(--x-color-border, rgba(17, 24, 39, 0.12))` | Outlined variant border |
+| `--x-card-filled-background` | `var(--x-color-surface-active, rgba(241, 245, 249, 0.96))` | Filled variant surface |
 | `--x-card-ghost-background` | `transparent` | Ghost variant surface |
-| `--x-card-hover-background` | `var(--x-color-surface-hover, rgba(15,23,42,0.04))` | Interactive hover state |
-| `--x-card-press-background` | `var(--x-color-surface-active, rgba(15,23,42,0.08))` | Interactive active/press state |
-| `--x-card-shadow` | `0 10px 24px rgba(15,23,42,0.10)` | Elevated variant shadow |
-| `--x-card-focus-ring` | `rgba(59,130,246,0.55)` | Focus ring colour |
+| `--x-card-hover-background` | `var(--x-color-surface-hover, rgba(15, 23, 42, 0.04))` | Interactive hover state |
+| `--x-card-press-background` | `var(--x-color-surface-active, rgba(15, 23, 42, 0.08))` | Interactive active/press state |
+| `--x-card-shadow` | `var(--x-shadow-md, 0 10px 24px rgba(15, 23, 42, 0.10))` | Elevated variant shadow |
+| `--x-card-focus-ring` | `var(--x-color-focus-ring, rgba(59, 130, 246, 0.55))` | Focus ring colour |
 | `--x-card-disabled-opacity` | `0.6` | Opacity when disabled |
 | `--x-card-padding-none` | `0` | Padding token — none |
 | `--x-card-padding-sm` | `0.5rem` | Padding token — sm |
 | `--x-card-padding-md` | `1rem` | Padding token — md |
 | `--x-card-padding-lg` | `1.5rem` | Padding token — lg |
 | `--x-card-radius-none` | `0` | Radius token — none |
-| `--x-card-radius-sm` | `0.375rem` | Radius token — sm |
-| `--x-card-radius-md` | `0.75rem` | Radius token — md |
-| `--x-card-radius-lg` | `1rem` | Radius token — lg |
-| `--x-card-radius-xl` | `var(--x-radius-xl, 1.5rem)` | Radius token — xl |
-| `--x-card-transition-duration` | `140ms` | Hover/press transition speed |
-| `--x-card-transition-timing` | `var(--x-transition-easing, ease)` | Hover/press transition easing |
+| `--x-card-radius-sm` | `var(--x-radius-sm, 0.375rem)` | Radius token — sm |
+| `--x-card-radius-md` | `var(--x-radius-md, 0.75rem)` | Radius token — md |
+| `--x-card-radius-lg` | `var(--x-radius-lg, 1rem)` | Radius token — lg |
+| `--x-card-radius-xl` | `var(--x-radius-xl,1.5rem)`  | Radius token — xl |
+| `--x-card-transition-duration` | `var(--x-transition-duration, 140ms)` | Hover/press transition speed |
+| `--x-card-transition-timing` | `var(--x-transition-easing,ease)`  | Hover/press transition easing |
 
 Dark mode values are set automatically via `@media (prefers-color-scheme: dark)`.
 Transition animations are suppressed via `@media (prefers-reduced-motion: reduce)`.

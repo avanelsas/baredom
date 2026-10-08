@@ -82,13 +82,13 @@ Only the **outward** `x-search-field-input` event is delayed. Local UI feedback 
 
 | Property                            | Default (light)       |
 |-------------------------------------|-----------------------|
-| `--x-search-field-bg`               | `#ffffff`             |
-| `--x-search-field-color`            | `var(--x-color-text, #111827)`             |
-| `--x-search-field-border`           | `var(--x-border-width, 1px) solid #d1d5db`   |
-| `--x-search-field-border-radius`    | `6px`                 |
-| `--x-search-field-focus-ring-color` | `#2563eb`             |
-| `--x-search-field-icon-color`       | `var(--x-color-text-muted, #9ca3af)`             |
-| `--x-search-field-clear-color`      | `var(--x-color-text-muted, #9ca3af)`             |
+| `--x-search-field-bg`               | `var(--x-color-surface,#ffffff)` |
+| `--x-search-field-color`            | `var(--x-color-text,#111827)`              |
+| `--x-search-field-border`           | `var(--x-border-width,1px) solid var(--x-color-border,#d1d5db)` |
+| `--x-search-field-border-radius`    | `var(--x-radius-md,6px)` |
+| `--x-search-field-focus-ring-color` | `var(--x-color-primary,#2563eb)` |
+| `--x-search-field-icon-color`       | `var(--x-color-text-muted,#9ca3af)`              |
+| `--x-search-field-clear-color`      | `var(--x-color-text-muted,#9ca3af)`              |
 | `--x-search-field-disabled-opacity` | `0.45`                |
 
 Dark mode values are applied automatically via `@media (prefers-color-scheme: dark)` inside the shadow style.

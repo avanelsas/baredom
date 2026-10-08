@@ -169,15 +169,15 @@ When the `label` attribute is set to a non-empty string, it is applied as `aria-
 | `--x-navbar-height`                | `4rem`                           | Navbar height            |
 | `--x-navbar-padding-inline`        | `1rem`                           | Horizontal padding       |
 | `--x-navbar-gap`                   | `0.75rem`                        | Spacing between elements |
-| `--x-navbar-bg`                    | `rgba(255,255,255,0.88)`         | Background color         |
-| `--x-navbar-color`                 | `#0f172a`                        | Text color               |
-| `--x-navbar-border`                | `rgba(148,163,184,0.22)`         | Bottom separator colour  |
-| `--x-navbar-shadow`                | `0 8px 24px rgba(15,23,42,0.08)` | Shadow when elevated     |
-| `--x-navbar-focus-ring`            | `#60a5fa`                        | Focus outline color      |
+| `--x-navbar-bg`                    | `var(--x-color-surface,rgba(255,255,255,0.88))` | Background color         |
+| `--x-navbar-color`                 | `var(--x-color-text,#0f172a)`    | Text color               |
+| `--x-navbar-border`                | `var(--x-color-border,rgba(148,163,184,0.22))` | Bottom separator colour  |
+| `--x-navbar-shadow`                | `var(--x-shadow-md,0 8px 24px rgba(15,23,42,0.08))` | Shadow when elevated     |
+| `--x-navbar-focus-ring`            | `var(--x-color-focus-ring,#60a5fa)` | Focus outline color      |
 | `--x-navbar-z-index`               | `40`                             | Z-index when sticky      |
 | `--x-navbar-radius`                | `0`                              | Border radius (card look: set to e.g. `1rem`) |
-| `--x-navbar-transition-duration`   | `180ms`                          | Transition duration      |
-| `--x-navbar-transition-easing`     | `cubic-bezier(0.2,0,0,1)`       | Transition easing        |
+| `--x-navbar-transition-duration`   | `var(--x-transition-duration,180ms)` | Transition duration      |
+| `--x-navbar-transition-easing`     | `var(--x-transition-easing,cubic-bezier(0.2,0,0,1))` | Transition easing        |
 | `--x-navbar-align-items`           | `center`                         | Vertical alignment       |
 
 The default look is a full-bleed site header: edge-to-edge, no rounded corners, a single 1px bottom separator. To use `x-navbar` as a rounded card instead, set `--x-navbar-radius` to a non-zero value and wrap the navbar in a container that provides page-edge padding.

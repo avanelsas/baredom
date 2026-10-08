@@ -166,28 +166,28 @@ The `data` attribute accepts a JSON string representing an array of series objec
 | `--x-chart-series-2`      | `rgba(16,140,72,0.95)`                      | `rgba(80,230,150,0.92)`                     |
 | `--x-chart-series-3`      | `rgba(190,20,40,0.95)`                      | `rgba(255,100,110,0.93)`                    |
 | `--x-chart-series-4`      | `rgba(204,120,0,0.95)`                      | `rgba(255,190,60,0.93)`                     |
-| `--x-chart-radius`        | `0.75rem`                                   | same                                        |
-| `--x-chart-border`        | `rgba(0,0,0,0.1)`                           | `rgba(255,255,255,0.1)`                     |
-| `--x-chart-grid`          | `rgba(0,0,0,0.08)`                          | `rgba(255,255,255,0.08)`                    |
-| `--x-chart-axis-label`    | `rgba(0,0,0,0.5)`                           | `rgba(255,255,255,0.45)`                    |
-| `--x-chart-focus-ring`    | `rgba(0,102,204,0.55)`                      | `rgba(120,190,255,0.55)`                    |
+| `--x-chart-radius`        | `var(--x-radius-md,0.75rem)`                | same                                        |
+| `--x-chart-border`        | `var(--x-color-border,rgba(0,0,0,0.1))`     | `rgba(255,255,255,0.1)`                     |
+| `--x-chart-grid`          | `var(--x-color-border,rgba(0,0,0,0.08))`    | `rgba(255,255,255,0.08)`                    |
+| `--x-chart-axis-label`    | `var(--x-color-text-muted,rgba(0,0,0,0.5))` | `rgba(255,255,255,0.45)`                    |
+| `--x-chart-focus-ring`    | `var(--x-color-focus-ring,rgba(0,102,204,0.55))` | `rgba(120,190,255,0.55)`                    |
 
 ### Tooltip
 
 | Variable                           | Light default            | Dark default                    |
 |------------------------------------|--------------------------|--------------------------------|
-| `--x-chart-tooltip-bg`             | `rgba(255,255,255,0.96)` | `rgba(30,30,35,0.97)`          |
-| `--x-chart-tooltip-border`         | `rgba(0,0,0,0.12)`       | `rgba(255,255,255,0.12)`       |
-| `--x-chart-tooltip-shadow`         | `0 4px 16px …`           | `0 4px 20px …`                 |
-| `--x-chart-tooltip-radius`         | `0.5rem`                 | same                           |
+| `--x-chart-tooltip-bg`             | `var(--x-color-bg,rgba(255,255,255,0.96))` | `rgba(30,30,35,0.97)`          |
+| `--x-chart-tooltip-border`         | `var(--x-color-border,rgba(0,0,0,0.12))` | `rgba(255,255,255,0.12)`       |
+| `--x-chart-tooltip-shadow`         | `var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.14))` | `0 4px 20px …`                 |
+| `--x-chart-tooltip-radius`         | `var(--x-radius-sm,0.5rem)` | same                           |
 | `--x-chart-tooltip-padding`        | `0.45rem 0.7rem`         | same                           |
-| `--x-chart-tooltip-font-size`      | `var(--x-font-size-sm, 0.8125rem)` | same                           |
-| `--x-chart-tooltip-header-color`   | `rgba(0,0,0,0.5)`        | `rgba(255,255,255,0.45)`       |
-| `--x-chart-tooltip-label-color`    | `rgba(0,0,0,0.65)`       | `rgba(255,255,255,0.6)`        |
-| `--x-chart-tooltip-value-color`    | `rgba(0,0,0,0.9)`        | `rgba(255,255,255,0.9)`        |
+| `--x-chart-tooltip-font-size`      | `var(--x-font-size-sm,0.8125rem)`  | same                           |
+| `--x-chart-tooltip-header-color`   | `var(--x-color-text-muted,rgba(0,0,0,0.5))` | `rgba(255,255,255,0.45)`       |
+| `--x-chart-tooltip-label-color`    | `var(--x-color-text-muted,rgba(0,0,0,0.65))` | `rgba(255,255,255,0.6)`        |
+| `--x-chart-tooltip-value-color`    | `var(--x-color-text,rgba(0,0,0,0.9))` | `rgba(255,255,255,0.9)`        |
 | `--x-chart-tooltip-swatch-size`    | `8px`                    | same                           |
 | `--x-chart-tooltip-gap`            | `0.35rem`                | same                           |
-| `--x-chart-crosshair-color`        | `rgba(0,0,0,0.18)`       | `rgba(255,255,255,0.2)`        |
+| `--x-chart-crosshair-color`        | `var(--x-color-border,rgba(0,0,0,0.18))` | `rgba(255,255,255,0.2)`        |
 | `--x-chart-crosshair-width`        | `1`                      | same                           |
 
 Dark mode values are applied automatically via `@media (prefers-color-scheme: dark)` inside the component's shadow styles. Use these custom properties on the host element to override.

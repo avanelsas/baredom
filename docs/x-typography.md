@@ -95,14 +95,14 @@ None.
 |----------|---------|-------------|
 | `--x-typography-font-family` | `var(--x-font-family, inherit)` | Base font family. The theme's font, or else the font of the page |
 | `--x-typography-mono-font-family` | `var(--x-font-family-mono, ui-monospace, "SFMono-Regular", ...)` | Monospace font for code/kbd |
-| `--x-typography-color` | `inherit` | Text color |
+| `--x-typography-color` | `var(--x-color-text,inherit)` | Text color |
 
 ### Code variant
 
 | Variable | Light default | Dark default | Description |
 |----------|--------------|--------------|-------------|
 | `--x-typography-code-bg` | `rgba(0,0,0,0.06)` | `rgba(255,255,255,0.1)` | Background |
-| `--x-typography-code-radius` | `4px` | — | Border radius |
+| `--x-typography-code-radius` | `var(--x-radius-sm,4px)` | — | Border radius |
 | `--x-typography-code-padding` | `0.15em 0.35em` | — | Padding |
 
 ### Kbd variant
@@ -111,7 +111,7 @@ None.
 |----------|--------------|--------------|-------------|
 | `--x-typography-kbd-bg` | `rgba(0,0,0,0.06)` | `rgba(255,255,255,0.1)` | Background |
 | `--x-typography-kbd-border` | `rgba(0,0,0,0.15)` | `rgba(255,255,255,0.2)` | Border color |
-| `--x-typography-kbd-radius` | `4px` | — | Border radius |
+| `--x-typography-kbd-radius` | `var(--x-radius-sm,4px)` | — | Border radius |
 | `--x-typography-kbd-padding` | `0.15em 0.4em` | — | Padding |
 
 ### Blockquote variant

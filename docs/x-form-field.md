@@ -91,16 +91,16 @@ The `value` property setter updates both the `value` attribute and the shadow `<
 
 | Property                              | Default (light)          |
 |---------------------------------------|--------------------------|
-| `--x-form-field-label-color`          | `#374151`                |
-| `--x-form-field-label-font-size`      | `0.875rem`               |
-| `--x-form-field-input-bg`             | `#ffffff`                |
-| `--x-form-field-input-color`          | `#111827`                |
-| `--x-form-field-input-border`         | `var(--x-border-width, 1px) solid #d1d5db`      |
-| `--x-form-field-input-border-radius`  | `6px`                    |
+| `--x-form-field-label-color`          | `var(--x-color-text-muted,#374151)` |
+| `--x-form-field-label-font-size`      | `var(--x-font-size-sm,0.875rem)` |
+| `--x-form-field-input-bg`             | `var(--x-color-surface,#ffffff)` |
+| `--x-form-field-input-color`          | `var(--x-color-text,#111827)` |
+| `--x-form-field-input-border`         | `var(--x-border-width,1px) solid var(--x-color-border,#d1d5db)` |
+| `--x-form-field-input-border-radius`  | `var(--x-radius-md,6px)` |
 | `--x-form-field-input-padding`        | `0.5rem 0.75rem`         |
-| `--x-form-field-focus-ring-color`     | `#2563eb`                |
-| `--x-form-field-error-color`          | `#dc2626`                |
-| `--x-form-field-hint-color`           | `#6b7280`                |
+| `--x-form-field-focus-ring-color`     | `var(--x-color-primary,#2563eb)` |
+| `--x-form-field-error-color`          | `var(--x-color-danger,#dc2626)` |
+| `--x-form-field-hint-color`           | `var(--x-color-text-muted,#6b7280)` |
 | `--x-form-field-disabled-opacity`     | `0.45`                   |
 
 Dark-mode defaults are applied automatically via `@media (prefers-color-scheme: dark)`.

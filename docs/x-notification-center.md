@@ -75,7 +75,7 @@ All events bubble and are composed. None are cancelable.
 | `--x-notification-center-gap` | `8px` | Gap between alerts |
 | `--x-notification-center-offset-x` | `16px` | Horizontal inset from the viewport edge |
 | `--x-notification-center-offset-y` | `16px` | Vertical inset from the viewport edge |
-| `--x-notification-center-z-index` | `var(--x-z-toast, 9999)` | Stack z-index |
+| `--x-notification-center-z-index` | `var(--x-z-toast,9999)`  | Stack z-index |
 
 ---
 

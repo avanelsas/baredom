@@ -91,10 +91,10 @@ None. This component is a pure display element.
 | Variable                       | Default       | Description             |
 |--------------------------------|---------------|-------------------------|
 | `--x-stat-background`          | `transparent` | Background colour       |
-| `--x-stat-color`               | `inherit`     | Base text colour        |
-| `--x-stat-muted-color`         | `rgba(0,0,0,0.55)` | Muted text colour (label, hint) |
-| `--x-stat-border-color`        | `transparent` | Border colour           |
-| `--x-stat-radius`              | `12px`        | Border radius           |
+| `--x-stat-color`               | `var(--x-color-text,inherit)` | Base text colour        |
+| `--x-stat-muted-color`         | `var(--x-color-text-muted,rgba(0,0,0,0.55))` | Muted text colour (label, hint) |
+| `--x-stat-border-color`        | `var(--x-color-border,transparent)` | Border colour           |
+| `--x-stat-radius`              | `var(--x-radius-md,12px)` | Border radius           |
 | `--x-stat-padding`             | `16px`        | Padding                 |
 | `--x-stat-gap`                 | `6px`         | Grid gap                |
 
@@ -102,21 +102,21 @@ None. This component is a pure display element.
 
 | Variable                       | Default       | Description             |
 |--------------------------------|---------------|-------------------------|
-| `--x-stat-label-color`         | muted-color   | Label text colour       |
-| `--x-stat-label-size`          | `var(--x-font-size-xs, 12px)` | Label font size         |
-| `--x-stat-value-color`         | color         | Value text colour       |
+| `--x-stat-label-color`         | `var(--x-stat-muted-color)` | Label text colour       |
+| `--x-stat-label-size`          | `var(--x-font-size-xs,12px)`  | Label font size         |
+| `--x-stat-value-color`         | `var(--x-stat-color)` | Value text colour       |
 | `--x-stat-value-size`          | `20px`        | Value font size         |
-| `--x-stat-hint-color`          | muted-color   | Hint text colour        |
-| `--x-stat-hint-size`           | `var(--x-font-size-xs, 12px)` | Hint font size          |
-| `--x-stat-icon-color`          | color         | Icon colour             |
+| `--x-stat-hint-color`          | `var(--x-stat-muted-color)` | Hint text colour        |
+| `--x-stat-hint-size`           | `var(--x-font-size-xs,12px)`  | Hint font size          |
+| `--x-stat-icon-color`          | `var(--x-stat-color)` | Icon colour             |
 
 ### Semantic colour tokens
 
 | Variable                       | Default (light) | Description           |
 |--------------------------------|-----------------|-----------------------|
-| `--x-stat-positive-color`      | `#16a34a`       | Positive variant value colour |
-| `--x-stat-warning-color`       | `#d97706`       | Warning variant value colour  |
-| `--x-stat-danger-color`        | `#dc2626`       | Danger variant value colour   |
+| `--x-stat-positive-color`      | `var(--x-color-success,#16a34a)` | Positive variant value colour |
+| `--x-stat-warning-color`       | `var(--x-color-warning,#d97706)` | Warning variant value colour  |
+| `--x-stat-danger-color`        | `var(--x-color-danger,#dc2626)` | Danger variant value colour   |
 
 Dark-mode variants are set automatically via `@media (prefers-color-scheme: dark)`.
 
@@ -124,8 +124,8 @@ Dark-mode variants are set automatically via `@media (prefers-color-scheme: dark
 
 | Variable                       | Default | Description                |
 |--------------------------------|---------|----------------------------|
-| `--x-stat-transition-duration` | `120ms` | Transition duration        |
-| `--x-stat-transition-timing`   | `ease`  | Transition easing function |
+| `--x-stat-transition-duration` | `var(--x-transition-duration,120ms)` | Transition duration        |
+| `--x-stat-transition-timing`   | `var(--x-transition-easing,ease)` | Transition easing function |
 | `--x-stat-loading-opacity`     | `0.6`   | Opacity when loading       |
 
 ---

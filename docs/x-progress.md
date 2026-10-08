@@ -49,11 +49,11 @@ None. Label text is provided via the `label` attribute.
 | Property                       | Default                            | Description                         |
 |--------------------------------|------------------------------------|-------------------------------------|
 | `--x-progress-height`          | `4px` / `8px` / `12px` (by size)  | Track height                        |
-| `--x-progress-track-color`     | Adaptive muted grey                | Background of the track             |
-| `--x-progress-fill-color`      | Variant-driven (blue / green / amber / red) | Fill color                |
-| `--x-progress-border-radius`   | `9999px`                           | Radius for track and fill           |
-| `--x-progress-label-color`     | Adaptive muted                     | Color of the label text             |
-| `--x-progress-value-color`     | Adaptive muted                     | Color of the percentage value text  |
+| `--x-progress-track-color`     | `var(--x-color-border,rgba(0,0,0,0.10))` | Background of the track             |
+| `--x-progress-fill-color`      | `var(--x-color-primary,#3b82f6)`            | Fill color                |
+| `--x-progress-border-radius`   | `var(--x-radius-full,9999px)`      | Radius for track and fill           |
+| `--x-progress-label-color`     | `var(--x-color-text-muted,rgba(0,0,0,0.60))` | Color of the label text             |
+| `--x-progress-value-color`     | `var(--x-color-text-muted,rgba(0,0,0,0.50))` | Color of the percentage value text  |
 
 ## Accessibility
 

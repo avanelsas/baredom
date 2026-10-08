@@ -56,23 +56,23 @@ Fires after the fade-out animation completes (or immediately when `prefers-reduc
 
 | Custom Property                   | Default              | Description |
 |-----------------------------------|----------------------|-------------|
-| `--x-splash-bg`                   | `#ffffff` / `#0f172a`| Overlay background |
-| `--x-splash-color`                | `#0f172a` / `#f8fafc`| Text / foreground color |
+| `--x-splash-bg`                   | `var(--x-color-bg, #ffffff)` / `#0f172a` | Overlay background |
+| `--x-splash-color`                | `var(--x-color-text, #0f172a)` / `#f8fafc` | Text / foreground color |
 | `--x-splash-z-index`              | `9999`               | Overlay stacking order |
-| `--x-splash-fade-duration`        | `400ms`              | Fade-out transition duration |
-| `--x-splash-fade-ease`            | `var(--x-transition-easing, cubic-bezier(0.4,0,0.2,1))` | Fade easing curve |
+| `--x-splash-fade-duration`        | `var(--x-transition-duration, 400ms)` | Fade-out transition duration |
+| `--x-splash-fade-ease`            | `var(--x-transition-easing,cubic-bezier(0.4,0,0.2,1))`  | Fade easing curve |
 | `--x-splash-spinner-size`         | `40px`               | Spinner diameter |
-| `--x-splash-spinner-color`        | `currentColor`       | Spinner arc color |
-| `--x-splash-spinner-track-color`  | `rgba(0,0,0,0.12)`  | Spinner track ring color |
+| `--x-splash-spinner-color`        | `var(--x-color-text, currentColor)` | Spinner arc color |
+| `--x-splash-spinner-track-color`  | `var(--x-color-border, rgba(0,0,0,0.12))` | Spinner track ring color |
 | `--x-splash-spinner-thickness`    | `3px`                | Spinner border width |
 | `--x-splash-spinner-duration`     | `0.75s`              | Spinner rotation period |
 | `--x-splash-progress-height`      | `4px`                | Progress bar height |
-| `--x-splash-progress-color`       | `#3b82f6`            | Progress bar fill color |
-| `--x-splash-progress-track-color` | `rgba(0,0,0,0.08)`  | Progress bar track color |
-| `--x-splash-progress-radius`      | `2px`                | Progress bar border-radius |
+| `--x-splash-progress-color`       | `var(--x-color-primary, #3b82f6)` | Progress bar fill color |
+| `--x-splash-progress-track-color` | `var(--x-color-border, rgba(0,0,0,0.08))` | Progress bar track color |
+| `--x-splash-progress-radius`      | `var(--x-radius-sm, 2px)` | Progress bar border-radius |
 | `--x-splash-gap`                  | `20px`               | Spacing between slot, spinner, progress |
 | `--x-splash-blur-amount`          | `8px`                | Blur for `overlay="blur"` |
-| `--x-splash-branded-bg`           | _(fallback to --x-splash-bg)_ | Background for `variant="branded"` |
+| `--x-splash-branded-bg`           | `var(--x-splash-bg)`          | Background for `variant="branded"` |
 
 ## Accessibility
 

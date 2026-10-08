@@ -135,46 +135,46 @@ toast.addEventListener('x-toast-dismiss', e => {
 
 | Property | Default | Description |
 |---|---|---|
-| `--x-toast-radius` | `12px` | Card border radius |
+| `--x-toast-radius` | `var(--x-radius-lg,12px)` | Card border radius |
 | `--x-toast-padding-y` | `14px` | Vertical padding |
 | `--x-toast-padding-x` | `16px` | Horizontal padding |
 | `--x-toast-gap` | `12px` | Gap between icon, body, dismiss |
-| `--x-toast-font-size` | `0.875rem` | Message font size |
-| `--x-toast-heading-font-size` | `var(--x-font-size-sm, 0.9375rem)` | Heading font size |
-| `--x-toast-heading-weight` | `var(--x-font-weight-semibold, 600)` | Heading font weight |
-| `--x-toast-min-width` | `280px` | Minimum card width |
-| `--x-toast-max-width` | `480px` | Maximum card width |
-| `--x-toast-border-width` | `var(--x-border-width, 1px)` | Border width |
+| `--x-toast-font-size` | `var(--x-font-size-sm,0.875rem)` | Message font size |
+| `--x-toast-heading-font-size` | `var(--x-font-size-sm,0.9375rem)`  | Heading font size |
+| `--x-toast-heading-weight` | `var(--x-font-weight-semibold,600)`  | Heading font weight |
+| `--x-toast-min-width` | `min(280px,calc(100vw - 2rem))` | Minimum card width |
+| `--x-toast-max-width` | `min(480px,calc(100vw - 2rem))` | Maximum card width |
+| `--x-toast-border-width` | `var(--x-border-width,1px)`  | Border width |
 
 ### Elevation
 
 | Property | Default | Description |
 |---|---|---|
-| `--x-toast-shadow` | `0 4px 16px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08)` | Card box-shadow (dark mode: stronger) |
+| `--x-toast-shadow` | `var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.12),0 1px 4px rgba(0,0,0,0.08))` | Card box-shadow (dark mode: stronger) |
 
 ### Motion
 
 | Property | Default | Description |
 |---|---|---|
-| `--x-toast-enter-duration` | `var(--x-transition-duration, 200ms)` | Enter slide-in animation duration |
-| `--x-toast-exit-duration` | `var(--x-transition-duration, 180ms)` | Exit slide-out animation duration |
-| `--x-toast-motion-fast` | `120ms` | Transition speed for micro-interactions |
-| `--x-toast-motion-ease` | `cubic-bezier(0.2,0,0,1)` | Easing function |
+| `--x-toast-enter-duration` | `var(--x-transition-duration,200ms)`  | Enter slide-in animation duration |
+| `--x-toast-exit-duration` | `var(--x-transition-duration,180ms)`  | Exit slide-out animation duration |
+| `--x-toast-motion-fast` | `var(--x-transition-duration,120ms)` | Transition speed for micro-interactions |
+| `--x-toast-motion-ease` | `var(--x-transition-easing,cubic-bezier(0.2,0,0,1))` | Easing function |
 
 ### Progress bar
 
 | Property | Default | Description |
 |---|---|---|
 | `--x-toast-progress-height` | `3px` | Bar height |
-| `--x-toast-progress-bg` | `rgba(0,0,0,0.08)` | Track background colour |
+| `--x-toast-progress-bg` | `var(--x-color-border,rgba(0,0,0,0.08))` | Track background colour |
 
 ### Semantic colour tokens (light mode)
 
 | Property | Default |
 |---|---|
-| `--x-toast-info-bg` | `#ffffff` |
+| `--x-toast-info-bg` | `var(--x-color-bg,#ffffff)` |
 | `--x-toast-info-border` | `rgba(0,102,204,0.30)` |
-| `--x-toast-info-color` | `var(--x-color-text, rgba(15,23,42,0.92))` |
+| `--x-toast-info-color` | `var(--x-color-text,rgba(15,23,42,0.92))`  |
 | `--x-toast-info-icon-color` | `rgba(0,102,204,0.85)` |
 | `--x-toast-info-progress-fill` | `rgba(0,102,204,0.70)` |
 | `--x-toast-success-*` | (green palette) |

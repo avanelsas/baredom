@@ -91,19 +91,19 @@ el.addEventListener('x-file-download-error', (e) => {
 
 | Property                              | Default (light)        | Dark override  |
 |---------------------------------------|------------------------|----------------|
-| `--x-file-download-bg`               | `#2563eb`              | `#3b82f6`      |
-| `--x-file-download-color`            | `#ffffff`              | `#ffffff`      |
-| `--x-file-download-hover-bg`         | `#1d4ed8`              | `#2563eb`      |
-| `--x-file-download-active-bg`        | `#1e40af`              | `#1d4ed8`      |
-| `--x-file-download-border-radius`    | `6px`                  | —              |
+| `--x-file-download-bg`               | `var(--x-color-primary,#2563eb)` | `#3b82f6`      |
+| `--x-file-download-color`            | `var(--x-color-surface,#ffffff)` | `#ffffff`      |
+| `--x-file-download-hover-bg`         | `var(--x-color-primary-hover,#1d4ed8)` | `#2563eb`      |
+| `--x-file-download-active-bg`        | `var(--x-color-primary-active,#1e40af)` | `#1d4ed8`      |
+| `--x-file-download-border-radius`    | `var(--x-radius-md,6px)` | —              |
 | `--x-file-download-padding`          | `0.5rem 1rem`          | —              |
-| `--x-file-download-font-size`        | `0.875rem`             | —              |
-| `--x-file-download-font-weight`      | `var(--x-font-weight-medium, 500)` | —              |
+| `--x-file-download-font-size`        | `var(--x-font-size-sm,0.875rem)` | —              |
+| `--x-file-download-font-weight`      | `var(--x-font-weight-medium,500)`  | —              |
 | `--x-file-download-gap`              | `0.375rem`             | —              |
 | `--x-file-download-icon-size`        | `1em`                  | —              |
-| `--x-file-download-focus-ring`       | `#60a5fa`              | `#93c5fd`      |
+| `--x-file-download-focus-ring`       | `var(--x-color-focus-ring,#60a5fa)` | `#93c5fd`      |
 | `--x-file-download-disabled-opacity` | `0.45`                 | —              |
-| `--x-file-download-transition`       | `background 120ms ease`| —              |
+| `--x-file-download-transition`       | `background var(--x-transition-duration,120ms) ease` | —              |
 
 ## Shadow DOM Parts
 

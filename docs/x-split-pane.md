@@ -87,10 +87,10 @@ There is no default slot — content must declare `slot="start"` or `slot="end"`
 | Variable                              | Default                          | Description                          |
 |----------------------------------------|----------------------------------|--------------------------------------|
 | `--x-split-pane-divider-size`          | `0.5rem` (`1rem` on coarse pointers) | Thickness of the divider hit area |
-| `--x-split-pane-divider-line-size`     | `var(--x-border-width, 1px)`                            | Thickness of the visible divider line |
-| `--x-split-pane-divider-color`         | `var(--x-color-border)`          | Divider line colour                  |
-| `--x-split-pane-divider-hover-color`   | `var(--x-color-primary)`         | Divider line colour on hover / drag  |
-| `--x-split-pane-divider-focus-color`   | `var(--x-color-focus-ring)`      | Divider line colour and ring on keyboard focus |
+| `--x-split-pane-divider-line-size`     | `var(--x-border-width,1px)`                             | Thickness of the visible divider line |
+| `--x-split-pane-divider-color`         | `var(--x-color-border,#cbd5e1)`  | Divider line colour                  |
+| `--x-split-pane-divider-hover-color`   | `var(--x-color-primary,#3b82f6)` | Divider line colour on hover / drag  |
+| `--x-split-pane-divider-focus-color`   | `var(--x-color-focus-ring,#60a5fa)` | Divider line colour and ring on keyboard focus |
 
 Dark-mode defaults are applied automatically via `@media (prefers-color-scheme: dark)`.
 

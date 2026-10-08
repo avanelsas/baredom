@@ -91,65 +91,65 @@ Fired after the open state has changed. **Not cancelable.**
 ### Panel
 | Property | Default | Description |
 |----------|---------|-------------|
-| `--x-popover-panel-bg` | `#ffffff` | Panel background |
-| `--x-popover-panel-border` | `var(--x-border-width, 1px) solid #e2e8f0` | Panel border |
-| `--x-popover-panel-radius` | `8px` | Panel border radius |
-| `--x-popover-panel-shadow` | `var(--x-shadow-md, 0 4px 16px rgba(0,0,0,0.12))` | Panel box shadow |
+| `--x-popover-panel-bg` | `var(--x-color-bg,#ffffff)` | Panel background |
+| `--x-popover-panel-border` | `var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)` | Panel border |
+| `--x-popover-panel-radius` | `var(--x-radius-md,8px)` | Panel border radius |
+| `--x-popover-panel-shadow` | `var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.12))`  | Panel box shadow |
 | `--x-popover-panel-min-width` | `12rem` | Minimum panel width |
-| `--x-popover-panel-max-width` | `24rem` | Maximum panel width |
+| `--x-popover-panel-max-width` | `min(24rem,calc(100vw - 1rem))` | Maximum panel width |
 | `--x-popover-panel-max-height` | `24rem` | Maximum panel height (scrollable) |
 | `--x-popover-panel-offset` | `4px` | Gap between trigger and arrow |
-| `--x-popover-panel-z` | `var(--x-z-dropdown, 1000)` | z-index |
+| `--x-popover-panel-z` | `var(--x-z-dropdown,1000)`  | z-index |
 
 ### Header
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-popover-header-padding` | `0.625rem 0.75rem 0.625rem 0.875rem` | Header padding |
-| `--x-popover-header-border` | `var(--x-border-width, 1px) solid #e2e8f0` | Header bottom border |
+| `--x-popover-header-border` | `var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)` | Header bottom border |
 
 ### Heading
 | Property | Default | Description |
 |----------|---------|-------------|
-| `--x-popover-heading-color` | `#0f172a` | Heading text color |
-| `--x-popover-heading-font-size` | `var(--x-font-size-sm, 0.9375rem)` | Heading font size |
-| `--x-popover-heading-font-weight` | `var(--x-font-weight-semibold, 600)` | Heading font weight |
+| `--x-popover-heading-color` | `var(--x-color-text,#0f172a)` | Heading text color |
+| `--x-popover-heading-font-size` | `var(--x-font-size-sm,0.9375rem)`  | Heading font size |
+| `--x-popover-heading-font-weight` | `var(--x-font-weight-semibold,600)`  | Heading font weight |
 
 ### Close button
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-popover-close-bg` | `transparent` | Close button background |
-| `--x-popover-close-bg-hover` | `#f1f5f9` | Close button background on hover |
-| `--x-popover-close-color` | `#64748b` | Close button icon color |
-| `--x-popover-close-color-hover` | `#0f172a` | Close button icon color on hover |
-| `--x-popover-close-radius` | `var(--x-radius-sm, 4px)` | Close button border radius |
+| `--x-popover-close-bg-hover` | `var(--x-color-surface-active,#f1f5f9)` | Close button background on hover |
+| `--x-popover-close-color` | `var(--x-color-text-muted,#64748b)` | Close button icon color |
+| `--x-popover-close-color-hover` | `var(--x-color-text,#0f172a)` | Close button icon color on hover |
+| `--x-popover-close-radius` | `var(--x-radius-sm,4px)`  | Close button border radius |
 | `--x-popover-close-size` | `1.5rem` | Close button width and height |
-| `--x-popover-focus-ring` | `#60a5fa` | Focus ring color |
+| `--x-popover-focus-ring` | `var(--x-color-focus-ring,#60a5fa)` | Focus ring color |
 
 ### Body
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-popover-body-padding` | `0.875rem` | Body padding |
-| `--x-popover-body-color` | `#334155` | Body text color |
-| `--x-popover-body-font-size` | `var(--x-font-size-sm, 0.9375rem)` | Body font size |
+| `--x-popover-body-color` | `var(--x-color-text-muted,#334155)` | Body text color |
+| `--x-popover-body-font-size` | `var(--x-font-size-sm,0.9375rem)`  | Body font size |
 
 ### Footer
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-popover-footer-padding` | `0.625rem 0.875rem` | Footer padding |
-| `--x-popover-footer-border` | `var(--x-border-width, 1px) solid #e2e8f0` | Footer top border |
+| `--x-popover-footer-border` | `var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)` | Footer top border |
 
 ### Arrow
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-popover-arrow-size` | `8px` | Arrow square size |
-| `--x-popover-arrow-bg` | `#ffffff` | Arrow background (should match panel bg) |
-| `--x-popover-arrow-border` | `#e2e8f0` | Arrow border color (should match panel border) |
+| `--x-popover-arrow-bg` | `var(--x-color-bg,#ffffff)` | Arrow background (should match panel bg) |
+| `--x-popover-arrow-border` | `var(--x-color-border,#e2e8f0)` | Arrow border color (should match panel border) |
 
 ### Animation
 | Property | Default | Description |
 |----------|---------|-------------|
-| `--x-popover-transition-duration` | `150ms` | Open/close transition duration |
-| `--x-popover-transition-easing` | `ease` | Open/close transition easing |
+| `--x-popover-transition-duration` | `var(--x-transition-duration,150ms)` | Open/close transition duration |
+| `--x-popover-transition-easing` | `var(--x-transition-easing,ease)` | Open/close transition easing |
 
 ## Accessibility
 

@@ -82,7 +82,7 @@ None.
 | `--x-color-picker-area-height`    | `160px`                          | Color area height         |
 | `--x-color-picker-strip-height`   | `14px`                           | Hue/alpha strip height    |
 | `--x-color-picker-swatch-size`    | `28px`                           | Preset swatch size        |
-| `--x-color-picker-radius`         | `var(--x-radius-md, 8px)`       | Border radius             |
+| `--x-color-picker-radius`         | `var(--x-radius-md,8px)`        | Border radius             |
 | `--x-color-picker-gap`            | `10px`                           | Internal spacing          |
 
 ## Accessibility

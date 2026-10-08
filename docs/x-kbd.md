@@ -67,16 +67,16 @@ No events, no public methods.
 
 | Variable                   | Default                                                            | Description                       |
 |----------------------------|--------------------------------------------------------------------|-----------------------------------|
-| `--x-kbd-bg`               | `var(--x-typography-kbd-bg, rgba(0,0,0,0.06))`                     | Cap background.                   |
-| `--x-kbd-color`            | `var(--x-color-text, inherit)`                                     | Cap text colour.                  |
-| `--x-kbd-border-color`     | `var(--x-typography-kbd-border, rgba(0,0,0,0.15))`                 | Cap border colour.                |
-| `--x-kbd-border-radius`    | `var(--x-typography-kbd-radius, 0.25rem)`                          | Cap corner radius.                |
-| `--x-kbd-padding`          | `var(--x-typography-kbd-padding, 0.1em 0.4em)`                     | Padding inside the cap.           |
-| `--x-kbd-font-family`      | `var(--x-font-family-mono, ui-monospace,'SF Mono','SFMono-Regular',Menlo,Consolas,monospace)` | Cap font family.                  |
+| `--x-kbd-bg`               | `var(--x-typography-kbd-bg,rgba(0,0,0,0.06))`                      | Cap background.                   |
+| `--x-kbd-color`            | `var(--x-color-text,inherit)`                                      | Cap text colour.                  |
+| `--x-kbd-border-color`     | `var(--x-typography-kbd-border,rgba(0,0,0,0.15))`                  | Cap border colour.                |
+| `--x-kbd-border-radius`    | `var(--x-typography-kbd-radius,0.25rem)`                           | Cap corner radius.                |
+| `--x-kbd-padding`          | `var(--x-typography-kbd-padding,0.1em 0.4em)`                      | Padding inside the cap.           |
+| `--x-kbd-font-family`      | `var(--x-font-family-mono,ui-monospace,'SF Mono','SFMono-Regular',Menlo,Consolas,monospace)`  | Cap font family.                  |
 | `--x-kbd-font-size`        | `0.875em` (size variant overrides)                                 | Cap font size.                    |
 | `--x-kbd-shadow`           | `inset 0 -1px 0 rgba(0,0,0,0.08)`                                  | Cap shadow.                       |
 | `--x-kbd-gap`              | `0.25rem`                                                          | Gap between caps and separators.  |
-| `--x-kbd-separator-color`  | `var(--x-color-text-muted, currentColor)`                          | Separator text colour.            |
+| `--x-kbd-separator-color`  | `var(--x-color-text-muted,currentColor)`                           | Separator text colour.            |
 
 The `--x-typography-kbd-*` variables in the defaults above are **optional override hooks**, not tokens that `x-typography` pre-defines. If a consumer sets them anywhere up the cascade (e.g. on `:root`), x-kbd picks them up automatically; otherwise the inner fallback applies. To customise x-kbd directly, set the `--x-kbd-*` variables.
 
