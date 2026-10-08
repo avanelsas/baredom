@@ -35,7 +35,7 @@
    "--x-file-upload-muted:var(--x-color-text-muted,#64748b);"
    "--x-file-upload-border:2px dashed var(--x-color-border,#cbd5e1);"
    "--x-file-upload-border-hover:2px dashed var(--x-color-primary,#3b82f6);"
-   "--x-file-upload-drag-bg:var(--x-color-primary,rgba(59,130,246,0.05));"
+   "--x-file-upload-drag-bg:color-mix(in srgb,var(--x-color-primary,rgb(59,130,246)) 5%,transparent);"
    "--x-file-upload-radius:var(--x-radius-md,8px);"
    "--x-file-upload-padding:var(--x-space-lg,24px);"
    "--x-file-upload-font-size:var(--x-font-size-sm,0.9375rem);"

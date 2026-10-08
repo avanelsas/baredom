@@ -3512,7 +3512,7 @@
         "default" : "var(--x-opacity-disabled,0.55)"
       }, {
         "name" : "--x-file-upload-drag-bg",
-        "default" : "var(--x-color-primary,rgba(59,130,246,0.05))"
+        "default" : "color-mix(in srgb,var(--x-color-primary,rgb(59,130,246)) 5%,transparent)"
       }, {
         "name" : "--x-file-upload-fg",
         "default" : "var(--x-color-text,#0f172a)"
