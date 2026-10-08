@@ -565,6 +565,10 @@
       "types": "./dist/requests.d.ts",
       "import": "./dist/requests.js",
       "default": "./dist/requests.js"
+    },
+    "./baremirror-alpha": {
+      "import": "./dist/baremirror-alpha.js",
+      "default": "./dist/baremirror-alpha.js"
     }
   },
   "homepage": "https://github.com/avanelsas/baredom#readme",
