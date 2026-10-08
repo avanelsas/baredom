@@ -82,7 +82,7 @@
    "--x-cancel-dialogue-confirm-bg-hover:var(--x-color-primary-hover,#1d4ed8);"
    "--x-cancel-dialogue-danger-bg:var(--x-color-danger,#dc2626);"
    "--x-cancel-dialogue-danger-fg:#ffffff;"
-   "--x-cancel-dialogue-danger-bg-hover:#b91c1c;"
+   "--x-cancel-dialogue-danger-bg-hover:var(--x-color-danger-hover,#b91c1c);"
    "--x-cancel-dialogue-btn-radius:var(--x-radius-md,8px);"
    "--x-cancel-dialogue-btn-height:2.5rem;"
    "--x-cancel-dialogue-btn-font-size:var(--x-font-size-sm,0.9375rem);"

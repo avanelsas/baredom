@@ -798,10 +798,10 @@
         "default" : "var(--x-color-danger,#dc2626)"
       }, {
         "name" : "--x-button-danger-bg-active",
-        "default" : "#991b1b"
+        "default" : "var(--x-color-danger-active,#991b1b)"
       }, {
         "name" : "--x-button-danger-bg-hover",
-        "default" : "#b91c1c"
+        "default" : "var(--x-color-danger-hover,#b91c1c)"
       }, {
         "name" : "--x-button-danger-fg",
         "default" : "#ffffff"
@@ -4702,7 +4702,7 @@
         "default" : "var(--x-color-danger,#dc2626)"
       }, {
         "name" : "--x-cancel-dialogue-danger-bg-hover",
-        "default" : "#b91c1c"
+        "default" : "var(--x-color-danger-hover,#b91c1c)"
       }, {
         "name" : "--x-cancel-dialogue-danger-fg",
         "default" : "#ffffff"
@@ -16771,10 +16771,10 @@
         "default" : "var(--x-color-danger,#dc2626)"
       }, {
         "name" : "--x-particle-button-danger-bg-active",
-        "default" : "#991b1b"
+        "default" : "var(--x-color-danger-active,#991b1b)"
       }, {
         "name" : "--x-particle-button-danger-bg-hover",
-        "default" : "#b91c1c"
+        "default" : "var(--x-color-danger-hover,#b91c1c)"
       }, {
         "name" : "--x-particle-button-danger-fg",
         "default" : "#ffffff"
@@ -16873,10 +16873,10 @@
         "default" : "var(--x-color-success,#16a34a)"
       }, {
         "name" : "--x-particle-button-success-bg-active",
-        "default" : "#166534"
+        "default" : "var(--x-color-success-active,#166534)"
       }, {
         "name" : "--x-particle-button-success-bg-hover",
-        "default" : "#15803d"
+        "default" : "var(--x-color-success-hover,#15803d)"
       }, {
         "name" : "--x-particle-button-success-fg",
         "default" : "#ffffff"
@@ -16903,10 +16903,10 @@
         "default" : "var(--x-color-warning,#d97706)"
       }, {
         "name" : "--x-particle-button-warning-bg-active",
-        "default" : "#92400e"
+        "default" : "var(--x-color-warning-active,#92400e)"
       }, {
         "name" : "--x-particle-button-warning-bg-hover",
-        "default" : "#b45309"
+        "default" : "var(--x-color-warning-hover,#b45309)"
       }, {
         "name" : "--x-particle-button-warning-fg",
         "default" : "#ffffff"
