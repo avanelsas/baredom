@@ -1,7 +1,7 @@
 (ns baredom.components.x-scroll.x-scroll
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [baremirror.core :as mirror]
+            [baremirror.alpha.places :as places]
             [goog.object :as gobj]
             [baredom.components.x-scroll.model :as model]))
 
@@ -388,7 +388,7 @@
   [^js el {:keys [show-indicators? active-index]} cnt]
   (let [{:keys [indicators]} (ensure-refs! el)
         shown (model/shown-indicators show-indicators? cnt active-index)
-        nodes (mirror/sync! {:dots {:parent indicators}} {:dots (mapv :key shown)}
+        nodes (places/sync! {:dots {:parent indicators}} {:dots (mapv :key shown)}
                             make-indicator!)]
     (run! (partial apply-indicator! nodes) shown)))
 
@@ -664,7 +664,7 @@
   "Goes to the slide of the dot that a click in the indicators came from."
   [^js el ^js e]
   (when-some [^js dot (.closest (.-target e) "[part=indicator]")]
-    (go-to! el (js/parseInt (.getAttribute dot mirror/attr-key) 10))))
+    (go-to! el (js/parseInt (.getAttribute dot places/attr-key) 10))))
 
 ;; ── Listener management ────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]

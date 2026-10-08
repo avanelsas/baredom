@@ -1,4 +1,4 @@
-(ns baremirror.plan
+(ns baremirror.alpha.plan
   "The plan that turns the current places into the wanted places.")
 
 (defn- extend-runs

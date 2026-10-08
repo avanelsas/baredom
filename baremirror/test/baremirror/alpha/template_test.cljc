@@ -1,5 +1,5 @@
-(ns baremirror.template-test
-  (:require [baremirror.template :as template]
+(ns baremirror.alpha.template-test
+  (:require [baremirror.alpha.template :as template]
             [clojure.test :refer [deftest is testing]]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]

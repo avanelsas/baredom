@@ -1,6 +1,6 @@
-(ns baremirror.generators
+(ns baremirror.alpha.generators
   "Generators shared by the tests."
-  (:require [baremirror.plan :as plan]
+  (:require [baremirror.alpha.plan :as plan]
             [clojure.test.check.generators :as gen]))
 
 (defn- put [places [k container]]

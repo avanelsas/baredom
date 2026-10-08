@@ -1,4 +1,4 @@
-(ns baremirror.template
+(ns baremirror.alpha.template
   "The pure functions on templates. A template is a vector of a tag, an optional map of
    attributes, and children that are templates or text.")
 

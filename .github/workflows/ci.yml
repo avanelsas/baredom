@@ -59,7 +59,7 @@ jobs:
       - name: Check du discipline (no gobj on host, no make-el shim)
         run: bb scripts/check_du_discipline.bb
 
-      - name: Check that BareMirror names no baredom namespace
+      - name: Check the boundary between BareMirror and BareDOM
         run: bb scripts/check_baremirror_boundary.bb
 
       - name: Check that every component hides under hidden

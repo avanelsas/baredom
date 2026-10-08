@@ -3,7 +3,7 @@
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
    [baredom.utils.model :as mu]
-   [baremirror.core :as mirror]
+   [baremirror.alpha.places :as places]
    [goog.object :as gobj]
    [baredom.components.x-command-palette.model :as model]))
 
@@ -338,7 +338,7 @@
           (model/shown-list (model/normalize-items (du/getv el k-items))
                             (or (du/getv el k-query) "")
                             (or (du/getv el k-active-idx) 0))
-          nodes (mirror/sync! {:list {:parent list-el}} {:list (mapv :key entries)} make-entry!)]
+          nodes (places/sync! {:list {:parent list-el}} {:list (mapv :key entries)} make-entry!)]
       (run! (partial apply-entry! nodes) entries)
       (du/set-attr-to! empty-el attr-hidden (when (seq entries) ""))
       (when input-el

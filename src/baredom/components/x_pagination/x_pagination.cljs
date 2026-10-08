@@ -1,7 +1,7 @@
 (ns baredom.components.x-pagination.x-pagination
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [baremirror.core :as mirror]
+            [baremirror.alpha.places :as places]
             [goog.object :as gobj]
             [baredom.components.x-pagination.model :as model]))
 
@@ -230,7 +230,7 @@
 (defn- render-items!
   "Brings the page items of the list in step with `items`. An item that stays keeps its node."
   [^js ol ^js next-li {:keys [page disabled]} items]
-  (let [nodes (mirror/sync! {:items {:parent ol :before next-li}}
+  (let [nodes (places/sync! {:items {:parent ol :before next-li}}
                             {:items (mapv :key items)}
                             (partial make-item! items))]
     (run! (partial apply-item! nodes page disabled) items)))

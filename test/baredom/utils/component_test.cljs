@@ -3,7 +3,7 @@
             [baredom.components.x-progress.model :as progress-model]
             [baredom.components.x-progress.x-progress :as x-progress]
             [baredom.utils.component :as component]
-            [baremirror.core :as mirror]))
+            [baremirror.alpha.parts :as parts]))
 
 (def ^:private probe-tag "x-hold-probe")
 
@@ -144,7 +144,7 @@
 (deftest baremirror-holds-the-changes-of-a-baredom-element
   (let [el     (make-probe)
         during (atom nil)]
-    (mirror/with-one-render! el (fn [^js held]
+    (parts/with-one-render! el (fn [^js held]
                                   (write-both! held)
                                   (reset! during @calls)))
     (testing "no change arrives while the work runs"

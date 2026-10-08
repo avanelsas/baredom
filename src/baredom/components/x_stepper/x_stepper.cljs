@@ -1,7 +1,7 @@
 (ns baredom.components.x-stepper.x-stepper
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [baremirror.core :as mirror]
+            [baremirror.alpha.places :as places]
             [goog.object :as gobj]
             [baredom.components.x-stepper.model :as model]))
 
@@ -335,7 +335,7 @@
   "Brings the steps in `container` to the model. A step that stays keeps its node."
   [^js container m]
   (let [steps (model/shown-steps m)
-        nodes (mirror/sync! {:steps {:parent container}} {:steps (mapv :key steps)}
+        nodes (places/sync! {:steps {:parent container}} {:steps (mapv :key steps)}
                             make-step-node!)]
     (run! (partial apply-step! nodes) steps)))
 
