@@ -4669,7 +4669,7 @@
         "default" : "var(--x-color-bg,#ffffff)"
       }, {
         "name" : "--x-cancel-dialogue-btn-font-size",
-        "default" : "0.9375rem"
+        "default" : "var(--x-font-size-sm,0.9375rem)"
       }, {
         "name" : "--x-cancel-dialogue-btn-font-weight",
         "default" : "var(--x-font-weight-semibold,600)"
@@ -4720,7 +4720,7 @@
         "default" : "var(--x-color-focus-ring,#60a5fa)"
       }, {
         "name" : "--x-cancel-dialogue-headline-size",
-        "default" : "1.125rem"
+        "default" : "var(--x-font-size-lg,1.125rem)"
       }, {
         "name" : "--x-cancel-dialogue-headline-weight",
         "default" : "var(--x-font-weight-bold,700)"
@@ -4729,7 +4729,7 @@
         "default" : "min(480px,calc(100vw - 2rem))"
       }, {
         "name" : "--x-cancel-dialogue-message-size",
-        "default" : "0.9375rem"
+        "default" : "var(--x-font-size-sm,0.9375rem)"
       }, {
         "name" : "--x-cancel-dialogue-min-width",
         "default" : "min(320px,calc(100vw - 2rem))"
@@ -5283,7 +5283,7 @@
         "default" : "rgba(0,0,0,0.5)"
       }, {
         "name" : "--x-scroll-timeline-date-font-size",
-        "default" : "0.8125rem"
+        "default" : "var(--x-font-size-sm,0.8125rem)"
       }, {
         "name" : "--x-scroll-timeline-disabled-opacity",
         "default" : "0.55"
@@ -5888,7 +5888,7 @@
         "default" : "var(--x-color-text,rgba(0,0,0,0.80))"
       }, {
         "name" : "--x-badge-font-size",
-        "default" : "var(--x-font-size-sm,0.75rem)"
+        "default" : "var(--x-font-size-xs,0.75rem)"
       }, {
         "name" : "--x-badge-height",
         "default" : "1.25rem"
@@ -7367,7 +7367,7 @@
         "default" : "var(--x-color-surface,rgba(0,0,0,0.025))"
       }, {
         "name" : "--x-timeline-item-title-font-size",
-        "default" : "0.9375rem"
+        "default" : "var(--x-font-size-sm,0.9375rem)"
       } ],
       "cssParts" : [ ]
     } ],
@@ -7529,7 +7529,7 @@
         "default" : "var(--x-color-text,inherit)"
       }, {
         "name" : "--x-table-caption-font-size",
-        "default" : "0.875rem"
+        "default" : "var(--x-font-size-sm,0.875rem)"
       }, {
         "name" : "--x-table-caption-font-weight",
         "default" : "var(--x-font-weight-semibold,600)"
@@ -9425,7 +9425,7 @@
         "default" : "var(--x-color-surface,rgba(0,0,0,0.025))"
       }, {
         "name" : "--x-timeline-item-title-font-size",
-        "default" : "0.9375rem"
+        "default" : "var(--x-font-size-sm,0.9375rem)"
       } ],
       "cssParts" : [ ]
     } ],
@@ -9604,7 +9604,7 @@
         "default" : "var(--x-color-text-muted,#334155)"
       }, {
         "name" : "--x-popover-body-font-size",
-        "default" : "0.9375rem"
+        "default" : "var(--x-font-size-sm,0.9375rem)"
       }, {
         "name" : "--x-popover-body-padding",
         "default" : "0.875rem"
@@ -9646,7 +9646,7 @@
         "default" : "var(--x-color-text,#0f172a)"
       }, {
         "name" : "--x-popover-heading-font-size",
-        "default" : "0.9375rem"
+        "default" : "var(--x-font-size-sm,0.9375rem)"
       }, {
         "name" : "--x-popover-heading-font-weight",
         "default" : "var(--x-font-weight-semibold,600)"
@@ -9859,7 +9859,7 @@
         "default" : "var(--x-stat-muted-color)"
       }, {
         "name" : "--x-stat-hint-size",
-        "default" : "12px"
+        "default" : "var(--x-font-size-xs,12px)"
       }, {
         "name" : "--x-stat-icon-color",
         "default" : "var(--x-stat-color)"
@@ -9868,7 +9868,7 @@
         "default" : "var(--x-stat-muted-color)"
       }, {
         "name" : "--x-stat-label-size",
-        "default" : "12px"
+        "default" : "var(--x-font-size-xs,12px)"
       }, {
         "name" : "--x-stat-loading-opacity",
         "default" : "0.6"
@@ -10924,7 +10924,7 @@
         "default" : "var(--x-color-primary-hover,#1d4ed8)"
       }, {
         "name" : "--x-menu-item-font-size",
-        "default" : "0.9375rem"
+        "default" : "var(--x-font-size-sm,0.9375rem)"
       }, {
         "name" : "--x-menu-item-hover-bg",
         "default" : "var(--x-color-surface-hover,#f3f4f6)"
@@ -12571,7 +12571,7 @@
         "default" : "12px"
       }, {
         "name" : "--x-toast-heading-font-size",
-        "default" : "0.9375rem"
+        "default" : "var(--x-font-size-sm,0.9375rem)"
       }, {
         "name" : "--x-toast-heading-weight",
         "default" : "var(--x-font-weight-semibold,600)"
@@ -12863,7 +12863,7 @@
         "default" : "var(--x-font-family-mono,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace)"
       }, {
         "name" : "--x-code-font-size",
-        "default" : "0.8125rem"
+        "default" : "var(--x-font-size-sm,0.8125rem)"
       }, {
         "name" : "--x-code-gutter-digits",
         "default" : "2"
@@ -13210,7 +13210,7 @@
         "default" : "var(--x-color-border,rgba(0,0,0,0.12))"
       }, {
         "name" : "--x-chart-tooltip-font-size",
-        "default" : "0.8125rem"
+        "default" : "var(--x-font-size-sm,0.8125rem)"
       }, {
         "name" : "--x-chart-tooltip-gap",
         "default" : "0.35rem"
@@ -17673,7 +17673,7 @@
         "default" : "var(--x-color-focus-ring, #60a5fa)"
       }, {
         "name" : "--x-collapse-font-size",
-        "default" : "0.9375rem"
+        "default" : "var(--x-font-size-sm,0.9375rem)"
       }, {
         "name" : "--x-collapse-font-weight",
         "default" : "var(--x-font-weight-semibold,600)"

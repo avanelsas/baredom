@@ -84,7 +84,7 @@ A disclosure widget that shows or hides a content panel via an animated toggle. 
 | `--x-collapse-trigger-color` | `#0f172a` | Trigger text colour. |
 | `--x-collapse-trigger-padding` | `0.75rem 1rem` | Padding inside the trigger button. |
 | `--x-collapse-content-padding` | `1rem` | Padding inside the content panel. |
-| `--x-collapse-font-size` | `0.9375rem` | Font size of the trigger label. |
+| `--x-collapse-font-size` | `var(--x-font-size-sm, 0.9375rem)` | Font size of the trigger label. |
 | `--x-collapse-font-weight` | `var(--x-font-weight-semibold, 600)` | Font weight of the trigger label. |
 | `--x-collapse-chevron-color` | `#64748b` | Colour of the chevron indicator. |
 | `--x-collapse-focus-ring` | `#60a5fa` | Inset focus ring colour on the trigger. |

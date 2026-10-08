@@ -147,7 +147,7 @@
    "justify-content:center;"
    "flex:1;"
    "color:var(--x-color-text-muted,#8a8a8a);"
-   "font-size:.875rem;"
+   "font-size:var(--x-font-size-sm,.875rem);"
    "pointer-events:none;}"
 
    "[part=empty][hidden]{display:none;}"

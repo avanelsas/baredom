@@ -140,7 +140,7 @@ toast.addEventListener('x-toast-dismiss', e => {
 | `--x-toast-padding-x` | `16px` | Horizontal padding |
 | `--x-toast-gap` | `12px` | Gap between icon, body, dismiss |
 | `--x-toast-font-size` | `0.875rem` | Message font size |
-| `--x-toast-heading-font-size` | `0.9375rem` | Heading font size |
+| `--x-toast-heading-font-size` | `var(--x-font-size-sm, 0.9375rem)` | Heading font size |
 | `--x-toast-heading-weight` | `var(--x-font-weight-semibold, 600)` | Heading font weight |
 | `--x-toast-min-width` | `280px` | Minimum card width |
 | `--x-toast-max-width` | `480px` | Maximum card width |

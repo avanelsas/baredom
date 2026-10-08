@@ -111,7 +111,7 @@ Fired after the open state has changed. **Not cancelable.**
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-popover-heading-color` | `#0f172a` | Heading text color |
-| `--x-popover-heading-font-size` | `0.9375rem` | Heading font size |
+| `--x-popover-heading-font-size` | `var(--x-font-size-sm, 0.9375rem)` | Heading font size |
 | `--x-popover-heading-font-weight` | `var(--x-font-weight-semibold, 600)` | Heading font weight |
 
 ### Close button
@@ -130,7 +130,7 @@ Fired after the open state has changed. **Not cancelable.**
 |----------|---------|-------------|
 | `--x-popover-body-padding` | `0.875rem` | Body padding |
 | `--x-popover-body-color` | `#334155` | Body text color |
-| `--x-popover-body-font-size` | `0.9375rem` | Body font size |
+| `--x-popover-body-font-size` | `var(--x-font-size-sm, 0.9375rem)` | Body font size |
 
 ### Footer
 | Property | Default | Description |

@@ -36,6 +36,14 @@
   [["x-checkbox" "border-radius" "1px"]
    ["x-checkbox" "font-size" "10px"]
    ["x-checkbox" "font-weight" "700"]]]
+ ["A glyph that stands for an icon. Its size is the size of the icon."
+  [["x-chip" "font-size" "1rem"]
+   ["x-combobox" "font-size" "0.875rem"]
+   ["x-file-upload" "font-size" "1rem"]
+   ["x-search-field" "font-size" "1.125rem"]
+   ["x-welcome-tour" "font-size" "1.125rem"]]]
+ ["A step between two steps of the theme. It keeps the variants of its component apart."
+  [["x-typography" "font-size" "0.8125rem"]]]
  ["A display size. It belongs to the scale of its component."
   [["x-kinetic-font" "--x-kinetic-font-size" "2rem"]
    ["x-kinetic-font" "font-size" "2rem"]

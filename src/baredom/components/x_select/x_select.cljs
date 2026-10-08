@@ -174,7 +174,7 @@
    "[part=error]{"
    "display:block;"
    "margin-top:0.25rem;"
-   "font-size:0.8125rem;"
+   "font-size:var(--x-font-size-sm,0.8125rem);"
    "line-height:1.4;"
    "color:var(--x-select-error-color);"
    "}"

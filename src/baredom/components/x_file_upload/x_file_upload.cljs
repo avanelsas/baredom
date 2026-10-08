@@ -162,7 +162,7 @@
    ;; File size
    "[part=file-size]{"
    "color:var(--x-file-upload-muted);"
-   "font-size:0.8125rem;"
+   "font-size:var(--x-font-size-sm,0.8125rem);"
    "flex-shrink:0;"
    "}"
    ;; Remove button

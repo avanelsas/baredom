@@ -39,7 +39,7 @@
    "--x-scroll-timeline-marker-border-color:var(--x-color-primary,#3b82f6);"
    "--x-scroll-timeline-entry-gap:2rem;"
    "--x-scroll-timeline-date-color:rgba(0,0,0,0.5);"
-   "--x-scroll-timeline-date-font-size:0.8125rem;"
+   "--x-scroll-timeline-date-font-size:var(--x-font-size-sm,0.8125rem);"
    "--x-scroll-timeline-transition-duration:var(--x-transition-duration,300ms);"
    "--x-scroll-timeline-curve-amplitude:60;"
    "--x-scroll-timeline-disabled-opacity:0.55;}"

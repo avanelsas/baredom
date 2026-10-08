@@ -67,12 +67,12 @@
    "margin-bottom:4px;}"
 
    "[part=label-text]{"
-   "font-size:0.875rem;"
+   "font-size:var(--x-font-size-sm,0.875rem);"
    "color:var(--x-slider-label-color);"
    "font-weight:var(--x-font-weight-medium,500);}"
 
    "[part=value-text]{"
-   "font-size:0.8125rem;"
+   "font-size:var(--x-font-size-sm,0.8125rem);"
    "color:var(--x-slider-value-color);}"
 
    ;; Native input reset

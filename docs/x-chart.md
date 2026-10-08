@@ -181,7 +181,7 @@ The `data` attribute accepts a JSON string representing an array of series objec
 | `--x-chart-tooltip-shadow`         | `0 4px 16px …`           | `0 4px 20px …`                 |
 | `--x-chart-tooltip-radius`         | `0.5rem`                 | same                           |
 | `--x-chart-tooltip-padding`        | `0.45rem 0.7rem`         | same                           |
-| `--x-chart-tooltip-font-size`      | `0.8125rem`              | same                           |
+| `--x-chart-tooltip-font-size`      | `var(--x-font-size-sm, 0.8125rem)` | same                           |
 | `--x-chart-tooltip-header-color`   | `rgba(0,0,0,0.5)`        | `rgba(255,255,255,0.45)`       |
 | `--x-chart-tooltip-label-color`    | `rgba(0,0,0,0.65)`       | `rgba(255,255,255,0.6)`        |
 | `--x-chart-tooltip-value-color`    | `rgba(0,0,0,0.9)`        | `rgba(255,255,255,0.9)`        |

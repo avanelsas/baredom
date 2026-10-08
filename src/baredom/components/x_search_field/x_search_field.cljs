@@ -73,7 +73,7 @@
    "color:var(--x-search-field-color);"
    "border:none;"
    "outline:none;"
-   "font-size:1rem;"
+   "font-size:var(--x-font-size-base,1rem);"
    "line-height:1.5;"
    "font-family:inherit;"
    "}"

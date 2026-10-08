@@ -74,7 +74,7 @@
    "--x-collapse-trigger-color:var(--x-color-text, #0f172a);"
    "--x-collapse-trigger-padding:0.75rem 1rem;"
    "--x-collapse-content-padding:1rem;"
-   "--x-collapse-font-size:0.9375rem;"
+   "--x-collapse-font-size:var(--x-font-size-sm,0.9375rem);"
    "--x-collapse-font-weight:var(--x-font-weight-semibold,600);"
    "--x-collapse-chevron-color:var(--x-color-text-muted, #64748b);"
    "--x-collapse-focus-ring:var(--x-color-focus-ring, #60a5fa);"

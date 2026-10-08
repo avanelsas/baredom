@@ -72,7 +72,7 @@
    "[part=base][data-size=lg]{--_x-rating-star-sz:30px;}"
 
    "[part=label-text]{"
-   "font-size:0.875rem;"
+   "font-size:var(--x-font-size-sm,0.875rem);"
    "color:var(--x-rating-label-color);"
    "font-weight:var(--x-font-weight-medium,500);}"
 
