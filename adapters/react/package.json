@@ -7,7 +7,7 @@
   },
   "license" : "MIT",
   "peerDependencies" : {
-    "@vanelsas/baredom" : ">=3.7.0",
+    "@vanelsas/baredom" : ">=4.0.0",
     "react" : ">=19.0.0"
   },
   "name" : "@vanelsas/baredom-react",
@@ -467,7 +467,7 @@
     "@vanelsas/baredom" : "file:../../"
   },
   "files" : [ "dist", "README.md", "LICENSE" ],
-  "version" : "2.5.0",
+  "version" : "3.0.0",
   "main" : "./dist/index.js",
   "sideEffects" : true
 }

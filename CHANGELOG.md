@@ -2,6 +2,109 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.0.0] - 2026-10-08
+
+BareDOM 4 makes every component follow the theme, gives every attribute a typed property, and
+brings BareMirror as an alpha. A page looks different after this upgrade, with and without
+`x-theme`, which is why it is a major version.
+
+All five adapters are released with it: `-react` 3.0.0, `-angular` 3.0.0, `-vue` 0.6.0, `-svelte`
+0.6.0 and `-solid` 0.6.0. Each now requires `@vanelsas/baredom` 4.0.0 or later.
+
+### Breaking
+
+- **The look under `x-theme`.** Ten families of values follow the theme where they were fixed
+  before. See "Changed" below for what moves.
+- **The font, also without a theme.** Buttons, inputs, selects and text areas inside components
+  take the font of the page. `x-typography` and `x-kinetic-typography` show the page font, where
+  they showed the system font.
+- **`hidden` hides a component.** 101 components ignored the attribute. A page that set `hidden`
+  on one of them and relied on it showing must remove the attribute.
+- **Seven properties lost their dashed names.** `x-pagination` (`totalPages`, `siblingCount`,
+  `boundaryCount`) and `x-breadcrumbs` (`maxItems`, `itemsBefore`, `itemsAfter`,
+  `preserveAriaCurrent`) installed these under the names of their attributes, such as
+  `el["total-pages"]`. They are now installed under the camel-case names that the docs and the
+  types always gave. The attributes are unchanged.
+- **`x-form-field` in the adapters: `readonly` is `readOnly`.** The adapters now use the name
+  the element installs.
+- **A boolean property that is on by default reads the text `"false"` as false.** A framework
+  that writes `dismissible="false"` to `x-alert` through the property now turns it off.
+- **The `code` property of `x-code` writes the attribute.** The component no longer keeps the
+  value in a field of its own, so an attribute written later wins.
+- **`--x-z-toast` is 9000, was 1200.** Under a theme, dialogs are at 1100 (were 1000),
+  `x-command-palette` at 1100 (was 800), the tooltip of `x-copy` at 1000 (was 100) and
+  `x-notification-center` at 9000 (was 9999).
+- **The supported browsers are the current ones.** BareDOM is tested in Chrome and Edge 154,
+  Firefox 157 and Safari 26.5. The floor of Chrome 67, Firefox 63 and Safari 14 is dropped.
+- **Four `data-*` attributes of `x-timeline-item` left the manifest.** The parent writes them,
+  and they are not public API.
+
+### Added
+
+- **BareMirror, as an alpha.** A small set of functions for an application on top of the
+  components. They place keyed nodes, write values into the parts of a template and turn events
+  into messages, with no comparing of old and new. `@vanelsas/baredom/baremirror-alpha` for
+  JavaScript, and the namespaces `baremirror.alpha.*` for ClojureScript. A name there may still
+  change. See [`docs/baremirror.md`](docs/baremirror.md).
+- **The requests map.** `@vanelsas/baredom/requests` and `baredom.requests` say, for each
+  cancelable request event, which attributes it asks to change. The manifest gives every event
+  its cancelable flag and every request its attributes.
+- **A typed property for every public attribute.** 79 new properties in 16 components, and
+  `counter` and `dots` on `x-welcome-tour`. The manifest types every attribute, and a number
+  property accepts numeric text, as a native one does.
+- **A change request on two text fields.** `x-form-field-change-request` and
+  `x-search-field-change-request` fire before a typed value takes effect. A cancelled request
+  puts the field back to its `value` attribute.
+- **Eight theme tokens.** `--x-radius-xl`, `--x-font-weight-bold`, and a `-hover` and an
+  `-active` shade for `--x-color-danger`, `--x-color-success` and `--x-color-warning`. The shades
+  are mixed from their colour, so a preset that names only the colour gets matching shades.
+- **A hold of the render.** Every element offers a way to hold its attribute changes and to
+  deliver them in order, for code that must write several attributes as one step.
+- **A script that prerenders a page**, `scripts/prerender.mjs`. See
+  [`docs/PRERENDER.md`](docs/PRERENDER.md).
+- **Two documents.** [`docs/styling.md`](docs/styling.md) says at which level to style and where
+  each value must be set to work. [`docs/TOKEN-COVERAGE.md`](docs/TOKEN-COVERAGE.md) counts, for
+  each component, how many values follow the theme.
+
+### Changed
+
+Under `x-theme`, these values now follow the theme:
+
+- **Colour.** A custom danger, success, warning or primary colour reaches alerts, badges,
+  toasts, selected tabs and rows. Hover fills and tints are mixed from the theme's colours. A
+  disabled `x-button` is a pale surface with muted text. The hover and pressed colour of a
+  danger, success or warning button shifts slightly.
+- **Corners.** 27 components take the theme's scale.
+- **Motion.** Every triggered transition takes the theme's duration and easing.
+- **Shadows.** They follow the theme, in dark mode too.
+- **Type.** The font family, the weights and the body line height follow the theme. Text of
+  13px and 15px is 14px, and the sizes of buttons and badges follow the scale.
+- **Borders.** Edges, inputs and divider lines follow `--x-border-width`.
+- **Layers.** Popups, dialogs and toasts sit on the three layers of the theme.
+
+Also changed:
+
+- A removed chip of `x-multi-combobox` fades out.
+- The default cells in the component docs are generated from the manifest.
+
+### Fixed
+
+- **Lists keep their nodes.** Ten lists no longer rebuild their items on every change, so a
+  node that stays keeps its focus: the pages of `x-pagination`, the chips and options of
+  `x-multi-combobox`, the options of `x-combobox`, the steps of `x-stepper`, the dots of
+  `x-scroll`, the day cells of `x-calendar` and `x-date-picker`, the items of
+  `x-command-palette` and the rows of `x-file-upload`.
+- **`x-table` honours a cancelled row select.** It changed the selection in every case.
+- **`x-form-field` and `x-search-field` keep typed text** on a write of the value they already
+  have.
+- **`x-progress` and `x-progress-circle` drop `aria-valuemax`** when they become indeterminate.
+- **`x-form`, `x-otp-input` and `x-search-field` set up on a prerendered page.** They took a
+  shadow root that was already there as a sign that they were set up.
+- **Three documents no longer show a component's own property set on `:root`**, where it has no
+  effect.
+
+This release contains the two fixes of 3.12.1.
+
 ## [3.12.1] - 2026-10-08
 
 ### Fixed
