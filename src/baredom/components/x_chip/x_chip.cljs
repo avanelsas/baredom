@@ -63,7 +63,7 @@
    "line-height:1;"
    "border-radius:var(--x-chip-radius);"
    "background:var(--x-chip-bg);"
-   "border:1px solid var(--x-chip-border);"
+   "border:var(--x-border-width,1px) solid var(--x-chip-border);"
    "color:var(--x-chip-color);"
    "padding:var(--x-chip-padding-y) var(--x-chip-padding-x);"
    "gap:0.25rem;"

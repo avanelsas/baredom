@@ -65,6 +65,11 @@ All components must consume the shared design tokens defined by `x-theme` (`src/
 - **On a background the component does not own** (a table row, a tab, a badge, a button on a tint): mix the text colour, so the fill stays see-through and contrasts with every theme. Write `color-mix(in srgb,var(--x-color-text,#000) 6%,transparent)`, with `#fff` as the fallback in the dark block.
 - **A tint of danger, success, warning or primary**: mix its token at the strength of the tint. Write `color-mix(in srgb,var(--x-color-danger,rgb(190,20,40)) 10%,transparent)`, with the present colour as the fallback.
 
+## Border width rules
+
+- **The edge of a component, a panel or an input, and a divider line**: write `var(--x-border-width,1px)` for the width. A size computed from that border, such as the offset of an arrow, uses it too.
+- **A ring, a thumb or an indicator** keeps its own width. It is part of its shape.
+
 ## What NOT to theme
 
 - Decorative palette colours (e.g. x-liquid-fill gold)

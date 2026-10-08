@@ -96,7 +96,7 @@
    "display:flex;"
    "align-items:stretch;"
    "height:var(--x-select-height-md);"
-   "border:1px solid var(--x-select-border);"
+   "border:var(--x-border-width,1px) solid var(--x-select-border);"
    "border-radius:var(--x-select-radius);"
    "background:var(--x-select-bg);"
    "box-shadow:var(--x-select-shadow);"

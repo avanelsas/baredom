@@ -61,7 +61,7 @@
    "--x-table-stripe-bg:color-mix(in srgb,var(--x-color-text,#fff) 3%,transparent);}}"
 
    ":host([data-bordered]){"
-   "border:1px solid var(--x-table-border-color);"
+   "border:var(--x-border-width,1px) solid var(--x-table-border-color);"
    "border-radius:var(--x-table-border-radius);"
    "overflow:hidden;}"
 

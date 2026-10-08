@@ -109,8 +109,8 @@ Fired before the panel opens or closes. **Cancelable**.
 | `--x-multi-combobox-bg` | `var(--x-color-surface)` | Wrapper background |
 | `--x-multi-combobox-fg` | `var(--x-color-text)` | Text color |
 | `--x-multi-combobox-placeholder` | `var(--x-color-text-muted)` | Placeholder color |
-| `--x-multi-combobox-border` | `1px solid var(--x-color-border)` | Default border |
-| `--x-multi-combobox-border-focus` | `1px solid var(--x-color-focus-ring)` | Focus border |
+| `--x-multi-combobox-border` | `var(--x-border-width, 1px) solid var(--x-color-border)` | Default border |
+| `--x-multi-combobox-border-focus` | `var(--x-border-width, 1px) solid var(--x-color-focus-ring)` | Focus border |
 | `--x-multi-combobox-radius` | `var(--x-radius-md)` | Border radius |
 | `--x-multi-combobox-min-height` | `2.25rem` | Minimum wrapper height |
 | `--x-multi-combobox-font-size` | `var(--x-font-size-sm)` | Font size |

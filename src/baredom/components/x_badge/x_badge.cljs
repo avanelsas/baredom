@@ -107,7 +107,7 @@
    "min-height:var(--x-badge-height);"
    "padding:var(--x-badge-padding);"
    "border-radius:var(--x-badge-radius);"
-   "border:1px solid var(--x-badge-border);"
+   "border:var(--x-border-width,1px) solid var(--x-badge-border);"
    "background:var(--x-badge-bg);"
    "color:var(--x-badge-color);"
    "font-size:var(--x-badge-font-size);"

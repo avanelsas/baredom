@@ -189,7 +189,7 @@
    "min-block-size:var(--x-button-height-md);"
    "padding-inline:var(--x-button-padding-inline);"
    "border-radius:var(--x-button-radius);"
-   "border:1px solid var(--x-button-border);"
+   "border:var(--x-border-width,1px) solid var(--x-button-border);"
    "background:var(--x-button-bg);"
    "color:var(--x-button-fg);"
    "font-size:var(--x-button-font-size-md);"

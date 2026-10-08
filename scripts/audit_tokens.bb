@@ -88,13 +88,34 @@
 
 ;; ── declarations ────────────────────────────────────────────────────────────
 
+(def ^:private innermost-block #"[^{};]*\{([^{}]*)\}")
+
+(defn- without-innermost
+  "`css` without the blocks that hold no other block."
+  [css]
+  (str/replace css innermost-block ""))
+
+(defn- innermost-bodies
+  "The declarations of the blocks of `css` that hold no other block, as text."
+  [css]
+  (map second (re-seq innermost-block css)))
+
+(defn- bodies
+  "The declarations of every block of a CSS text, as text. A block that holds other blocks
+   gives its own declarations, without theirs."
+  [css]
+  (->> (iterate without-innermost css)
+       (map innermost-bodies)
+       (take-while seq)
+       (apply concat)))
+
 (defn- declarations
   "Every `property: value` of a CSS text, as pairs."
   [css]
-  (for [[_ body] (re-seq #"\{([^{}]*)\}" (str/replace css #"/\*.*?\*/" ""))
-        decl     (str/split body #";")
-        :let     [[prop value] (map str/trim (str/split decl #":" 2))]
-        :when    (and (seq prop) (seq value))]
+  (for [body  (bodies (str/replace css #"/\*.*?\*/" ""))
+        decl  (str/split body #";")
+        :let  [[prop value] (map str/trim (str/split decl #":" 2))]
+        :when (and (seq prop) (seq value))]
     [prop value]))
 
 (def ^:private families
@@ -139,7 +160,8 @@
 (defn- family-by-name [prop]
   (some (fn [[re family]] (when (re-find re prop) family)) named-families))
 
-(def ^:private shorthand #"^(border|outline)(-(top|right|bottom|left|block|inline))?$")
+(def ^:private shorthand
+  #"^(border|outline)(-(top|right|bottom|left|block|inline)(-(start|end))?)?$")
 
 (defn- parts
   "The parts of a value, split at the spaces that are outside parentheses."
@@ -149,17 +171,27 @@
 (def ^:private width-part #"^(\d|\.\d|thin|medium|thick|var\(--x-[a-z0-9-]*width)")
 (def ^:private colour-part #"(?i)^(#|rgb|hsl|var\(|currentcolor|transparent)")
 
+(def ^:private border-style #{"solid" "dashed" "dotted" "double"})
+
+(defn- holds-border?
+  "True when `prop` is a border or an outline shorthand, or a custom property whose `value` is
+   written as one."
+  [prop value]
+  (or (re-find shorthand prop)
+      (and (str/starts-with? prop "--") (some border-style (parts value)))))
+
 (defn- longhand
-  "The declarations a border or an outline shorthand stands for: its width and its colour."
+  "The declarations a border or an outline shorthand stands for: its width and its colour. A
+   custom property that holds such a shorthand stands for the same."
   [[prop value]]
-  (if (re-find shorthand prop)
+  (if (holds-border? prop value)
     (let [ps     (parts value)
           width  (first (filter #(re-find width-part %) ps))
           colour (first (filter #(re-find colour-part %) (remove #{width} ps)))]
       (cond-> []
-        (and width (str/starts-with? prop "border")) (conj ["border-width" width])
-        colour                                       (conj ["border-color" colour])
-        (and (not width) (not colour))               (conj ["border-width" value])))
+        (and width (not (str/starts-with? prop "outline"))) (conj ["border-width" width])
+        colour                                              (conj ["border-color" colour])
+        (and (not width) (not colour))                      (conj ["border-width" value])))
     [[prop value]]))
 
 ;; ── the tokens ──────────────────────────────────────────────────────────────
@@ -267,8 +299,9 @@
 
 (defn- used-rows
   "One row for each declaration of a family in `css`: its own value, or the fallback of each
-   own property it reads, in the family that the name of that property says. An own property
-   read with no fallback, or one that `css` always declares, is left to its declaration."
+   own property it reads, in the family that the name of that property says. A fallback that
+   holds a border gives its width and its colour. An own property read with no fallback, or one
+   that `css` always declares, is left to its declaration."
   [tag css]
   (let [declared (always-declared css)]
     (for [[prop value] (mapcat longhand (declarations css))
@@ -277,8 +310,9 @@
           row   (if (seq (own-in value))
                   (for [[own fallback] (fallbacks value)
                         :when (and (empty? (own-in fallback)) (not (declared own)))
-                        :let  [named (or (family-by-name own) family)]]
-                    {:family named :value fallback :kind (own-kind named fallback)})
+                        [part held] (longhand [own fallback])
+                        :let  [named (or (family-of part) (family-by-name own) family)]]
+                    {:family named :value held :kind (own-kind named held)})
                   [{:value value :kind (value-kind family value)}])]
       (merge {:tag tag :family family :prop prop} row))))
 
@@ -369,7 +403,8 @@
 
 (def ^:private closed
   "The families in which every value follows the theme or is listed as not themed by design."
-  #{"color" "font-family" "font-size" "font-weight" "line-height" "radius" "shadow" "transition"})
+  #{"border-width" "color" "font-family" "font-size" "font-weight" "line-height" "radius"
+    "shadow" "transition"})
 
 (defn- reopened
   "The values of a closed family that follow no token, as a message for each."

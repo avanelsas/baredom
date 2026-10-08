@@ -32,7 +32,7 @@
    "--x-table-cell-bg:transparent;"
    "--x-table-cell-header-bg:color-mix(in srgb,var(--x-color-text,#000) 4%,transparent);"
    "--x-table-cell-border-color:var(--x-color-border,rgba(0,0,0,0.1));"
-   "--x-table-cell-border-width:1px;"
+   "--x-table-cell-border-width:var(--x-border-width,1px);"
    "--x-table-cell-color:var(--x-color-text,inherit);"
    "--x-table-cell-header-color:var(--x-color-text,inherit);"
    "--x-table-cell-font-size:inherit;"

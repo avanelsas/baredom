@@ -42,7 +42,7 @@ A dropdown command menu that wraps a trigger element and a list of `x-menu-item`
 | Property                  | Light default                    | Dark default                     |
 |---------------------------|----------------------------------|----------------------------------|
 | `--x-menu-bg`             | `#ffffff`                        | `#1f2937`                        |
-| `--x-menu-border`         | `1px solid #e5e7eb`              | `1px solid #374151`              |
+| `--x-menu-border`         | `var(--x-border-width, 1px) solid #e5e7eb`              | `var(--x-border-width, 1px) solid #374151`              |
 | `--x-menu-border-radius`  | `8px`                            | `8px`                            |
 | `--x-menu-shadow`         | `0 4px 16px rgba(0,0,0,0.12)`   | `0 4px 16px rgba(0,0,0,0.4)`    |
 | `--x-menu-min-width`      | `160px`                          | `160px`                          |

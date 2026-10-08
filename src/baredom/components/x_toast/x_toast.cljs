@@ -28,7 +28,7 @@
    "--x-toast-heading-weight:var(--x-font-weight-semibold,600);"
    "--x-toast-min-width:min(280px,calc(100vw - 2rem));"
    "--x-toast-max-width:min(480px,calc(100vw - 2rem));"
-   "--x-toast-border-width:1px;"
+   "--x-toast-border-width:var(--x-border-width,1px);"
    "--x-toast-shadow:var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.12),0 1px 4px rgba(0,0,0,0.08));"
    "--x-toast-motion-fast:var(--x-transition-duration,120ms);"
    "--x-toast-motion-ease:var(--x-transition-easing,cubic-bezier(0.2,0,0,1));"

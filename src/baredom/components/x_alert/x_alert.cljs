@@ -135,7 +135,7 @@
    "[part=container]{"
    "display:flex;align-items:flex-start;gap:var(--x-alert-gap);"
    "padding:var(--x-alert-padding-y) var(--x-alert-padding-x);"
-   "border:1px solid var(--x-alert-border-color);"
+   "border:var(--x-border-width,1px) solid var(--x-alert-border-color);"
    "border-radius:var(--x-alert-radius);"
    "background:var(--x-alert-bg);"
    "color:var(--x-alert-color);"

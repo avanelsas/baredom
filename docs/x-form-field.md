@@ -95,7 +95,7 @@ The `value` property setter updates both the `value` attribute and the shadow `<
 | `--x-form-field-label-font-size`      | `0.875rem`               |
 | `--x-form-field-input-bg`             | `#ffffff`                |
 | `--x-form-field-input-color`          | `#111827`                |
-| `--x-form-field-input-border`         | `1px solid #d1d5db`      |
+| `--x-form-field-input-border`         | `var(--x-border-width, 1px) solid #d1d5db`      |
 | `--x-form-field-input-border-radius`  | `6px`                    |
 | `--x-form-field-input-padding`        | `0.5rem 0.75rem`         |
 | `--x-form-field-focus-ring-color`     | `#2563eb`                |

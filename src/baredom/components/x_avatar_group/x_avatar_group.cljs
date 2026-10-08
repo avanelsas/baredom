@@ -68,7 +68,7 @@
    "border-radius:var(--x-radius-full,999px);"
    "background:var(--x-avatar-group-overflow-bg);"
    "color:var(--x-avatar-group-overflow-color);"
-   "border:1px solid var(--x-avatar-group-overflow-border);"
+   "border:var(--x-border-width,1px) solid var(--x-avatar-group-overflow-border);"
    "box-shadow:0 0 0 2px var(--x-avatar-group-overflow-ring);"
    "font-size:var(--x-avatar-group-font-size);"
    "font-weight:var(--x-font-weight-semibold,600);"

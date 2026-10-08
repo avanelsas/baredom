@@ -81,7 +81,7 @@ All properties are set on `:host` and can be overridden per-instance or globally
 | `--x-text-area-label-font-size`  | `0.875rem`          | Label font size. |
 | `--x-text-area-bg`               | `#ffffff`           | Textarea background color. |
 | `--x-text-area-color`            | `var(--x-color-text, #111827)`           | Textarea text color. |
-| `--x-text-area-border`           | `1px solid #d1d5db` | Textarea border. |
+| `--x-text-area-border`           | `var(--x-border-width, 1px) solid #d1d5db` | Textarea border. |
 | `--x-text-area-border-radius`    | `6px`               | Corner radius. |
 | `--x-text-area-padding`          | `0.5rem 0.75rem`    | Inner padding. |
 | `--x-text-area-focus-ring-color` | `#2563eb`           | Focus ring and border color on focus. |

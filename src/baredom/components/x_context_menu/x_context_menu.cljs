@@ -71,7 +71,7 @@
    "max-width:calc(100vw - 1rem);"
    "border-radius:var(--x-context-menu-radius);"
    "background:var(--x-context-menu-bg);"
-   "border:1px solid var(--x-context-menu-border);"
+   "border:var(--x-border-width,1px) solid var(--x-context-menu-border);"
    "box-shadow:var(--x-context-menu-shadow);"
    "padding:4px 0;"
    "overflow:auto;"

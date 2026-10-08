@@ -54,7 +54,7 @@
    "width:var(--x-welcome-tour-popover-width,min(360px,calc(100vw - 2rem)));"
    "background:var(--x-welcome-tour-popover-bg,var(--x-color-bg,#ffffff));"
    "color:var(--x-welcome-tour-popover-fg,var(--x-color-text,#0f172a));"
-   "border:var(--x-welcome-tour-popover-border,1px solid var(--x-color-border,#e2e8f0));"
+   "border:var(--x-welcome-tour-popover-border,var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0));"
    "border-radius:var(--x-welcome-tour-popover-radius,var(--x-radius-lg,12px));"
    "box-shadow:var(--x-welcome-tour-popover-shadow,var(--x-shadow-lg,0 20px 60px rgba(0,0,0,0.18)));"
    "font-family:var(--x-font-family,system-ui,-apple-system,sans-serif);"

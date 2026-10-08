@@ -67,7 +67,7 @@
    "display:block;"
    "color-scheme:light dark;"
    "--x-collapse-border-radius:var(--x-radius-md, 8px);"
-   "--x-collapse-border:1px solid var(--x-color-border,#e2e8f0);"
+   "--x-collapse-border:var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0);"
    "--x-collapse-bg:var(--x-color-surface, #ffffff);"
    "--x-collapse-trigger-bg:var(--x-color-surface-hover, #f8fafc);"
    "--x-collapse-trigger-bg-hover:var(--x-color-surface-active,#f1f5f9);"
@@ -83,7 +83,7 @@
    du/hidden-rule
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-collapse-border:1px solid var(--x-color-border,#334155);"
+   "--x-collapse-border:var(--x-border-width,1px) solid var(--x-color-border,#334155);"
    "--x-collapse-bg:var(--x-color-surface,#1e293b);"
    "--x-collapse-trigger-bg:var(--x-color-surface-hover,#0f172a);"
    "--x-collapse-trigger-bg-hover:var(--x-color-surface-active,#1e293b);"

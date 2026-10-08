@@ -56,7 +56,7 @@
    "display:block;"
    "color-scheme:light dark;"
    "--x-divider-color:var(--x-color-border,rgba(0,0,0,0.12));"
-   "--x-divider-thickness:1px;"
+   "--x-divider-thickness:var(--x-border-width,1px);"
    "--x-divider-inset:0px;"
    "--x-divider-length:auto;}"
    du/hidden-rule

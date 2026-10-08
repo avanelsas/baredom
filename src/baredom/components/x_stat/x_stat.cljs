@@ -105,7 +105,7 @@
    "padding:var(--x-stat-padding);"
    "border-radius:var(--x-stat-radius);"
    "background:var(--x-stat-background);"
-   "border:1px solid var(--x-stat-border-color);"
+   "border:var(--x-border-width,1px) solid var(--x-stat-border-color);"
    "color:var(--x-stat-color);"
    "transition:"
    "background var(--x-stat-transition-duration) var(--x-stat-transition-timing),"

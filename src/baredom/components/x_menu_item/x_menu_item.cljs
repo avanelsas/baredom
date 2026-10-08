@@ -87,7 +87,7 @@
    ".base[data-type='divider'] .icon-span,.base[data-type='divider'] .label-span{display:none;}"
    ".base[data-type='divider'] .divider-hr{"
    "display:block;width:100%;border:none;"
-   "border-top:1px solid var(--x-menu-item-divider-color);margin:4px 0;}"
+   "border-top:var(--x-border-width,1px) solid var(--x-menu-item-divider-color);margin:4px 0;}"
    "@media (prefers-reduced-motion:reduce){.base{transition:none;}}"))
 
 (defn- read-model [^js el]

@@ -226,5 +226,18 @@
    ["x-command-palette" "background" "#e0e7ff"]
    ["x-command-palette" "color" "#3730a3"]
    ["x-command-palette" "color" "#c7d2fe"]]]
- ["A transparent border. It holds the place of a border."
-  [["x-pagination" "--x-pagination-current-border" "1px solid transparent"]]]]
+ ["A ring, a thumb or an indicator. Its width is part of its shape."
+  [["x-avatar" "border-width" "2px"]
+   ["x-checkbox" "--x-checkbox-border-width" "2px"]
+   ["x-color-picker" "border-width" "2px"]
+   ["x-radio" "--x-radio-border-width" "2px"]
+   ["x-range-slider" "border-width" "2px"]
+   ["x-scroll-timeline" "border-width" "2px"]
+   ["x-slider" "border-width" "2px"]
+   ["x-tab" "border-width" "2px"]]]
+ ["The dashed edge of a drop target."
+  [["x-file-upload" "border-width" "2px"]]]
+ ["A bar, an arrow or an outline drawn at its own width."
+  [["x-soft-body" "--x-soft-body-border-width" "1.5"]
+   ["x-typography" "border-width" "3px"]
+   ["x-welcome-tour" "border-width" "8px"]]]]

@@ -82,7 +82,7 @@ An action-menu dropdown: a styled trigger button that toggles a positioned panel
 | `--x-dropdown-trigger-bg-hover`     | `#f1f5f9`                    |
 | `--x-dropdown-trigger-bg-active`    | `#e2e8f0`                    |
 | `--x-dropdown-trigger-color`        | `#0f172a`                    |
-| `--x-dropdown-trigger-border`       | `1px solid #e2e8f0`          |
+| `--x-dropdown-trigger-border`       | `var(--x-border-width, 1px) solid #e2e8f0`          |
 | `--x-dropdown-trigger-radius`       | `6px`                        |
 | `--x-dropdown-trigger-padding`      | `0 0.75rem`                  |
 | `--x-dropdown-trigger-height`       | `2.25rem`                    |
@@ -96,7 +96,7 @@ An action-menu dropdown: a styled trigger button that toggles a positioned panel
 | Property                            | Default (light)              |
 |-------------------------------------|------------------------------|
 | `--x-dropdown-panel-bg`             | `#ffffff`                    |
-| `--x-dropdown-panel-border`         | `1px solid #e2e8f0`          |
+| `--x-dropdown-panel-border`         | `var(--x-border-width, 1px) solid #e2e8f0`          |
 | `--x-dropdown-panel-radius`         | `8px`                        |
 | `--x-dropdown-panel-shadow`         | `0 4px 16px rgba(0,0,0,0.12)`|
 | `--x-dropdown-panel-padding`        | `0.25rem`                    |
