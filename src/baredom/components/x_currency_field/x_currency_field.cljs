@@ -24,6 +24,7 @@
 (def ^:private hk-focus  "focus")
 (def ^:private hk-input  "input")
 (def ^:private hk-change "change")
+(def ^:private hk-blur   "blur")
 
 ;; ── String-literal constants ──────────────────────────────────────────────
 (def ^:private attr-part            "part")
@@ -66,6 +67,7 @@
 (def ^:private ev-focus  "focus")
 (def ^:private ev-input  "input")
 (def ^:private ev-change "change")
+(def ^:private ev-blur   "blur")
 
 (def ^:private msg-value-missing "Please fill in this field.")
 (def ^:private msg-bad-input     "Please enter a valid number.")
@@ -314,22 +316,24 @@
   (when-let [^js internals (du/getv el k-internals)]
     (sync-validity! el internals input-el (or (du/get-attr el model/attr-value) ""))))
 
-(defn- compute-error-display [{:keys [has-error? error] :as m}]
+(defn- compute-error-display [{:keys [has-error? error] :as m} hold-computed?]
   ;; Custom error attribute takes precedence; otherwise compute a message
   ;; from the model's validation state.
   (let [custom-error? has-error?
-        computed-msg  (when-not custom-error? (model/validation-message m))]
+        computed-msg  (when-not (or custom-error? hold-computed?)
+                        (model/validation-message m))]
     {:has-error?    (or custom-error? (not= (or computed-msg "") ""))
      :display-error (if custom-error? error (or computed-msg ""))}))
 
-(defn- apply-model! [^js el m]
+(defn- apply-model! [^js el m committed?]
   (when-let [refs (du/getv el k-refs)]
     (let [^js label-el  (gobj/get refs rk-label)
           ^js symbol-el (gobj/get refs rk-symbol)
           ^js input-el  (gobj/get refs rk-input)
           ^js hint-el   (gobj/get refs rk-hint)
           ^js error-el  (gobj/get refs rk-error)
-          {:keys [has-error? display-error]} (compute-error-display m)]
+          hold-computed? (and (not committed?) (is-focused? el input-el))
+          {:keys [has-error? display-error]} (compute-error-display m hold-computed?)]
       (apply-symbol!       symbol-el m)
       (apply-input-native! input-el  m)
       (apply-input-aria!   input-el  m has-error?)
@@ -346,7 +350,10 @@
     (let [new-m (read-model el)
           old-m (du/getv el k-model)]
       (when (not= old-m new-m)
-        (apply-model! el new-m)))))
+        (apply-model! el new-m false)))))
+
+(defn- render-committed! [^js el]
+  (apply-model! el (read-model el) true))
 
 ;; ── Event handlers ────────────────────────────────────────────────────────
 (defn- on-input-focus [^js el ^js _evt]
@@ -364,9 +371,9 @@
       (if (du/dispatch-cancelable! el model/event-change-request
                                    #js {:name name :value value :previousValue prev-value})
         (do
+          (du/set-attr! el model/attr-value value)
           (when-let [^js internals (du/getv el k-internals)]
-            (.setFormValue internals value)
-            (sync-validity! el internals input-el value))
+            (.setFormValue internals value))
           (du/dispatch! el model/event-input #js {:name name :value value}))
         (set! (.-value input-el) prev-value)))))
 
@@ -382,11 +389,14 @@
                                    #js {:name name :value canonical :previousValue prev-value})
         (do
           (du/set-attr! el model/attr-value canonical)
+          (render-committed! el)
           (when-let [^js internals (du/getv el k-internals)]
-            (.setFormValue internals canonical)
-            (sync-validity! el internals input-el canonical))
+            (.setFormValue internals canonical))
           (du/dispatch! el model/event-change #js {:name name :value canonical}))
         (set! (.-value input-el) prev-value)))))
+
+(defn- on-input-blur [^js el ^js _evt]
+  (render-committed! el))
 
 ;; ── Listener management ───────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -395,13 +405,16 @@
           focus-h      (fn handle-input-focus  [e] (on-input-focus  el e))
           input-h      (fn handle-input-input  [e] (on-input-input  el e))
           change-h     (fn handle-input-change [e] (on-input-change el e))
+          blur-h       (fn handle-input-blur   [e] (on-input-blur   el e))
           handlers     #js {}]
       (.addEventListener input-el ev-focus  focus-h)
       (.addEventListener input-el ev-input  input-h)
       (.addEventListener input-el ev-change change-h)
+      (.addEventListener input-el ev-blur   blur-h)
       (gobj/set handlers hk-focus  focus-h)
       (gobj/set handlers hk-input  input-h)
       (gobj/set handlers hk-change change-h)
+      (gobj/set handlers hk-blur   blur-h)
       (du/setv! el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
@@ -410,7 +423,8 @@
       (let [^js input-el (gobj/get refs rk-input)]
         (.removeEventListener input-el ev-focus  (gobj/get handlers hk-focus))
         (.removeEventListener input-el ev-input  (gobj/get handlers hk-input))
-        (.removeEventListener input-el ev-change (gobj/get handlers hk-change)))
+        (.removeEventListener input-el ev-change (gobj/get handlers hk-change))
+        (.removeEventListener input-el ev-blur   (gobj/get handlers hk-blur)))
       (du/setv! el k-handlers nil))))
 
 ;; ── Form-associated callbacks ─────────────────────────────────────────────
