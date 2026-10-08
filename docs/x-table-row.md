@@ -133,7 +133,7 @@ All custom properties are set on `:host` with automatic light/dark defaults.
 | Property | Light Default | Dark Default | Description |
 |---|---|---|---|
 | `--x-table-row-bg` | `transparent` | `transparent` | Base row background |
-| `--x-table-row-hover-bg` | `rgba(0,0,0,0.03)` | `rgba(255,255,255,0.04)` | Hover background (interactive rows) |
+| `--x-table-row-hover-bg` | `color-mix(in srgb, var(--x-color-text, #000) 3%, transparent)` | `color-mix(in srgb, var(--x-color-text, #fff) 4%, transparent)` | Hover background (interactive rows) |
 | `--x-table-row-selected-bg` | `rgba(59,130,246,0.08)` | `rgba(99,160,255,0.12)` | Selected row background |
 | `--x-table-row-selected-hover-bg` | `rgba(59,130,246,0.12)` | `rgba(99,160,255,0.16)` | Selected + hover background |
 | `--x-table-row-focus-ring` | `rgba(59,130,246,0.5)` | `rgba(59,130,246,0.5)` | Focus outline color |

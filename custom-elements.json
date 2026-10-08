@@ -780,7 +780,7 @@
         "default" : "var(--x-color-primary-active,#1e40af)"
       }, {
         "name" : "--x-button-bg-disabled",
-        "default" : "#cbd5e1"
+        "default" : "var(--x-color-surface-active,#cbd5e1)"
       }, {
         "name" : "--x-button-bg-hover",
         "default" : "var(--x-color-primary-hover,#1d4ed8)"
@@ -810,7 +810,7 @@
         "default" : "#ffffff"
       }, {
         "name" : "--x-button-fg-disabled",
-        "default" : "#ffffff"
+        "default" : "var(--x-color-text-muted,#ffffff)"
       }, {
         "name" : "--x-button-focus-ring",
         "default" : "var(--x-color-focus-ring,#60a5fa)"
@@ -2158,7 +2158,7 @@
         "default" : "var(--x-color-text,rgba(0,0,0,0.75))"
       }, {
         "name" : "--x-pagination-button-hover-bg",
-        "default" : "rgba(0,0,0,0.06)"
+        "default" : "color-mix(in srgb,var(--x-color-text,#000) 6%,transparent)"
       }, {
         "name" : "--x-pagination-button-hover-color",
         "default" : "var(--x-color-text,rgba(0,0,0,0.9))"
@@ -5879,7 +5879,7 @@
       } ],
       "cssProperties" : [ {
         "name" : "--x-badge-bg",
-        "default" : "rgba(0,0,0,0.08)"
+        "default" : "color-mix(in srgb,var(--x-color-text,#000) 8%,transparent)"
       }, {
         "name" : "--x-badge-border",
         "default" : "var(--x-color-border,rgba(0,0,0,0.12))"
@@ -7541,7 +7541,7 @@
         "default" : "0.25rem 0.5rem"
       }, {
         "name" : "--x-table-stripe-bg",
-        "default" : "rgba(0,0,0,0.025)"
+        "default" : "color-mix(in srgb,var(--x-color-text,#000) 2.5%,transparent)"
       } ],
       "cssParts" : [ {
         "name" : "caption"
@@ -7667,7 +7667,7 @@
         "default" : "var(--x-color-focus-ring,rgba(59,130,246,0.5))"
       }, {
         "name" : "--x-table-row-hover-bg",
-        "default" : "rgba(0,0,0,0.03)"
+        "default" : "color-mix(in srgb,var(--x-color-text,#000) 3%,transparent)"
       }, {
         "name" : "--x-table-row-selected-bg",
         "default" : "rgba(59,130,246,0.08)"
@@ -7893,7 +7893,7 @@
         "default" : "inherit"
       }, {
         "name" : "--x-table-cell-header-bg",
-        "default" : "rgba(0,0,0,0.04)"
+        "default" : "color-mix(in srgb,var(--x-color-text,#000) 4%,transparent)"
       }, {
         "name" : "--x-table-cell-header-color",
         "default" : "var(--x-color-text,inherit)"
@@ -10295,7 +10295,7 @@
         "default" : "var(--x-color-text,rgba(0,0,0,0.87))"
       }, {
         "name" : "--x-context-menu-item-hover",
-        "default" : "rgba(0,0,0,0.05)"
+        "default" : "var(--x-color-surface-active,rgba(0,0,0,0.05))"
       }, {
         "name" : "--x-context-menu-radius",
         "default" : "var(--x-radius-md,10px)"
@@ -11084,7 +11084,7 @@
         "default" : "var(--x-color-text-muted,rgba(0,0,0,0.62))"
       }, {
         "name" : "--x-alert-dismiss-hover-bg",
-        "default" : "rgba(0,0,0,0.06)"
+        "default" : "color-mix(in srgb,var(--x-color-text,#000) 6%,transparent)"
       }, {
         "name" : "--x-alert-enter-duration",
         "default" : "var(--x-transition-duration,140ms)"
@@ -11336,7 +11336,7 @@
         "default" : "0.75rem"
       }, {
         "name" : "--x-stepper-upcoming-bg",
-        "default" : "rgba(0,0,0,0.08)"
+        "default" : "color-mix(in srgb,var(--x-color-text,#000) 8%,transparent)"
       }, {
         "name" : "--x-stepper-upcoming-color",
         "default" : "var(--x-color-text-muted,rgba(0,0,0,0.45))"
@@ -15015,7 +15015,7 @@
         "default" : "var(--x-color-focus-ring,rgba(59,130,246,0.5))"
       }, {
         "name" : "--x-table-row-hover-bg",
-        "default" : "rgba(0,0,0,0.03)"
+        "default" : "color-mix(in srgb,var(--x-color-text,#000) 3%,transparent)"
       }, {
         "name" : "--x-table-row-selected-bg",
         "default" : "rgba(59,130,246,0.08)"
@@ -16759,7 +16759,7 @@
         "default" : "var(--x-color-primary-active,#1e40af)"
       }, {
         "name" : "--x-particle-button-bg-disabled",
-        "default" : "#cbd5e1"
+        "default" : "var(--x-color-surface-active,#cbd5e1)"
       }, {
         "name" : "--x-particle-button-bg-hover",
         "default" : "var(--x-color-primary-hover,#1d4ed8)"
@@ -16783,7 +16783,7 @@
         "default" : "#ffffff"
       }, {
         "name" : "--x-particle-button-fg-disabled",
-        "default" : "#ffffff"
+        "default" : "var(--x-color-text-muted,#ffffff)"
       }, {
         "name" : "--x-particle-button-focus-ring",
         "default" : "var(--x-color-focus-ring,#60a5fa)"
@@ -17519,7 +17519,7 @@
         "default" : "inherit"
       }, {
         "name" : "--x-table-cell-header-bg",
-        "default" : "rgba(0,0,0,0.04)"
+        "default" : "color-mix(in srgb,var(--x-color-text,#000) 4%,transparent)"
       }, {
         "name" : "--x-table-cell-header-color",
         "default" : "var(--x-color-text,inherit)"
@@ -17869,7 +17869,7 @@
         "default" : "rgba(59,130,246,0.4)"
       }, {
         "name" : "--x-tab-hover-background",
-        "default" : "rgba(15,23,42,0.05)"
+        "default" : "color-mix(in srgb,var(--x-color-text,rgb(15,23,42)) 5%,transparent)"
       }, {
         "name" : "--x-tab-padding-lg",
         "default" : "14px 20px"
@@ -18319,7 +18319,7 @@
         "default" : "0.6"
       }, {
         "name" : "--x-card-filled-background",
-        "default" : "rgba(241, 245, 249, 0.96)"
+        "default" : "var(--x-color-surface-active, rgba(241, 245, 249, 0.96))"
       }, {
         "name" : "--x-card-focus-ring",
         "default" : "var(--x-color-focus-ring, rgba(59, 130, 246, 0.55))"
@@ -18328,7 +18328,7 @@
         "default" : "transparent"
       }, {
         "name" : "--x-card-hover-background",
-        "default" : "rgba(15, 23, 42, 0.04)"
+        "default" : "var(--x-color-surface-hover, rgba(15, 23, 42, 0.04))"
       }, {
         "name" : "--x-card-padding-lg",
         "default" : "1.5rem"
@@ -18343,7 +18343,7 @@
         "default" : "0.5rem"
       }, {
         "name" : "--x-card-press-background",
-        "default" : "rgba(15, 23, 42, 0.08)"
+        "default" : "var(--x-color-surface-active, rgba(15, 23, 42, 0.08))"
       }, {
         "name" : "--x-card-radius-lg",
         "default" : "var(--x-radius-lg, 1rem)"
@@ -20942,7 +20942,7 @@
         "default" : "rgba(59,130,246,0.4)"
       }, {
         "name" : "--x-tab-hover-background",
-        "default" : "rgba(15,23,42,0.05)"
+        "default" : "color-mix(in srgb,var(--x-color-text,rgb(15,23,42)) 5%,transparent)"
       }, {
         "name" : "--x-tab-padding-lg",
         "default" : "14px 20px"

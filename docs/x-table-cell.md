@@ -133,7 +133,7 @@ Fired on every `disconnectedCallback`.
 | Property | Default (light) | Default (dark) | Description |
 |----------|-----------------|----------------|-------------|
 | `--x-table-cell-bg` | `transparent` | `transparent` | Data cell background. |
-| `--x-table-cell-header-bg` | `rgba(0,0,0,0.04)` | `rgba(255,255,255,0.06)` | Header cell background. |
+| `--x-table-cell-header-bg` | `color-mix(in srgb, var(--x-color-text, #000) 4%, transparent)` | `color-mix(in srgb, var(--x-color-text, #fff) 6%, transparent)` | Header cell background. |
 | `--x-table-cell-border-color` | `rgba(0,0,0,0.1)` | `rgba(255,255,255,0.1)` | Border color. |
 | `--x-table-cell-color` | `inherit` | `inherit` | Data cell text color. |
 | `--x-table-cell-header-color` | `inherit` | `inherit` | Header cell text color. |

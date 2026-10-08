@@ -38,7 +38,7 @@
    "align-items:center;"
    "justify-content:center;"
    "color-scheme:light dark;"
-   "--x-badge-bg:rgba(0,0,0,0.08);"
+   "--x-badge-bg:color-mix(in srgb,var(--x-color-text,#000) 8%,transparent);"
    "--x-badge-color:var(--x-color-text,rgba(0,0,0,0.80));"
    "--x-badge-border:var(--x-color-border,rgba(0,0,0,0.12));"
    "--x-badge-font-size:var(--x-font-size-xs,0.75rem);"
@@ -49,7 +49,7 @@
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-badge-bg:rgba(255,255,255,0.12);"
+   "--x-badge-bg:color-mix(in srgb,var(--x-color-text,#fff) 12%,transparent);"
    "--x-badge-color:var(--x-color-text,rgba(255,255,255,0.88));"
    "--x-badge-border:var(--x-color-border,rgba(255,255,255,0.14));}}"
 

@@ -44,10 +44,10 @@
   --x-card-background: var(--x-color-surface, rgba(255, 255, 255, 0.92));
   --x-card-color: var(--x-color-text, #111827);
   --x-card-border-color: var(--x-color-border, rgba(17, 24, 39, 0.12));
-  --x-card-filled-background: rgba(241, 245, 249, 0.96);
+  --x-card-filled-background: var(--x-color-surface-active, rgba(241, 245, 249, 0.96));
   --x-card-ghost-background: transparent;
-  --x-card-hover-background: rgba(15, 23, 42, 0.04);
-  --x-card-press-background: rgba(15, 23, 42, 0.08);
+  --x-card-hover-background: var(--x-color-surface-hover, rgba(15, 23, 42, 0.04));
+  --x-card-press-background: var(--x-color-surface-active, rgba(15, 23, 42, 0.08));
   --x-card-shadow: var(--x-shadow-md, 0 10px 24px rgba(15, 23, 42, 0.10));
   --x-card-focus-ring: var(--x-color-focus-ring, rgba(59, 130, 246, 0.55));
   --x-card-disabled-opacity: 0.6;
@@ -76,9 +76,9 @@
   --x-card-background: var(--x-color-surface, rgba(15, 23, 42, 0.88));
   --x-card-color: var(--x-color-text, #e5e7eb);
   --x-card-border-color: var(--x-color-border, rgba(148, 163, 184, 0.24));
-  --x-card-filled-background: rgba(30, 41, 59, 0.96);
-  --x-card-hover-background: rgba(148, 163, 184, 0.10);
-  --x-card-press-background: rgba(148, 163, 184, 0.16);
+  --x-card-filled-background: var(--x-color-surface-active, rgba(30, 41, 59, 0.96));
+  --x-card-hover-background: var(--x-color-surface-hover, rgba(148, 163, 184, 0.10));
+  --x-card-press-background: var(--x-color-surface-active, rgba(148, 163, 184, 0.16));
   --x-card-shadow: var(--x-shadow-md, 0 16px 32px rgba(0, 0, 0, 0.32));
   --x-card-focus-ring: var(--x-color-focus-ring, rgba(96, 165, 250, 0.6));
   }

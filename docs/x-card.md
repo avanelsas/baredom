@@ -67,10 +67,10 @@ x-card {
 | `--x-card-background` | `rgba(255,255,255,0.92)` | Base surface colour |
 | `--x-card-color` | `#111827` | Text colour |
 | `--x-card-border-color` | `rgba(17,24,39,0.12)` | Outlined variant border |
-| `--x-card-filled-background` | `rgba(241,245,249,0.96)` | Filled variant surface |
+| `--x-card-filled-background` | `var(--x-color-surface-active, rgba(241,245,249,0.96))` | Filled variant surface |
 | `--x-card-ghost-background` | `transparent` | Ghost variant surface |
-| `--x-card-hover-background` | `rgba(15,23,42,0.04)` | Interactive hover state |
-| `--x-card-press-background` | `rgba(15,23,42,0.08)` | Interactive active/press state |
+| `--x-card-hover-background` | `var(--x-color-surface-hover, rgba(15,23,42,0.04))` | Interactive hover state |
+| `--x-card-press-background` | `var(--x-color-surface-active, rgba(15,23,42,0.08))` | Interactive active/press state |
 | `--x-card-shadow` | `0 10px 24px rgba(15,23,42,0.10)` | Elevated variant shadow |
 | `--x-card-focus-ring` | `rgba(59,130,246,0.55)` | Focus ring colour |
 | `--x-card-disabled-opacity` | `0.6` | Opacity when disabled |
