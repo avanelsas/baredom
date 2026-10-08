@@ -254,21 +254,32 @@
       {:tag tag :family (family prop) :prop prop :value value
        :kind (own-kind (family prop) value)})))
 
+(def ^:private media-block #"@media[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}")
+
+(defn- always-declared
+  "The own properties that `css` declares on the host outside every media block."
+  [css]
+  (set (for [rule     (re-seq #"(?:^|\})\s*:host\s*\{[^{}]*\}" (str/replace css media-block ""))
+             [prop _] (declarations rule)
+             :when    (own? prop)]
+         prop)))
+
 (defn- used-rows
-  "One row for each declaration of a family: its own value, or the fallback of each own
-   property it reads, in the family that the name of that property says. An own property read
-   with no fallback is left to its declaration."
-  [tag decls]
-  (for [[prop value] decls
-        :let  [family (family-of prop)]
-        :when family
-        row   (if (seq (own-in value))
-                (for [[own fallback] (fallbacks value)
-                      :when (empty? (own-in fallback))
-                      :let  [named (or (family-by-name own) family)]]
-                  {:family named :value fallback :kind (own-kind named fallback)})
-                [{:value value :kind (value-kind family value)}])]
-    (merge {:tag tag :family family :prop prop} row)))
+  "One row for each declaration of a family in `css`: its own value, or the fallback of each
+   own property it reads, in the family that the name of that property says. An own property
+   read with no fallback, or one that `css` always declares, is left to its declaration."
+  [tag css]
+  (let [declared (always-declared css)]
+    (for [[prop value] (mapcat longhand (declarations css))
+          :let  [family (family-of prop)]
+          :when family
+          row   (if (seq (own-in value))
+                  (for [[own fallback] (fallbacks value)
+                        :when (and (empty? (own-in fallback)) (not (declared own)))
+                        :let  [named (or (family-by-name own) family)]]
+                    {:family named :value fallback :kind (own-kind named fallback)})
+                  [{:value value :kind (value-kind family value)}])]
+      (merge {:tag tag :family family :prop prop} row))))
 
 (def ^:private by-design
   "The values that follow no token on purpose: pairs of a reason and its values, each value a
@@ -284,6 +295,11 @@
   [{:keys [tag prop value] :as row}]
   (cond-> row (exempt [tag prop value]) (assoc :kind :by-design)))
 
+(defn- measure-as-colour?
+  "True when `row` is in the colour family and its value is a number or a length."
+  [{:keys [family value]}]
+  (and (= "color" family) (re-find #"^[\d.]+(px|rem|em|%)?$" value)))
+
 (defn- audited
   "A component with every value of its CSS that a token family answers for."
   [{:keys [tag-name dir-name]}]
@@ -292,7 +308,9 @@
     {:tag    tag-name
      :read?  (boolean (seq texts))
      :unread unread
-     :rows   (map marked (concat (declared-rows tag-name decls) (used-rows tag-name decls)))}))
+     :rows   (->> (concat (declared-rows tag-name decls) (mapcat #(used-rows tag-name %) texts))
+                  (remove measure-as-colour?)
+                  (map marked))}))
 
 ;; ── the report ──────────────────────────────────────────────────────────────
 
@@ -376,23 +394,39 @@
    "Each cell says how many values of that family follow a token of `x-theme`, out of all the"
    "values of that family in the component's CSS. A value follows the theme when it is a token,"
    "or the component's own property whose default is a token. Structural values such as `0`,"
-   "`none` and `inherit` are not counted, and neither are the values listed at the end as not"
-   "themed by design. An empty cell means the component has no value of that family."
+   "`none` and `inherit` are not counted, and neither are the values that are not themed by"
+   "design, for the reasons at the end. An empty cell means the component has no value of that"
+   "family."
    ""
    (str "Closed families, in which CI allows no value that follows no token: "
         (str/join ", " (sort closed)) ".")
    ""])
 
-(def ^:private by-design-lines
-  "The values that are not themed by design, as lines of Markdown."
-  (concat
-   ["## Not themed by design" ""]
-   (mapcat (fn [[reason values]]
-             (concat [reason ""]
-                     (for [[tag prop value] values]
-                       (str "- `" tag "`: `" prop ": " value "`"))
-                     [""]))
-           by-design)))
+(def ^:private reason-of
+  "A map from each value that is not themed by design to its reason."
+  (into {} (for [[reason values] by-design, value values] [value reason])))
+
+(defn- reason-lines
+  "A reason with how many of `rows` it covers and their components, as lines of Markdown."
+  [reason rows]
+  (let [tags (sort (distinct (map :tag rows)))]
+    [reason
+     ""
+     (str (count rows) (if (= 1 (count rows)) " value in " " values in ")
+          (str/join ", " (map #(str "`" % "`") tags)) ".")
+     ""]))
+
+(defn- by-design-lines
+  "The reasons for which a value of `rows` is not themed by design, as lines of Markdown."
+  [rows]
+  (let [found (group-by (comp reason-of (juxt :tag :prop :value))
+                        (filter #(= :by-design (:kind %)) rows))]
+    (concat
+     ["## Not themed by design"
+      ""
+      "The values are in `scripts/tokens_by_design.edn`."
+      ""]
+     (mapcat #(reason-lines % (found %)) (map first by-design)))))
 
 (defn- cell
   "How many of `rows` follow the theme, as `themed/all`, or nothing when there are none."
@@ -421,26 +455,31 @@
        ""
        (str "CSS not read, or not in full: " (if (seq missing) (str/join ", " missing) "none") ".")
        ""]
-      by-design-lines))))
+      (by-design-lines (mapcat :rows components))))))
 
 (defn- write-doc! [components]
   (spit doc-file (coverage-doc components))
   (println "Wrote" doc-file))
 
-(let [models     (remove #(= "x-theme" (:tag-name %)) (discover-models))
-      components (map audited models)
-      unknown    (mapcat (partial unknown-names (all-tag-names)) models)
-      rows       (mapcat :rows components)
-      missing    (not-read components)
-      report     (get {"summary" summary "literals" literals "doc" write-doc!}
-                      (first *command-line-args*))]
-  (when-not report
-    (println "Usage: bb scripts/audit_tokens.bb summary|literals|doc")
-    (System/exit 1))
-  (when-let [faults (seq (concat unknown (stale rows) (reopened rows)))]
-    (run! println faults)
-    (System/exit 1))
-  (report components)
-  (println (format "\n%d values in %d components. Not read, or not in full: %s"
-                   (count rows) (count (distinct (map :tag rows)))
-                   (if (seq missing) (str/join ", " missing) "none"))))
+(defn- main
+  "Runs the report that `mode` names and fails on a fault."
+  [mode]
+  (let [models     (remove #(= "x-theme" (:tag-name %)) (discover-models))
+        components (map audited models)
+        unknown    (mapcat (partial unknown-names (all-tag-names)) models)
+        rows       (mapcat :rows components)
+        missing    (not-read components)
+        report     (get {"summary" summary "literals" literals "doc" write-doc!} mode)]
+    (when-not report
+      (println "Usage: bb scripts/audit_tokens.bb summary|literals|doc")
+      (System/exit 1))
+    (when-let [faults (seq (concat unknown (stale rows) (reopened rows)))]
+      (run! println faults)
+      (System/exit 1))
+    (report components)
+    (println (format "\n%d values in %d components. Not read, or not in full: %s"
+                     (count rows) (count (distinct (map :tag rows)))
+                     (if (seq missing) (str/join ", " missing) "none")))))
+
+(when (= *file* (System/getProperty "babashka.file"))
+  (main (first *command-line-args*)))
