@@ -128,7 +128,7 @@
    "overflow:hidden;"
    "background:var(" css-bg ",var(--x-color-surface,#fff));"
    "color:var(" css-color ",var(--x-color-text,#111));"
-   "border:var(" css-border ",1px solid var(--x-color-border,#d8d8d8));"
+   "border:var(" css-border ",var(--x-border-width,1px) solid var(--x-color-border,#d8d8d8));"
    "border-radius:var(" css-radius ",var(--x-radius-md,8px));"
    "box-shadow:var(" css-shadow ",var(--x-shadow-sm,0 1px 2px rgba(0,0,0,.06)));"
    "transition:var(" css-transition ",box-shadow var(--x-transition-duration,.16s) var(--x-transition-easing,ease),"
@@ -174,7 +174,7 @@
 
    ;; Vacated and in-flight both read as an empty dashed footprint on the host.
    ":host([data-dragging]),:host([pending]){"
-   "border:var(" css-foot-border ",1px dashed var(--x-color-border,#c9c9c9));"
+   "border:var(" css-foot-border ",var(--x-border-width,1px) dashed var(--x-color-border,#c9c9c9));"
    "background:var(" css-foot-bg ",transparent);}"
 
    ":host([pending]) [part=panel]{visibility:hidden;}"

@@ -80,7 +80,7 @@ The `value` getter always returns the raw numeric string stored in the `value` a
 |---------------------------------------|----------------------|----------------------|
 | `--x-currency-field-bg`               | `#ffffff`            | `#1f2937`            |
 | `--x-currency-field-color`            | `#111827`            | `#f9fafb`            |
-| `--x-currency-field-border`           | `1px solid #d1d5db`  | `1px solid #4b5563`  |
+| `--x-currency-field-border`           | `var(--x-border-width, 1px) solid #d1d5db`  | `var(--x-border-width, 1px) solid #4b5563`  |
 | `--x-currency-field-border-radius`    | `6px`                | `6px`                |
 | `--x-currency-field-focus-ring-color` | `#2563eb`            | `#3b82f6`            |
 | `--x-currency-field-symbol-color`     | `#6b7280`            | `#9ca3af`            |

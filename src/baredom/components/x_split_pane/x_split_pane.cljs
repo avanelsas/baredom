@@ -68,7 +68,7 @@
    "overflow:hidden;"
    "color-scheme:light dark;"
    "--x-split-pane-divider-size:0.5rem;"
-   "--x-split-pane-divider-line-size:1px;"
+   "--x-split-pane-divider-line-size:var(--x-border-width,1px);"
    "--x-split-pane-divider-color:var(--x-color-border,#cbd5e1);"
    "--x-split-pane-divider-hover-color:var(--x-color-primary,#3b82f6);"
    "--x-split-pane-divider-focus-color:var(--x-color-focus-ring,#60a5fa);"

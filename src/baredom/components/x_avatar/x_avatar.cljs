@@ -121,7 +121,7 @@
    "overflow:hidden;"
    "background:var(--x-avatar-bg);"
    "color:var(--x-avatar-color);"
-   "border:1px solid var(--x-avatar-border);"
+   "border:var(--x-border-width,1px) solid var(--x-avatar-border);"
    "box-shadow:0 0 0 2px var(--x-avatar-ring);"
    "font-size:var(--x-avatar-font-size);"
    "font-weight:var(--x-font-weight-semibold,600);"

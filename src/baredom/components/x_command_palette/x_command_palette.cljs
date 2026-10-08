@@ -136,7 +136,7 @@
    "[part=search-wrap]{"
    "display:flex;align-items:center;gap:8px;"
    "padding:12px 16px;"
-   "border-bottom:1px solid var(--x-command-palette-divider,var(--x-color-border,rgba(0,0,0,0.08)));"
+   "border-bottom:var(--x-border-width,1px) solid var(--x-command-palette-divider,var(--x-color-border,rgba(0,0,0,0.08)));"
    "}"
    "[part=search-icon]{"
    "flex:none;display:inline-flex;align-items:center;justify-content:center;"

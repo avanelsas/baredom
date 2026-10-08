@@ -144,7 +144,7 @@ toast.addEventListener('x-toast-dismiss', e => {
 | `--x-toast-heading-weight` | `var(--x-font-weight-semibold, 600)` | Heading font weight |
 | `--x-toast-min-width` | `280px` | Minimum card width |
 | `--x-toast-max-width` | `480px` | Maximum card width |
-| `--x-toast-border-width` | `1px` | Border width |
+| `--x-toast-border-width` | `var(--x-border-width, 1px)` | Border width |
 
 ### Elevation
 

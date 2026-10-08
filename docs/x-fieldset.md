@@ -39,7 +39,7 @@ None. `x-fieldset` is a structural container with no user interactions.
 | Property                          | Default (light)    | Dark override |
 |-----------------------------------|--------------------|---------------|
 | `--x-fieldset-border-color`       | `#d1d5db`          | `#374151`     |
-| `--x-fieldset-border-width`       | `1px`              | —             |
+| `--x-fieldset-border-width`       | `var(--x-border-width, 1px)`              | —             |
 | `--x-fieldset-border-radius`      | `8px`              | —             |
 | `--x-fieldset-padding`            | `1rem`             | —             |
 | `--x-fieldset-gap`                | `0.75rem`          | —             |

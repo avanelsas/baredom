@@ -71,7 +71,7 @@
    "display:inline-block;"
    "min-width:1.25em;"
    "padding:var(--x-kbd-padding);"
-   "border:1px solid var(--x-kbd-border-color);"
+   "border:var(--x-border-width,1px) solid var(--x-kbd-border-color);"
    "border-radius:var(--x-kbd-border-radius);"
    "background:var(--x-kbd-bg);"
    "color:inherit;"

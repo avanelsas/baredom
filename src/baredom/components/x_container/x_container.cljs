@@ -86,7 +86,7 @@
   margin-inline:0;
   background:var(--x-container-bg);
   color:var(--x-container-color);
-  border:1px solid var(--x-container-border);
+  border:var(--x-border-width,1px) solid var(--x-container-border);
   border-radius:var(--x-container-radius);
   box-shadow:var(--x-container-shadow);
   }

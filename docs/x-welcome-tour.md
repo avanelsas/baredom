@@ -138,7 +138,7 @@ Set these on `x-welcome-tour` or an ancestor to customise appearance.
 | `--x-welcome-tour-glow-color`             | `rgba(255,255,255,0.15)`                       |
 | `--x-welcome-tour-popover-bg`             | `var(--x-color-bg, #ffffff)`                   |
 | `--x-welcome-tour-popover-fg`             | `var(--x-color-text, #0f172a)`                 |
-| `--x-welcome-tour-popover-border`         | `1px solid var(--x-color-border, #e2e8f0)`     |
+| `--x-welcome-tour-popover-border`         | `var(--x-border-width, 1px) solid var(--x-color-border, #e2e8f0)`     |
 | `--x-welcome-tour-popover-radius`         | `var(--x-radius-lg, 12px)`                     |
 | `--x-welcome-tour-popover-shadow`         | `var(--x-shadow-lg)`                           |
 | `--x-welcome-tour-popover-width`          | `min(360px, calc(100vw - 2rem))`               |

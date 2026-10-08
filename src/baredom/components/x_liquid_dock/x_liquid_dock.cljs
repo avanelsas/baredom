@@ -65,7 +65,7 @@
    "padding:var(" model/css-padding ",8px);"
    "border-radius:var(" model/css-radius ",var(--x-radius-xl,20px));"
    "background:var(" model/css-bg ",var(--x-color-surface,rgba(255,255,255,0.88)));"
-   "border:1px solid var(" model/css-border ",var(--x-color-border,rgba(148,163,184,0.22)));"
+   "border:var(--x-border-width,1px) solid var(" model/css-border ",var(--x-color-border,rgba(148,163,184,0.22)));"
    "box-shadow:var(" model/css-shadow ",var(--x-shadow-md,0 8px 24px rgba(15,23,42,0.12)));"
    "backdrop-filter:blur(14px);"
    "-webkit-backdrop-filter:blur(14px);"

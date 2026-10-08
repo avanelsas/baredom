@@ -118,7 +118,7 @@
    "color:var(--x-navbar-color);"
    "background:var(--x-navbar-bg);"
    "border:0;"
-   "border-bottom:1px solid var(--x-navbar-border);"
+   "border-bottom:var(--x-border-width,1px) solid var(--x-navbar-border);"
    "border-radius:var(--x-navbar-radius);"
    "box-shadow:none;"
    "backdrop-filter:blur(14px);"

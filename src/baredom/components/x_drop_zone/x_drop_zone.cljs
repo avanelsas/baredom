@@ -111,7 +111,7 @@
    "min-height:var(" css-min-height ",4rem);"
    "padding:var(" css-padding ",.5rem);"
    "background:var(" css-bg ",var(--x-color-surface,#fafafa));"
-   "border:var(" css-border ",1px solid var(--x-color-border,#e2e2e2));"
+   "border:var(" css-border ",var(--x-border-width,1px) solid var(--x-color-border,#e2e2e2));"
    "border-radius:var(" css-radius ",var(--x-radius-md,8px));"
    "transition:background var(--x-transition-duration,.16s) var(--x-transition-easing,ease),"
    "border-color var(--x-transition-duration,.16s) var(--x-transition-easing,ease);}"

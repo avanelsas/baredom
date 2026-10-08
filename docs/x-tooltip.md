@@ -100,7 +100,7 @@ Fired after the tooltip is hidden. Not cancelable.
 |----------|---------|-------------|
 | `--x-tooltip-bg` | `var(--x-color-bg, #ffffff)` | Panel background |
 | `--x-tooltip-text` | `var(--x-color-text, #0f172a)` | Text color |
-| `--x-tooltip-border` | `1px solid var(--x-color-border, #e2e8f0)` | Panel border |
+| `--x-tooltip-border` | `var(--x-border-width, 1px) solid var(--x-color-border, #e2e8f0)` | Panel border |
 | `--x-tooltip-shadow` | `var(--x-shadow-md, 0 4px 16px rgba(0,0,0,0.12))` | Box shadow |
 
 ### Motion

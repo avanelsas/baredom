@@ -80,7 +80,7 @@
     max-width: 100%;
     background: var(--x-spotlight-card-background);
     color: var(--x-spotlight-card-color-fg);
-    border: 1px solid transparent;
+    border: var(--x-border-width,1px) solid transparent;
     border-radius: var(--x-spotlight-card-radius-lg);
     transition:
       background var(--x-spotlight-card-transition-duration) var(--x-spotlight-card-transition-timing),

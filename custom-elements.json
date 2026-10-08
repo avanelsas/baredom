@@ -393,7 +393,7 @@
         "default" : "var(--x-radius-md, 8px)"
       }, {
         "name" : "--x-fieldset-border-width",
-        "default" : "1px"
+        "default" : "var(--x-border-width,1px)"
       }, {
         "name" : "--x-fieldset-disabled-opacity",
         "default" : "0.45"
@@ -1168,7 +1168,7 @@
         "default" : "var(--x-color-surface,#ffffff)"
       }, {
         "name" : "--x-search-field-border",
-        "default" : "1px solid var(--x-color-border,#d1d5db)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#d1d5db)"
       }, {
         "name" : "--x-search-field-border-radius",
         "default" : "var(--x-radius-md,6px)"
@@ -2152,7 +2152,7 @@
         "default" : "transparent"
       }, {
         "name" : "--x-pagination-button-border",
-        "default" : "1px solid var(--x-color-border,rgba(0,0,0,0.15))"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,rgba(0,0,0,0.15))"
       }, {
         "name" : "--x-pagination-button-color",
         "default" : "var(--x-color-text,rgba(0,0,0,0.75))"
@@ -2173,7 +2173,7 @@
         "default" : "color-mix(in srgb,var(--x-color-text,#000) 88%,transparent)"
       }, {
         "name" : "--x-pagination-current-border",
-        "default" : "1px solid transparent"
+        "default" : "var(--x-border-width,1px) solid transparent"
       }, {
         "name" : "--x-pagination-current-color",
         "default" : "var(--x-color-bg,#fff)"
@@ -2875,7 +2875,7 @@
         "default" : "var(--x-color-primary,#3b82f6)"
       }, {
         "name" : "--x-split-pane-divider-line-size",
-        "default" : "1px"
+        "default" : "var(--x-border-width,1px)"
       }, {
         "name" : "--x-split-pane-divider-size",
         "default" : "0.5rem"
@@ -3527,7 +3527,7 @@
         "default" : "var(--x-color-surface,#f8fafc)"
       }, {
         "name" : "--x-file-upload-item-border",
-        "default" : "1px solid var(--x-color-border,#e2e8f0)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)"
       }, {
         "name" : "--x-file-upload-muted",
         "default" : "var(--x-color-text-muted,#64748b)"
@@ -4447,7 +4447,7 @@
         "default" : "var(--x-color-surface,#ffffff)"
       }, {
         "name" : "--x-otp-input-border",
-        "default" : "1px solid var(--x-color-border,#d1d5db)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#d1d5db)"
       }, {
         "name" : "--x-otp-input-border-radius",
         "default" : "var(--x-radius-md,6px)"
@@ -6150,13 +6150,13 @@
         "default" : "var(--x-color-surface,#ffffff)"
       }, {
         "name" : "--x-combobox-border",
-        "default" : "1px solid var(--x-color-border,#e2e8f0)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)"
       }, {
         "name" : "--x-combobox-border-focus",
-        "default" : "1px solid var(--x-color-focus-ring,#60a5fa)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-focus-ring,#60a5fa)"
       }, {
         "name" : "--x-combobox-border-hover",
-        "default" : "1px solid var(--x-color-border,#cbd5e1)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#cbd5e1)"
       }, {
         "name" : "--x-combobox-chevron-color",
         "default" : "var(--x-color-text-muted,#64748b)"
@@ -6198,7 +6198,7 @@
         "default" : "var(--x-color-bg,#ffffff)"
       }, {
         "name" : "--x-combobox-panel-border",
-        "default" : "1px solid var(--x-color-border,#e2e8f0)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)"
       }, {
         "name" : "--x-combobox-panel-max-height",
         "default" : "16rem"
@@ -6510,7 +6510,7 @@
         "default" : "auto"
       }, {
         "name" : "--x-divider-thickness",
-        "default" : "1px"
+        "default" : "var(--x-border-width,1px)"
       } ],
       "cssParts" : [ {
         "name" : "container"
@@ -7878,7 +7878,7 @@
         "default" : "var(--x-color-border,rgba(0,0,0,0.1))"
       }, {
         "name" : "--x-table-cell-border-width",
-        "default" : "1px"
+        "default" : "var(--x-border-width,1px)"
       }, {
         "name" : "--x-table-cell-color",
         "default" : "var(--x-color-text,inherit)"
@@ -8447,7 +8447,7 @@
         "default" : "var(--x-color-bg,#ffffff)"
       }, {
         "name" : "--x-menu-border",
-        "default" : "1px solid var(--x-color-border,#e5e7eb)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e5e7eb)"
       }, {
         "name" : "--x-menu-border-radius",
         "default" : "var(--x-radius-md,8px)"
@@ -8759,7 +8759,7 @@
         "default" : "var(--x-color-surface,#ffffff)"
       }, {
         "name" : "--x-text-area-border",
-        "default" : "1px solid var(--x-color-border,#d1d5db)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#d1d5db)"
       }, {
         "name" : "--x-text-area-border-radius",
         "default" : "var(--x-radius-md,6px)"
@@ -9643,13 +9643,13 @@
         "default" : "var(--x-color-focus-ring,#60a5fa)"
       }, {
         "name" : "--x-popover-footer-border",
-        "default" : "1px solid var(--x-color-border,#e2e8f0)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)"
       }, {
         "name" : "--x-popover-footer-padding",
         "default" : "0.625rem 0.875rem"
       }, {
         "name" : "--x-popover-header-border",
-        "default" : "1px solid var(--x-color-border,#e2e8f0)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)"
       }, {
         "name" : "--x-popover-header-padding",
         "default" : "0.625rem 0.75rem 0.625rem 0.875rem"
@@ -9667,7 +9667,7 @@
         "default" : "var(--x-color-bg,#ffffff)"
       }, {
         "name" : "--x-popover-panel-border",
-        "default" : "1px solid var(--x-color-border,#e2e8f0)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)"
       }, {
         "name" : "--x-popover-panel-max-height",
         "default" : "24rem"
@@ -11888,7 +11888,7 @@
         "default" : "var(--x-color-bg,#ffffff)"
       }, {
         "name" : "--x-welcome-tour-popover-border",
-        "default" : "1px solid var(--x-color-border,#e2e8f0)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)"
       }, {
         "name" : "--x-welcome-tour-popover-fg",
         "default" : "var(--x-color-text,#0f172a)"
@@ -12538,7 +12538,7 @@
         "default" : "transparent"
       }, {
         "name" : "--x-toast-border-width",
-        "default" : "1px"
+        "default" : "var(--x-border-width,1px)"
       }, {
         "name" : "--x-toast-color",
         "default" : "inherit"
@@ -13524,13 +13524,13 @@
         "default" : "var(--x-color-surface,#ffffff)"
       }, {
         "name" : "--x-multi-combobox-border",
-        "default" : "1px solid var(--x-color-border,#e2e8f0)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)"
       }, {
         "name" : "--x-multi-combobox-border-focus",
-        "default" : "1px solid var(--x-color-focus-ring,#60a5fa)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-focus-ring,#60a5fa)"
       }, {
         "name" : "--x-multi-combobox-border-hover",
-        "default" : "1px solid var(--x-color-border,#cbd5e1)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#cbd5e1)"
       }, {
         "name" : "--x-multi-combobox-chevron-color",
         "default" : "var(--x-color-text-muted,#64748b)"
@@ -13575,7 +13575,7 @@
         "default" : "var(--x-color-bg,#ffffff)"
       }, {
         "name" : "--x-multi-combobox-panel-border",
-        "default" : "1px solid var(--x-color-border,#e2e8f0)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)"
       }, {
         "name" : "--x-multi-combobox-panel-max-height",
         "default" : "16rem"
@@ -15642,7 +15642,7 @@
         "default" : "var(--x-color-bg,#ffffff)"
       }, {
         "name" : "--x-dropdown-panel-border",
-        "default" : "1px solid var(--x-color-border,#e2e8f0)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)"
       }, {
         "name" : "--x-dropdown-panel-max-height",
         "default" : "20rem"
@@ -15678,7 +15678,7 @@
         "default" : "var(--x-color-surface-active,#f1f5f9)"
       }, {
         "name" : "--x-dropdown-trigger-border",
-        "default" : "1px solid var(--x-color-border,#e2e8f0)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)"
       }, {
         "name" : "--x-dropdown-trigger-color",
         "default" : "var(--x-color-text,#0f172a)"
@@ -17504,7 +17504,7 @@
         "default" : "var(--x-color-border,rgba(0,0,0,0.1))"
       }, {
         "name" : "--x-table-cell-border-width",
-        "default" : "1px"
+        "default" : "var(--x-border-width,1px)"
       }, {
         "name" : "--x-table-cell-color",
         "default" : "var(--x-color-text,inherit)"
@@ -17670,7 +17670,7 @@
         "default" : "var(--x-color-surface, #ffffff)"
       }, {
         "name" : "--x-collapse-border",
-        "default" : "1px solid var(--x-color-border,#e2e8f0)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)"
       }, {
         "name" : "--x-collapse-border-radius",
         "default" : "var(--x-radius-md, 8px)"
@@ -18164,7 +18164,7 @@
         "default" : "var(--x-color-surface,#ffffff)"
       }, {
         "name" : "--x-form-field-input-border",
-        "default" : "1px solid var(--x-color-border,#d1d5db)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#d1d5db)"
       }, {
         "name" : "--x-form-field-input-border-radius",
         "default" : "var(--x-radius-md,6px)"
@@ -18649,7 +18649,7 @@
         "default" : "var(--x-color-surface,#ffffff)"
       }, {
         "name" : "--x-currency-field-border",
-        "default" : "1px solid var(--x-color-border,#d1d5db)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#d1d5db)"
       }, {
         "name" : "--x-currency-field-border-radius",
         "default" : "var(--x-radius-md,6px)"
@@ -21098,7 +21098,7 @@
         "default" : "var(--x-color-bg,#ffffff)"
       }, {
         "name" : "--x-tooltip-border",
-        "default" : "1px solid var(--x-color-border,#e2e8f0)"
+        "default" : "var(--x-border-width,1px) solid var(--x-color-border,#e2e8f0)"
       }, {
         "name" : "--x-tooltip-font-size",
         "default" : "var(--x-font-size-xs,0.75rem)"

@@ -355,7 +355,7 @@
    "min-block-size:var(--x-particle-button-height-md);"
    "padding-inline:var(--x-particle-button-padding-inline);"
    "border-radius:var(--x-particle-button-radius);"
-   "border:1px solid var(--x-particle-button-border);"
+   "border:var(--x-border-width,1px) solid var(--x-particle-button-border);"
    "background:var(--x-particle-button-bg);"
    "color:var(--x-particle-button-fg);"
    "font-size:var(--x-particle-button-font-size-md);"

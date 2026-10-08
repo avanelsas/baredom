@@ -115,7 +115,7 @@
      "font-size:var(--x-font-size-sm,0.875rem);font-weight:var(--x-font-weight-normal,400);line-height:var(--x-line-height-normal,1.5);}"
      ":host([data-variant='kbd']) [part=container]{"
      "background:var(--x-typography-kbd-bg,var(--x-color-surface," kbd-bg-light "));"
-     "border:1px solid var(--x-typography-kbd-border,var(--x-color-border," kbd-bd-light "));"
+     "border:var(--x-border-width,1px) solid var(--x-typography-kbd-border,var(--x-color-border," kbd-bd-light "));"
      "border-radius:var(--x-typography-kbd-radius,var(--x-radius-sm,4px));"
      "padding:var(--x-typography-kbd-padding,0.15em 0.4em);}"
      "@media (prefers-color-scheme:dark){"

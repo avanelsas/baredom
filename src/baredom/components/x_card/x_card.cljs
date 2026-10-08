@@ -90,7 +90,7 @@
   min-width: 0;
   background: var(--x-card-background);
   color: var(--x-card-color);
-  border: 1px solid transparent;
+  border: var(--x-border-width,1px) solid transparent;
   border-radius: var(--x-card-radius-lg);
   transition:
   background var(--x-card-transition-duration) var(--x-card-transition-timing),

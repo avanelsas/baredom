@@ -44,7 +44,7 @@
    "cursor:pointer;user-select:none;"
    "padding:var(--x-tab-padding-md,10px 16px);border-radius:var(--x-tab-radius,var(--x-radius-md,8px));"
    "color:var(--x-tab-color);background:var(--x-tab-background,transparent);"
-   "border:1px solid var(--x-tab-border-color,transparent);"
+   "border:var(--x-border-width,1px) solid var(--x-tab-border-color,transparent);"
    "transition:background " duration " " timing ","
    "color " duration " " timing ","
    "border-color " duration " " timing ";}"

@@ -124,7 +124,7 @@ Fired on every `disconnectedCallback`.
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-table-cell-padding` | `0.5rem 0.75rem` | Cell padding. |
-| `--x-table-cell-border-width` | `1px` | Border width (bottom border). |
+| `--x-table-cell-border-width` | `var(--x-border-width, 1px)` | Border width (bottom border). |
 | `--x-table-cell-min-width` | `0` | Minimum cell width. |
 | `--x-table-cell-max-width` | `none` | Maximum cell width. |
 

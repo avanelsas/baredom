@@ -92,7 +92,7 @@ Fired after the open state has changed. **Not cancelable.**
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-popover-panel-bg` | `#ffffff` | Panel background |
-| `--x-popover-panel-border` | `1px solid #e2e8f0` | Panel border |
+| `--x-popover-panel-border` | `var(--x-border-width, 1px) solid #e2e8f0` | Panel border |
 | `--x-popover-panel-radius` | `8px` | Panel border radius |
 | `--x-popover-panel-shadow` | `var(--x-shadow-md, 0 4px 16px rgba(0,0,0,0.12))` | Panel box shadow |
 | `--x-popover-panel-min-width` | `12rem` | Minimum panel width |
@@ -105,7 +105,7 @@ Fired after the open state has changed. **Not cancelable.**
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-popover-header-padding` | `0.625rem 0.75rem 0.625rem 0.875rem` | Header padding |
-| `--x-popover-header-border` | `1px solid #e2e8f0` | Header bottom border |
+| `--x-popover-header-border` | `var(--x-border-width, 1px) solid #e2e8f0` | Header bottom border |
 
 ### Heading
 | Property | Default | Description |
@@ -136,7 +136,7 @@ Fired after the open state has changed. **Not cancelable.**
 | Property | Default | Description |
 |----------|---------|-------------|
 | `--x-popover-footer-padding` | `0.625rem 0.875rem` | Footer padding |
-| `--x-popover-footer-border` | `1px solid #e2e8f0` | Footer top border |
+| `--x-popover-footer-border` | `var(--x-border-width, 1px) solid #e2e8f0` | Footer top border |
 
 ### Arrow
 | Property | Default | Description |

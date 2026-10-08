@@ -84,7 +84,7 @@ Only the **outward** `x-search-field-input` event is delayed. Local UI feedback 
 |-------------------------------------|-----------------------|
 | `--x-search-field-bg`               | `#ffffff`             |
 | `--x-search-field-color`            | `var(--x-color-text, #111827)`             |
-| `--x-search-field-border`           | `1px solid #d1d5db`   |
+| `--x-search-field-border`           | `var(--x-border-width, 1px) solid #d1d5db`   |
 | `--x-search-field-border-radius`    | `6px`                 |
 | `--x-search-field-focus-ring-color` | `#2563eb`             |
 | `--x-search-field-icon-color`       | `var(--x-color-text-muted, #9ca3af)`             |

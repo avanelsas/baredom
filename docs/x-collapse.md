@@ -77,7 +77,7 @@ A disclosure widget that shows or hides a content panel via an animated toggle. 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `--x-collapse-border-radius` | `8px` | Corner radius of the outer container. |
-| `--x-collapse-border` | `1px solid #e2e8f0` | Border of the outer container. |
+| `--x-collapse-border` | `var(--x-border-width, 1px) solid #e2e8f0` | Border of the outer container. |
 | `--x-collapse-bg` | `#ffffff` | Background of the outer container. |
 | `--x-collapse-trigger-bg` | `#f8fafc` | Background of the trigger button. |
 | `--x-collapse-trigger-bg-hover` | `#f1f5f9` | Trigger background on hover. |

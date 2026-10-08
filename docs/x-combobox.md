@@ -136,7 +136,7 @@ Fired before the panel opens or closes. **Cancelable** — call `event.preventDe
 | `--x-combobox-bg` | `var(--x-color-surface)` | Input background |
 | `--x-combobox-fg` | `var(--x-color-text)` | Text color |
 | `--x-combobox-placeholder` | `var(--x-color-text-muted)` | Placeholder color |
-| `--x-combobox-border` | `1px solid var(--x-color-border)` | Input border |
+| `--x-combobox-border` | `var(--x-border-width, 1px) solid var(--x-color-border)` | Input border |
 | `--x-combobox-focus-ring` | `var(--x-color-focus-ring)` | Focus ring color |
 | `--x-combobox-panel-bg` | `var(--x-color-bg)` | Panel background |
 | `--x-combobox-option-hover-bg` | `var(--x-color-surface-hover)` | Option hover |
