@@ -12,35 +12,35 @@ Closed families, in which CI allows no value that follows no token: font-family,
 
 | Component | color | font-family | font-size | font-weight | line-height | radius | shadow | transition | space | z | border-width |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `x-alert` | 2/30 |  | 1/1 |  |  | 2/2 |  | 4/4 | 0/4 |  | 0/1 |
+| `x-alert` | 2/6 |  | 1/1 |  |  | 2/2 |  | 4/4 | 0/4 |  | 0/1 |
 | `x-avatar` | 8/20 |  | 4/4 | 1/1 |  | 2/2 |  |  | 0/1 |  | 0/2 |
 | `x-avatar-group` | 8/8 |  | 4/4 | 1/1 |  | 1/1 |  |  |  |  | 0/1 |
-| `x-badge` | 4/30 |  | 1/1 | 1/1 |  | 3/3 |  |  | 0/2 |  | 0/1 |
+| `x-badge` | 4/6 |  | 1/1 | 1/1 |  | 3/3 |  |  | 0/2 |  | 0/1 |
 | `x-bento-grid` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-bento-item` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-breadcrumbs` | 0/8 |  | 3/3 | 1/1 |  |  |  |  | 0/1 |  |  |
-| `x-button` | 34/46 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 0/1 |
-| `x-calendar` | 17/18 |  | 4/4 | 4/4 |  | 7/7 | 1/1 | 1/1 | 0/11 |  | 0/2 |
-| `x-cancel-dialogue` | 17/22 |  | 3/3 | 2/2 | 1/1 | 2/2 | 2/2 |  | 0/6 | 0/1 |  |
+| `x-button` | 34/41 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 0/1 |
+| `x-calendar` | 17/17 |  | 4/4 | 4/4 |  | 7/7 | 1/1 | 1/1 | 0/11 |  | 0/2 |
+| `x-cancel-dialogue` | 17/18 |  | 3/3 | 2/2 | 1/1 | 2/2 | 2/2 |  | 0/6 | 0/1 |  |
 | `x-card` | 8/14 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
 | `x-carousel` | 12/12 |  |  |  |  | 1/1 | 1/1 | 3/3 | 0/3 |  |  |
-| `x-chart` | 14/16 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 1/1 | 0/6 | 0/1 | 0/2 |
+| `x-chart` | 14/14 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 1/1 | 0/6 | 0/1 | 0/2 |
 | `x-checkbox` | 15/15 |  |  |  |  | 1/1 |  | 3/3 |  |  | 0/1 |
 | `x-chip` | 7/7 |  | 1/1 |  |  | 1/1 |  | 1/1 | 0/4 |  | 0/1 |
-| `x-code` | 9/33 | 1/1 | 3/3 | 1/1 |  | 2/2 |  | 1/1 | 0/8 |  | 0/4 |
+| `x-code` | 9/9 | 1/1 | 3/3 | 1/1 |  | 2/2 |  | 1/1 | 0/8 |  | 0/4 |
 | `x-collapse` | 14/14 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  |  |
-| `x-color-picker` | 8/17 | 1/1 | 1/1 |  |  | 2/2 | 3/3 |  | 0/5 | 0/1 | 0/8 |
-| `x-combobox` | 26/27 |  | 2/2 | 1/1 |  | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 0/2 |
-| `x-command-palette` | 10/16 |  | 4/4 | 1/1 |  | 1/1 | 2/2 |  | 0/6 | 0/2 | 0/1 |
+| `x-color-picker` | 8/10 | 1/1 | 1/1 |  |  | 2/2 | 3/3 |  | 0/5 | 0/1 | 0/8 |
+| `x-combobox` | 26/26 |  | 2/2 | 1/1 |  | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 0/2 |
+| `x-command-palette` | 10/15 |  | 4/4 | 1/1 |  | 1/1 | 2/2 |  | 0/6 | 0/2 | 0/1 |
 | `x-confetti` |  |  |  |  |  |  |  |  |  | 0/1 |  |
 | `x-container` | 2/2 |  |  |  |  |  |  |  | 0/3 |  | 0/1 |
 | `x-context-menu` | 2/4 |  |  |  |  |  |  | 1/1 |  |  |  |
-| `x-copy` | 8/12 |  | 1/1 |  |  | 1/1 |  |  | 0/1 | 0/1 |  |
+| `x-copy` | 8/8 |  | 1/1 |  |  | 1/1 |  |  | 0/1 | 0/1 |  |
 | `x-currency-field` | 16/16 |  | 5/5 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  |  |
-| `x-date-picker` | 25/26 |  | 5/5 | 4/4 |  | 4/4 | 1/1 |  | 0/9 | 0/1 | 0/3 |
+| `x-date-picker` | 25/25 |  | 5/5 | 4/4 |  | 4/4 | 1/1 |  | 0/9 | 0/1 | 0/3 |
 | `x-divider` | 0/2 |  | 1/1 | 1/1 |  |  |  |  | 0/2 |  |  |
 | `x-drag-panel` | 7/7 |  |  |  |  | 2/2 | 2/2 | 1/1 | 0/4 | 0/1 |  |
-| `x-drawer` | 6/8 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 0/2 |
+| `x-drawer` | 6/6 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 0/2 |
 | `x-drop-zone` | 9/9 |  | 1/1 |  |  | 2/2 |  | 1/1 | 0/3 |  |  |
 | `x-dropdown` | 18/18 |  | 1/1 | 1/1 |  | 2/2 | 2/2 | 3/3 | 0/3 | 0/1 |  |
 | `x-fieldset` | 11/11 |  | 1/1 | 1/1 |  | 2/2 | 2/2 |  | 0/4 |  | 0/2 |
@@ -63,20 +63,20 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-liquid-fill` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-liquid-glass` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-menu` | 4/4 |  |  |  |  | 1/1 | 2/2 |  | 0/5 | 0/1 |  |
-| `x-menu-item` | 12/14 |  | 1/1 |  |  | 1/1 |  | 1/1 | 0/3 |  | 0/1 |
-| `x-metaball-cursor` | 0/1 |  |  |  |  |  |  |  |  | 0/1 |  |
-| `x-modal` | 3/4 |  |  |  |  | 1/1 | 1/1 | 2/2 | 0/3 | 0/1 | 0/2 |
+| `x-menu-item` | 12/12 |  | 1/1 |  |  | 1/1 |  | 1/1 | 0/3 |  | 0/1 |
+| `x-metaball-cursor` |  |  |  |  |  |  |  |  |  | 0/1 |  |
+| `x-modal` | 3/3 |  |  |  |  | 1/1 | 1/1 | 2/2 | 0/3 | 0/1 | 0/2 |
 | `x-morph-stack` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-multi-combobox` | 26/27 |  | 2/2 | 1/1 |  | 3/3 | 4/4 | 3/3 | 0/8 | 1/1 | 0/2 |
+| `x-multi-combobox` | 26/26 |  | 2/2 | 1/1 |  | 3/3 | 4/4 | 3/3 | 0/8 | 1/1 | 0/2 |
 | `x-navbar` | 8/12 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 0/1 | 0/1 |
 | `x-neural-glow` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-notification-center` |  |  |  |  |  |  |  |  | 0/1 | 0/1 |  |
 | `x-organic-divider` | 2/2 |  |  |  |  |  |  |  |  |  |  |
 | `x-organic-progress` | 2/2 |  |  |  |  |  |  |  |  |  |  |
-| `x-organic-shape` | 0/2 |  |  |  |  |  |  | 1/1 |  |  |  |
+| `x-organic-shape` |  |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-otp-input` | 8/8 | 1/1 |  | 1/1 |  | 1/1 |  | 1/1 | 1/1 |  |  |
-| `x-pagination` | 0/15 |  | 3/3 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
-| `x-particle-button` | 38/63 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 4/4 | 0/2 |  | 0/1 |
+| `x-pagination` | 0/13 |  | 3/3 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  |  |
+| `x-particle-button` | 38/53 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 4/4 | 0/2 |  | 0/1 |
 | `x-popover` | 48/48 |  | 4/4 | 2/2 |  | 4/4 | 4/4 | 5/5 | 0/8 | 0/1 | 0/8 |
 | `x-progress` | 4/10 |  | 2/2 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
 | `x-progress-circle` | 4/8 |  |  | 1/1 |  |  |  | 1/1 |  |  |  |
@@ -88,12 +88,12 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-scroll` | 12/12 |  |  |  |  |  | 2/2 | 3/3 | 0/2 |  |  |
 | `x-scroll-parallax` |  |  |  |  |  |  |  |  | 0/1 |  |  |
 | `x-scroll-stack` |  |  |  |  |  |  |  |  | 0/2 |  |  |
-| `x-scroll-story` | 0/1 |  |  |  |  | 1/1 |  | 1/1 | 0/2 |  |  |
-| `x-scroll-timeline` | 2/9 |  | 1/1 | 1/1 |  | 3/3 |  | 1/1 | 0/6 |  | 0/2 |
+| `x-scroll-story` |  |  |  |  |  | 1/1 |  | 1/1 | 0/2 |  |  |
+| `x-scroll-timeline` | 2/8 |  | 1/1 | 1/1 |  | 3/3 |  | 1/1 | 0/6 |  | 0/2 |
 | `x-search-field` | 8/12 |  | 1/1 |  |  | 2/2 |  | 1/1 | 0/2 |  |  |
 | `x-select` | 19/19 |  | 4/4 |  |  | 1/1 | 1/1 | 1/1 | 0/2 |  | 0/1 |
-| `x-sidebar` | 4/5 |  |  |  |  |  | 2/2 | 2/2 |  | 0/2 |  |
-| `x-skeleton` | 2/4 |  |  |  |  | 2/2 |  |  |  |  |  |
+| `x-sidebar` | 4/4 |  |  |  |  |  | 2/2 | 2/2 |  | 0/2 |  |
+| `x-skeleton` | 2/2 |  |  |  |  | 2/2 |  |  |  |  |  |
 | `x-skeleton-group` |  |  |  |  |  |  |  |  | 0/1 |  |  |
 | `x-slider` | 8/14 |  | 2/2 | 1/1 |  | 1/1 | 1/1 | 2/2 | 0/2 |  |  |
 | `x-soft-body` | 4/4 |  |  |  |  |  | 2/2 |  | 0/1 |  | 0/1 |
@@ -103,7 +103,7 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-split-pane` | 5/5 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-spotlight-card` | 6/6 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 0/1 |
 | `x-stat` | 10/10 |  | 2/2 | 2/2 |  | 1/1 |  | 2/2 | 0/2 |  | 0/1 |
-| `x-stepper` | 20/26 |  | 5/5 | 2/2 |  | 1/1 |  | 1/1 | 0/3 |  |  |
+| `x-stepper` | 20/22 |  | 5/5 | 2/2 |  | 1/1 |  | 1/1 | 0/3 |  |  |
 | `x-switch` | 8/8 |  |  |  |  | 1/1 | 1/1 | 2/2 |  |  |  |
 | `x-tab` | 5/10 |  |  |  |  | 1/1 |  | 2/2 | 0/4 |  | 0/2 |
 | `x-table` | 3/5 |  | 1/1 | 1/1 |  | 1/1 |  |  | 0/2 |  | 0/1 |
@@ -112,14 +112,14 @@ Closed families, in which CI allows no value that follows no token: font-family,
 | `x-tabs` |  |  |  |  |  |  |  |  | 0/2 |  |  |
 | `x-text-area` | 10/14 |  | 4/4 | 1/1 | 1/1 | 1/1 |  | 1/1 | 0/2 |  |  |
 | `x-timeline` | 1/1 |  | 1/1 | 1/1 |  |  |  |  | 0/1 |  |  |
-| `x-timeline-item` | 28/32 |  | 2/2 | 1/1 |  | 1/1 |  | 3/3 | 0/3 |  |  |
-| `x-toast` | 16/48 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 4/4 | 0/5 |  | 0/1 |
+| `x-timeline-item` | 28/28 |  | 2/2 | 1/1 |  | 1/1 |  | 3/3 | 0/3 |  |  |
+| `x-toast` | 16/40 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 4/4 | 0/5 |  | 0/1 |
 | `x-toaster` |  |  |  |  |  |  |  |  | 0/1 | 0/1 |  |
 | `x-tooltip` | 6/6 |  | 1/1 |  |  | 1/1 | 2/2 | 2/2 | 1/1 | 1/1 |  |
 | `x-typography` | 6/6 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 0/2 |
-| `x-welcome-tour` | 26/27 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 0/1 |
+| `x-welcome-tour` | 26/26 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 0/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 793/1106 | 10/10 | 117/117 | 69/69 | 7/7 | 110/110 | 73/73 | 107/107 | 15/236 | 3/26 | 0/69 |
+| **All** | 793/965 | 10/10 | 117/117 | 69/69 | 7/7 | 110/110 | 73/73 | 107/107 | 15/236 | 3/26 | 0/69 |
 
 CSS not read, or not in full: x-liquid-glass.
 
@@ -246,3 +246,149 @@ The height of a one-line control.
 - `x-currency-field`: `line-height: 1.5`
 - `x-form-field`: `line-height: 1.5`
 - `x-search-field`: `line-height: 1.5`
+
+A tint of a status colour, or the text on one.
+
+- `x-alert`: `--x-alert-error-bg: rgba(190,20,40,0.10)`
+- `x-alert`: `--x-alert-error-bg: rgba(255,90,110,0.18)`
+- `x-alert`: `--x-alert-error-border: rgba(190,20,40,0.45)`
+- `x-alert`: `--x-alert-error-border: rgba(255,90,110,0.46)`
+- `x-alert`: `--x-alert-error-color: rgba(120,10,20,0.95)`
+- `x-alert`: `--x-alert-error-color: rgba(255,235,238,0.92)`
+- `x-alert`: `--x-alert-info-bg: rgba(0,102,204,0.08)`
+- `x-alert`: `--x-alert-info-bg: rgba(80,160,255,0.18)`
+- `x-alert`: `--x-alert-info-border: rgba(0,102,204,0.35)`
+- `x-alert`: `--x-alert-info-border: rgba(80,160,255,0.42)`
+- `x-alert`: `--x-alert-info-color: rgba(0,60,120,0.95)`
+- `x-alert`: `--x-alert-info-color: rgba(230,245,255,0.92)`
+- `x-alert`: `--x-alert-success-bg: rgba(16,140,72,0.10)`
+- `x-alert`: `--x-alert-success-bg: rgba(60,210,120,0.18)`
+- `x-alert`: `--x-alert-success-border: rgba(16,140,72,0.35)`
+- `x-alert`: `--x-alert-success-border: rgba(60,210,120,0.42)`
+- `x-alert`: `--x-alert-success-color: rgba(10,90,46,0.95)`
+- `x-alert`: `--x-alert-success-color: rgba(235,255,245,0.92)`
+- `x-alert`: `--x-alert-warning-bg: rgba(204,120,0,0.12)`
+- `x-alert`: `--x-alert-warning-bg: rgba(255,190,90,0.20)`
+- `x-alert`: `--x-alert-warning-border: rgba(204,120,0,0.45)`
+- `x-alert`: `--x-alert-warning-border: rgba(255,190,90,0.46)`
+- `x-alert`: `--x-alert-warning-color: rgba(120,70,0,0.95)`
+- `x-alert`: `--x-alert-warning-color: rgba(255,248,235,0.92)`
+- `x-badge`: `--x-badge-bg: rgba(0,102,204,0.12)`
+- `x-badge`: `--x-badge-bg: rgba(16,140,72,0.12)`
+- `x-badge`: `--x-badge-bg: rgba(190,20,40,0.12)`
+- `x-badge`: `--x-badge-bg: rgba(204,120,0,0.12)`
+- `x-badge`: `--x-badge-bg: rgba(255,190,90,0.18)`
+- `x-badge`: `--x-badge-bg: rgba(255,90,110,0.18)`
+- `x-badge`: `--x-badge-bg: rgba(60,210,120,0.18)`
+- `x-badge`: `--x-badge-bg: rgba(80,160,255,0.18)`
+- `x-badge`: `--x-badge-border: rgba(0,102,204,0.25)`
+- `x-badge`: `--x-badge-border: rgba(16,140,72,0.25)`
+- `x-badge`: `--x-badge-border: rgba(190,20,40,0.25)`
+- `x-badge`: `--x-badge-border: rgba(204,120,0,0.25)`
+- `x-badge`: `--x-badge-border: rgba(255,190,90,0.35)`
+- `x-badge`: `--x-badge-border: rgba(255,90,110,0.35)`
+- `x-badge`: `--x-badge-border: rgba(60,210,120,0.35)`
+- `x-badge`: `--x-badge-border: rgba(80,160,255,0.35)`
+- `x-badge`: `--x-badge-color: rgba(0,60,140,0.90)`
+- `x-badge`: `--x-badge-color: rgba(0,90,45,0.90)`
+- `x-badge`: `--x-badge-color: rgba(140,0,20,0.90)`
+- `x-badge`: `--x-badge-color: rgba(140,70,0,0.90)`
+- `x-badge`: `--x-badge-color: rgba(200,255,230,0.95)`
+- `x-badge`: `--x-badge-color: rgba(210,235,255,0.95)`
+- `x-badge`: `--x-badge-color: rgba(255,210,215,0.95)`
+- `x-badge`: `--x-badge-color: rgba(255,235,180,0.95)`
+- `x-menu-item`: `--x-menu-item-danger-hover-bg: #2d1515`
+- `x-menu-item`: `--x-menu-item-danger-hover-bg: #fef2f2`
+- `x-toast`: `--x-toast-error-border: rgba(190,20,40,0.40)`
+- `x-toast`: `--x-toast-error-border: rgba(255,90,110,0.40)`
+- `x-toast`: `--x-toast-info-border: rgba(0,102,204,0.30)`
+- `x-toast`: `--x-toast-info-border: rgba(80,160,255,0.35)`
+- `x-toast`: `--x-toast-success-border: rgba(16,140,72,0.30)`
+- `x-toast`: `--x-toast-success-border: rgba(60,210,120,0.35)`
+- `x-toast`: `--x-toast-warning-border: rgba(204,120,0,0.40)`
+- `x-toast`: `--x-toast-warning-border: rgba(255,190,90,0.40)`
+
+Text or a mark on a filled colour, chosen for contrast with the fill.
+
+- `x-button`: `--x-button-danger-fg: #ffffff`
+- `x-button`: `--x-button-fg: #eff6ff`
+- `x-button`: `--x-button-fg: #ffffff`
+- `x-button`: `--x-button-fg-disabled: #ffffff`
+- `x-calendar`: `--x-calendar-selected-text: #fff`
+- `x-cancel-dialogue`: `--x-cancel-dialogue-confirm-fg: #ffffff`
+- `x-cancel-dialogue`: `--x-cancel-dialogue-danger-fg: #ffffff`
+- `x-combobox`: `--x-combobox-option-active-fg: #ffffff`
+- `x-copy`: `--x-copy-tooltip-error-fg: #fee2e2`
+- `x-copy`: `--x-copy-tooltip-error-fg: #fef2f2`
+- `x-copy`: `--x-copy-tooltip-success-fg: #ffffff`
+- `x-date-picker`: `--x-date-picker-selected-text: #fff`
+- `x-multi-combobox`: `--x-multi-combobox-option-active-fg: #ffffff`
+- `x-pagination`: `--x-pagination-current-color: #000`
+- `x-pagination`: `--x-pagination-current-color: #fff`
+- `x-particle-button`: `--x-particle-button-danger-fg: #ffffff`
+- `x-particle-button`: `--x-particle-button-fg: #eff6ff`
+- `x-particle-button`: `--x-particle-button-fg: #ffffff`
+- `x-particle-button`: `--x-particle-button-fg-disabled: #ffffff`
+- `x-particle-button`: `--x-particle-button-success-fg: #ffffff`
+- `x-particle-button`: `--x-particle-button-warning-fg: #ffffff`
+- `x-stepper`: `--x-stepper-complete-color: #000`
+- `x-stepper`: `--x-stepper-complete-color: #fff`
+- `x-stepper`: `--x-stepper-current-color: #000`
+- `x-stepper`: `--x-stepper-current-color: #fff`
+- `x-timeline-item`: `--x-timeline-item-marker-color: #fff`
+- `x-welcome-tour`: `color: #ffffff`
+
+A colour of the syntax palette.
+
+- `x-code`: `--x-code-token-atrule: #cf222e`
+- `x-code`: `--x-code-token-atrule: #ff7b72`
+- `x-code`: `--x-code-token-attr-value: #0a3069`
+- `x-code`: `--x-code-token-attr-value: #a5d6ff`
+- `x-code`: `--x-code-token-comment: #6a737d`
+- `x-code`: `--x-code-token-comment: #8b949e`
+- `x-code`: `--x-code-token-entity: #0550ae`
+- `x-code`: `--x-code-token-entity: #79c0ff`
+- `x-code`: `--x-code-token-key: #0550ae`
+- `x-code`: `--x-code-token-key: #79c0ff`
+- `x-code`: `--x-code-token-keyword: #cf222e`
+- `x-code`: `--x-code-token-keyword: #ff7b72`
+- `x-code`: `--x-code-token-number: #0550ae`
+- `x-code`: `--x-code-token-number: #79c0ff`
+- `x-code`: `--x-code-token-property: #0550ae`
+- `x-code`: `--x-code-token-property: #79c0ff`
+- `x-code`: `--x-code-token-punct: #57606a`
+- `x-code`: `--x-code-token-punct: #c9d1d9`
+- `x-code`: `--x-code-token-string: #0a7d33`
+- `x-code`: `--x-code-token-string: #a5d6ff`
+- `x-code`: `--x-code-token-tag: #116329`
+- `x-code`: `--x-code-token-tag: #7ee787`
+- `x-code`: `--x-code-token-template: #0a7d33`
+- `x-code`: `--x-code-token-template: #a5d6ff`
+
+A colour that an effect or a tool draws with. The theme has no role for it.
+
+- `x-chart`: `--x-chart-skeleton: linear-gradient(90deg,rgba(0,0,0,0.06) 25%,rgba(0,0,0,0.03) 50%,rgba(0,0,0,0.06) 75%)`
+- `x-chart`: `--x-chart-skeleton: linear-gradient(90deg,rgba(255,255,255,0.06) 25%,rgba(255,255,255,0.03) 50%,rgba(255,255,255,0.06) 75%)`
+- `x-color-picker`: `background: linear-gradient(to bottom,transparent,#000),linear-gradient(to right,#fff,hsl(var(--_x-cp-hue,0),100%,50%))`
+- `x-color-picker`: `background: linear-gradient(to right,#f00 0%,#ff0 17%,#0f0 33%,#0ff 50%,#00f 67%,#f0f 83%,#f00 100%)`
+- `x-color-picker`: `background: linear-gradient(to right,transparent,var(--_x-cp-alpha-color,#000))`
+- `x-color-picker`: `border-color: #fff`
+- `x-color-picker`: `border-color: rgba(0,0,0,0.1)`
+- `x-metaball-cursor`: `background: #6366f1`
+- `x-organic-shape`: `--x-organic-shape-fill: rgba(129,140,248,0.18)`
+- `x-organic-shape`: `--x-organic-shape-fill: rgba(99,102,241,0.12)`
+- `x-particle-button`: `background: radial-gradient(circle at var(--_mx,50%) var(--_my,50%),rgba(255,255,255,0.12) 0%,transparent 60%)`
+- `x-scroll-story`: `background: rgba(255,255,255,0.9)`
+- `x-scroll-timeline`: `background: rgba(255,255,255,0.9)`
+- `x-skeleton`: `--x-skeleton-highlight: rgba(255,255,255,0.18)`
+- `x-skeleton`: `--x-skeleton-highlight: rgba(255,255,255,0.65)`
+
+A scrim. It darkens what is behind it in every theme.
+
+- `x-cancel-dialogue`: `--x-cancel-dialogue-backdrop-bg: rgba(0,0,0,0.45)`
+- `x-cancel-dialogue`: `--x-cancel-dialogue-backdrop-bg: rgba(0,0,0,0.60)`
+- `x-command-palette`: `background: rgba(0,0,0,0.45)`
+- `x-drawer`: `--x-drawer-backdrop: rgb(0 0 0/0.4)`
+- `x-drawer`: `--x-drawer-backdrop: rgb(0 0 0/0.55)`
+- `x-modal`: `--x-modal-backdrop: rgb(0 0 0/0.45)`
+- `x-sidebar`: `--x-sidebar-backdrop: rgb(0 0 0 / 0.4)`
