@@ -2,7 +2,9 @@
 // Writes a page back out with every shadow tree in its markup, as a declarative shadow root, so
 // the page shows its components before any script has run.
 //
-// Usage:  node scripts/prerender.mjs <url> <output.html>
+// Usage:  node scripts/prerender.mjs [--static] <url> <output.html>
+//         --static leaves out every script and noscript element and sets data-static on the
+//         html element, so the page can style a copy that runs no script.
 // Needs:  Node 22 or later, and Chrome. Set CHROME_PATH when Chrome is not found, and
 //         CHROME_FLAGS for more flags, such as --no-sandbox in a container.
 //
@@ -37,8 +39,9 @@ const within = (ms, what, promise) =>
   ]);
 
 // This function runs in the page. It waits until every custom element is defined, in the
-// document and in every shadow tree, then for two frames, and returns the page as markup.
-const pageAsMarkup = async limitMs => {
+// document and in every shadow tree, and until the html element has no data-loading. Then it
+// waits for two frames and returns the page as markup.
+const pageAsMarkup = async (limitMs, isStatic) => {
   const shadowRoots = node =>
     [...node.querySelectorAll('*')]
       .filter(el => el.shadowRoot)
@@ -54,12 +57,24 @@ const pageAsMarkup = async limitMs => {
     return allDefined();
   };
   const frame = () => new Promise(done => requestAnimationFrame(done));
-  await Promise.race([allDefined(), new Promise(done => setTimeout(done, limitMs))]);
+  const loading = () => document.documentElement.hasAttribute('data-loading');
+  const loaded = async () => {
+    while (loading()) await frame();
+  };
+  const makeStatic = () => {
+    document.querySelectorAll('script, noscript, link[rel="modulepreload"]').forEach(el => el.remove());
+    document.documentElement.setAttribute('data-static', '');
+  };
+  await Promise.race([allDefined().then(loaded), new Promise(done => setTimeout(done, limitMs))]);
   const missing = undefinedTags();
   if (missing.length > 0) throw new Error(`Never defined: ${missing.join(', ')}`);
+  if (loading()) throw new Error('The page still has data-loading.');
   await frame();
   await frame();
-  return '<!doctype html>\n' + document.documentElement.getHTML({ shadowRoots: shadowRoots(document) });
+  if (isStatic) makeStatic();
+  const htmlTag = document.documentElement.cloneNode(false).outerHTML.replace('</html>', '');
+  const inside = document.documentElement.getHTML({ shadowRoots: shadowRoots(document) });
+  return `<!doctype html>\n${htmlTag}${inside}</html>\n`;
 };
 
 const startChrome = (chromePath, profileDir) =>
@@ -120,7 +135,7 @@ const connect = async address => {
   };
 };
 
-const prerender = async (browser, url) => {
+const prerender = async (browser, url, isStatic) => {
   const { targetId } = await browser.send('Target.createTarget', { url: 'about:blank' });
   const { sessionId } = await browser.send('Target.attachToTarget', { targetId, flatten: true });
   await browser.send('Page.enable', {}, sessionId);
@@ -129,7 +144,7 @@ const prerender = async (browser, url) => {
   if (errorText) throw new Error(`Could not open ${url}: ${errorText}`);
   await loaded;
   const { result, exceptionDetails } = await browser.send('Runtime.evaluate', {
-    expression: `(${pageAsMarkup})(${STEP_LIMIT_MS})`, awaitPromise: true, returnByValue: true,
+    expression: `(${pageAsMarkup})(${STEP_LIMIT_MS}, ${isStatic})`, awaitPromise: true, returnByValue: true,
   }, sessionId);
   if (exceptionDetails) {
     const description = exceptionDetails.exception?.description ?? exceptionDetails.text;
@@ -138,23 +153,27 @@ const prerender = async (browser, url) => {
   return result.value;
 };
 
-const markupOf = async (chrome, url) => {
+const markupOf = async (chrome, url, isStatic) => {
   const browser = await connect(await chromeAddress(chrome));
   try {
-    return await prerender(browser, url);
+    return await prerender(browser, url, isStatic);
   } finally {
     browser.close();
   }
 };
 
-const main = async ([url, output]) => {
-  if (!url || !output) throw new Error('Usage: node scripts/prerender.mjs <url> <output.html>');
+const STATIC_FLAG = '--static';
+
+const main = async args => {
+  const isStatic = args.includes(STATIC_FLAG);
+  const [url, output] = args.filter(arg => arg !== STATIC_FLAG);
+  if (!url || !output) throw new Error('Usage: node scripts/prerender.mjs [--static] <url> <output.html>');
   const chromePath = findChrome();
   if (!chromePath) throw new Error('Chrome was not found. Set CHROME_PATH.');
   const profileDir = await mkdtemp(join(tmpdir(), 'prerender-'));
   const chrome = startChrome(chromePath, profileDir);
   try {
-    const markup = await within(RUN_LIMIT_MS, `prerendering ${url}`, markupOf(chrome, url));
+    const markup = await within(RUN_LIMIT_MS, `prerendering ${url}`, markupOf(chrome, url, isStatic));
     await writeFile(output, markup);
     console.log(`${output}: ${markup.length} characters, ${markup.split('shadowrootmode').length - 1} shadow roots`);
   } finally {

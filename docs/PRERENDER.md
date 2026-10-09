@@ -21,6 +21,12 @@ It needs Node 22 or later, and Chrome. Set `CHROME_PATH` when Chrome is not foun
 Write the output beside the page it was made from, so the relative URLs in it still resolve.
 
 The script waits until every custom element on the page is defined, and then for two frames.
+A page that loads more after that puts `data-loading` on its `html` element and removes it when
+it is ready. The script waits for that too.
+
+With `--static` before the URL, the output has no `script` and no `noscript` element, and its
+`html` element has `data-static`. The page can use that attribute in its style to hide what
+needs a script. [`bare-html/mirror.html`](../bare-html/mirror.html) does.
 
 ## What you get
 
