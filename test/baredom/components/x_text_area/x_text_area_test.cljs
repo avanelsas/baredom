@@ -377,16 +377,6 @@
       (is (not (.hasAttribute el "data-invalid")))
       (is (= "false" (.getAttribute ta "aria-invalid"))))))
 
-(deftest form-disabled-test
-  (testing "formDisabledCallback sets disabled attribute and disables textarea"
-    (sut/init!)
-    (let [^js el (mount!)
-          ^js ta (get-textarea el)]
-      (is (false? (.-disabled ta)))
-      (.formDisabledCallback el true)
-      (is (.hasAttribute el "disabled"))
-      (is (true? (.-disabled ta))))))
-
 ;; ---------------------------------------------------------------------------
 ;; Reconnect — no listener doubling
 ;; ---------------------------------------------------------------------------

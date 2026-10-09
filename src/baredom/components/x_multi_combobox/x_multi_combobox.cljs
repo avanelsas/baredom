@@ -168,7 +168,7 @@
    "border:var(--x-border-width,1px) solid var(--x-multi-combobox-error-color);"
    "box-shadow:0 0 0 2px color-mix(in srgb,var(--x-multi-combobox-error-color) 45%,transparent);"
    "}"
-   ":host([disabled]) [part=wrapper]{"
+   ":host(:disabled) [part=wrapper]{"
    "opacity:var(--x-multi-combobox-disabled-opacity);"
    "cursor:default;"
    "pointer-events:none;"
@@ -449,7 +449,7 @@
    {:value-raw         (du/get-attr el model/attr-value)
     :placeholder-raw   (du/get-attr el model/attr-placeholder)
     :name-raw          (du/get-attr el model/attr-name)
-    :disabled-present? (du/has-attr? el model/attr-disabled)
+    :disabled-present? (forms/disabled? el)
     :required-present? (du/has-attr? el model/attr-required)
     :open-present?     (du/has-attr? el model/attr-open)
     :placement-raw     (du/get-attr el model/attr-placement)
@@ -620,7 +620,7 @@
 (declare remove-doc-listeners!)
 
 (defn- open-panel! [^js el source]
-  (when (and (not (du/has-attr? el model/attr-disabled))
+  (when (and (not (forms/disabled? el))
              (not (du/has-attr? el model/attr-open)))
     (let [allowed? (du/dispatch-cancelable! el model/event-toggle
                                          #js {:open true :source source})]
@@ -727,7 +727,7 @@
         visible   (model/filter-options options query value-set)
         idx       (or (du/getv el k-active-idx) 0)]
     (when-let [opt (nth visible idx nil)]
-      (when-not (du/has-attr? el model/attr-disabled)
+      (when-not (forms/disabled? el)
         (add-item! el (:value opt))))))
 
 ;; ---------------------------------------------------------------------------
@@ -928,10 +928,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
 ;; ---------------------------------------------------------------------------
-(defn- form-disabled! [^js el disabled?]
-  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
-  (update-from-attrs! el))
-
 ;; Reset clears the selection — mirroring x-form-field's reset-to-empty.
 ;; apply-model! then re-syncs the (now empty) form value + validity.
 (defn- form-reset! [^js el]
@@ -1024,6 +1020,5 @@
      :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
      :form-associated?       true
-     :form-disabled-fn       form-disabled!
      :form-reset-fn          form-reset!
      :setup-prototype-fn     install-property-accessors!}))

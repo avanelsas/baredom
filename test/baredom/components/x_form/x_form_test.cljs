@@ -159,6 +159,21 @@
     (is (= js/undefined (aget (.-values @received) "hidden"))
         "disabled fields should be excluded from values")))
 
+(deftest submit-leaves-out-the-fields-of-a-disabled-fieldset
+  (let [el       (append! (make-el))
+        fieldset (.createElement js/document "fieldset")
+        field-el (.createElement js/document "input")
+        received (atom nil)]
+    (set! (.-name field-el)  "kept-back")
+    (set! (.-value field-el) "secret")
+    (set! (.-disabled fieldset) true)
+    (.appendChild fieldset field-el)
+    (.appendChild el fieldset)
+    (.addEventListener el model/event-submit
+                       (fn [^js e] (reset! received (.-detail e))))
+    (.submit el)
+    (is (= js/undefined (aget (.-values @received) "kept-back")))))
+
 (deftest submit-blocked-when-loading-test
   (let [el       (append! (make-el))
         received (atom nil)]

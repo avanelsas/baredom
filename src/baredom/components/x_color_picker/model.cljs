@@ -332,8 +332,8 @@
 ;; Derive state — central normalization
 ;; ---------------------------------------------------------------------------
 (defn normalize
-  "Transform raw attribute values into a normalized state map."
-  [{:keys [value alpha disabled readonly name mode open label swatches]}]
+  "Transform raw attribute values and the boolean `:disabled?` into a normalized state map."
+  [{:keys [value alpha disabled? readonly name mode open label swatches]}]
   (let [hex       (normalize-value value)
         {:keys [r g b a]} (or (parse-hex value) (parse-hex default-value))
         ;; When the original value has alpha info (8-digit hex), preserve it
@@ -343,7 +343,6 @@
                                  (== 8 (count (second (re-matches hex-re v)))))))
         alpha-val (if has-alpha-val a 1.0)
         {:keys [h s l]} (rgb->hsl r g b)
-        disabled? (mu/parse-bool-attr disabled)
         readonly? (mu/parse-bool-attr readonly)
         alpha?    (mu/parse-bool-present alpha)
         open?     (mu/parse-bool-present open)
@@ -357,7 +356,7 @@
                   (rgba->hex8 r g b alpha-val)
                   hex)
      :mode      norm-mode
-     :disabled? disabled?
+     :disabled? (boolean disabled?)
      :readonly? readonly?
      :alpha?    alpha?
      :open?     (and (= norm-mode "popover") open?)

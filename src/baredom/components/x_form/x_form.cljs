@@ -33,7 +33,7 @@
 (def ^:private ev-click  "click")
 
 ;; Selectors — extracted because they're constructed once and referenced twice.
-(def ^:private sel-named-enabled "[name]:not([disabled])")
+(def ^:private sel-named-enabled "[name]:not(:disabled)")
 (def ^:private sel-named         "[name]")
 (def ^:private sel-error         "[error]")
 (def ^:private sel-button

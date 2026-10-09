@@ -222,6 +222,10 @@
   (testing "invalid entries are filtered"
     (is (= ["#ff0000"] (model/parse-swatches "#ff0000,bad,#zzzzzz")))))
 
+(deftest normalize-takes-the-disabled-state-as-a-boolean
+  (is (true? (:disabled? (model/normalize {:disabled? true}))))
+  (is (false? (:disabled? (model/normalize {:disabled? false})))))
+
 ;; ── normalize defaults ───────────────────────────────────────────────────
 (deftest normalize-defaults-test
   (let [s (model/normalize {})]

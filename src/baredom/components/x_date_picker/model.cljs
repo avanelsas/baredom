@@ -148,13 +148,22 @@
 ;; Model canonicalization
 ;; ---------------------------------------------------------------------------
 
+(defn- language-tag
+  "`locale` when Intl takes it as a language tag, else nil."
+  [locale]
+  (when locale
+    (try
+      (js/Intl.DateTimeFormat.supportedLocalesOf locale)
+      locale
+      (catch :default _ nil))))
+
 (defn canonicalize
   "Build stable model from raw attr strings."
   [{:keys [mode value start end min max format locale separator
            auto-swap? range-allow-same-day?]}]
   (let [m         (parse-mode mode)
         fmt       (parse-format format)
-        loc       (normalize-str locale)
+        loc       (language-tag (normalize-str locale))
         sep       (or (normalize-str separator) default-separator)
         min-d     (dates/iso->date min)
         max-d     (dates/iso->date max)

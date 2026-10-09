@@ -499,15 +499,6 @@
       (.call cb el))
     (is (= "" (.-value el)))))
 
-(deftest form-disabled-callback-syncs-attribute-test
-  (let [el (append! (make-el))]
-    (when-let [^js cb (.-formDisabledCallback el)]
-      (.call cb el true))
-    (is (.hasAttribute el model/attr-disabled))
-    (when-let [^js cb (.-formDisabledCallback el)]
-      (.call cb el false))
-    (is (not (.hasAttribute el model/attr-disabled)))))
-
 ;; ---------------------------------------------------------------------------
 ;; A shadow root that the server sent
 ;; ---------------------------------------------------------------------------

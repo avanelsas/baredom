@@ -300,23 +300,6 @@
     (is (not (.hasAttribute el model/attr-checked))
         "formReset should remove checked attribute")))
 
-(deftest form-disabled-callback-test
-  (let [^js fieldset (js/document.createElement "fieldset")
-        el           (make-el)]
-    (.appendChild fieldset el)
-    (.appendChild (.-body js/document) fieldset)
-    (is (not (.hasAttribute el model/attr-disabled)) "precondition: switch is enabled")
-    (.setAttribute fieldset "disabled" "")
-    (let [^js cls   (.get js/customElements model/tag-name)
-          ^js proto (.-prototype cls)]
-      (when-let [cb (aget proto "formDisabledCallback")]
-        (.call cb el true)
-        (is (.hasAttribute el model/attr-disabled)
-            "formDisabledCallback(true) should set disabled attribute")
-        (.call cb el false)
-        (is (not (.hasAttribute el model/attr-disabled))
-            "formDisabledCallback(false) should remove disabled attribute")))))
-
 ;; ── Reconnect stability ───────────────────────────────────────────────────────
 
 (deftest reconnect-stability-test

@@ -257,7 +257,7 @@
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
   (model/normalize
-   {:disabled-present? (du/has-attr? el model/attr-disabled)
+   {:disabled-present? (forms/disabled? el)
     :required-present? (du/has-attr? el model/attr-required)
     :size-raw          (du/get-attr el model/attr-size)
     :placeholder-raw   (du/get-attr el model/attr-placeholder)
@@ -445,10 +445,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
 ;; ---------------------------------------------------------------------------
-(defn- form-disabled! [^js el disabled?]
-  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
-  (update-from-attrs! el))
-
 ;; Native form reset restores each <option> to its markup default (the
 ;; `selected` attribute) and drops any controlled `value` override, mirroring a
 ;; plain <select>. apply-model! then re-syncs the form value + validity.
@@ -544,6 +540,5 @@
      :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
      :form-associated?       true
-     :form-disabled-fn       form-disabled!
      :form-reset-fn          form-reset!
      :setup-prototype-fn     install-property-accessors!}))

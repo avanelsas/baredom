@@ -54,7 +54,7 @@ Boolean attributes follow standard HTML conventions: presence means true, absenc
 
 `values` is a plain JS object keyed by field `name`. Collection strategy:
 
-- Queries `this.querySelectorAll("[name]:not([disabled])")` in the light DOM.
+- Queries `this.querySelectorAll("[name]:not(:disabled)")` in the light DOM. A field that its own attribute or a `fieldset` disables is left out.
 - Checkbox/radio elements (detected by `type="checkbox"`, `type="radio"`, or `tagName === "x-checkbox"`) are only included when `checked === true`.
 - All other fields contribute `field.value || ""`.
 

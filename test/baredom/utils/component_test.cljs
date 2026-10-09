@@ -2,6 +2,7 @@
   (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
             [baredom.components.x-progress.model :as progress-model]
             [baredom.components.x-progress.x-progress :as x-progress]
+            [baredom.test-elements :as elements]
             [baredom.utils.component :as component]
             [baremirror.alpha.parts :as parts]))
 
@@ -28,13 +29,28 @@
                       :connected-fn         identity
                       :attribute-changed-fn record-call-and-fail!})
 
+(def ^:private control-tag "x-hold-control-probe")
+
+(def ^:private disabled-changes (atom []))
+
+(defn- record-disabled-change! [_el n old new]
+  (swap! disabled-changes conj [n old new]))
+
+(component/register! control-tag
+                     {:observed-attributes  #js ["disabled"]
+                      :connected-fn         identity
+                      :attribute-changed-fn record-disabled-change!
+                      :form-associated?     true})
+
 (x-progress/init!)
 
 (defn- cleanup! []
   (reset! calls [])
+  (reset! disabled-changes [])
   (reset! component/lifecycle-hook nil)
   (run! (fn [^js node] (.remove node))
-        (.querySelectorAll js/document (str probe-tag "," progress-model/tag-name))))
+        (.querySelectorAll js/document (str probe-tag "," progress-model/tag-name)))
+  (elements/remove-all!))
 
 (use-fixtures :each {:before cleanup! :after cleanup!})
 
@@ -79,6 +95,31 @@
 (defn- lower-max-then-value! [^js el]
   (.setAttribute el "max" "50")
   (.setAttribute el "value" "10"))
+
+(deftest a-control-receives-its-fieldset-as-a-change-of-disabled
+  (let [[^js fieldset ^js control] (elements/in-fieldset! control-tag {})]
+    (set! (.-disabled fieldset) true)
+    (set! (.-disabled fieldset) false)
+    (testing "each way is one change"
+      (is (= [["disabled" nil ""] ["disabled" "" nil]] @disabled-changes)))
+    (testing "the control gets no attribute"
+      (is (false? (.hasAttribute control "disabled"))))))
+
+(deftest a-fieldset-leaves-a-record-of-a-change-of-disabled
+  (let [records        (atom [])
+        [^js fieldset] (elements/in-fieldset! control-tag {})]
+    (reset! component/lifecycle-hook (partial swap! records conj))
+    (set! (.-disabled fieldset) true)
+    (is (= [[:lifecycle/attribute-changed "disabled" nil ""]]
+           (mapv (juxt :type :attribute :old-value :new-value) @records)))))
+
+(deftest a-held-control-receives-its-fieldset-when-the-work-returns
+  (let [[^js fieldset ^js control] (elements/in-fieldset! control-tag {})
+        during (hold! control (fn [] (set! (.-disabled fieldset) true) @disabled-changes))]
+    (testing "no change arrives while the work runs"
+      (is (= [] during)))
+    (testing "the change arrives when the work returns"
+      (is (= [["disabled" nil ""]] @disabled-changes)))))
 
 (deftest an-element-that-is-not-held-receives-each-change-at-once
   (let [el (make-probe)]

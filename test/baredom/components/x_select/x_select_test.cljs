@@ -720,16 +720,6 @@
           0))
        0))))
 
-(deftest form-disabled-callback-reflects-attr-test
-  (let [^js pair (make-form-with-select {"name" "fruit"})
-        ^js el   (aget pair 1)]
-    (.formDisabledCallback el true)
-    (is (.hasAttribute el "disabled")
-        "formDisabledCallback true sets disabled (e.g. inside <fieldset disabled>)")
-    (.formDisabledCallback el false)
-    (is (not (.hasAttribute el "disabled"))
-        "formDisabledCallback false clears the disabled attribute")))
-
 (deftest validity-value-missing-when-required-empty-test
   (async done
     (let [^js pair (make-form-with-select {"name" "fruit" "required" "" "placeholder" "Pick"})

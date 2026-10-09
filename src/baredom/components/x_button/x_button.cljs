@@ -2,6 +2,7 @@
   (:require
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
+   [baredom.utils.forms :as forms]
    [goog.object :as gobj]
    [baredom.components.x-button.model :as model]))
 
@@ -442,7 +443,7 @@
 ;; ── Model reading ───────────────────────────────────────────────────────────
 (defn- read-public-state [^js el]
   (model/public-state
-   {:disabled (du/has-attr? el model/attr-disabled)
+   {:disabled (forms/disabled? el)
     :loading  (du/has-attr? el model/attr-loading)
     :pressed  (du/has-attr? el model/attr-pressed)
     :type     (du/get-attr el model/attr-type)

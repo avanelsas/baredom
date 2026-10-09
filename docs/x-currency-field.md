@@ -105,7 +105,7 @@ Validity follows each keystroke. The inline message for `badInput`, `rangeUnderf
 
 `x-currency-field` is a form-associated custom element (`static formAssociated = true`). It integrates with native `<form>` elements and with `x-form` via `ElementInternals`:
 
-- **`formDisabledCallback`** — sets/removes the `disabled` attribute and re-renders
+- **`formDisabledCallback`**: a disabled `fieldset` disables the control. The control gets no `disabled` attribute.
 - **`formResetCallback`** — clears the `value` attribute and the input display
 - The form submission value is the raw numeric string (e.g. `"1234.56"`)
 

@@ -137,6 +137,18 @@
     (.dispatchEvent btn (js/PointerEvent. "pointerleave" #js {:bubbles false}))
     (is (aget result "end"))))
 
+(deftest a-fieldset-disables-the-inner-button-and-enables-it-again
+  (let [fieldset (.createElement js/document "fieldset")
+        el       (make-el)]
+    (.appendChild fieldset el)
+    (append! fieldset)
+    (set! (.-disabled fieldset) true)
+    (is (true? (.-disabled (shadow-button el))))
+    (is (false? (.hasAttribute el model/attr-disabled)))
+    (set! (.-disabled fieldset) false)
+    (is (false? (.-disabled (shadow-button el))))
+    (.remove fieldset)))
+
 (deftest hover-suppressed-when-disabled-test
   (let [el (append! (make-el))
         btn (shadow-button el)

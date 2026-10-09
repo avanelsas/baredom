@@ -106,11 +106,11 @@
    ".clear-hidden{"
    "display:none;"
    "}"
-   ":host([disabled]) [part=wrapper]{"
+   ":host(:disabled) [part=wrapper]{"
    "opacity:var(--x-search-field-disabled-opacity);"
    "cursor:not-allowed;"
    "}"
-   ":host([disabled]) [part=input]{"
+   ":host(:disabled) [part=input]{"
    "cursor:not-allowed;"
    "}"
    "@media (prefers-reduced-motion:reduce){"
@@ -176,7 +176,7 @@
 ;; ---------------------------------------------------------------------------
 (defn- toggle-clear-visibility! [^js input-el ^js clear-el ^js el]
   (let [empty?    (= "" (.-value input-el))
-        disabled? (du/has-attr? el model/attr-disabled)]
+        disabled? (forms/disabled? el)]
     (if (or empty? disabled?)
       (.add    (.-classList clear-el) "clear-hidden")
       (.remove (.-classList clear-el) "clear-hidden"))))
@@ -227,7 +227,7 @@
                          :value-raw         (du/get-attr el model/attr-value)
                          :placeholder-raw   (du/get-attr el model/attr-placeholder)
                          :label-raw         (du/get-attr el model/attr-label)
-                         :disabled-present? (du/has-attr? el model/attr-disabled)
+                         :disabled-present? (forms/disabled? el)
                          :required-present? (du/has-attr? el model/attr-required)
                          :autocomplete-raw  (du/get-attr el model/attr-autocomplete)})]
 
@@ -365,10 +365,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
 ;; ---------------------------------------------------------------------------
-(defn- form-disabled! [^js el disabled?]
-  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
-  (render! el))
-
 (defn- form-reset! [^js el]
   (clear-pending-debounce! el)
   (du/remove-attr! el model/attr-value)
@@ -455,6 +451,5 @@
      :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
      :form-associated?       true
-     :form-disabled-fn       form-disabled!
      :form-reset-fn          form-reset!
      :setup-prototype-fn     install-property-accessors!}))

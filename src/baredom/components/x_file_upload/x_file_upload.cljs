@@ -115,11 +115,11 @@
    "pointer-events:none;"
    "}"
    ;; Disabled
-   ":host([disabled]){"
+   ":host(:disabled){"
    "pointer-events:none;"
    "cursor:default;"
    "}"
-   ":host([disabled]) [part=drop-zone]{"
+   ":host(:disabled) [part=drop-zone]{"
    "opacity:var(--x-file-upload-disabled-opacity);"
    "}"
    ;; File list
@@ -271,7 +271,7 @@
     :multiple-present? (du/has-attr? el model/attr-multiple)
     :max-size-raw      (du/get-attr el model/attr-max-size)
     :max-files-raw     (du/get-attr el model/attr-max-files)
-    :disabled-present? (du/has-attr? el model/attr-disabled)
+    :disabled-present? (forms/disabled? el)
     :required-present? (du/has-attr? el model/attr-required)
     :name-raw          (du/get-attr el model/attr-name)}))
 
@@ -457,14 +457,14 @@
 (defn- make-handlers [^js el]
   (let [on-zone-click
         (fn [^js _e]
-          (when-not (du/has-attr? el model/attr-disabled)
+          (when-not (forms/disabled? el)
             (when-let [refs (du/getv el k-refs)]
               (.click (gobj/get refs "fileInput")))))
 
         on-zone-keydown
         (fn [^js e]
           (when (and (or (= (.-key e) "Enter") (= (.-key e) " "))
-                     (not (du/has-attr? el model/attr-disabled)))
+                     (not (forms/disabled? el)))
             (.preventDefault e)
             (when-let [refs (du/getv el k-refs)]
               (.click (gobj/get refs "fileInput")))))
@@ -481,7 +481,7 @@
         on-dragenter
         (fn [^js e]
           (.preventDefault e)
-          (when-not (du/has-attr? el model/attr-disabled)
+          (when-not (forms/disabled? el)
             (let [ctr (inc (du/getv el k-drag-ctr))]
               (du/setv! el k-drag-ctr ctr)
               (when (= ctr 1)
@@ -505,7 +505,7 @@
           (.preventDefault e)
           (du/setv! el k-drag-ctr 0)
           (du/remove-attr! el "data-drag-over")
-          (when-not (du/has-attr? el model/attr-disabled)
+          (when-not (forms/disabled? el)
             (let [^js files (.. e -dataTransfer -files)]
               (when (pos? (.-length files))
                 (add-files! el files)))))
@@ -589,10 +589,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Form callbacks
 ;; ---------------------------------------------------------------------------
-(defn- form-disabled! [^js el disabled?]
-  (du/set-bool-attr! el model/attr-disabled disabled?)
-  (update-from-attrs! el))
-
 (defn- form-reset! [^js el]
   (let [^js files (du/getv el k-files)]
     (set! (.-length files) 0))
@@ -631,6 +627,5 @@
      :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
      :form-associated?       true
-     :form-disabled-fn       form-disabled!
      :form-reset-fn          form-reset!
      :setup-prototype-fn     install-property-accessors!}))

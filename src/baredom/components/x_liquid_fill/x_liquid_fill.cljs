@@ -129,11 +129,18 @@
           node
           (recur (.-parentElement node)))))))
 
+(defn- query-target
+  "The element that `selector` finds, or nil when it finds none or is not a selector."
+  [selector]
+  (try
+    (.querySelector js/document selector)
+    (catch :default _ nil)))
+
 (defn- resolve-scroll-target
   "Resolve the scroll target element. Returns Element or nil (= window)."
   [^js el target-selector]
   (if (and (string? target-selector) (not= (.trim target-selector) ""))
-    (.querySelector js/document target-selector)
+    (query-target target-selector)
     (find-scroll-ancestor el)))
 
 (defn- get-scroll-info

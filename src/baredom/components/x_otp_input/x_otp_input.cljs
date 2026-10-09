@@ -83,11 +83,11 @@
    "border-color:var(--x-otp-input-error-color);"
    "box-shadow:0 0 0 3px color-mix(in srgb,var(--x-otp-input-error-color) 20%,transparent);"
    "}"
-   ":host([disabled]) [part=root]{"
+   ":host(:disabled) [part=root]{"
    "opacity:var(--x-otp-input-disabled-opacity);"
    "cursor:not-allowed;"
    "}"
-   ":host([disabled]) [part=slot]{"
+   ":host(:disabled) [part=slot]{"
    "cursor:not-allowed;"
    "}"
    "@media (pointer:coarse){"
@@ -216,7 +216,7 @@
     :length-raw         (du/get-attr el model/attr-length)
     :type-raw           (du/get-attr el model/attr-type)
     :mask-present?      (du/has-attr? el model/attr-mask)
-    :disabled-present?  (du/has-attr? el model/attr-disabled)
+    :disabled-present?  (forms/disabled? el)
     :readonly-present?  (du/has-attr? el model/attr-readonly)
     :required-present?  (du/has-attr? el model/attr-required)
     :autofocus-present? (du/has-attr? el model/attr-autofocus)
@@ -515,10 +515,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
 ;; ---------------------------------------------------------------------------
-(defn- form-disabled! [^js el disabled?]
-  ;; set-bool-attr! triggers attributeChangedCallback → update-from-attrs!
-  (du/set-bool-attr! el model/attr-disabled (boolean disabled?)))
-
 (defn- form-reset! [^js el]
   ;; remove-attr! triggers attributeChangedCallback → update-from-attrs!
   (du/remove-attr! el model/attr-value))
@@ -569,6 +565,5 @@
      :disconnected-fn      disconnected!
      :attribute-changed-fn attribute-changed!
      :form-associated?     true
-     :form-disabled-fn     form-disabled!
      :form-reset-fn        form-reset!
      :setup-prototype-fn   install-property-accessors!}))

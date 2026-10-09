@@ -282,7 +282,7 @@
    "outline-offset:1px;}"
 
    ;; ── Disabled ──────────────────────────────────────────────────────────
-   ":host([disabled]){opacity:var(--x-color-picker-disabled-opacity);pointer-events:none;}"
+   ":host(:disabled){opacity:var(--x-color-picker-disabled-opacity);pointer-events:none;}"
 
    ;; ── Reduced motion ────────────────────────────────────────────────────
    "@media (prefers-reduced-motion:reduce){"
@@ -473,7 +473,7 @@
    {:value    (du/get-attr el model/attr-value)
     :alpha    (du/get-attr el model/attr-alpha)
     :swatches (du/get-attr el model/attr-swatches)
-    :disabled (du/get-attr el model/attr-disabled)
+    :disabled? (forms/disabled? el)
     :readonly (du/get-attr el model/attr-readonly)
     :name     (du/get-attr el model/attr-name)
     :mode     (du/get-attr el model/attr-mode)
@@ -978,10 +978,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
 ;; ---------------------------------------------------------------------------
-(defn- form-disabled! [^js el disabled?]
-  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
-  (update-from-attrs! el))
-
 (defn- form-reset! [^js el]
   (du/set-attr! el model/attr-value model/default-value)
   (update-from-attrs! el))
@@ -1023,6 +1019,5 @@
      :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
      :form-associated?       true
-     :form-disabled-fn       form-disabled!
      :form-reset-fn          form-reset!
      :setup-prototype-fn     install-property-accessors!}))

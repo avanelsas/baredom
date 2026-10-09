@@ -223,7 +223,7 @@
     :max              (du/get-attr el model/attr-max)
     :step             (du/get-attr el model/attr-step)
     :min-gap          (du/get-attr el model/attr-min-gap)
-    :disabled         (du/has-attr? el model/attr-disabled)
+    :disabled         (forms/disabled? el)
     :readonly         (du/has-attr? el model/attr-readonly)
     :name             (du/get-attr el model/attr-name)
     :label            (du/get-attr el model/attr-label)
@@ -314,8 +314,8 @@
     (apply-form-value!     el m)
     (du/setv! el k-model m)))
 
-;; render! is the direct-write entry — form-disabled!/form-reset! mutate
-;; attributes synchronously and want the apply to run unconditionally.
+;; render! is the direct-write entry. form-reset! mutates attributes
+;; synchronously and wants the apply to run unconditionally.
 (defn- render! [^js el]
   (when-let [refs (du/getv el k-refs)]
     (apply-model! el refs (read-model el))))
@@ -511,10 +511,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
 ;; ---------------------------------------------------------------------------
-(defn- form-disabled! [^js el disabled?]
-  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
-  (render! el))
-
 (defn- form-reset! [^js el]
   ;; Reset to the widest range — start falls back to min, end to max.
   (du/remove-attr! el model/attr-start)
@@ -556,6 +552,5 @@
      :disconnected-fn      disconnected!
      :attribute-changed-fn attribute-changed!
      :form-associated?     true
-     :form-disabled-fn     form-disabled!
      :form-reset-fn        form-reset!
      :setup-prototype-fn   install-property-accessors!}))

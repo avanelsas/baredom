@@ -66,6 +66,9 @@ DOM = f(attributes, properties)
 
 Instance fields may only store shadow root references and cached DOM node handles. Never store authoritative UI state.
 
+A form control has one more input: whether a `fieldset` disables it. It reads that with
+`forms/disabled?`.
+
 ### The render pipeline
 
 Every component implements an `update-from-attrs!` function that follows a three-phase pipeline with a **model-change guard**:
@@ -260,6 +263,7 @@ Components **must** use shared utility modules — never reimplement locally:
 - **`du/define-bool-prop!`** / **`du/define-string-prop!`** / **`du/define-number-prop!`** — install single accessor (Tier 1)
 - **`forms/validity`** / **`forms/set-validity!`** / **`forms/sync!`** — the shared ElementInternals constraint-validation policy for form-associated components. `forms/validity` is a **pure** projection (`{:has-error? :error :required? :empty? :missing-message}` → `{:flags :message}`); `set-validity!` applies it via `setValidity`; `sync!` does `setFormValue` + `set-validity!`. A component supplies only its per-control variation (what counts as *empty*, the validity *anchor*, its *value*, any non-default *missing message*) — **never re-implement the `error → customError`, `required+empty → valueMissing`, `else → clear` cond inline.** References: `x-select`, `x-combobox`, `x-multi-combobox`, `x-date-picker` (`forms/sync!`), `x-form-field`, `x-text-area` (`forms/set-validity!`).
 - **`forms/install-validity-api!`** — installs the native validation surface on a form-associated component's prototype: read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` / `reportValidity()`, all delegating to the `ElementInternals` stashed under the component's `k-internals`. **`ElementInternals` never mirrors these onto the host element** — a component that skips the call leaves consumers unable to validate it except by attempting a submit. Every form-associated component calls it from its `install-property-accessors!`; declare the five members in `property-api` as `:readonly true` and the two methods in `method-api`. Never hand-roll the `.defineProperty` blocks.
+- **`forms/disabled?`**: the disabled state of a form control, from its own attribute or from a `fieldset`. A form control reads it in `read-model` and in its handlers, never writes `disabled` on its host, and styles itself with `:host(:disabled)`. `component/register!` installs `formDisabledCallback` for every form-associated component. The callback arrives at `attribute-changed!` as a change of `disabled`. Enforced by `bb scripts/check_form_disabled.bb` in CI.
 - **`forms/apply-error-display!`** / **`forms/error-describedby`** — the shared inline error-display recipe for the popup-selection controls. `apply-error-display!` sets the `[part=error]` span text + `error-hidden` visibility, `data-invalid` on the host, `aria-invalid` on the anchor, and `aria-describedby` from a caller-supplied value; `error-describedby` is a **pure** helper computing that value (the `error` id, optionally appended after an author-supplied id list). References: `x-select`, `x-combobox`, `x-multi-combobox`, `x-date-picker`. (The labeled-field controls `x-form-field` / `x-text-area` keep their own error display: it is woven into their shared `apply-text-block!` label/hint/error pattern and hint-aware describedby, a distinct structure — don't force them onto this helper.)
 - **`mu/`** — boolean parsing, string predicates, security sanitizers
 
