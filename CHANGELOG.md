@@ -2,6 +2,53 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.1.0] - 2026-10-09
+
+BareDOM 4.1 corrects how a form control follows its `fieldset`, and makes every component render
+once for a change. The adapters are not released again. Each works with this version as it is.
+
+### Fixed
+
+- **A control in a disabled `fieldset` works again when the fieldset is enabled.** All 17 form
+  controls stayed disabled, because they wrote a `disabled` attribute on themselves. A control no
+  longer gets that attribute from its fieldset. A page that styled such a control by the attribute
+  must select `:disabled`.
+- **`x-button` and `x-particle-button` obey a disabled `fieldset`.** Both could still be pressed.
+- **`x-form` leaves out the fields of a disabled `fieldset`**, from its values and from its
+  validity check.
+- **`disabled="false"` disables `x-checkbox` and `x-color-picker`**, as it does every other
+  control and every native one. Both treated the text `false` as an absent attribute.
+- **An `error` attribute with no text is no error.** It was reported as a custom error with an
+  empty message, which a browser refuses.
+- **Two attribute values no longer throw.** A `locale` of `x-date-picker` that is no language tag
+  and a `target` of `x-liquid-fill` that is no selector are ignored.
+- **A component renders once for a change, and not at all when nothing changed.** `x-range-slider`,
+  `x-switch`, `x-text-area`, `x-slider`, `x-rating`, `x-radio`, `x-date-picker` and
+  `x-search-field` rendered twice for a change of `disabled`. `x-metaball-cursor`,
+  `x-welcome-tour`, `x-organic-shape`, `x-notification-center` and `x-sidebar` rendered when no
+  attribute had changed. A hold of the render now also holds a change of `disabled`.
+
+### Changed
+
+- **`x-divider` and `x-carousel` write a default only where the host has none.** `x-divider`
+  writes `role="separator"` and `x-carousel` its `aria-label` when the author gave no value, and
+  neither touches a value of the author. `role="none"` on `x-divider` is no longer rewritten to
+  `presentation`. `role` and `aria-label` leave the attribute list of `x-divider` in the manifest,
+  and `aria-label` that of `x-carousel`.
+- **The trace records a change of a fieldset**, as a change of the `disabled` attribute of the
+  control.
+- **For ClojureScript.** `component/register!` no longer takes `:form-disabled-fn`. Every
+  form-associated element receives the callback as a change of its `disabled` attribute.
+  `blob-colors` of the `x-metaball-cursor` model returns a vector. `separator-role?` left the
+  `x-divider` model.
+
+### Added
+
+- **`forms/disabled?`**, for ClojureScript. It is true for a control that its own attribute or a
+  `fieldset` disables.
+- **The canonical values of a property, as data.** 150 properties of 75 components name their
+  set of values as `:enum` in `property-api`. The generated types do not read it yet.
+
 ## [4.0.0] - 2026-10-08
 
 BareDOM 4 makes every component follow the theme, gives every attribute a typed property, and
