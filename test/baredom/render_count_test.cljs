@@ -11,7 +11,6 @@
   {"x-carousel"            #{:change-renders-more-than-once}
    "x-date-picker"         #{:no-change-writes}
    "x-divider"             #{:change-renders-more-than-once}
-   "x-notification-center" #{:no-change-writes}
    "x-search-field"        #{:no-change-writes}
    "x-sidebar"             #{:no-change-writes}})
 
@@ -21,7 +20,7 @@
    "x-date-picker"         #{:renders :hold}
    "x-i18n"                #{:hold}
    "x-menu-item"           #{:hold}
-   "x-notification-center" #{:renders :hold}
+   "x-notification-center" #{:hold}
    "x-ripple-effect"       #{:renders :hold}
    "x-scroll-parallax"     #{:hold}
    "x-search-field"        #{:renders :hold}
