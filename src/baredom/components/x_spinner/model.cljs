@@ -18,8 +18,8 @@
 (def default-label   "Loading")
 
 (def property-api
-  {:size    {:type 'string :reflects-attribute attr-size    :default default-size}
-   :variant {:type 'string :reflects-attribute attr-variant :default default-variant}
+  {:size    {:type 'string :reflects-attribute attr-size    :default default-size :enum allowed-sizes}
+   :variant {:type 'string :reflects-attribute attr-variant :default default-variant :enum allowed-variants}
    :label   {:type 'string :reflects-attribute attr-label   :default default-label}})
 
 ;; ── Normalisation ─────────────────────────────────────────────────────────

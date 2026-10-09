@@ -13,9 +13,9 @@
   #js [attr-size attr-overlap attr-max attr-direction attr-disabled attr-label])
 
 ;; ── Valid enum sets & defaults ────────────────────────────────────────────
-(def ^:private valid-sizes      #{"xs" "sm" "md" "lg" "xl"})
-(def ^:private valid-overlaps   #{"none" "sm" "md" "lg"})
-(def ^:private valid-directions #{"ltr" "rtl"})
+(def valid-sizes      #{"xs" "sm" "md" "lg" "xl"})
+(def valid-overlaps   #{"none" "sm" "md" "lg"})
+(def valid-directions #{"ltr" "rtl"})
 
 (def default-size      "md")
 (def default-overlap   "md")
@@ -67,10 +67,10 @@
 
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api
-  {:size      {:type 'string  :reflects-attribute attr-size}
-   :overlap   {:type 'string  :reflects-attribute attr-overlap}
+  {:size      {:type 'string  :reflects-attribute attr-size :enum valid-sizes}
+   :overlap   {:type 'string  :reflects-attribute attr-overlap :enum valid-overlaps}
    :max       {:type 'number  :reflects-attribute attr-max}
-   :direction {:type 'string  :reflects-attribute attr-direction}
+   :direction {:type 'string  :reflects-attribute attr-direction :enum valid-directions}
    :disabled  {:type 'boolean :reflects-attribute attr-disabled}
    :label     {:type 'string  :reflects-attribute attr-label}})
 

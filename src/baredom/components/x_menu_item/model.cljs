@@ -18,8 +18,8 @@
 (def property-api
   {:value    {:type 'string  :reflects-attribute attr-value}
    :disabled {:type 'boolean :reflects-attribute attr-disabled}
-   :variant  {:type 'string  :reflects-attribute attr-variant}
-   :type     {:type 'string  :reflects-attribute attr-type}})
+   :variant  {:type 'string  :reflects-attribute attr-variant :enum variant-values}
+   :type     {:type 'string  :reflects-attribute attr-type :enum type-values}})
 
 (def event-schema
   {event-item-select {:cancelable false :detail {:value 'string}}})

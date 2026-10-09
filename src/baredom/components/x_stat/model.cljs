@@ -41,11 +41,11 @@
 ;; that. Component code applies the kebab-case defaults internally
 ;; only when rendering, not when exposing the JS property.
 (def property-api
-  {:variant  {:type 'string  :reflects-attribute attr-variant  :default ""}
-   :align    {:type 'string  :reflects-attribute attr-align    :default ""}
-   :size     {:type 'string  :reflects-attribute attr-size     :default ""}
-   :emphasis {:type 'string  :reflects-attribute attr-emphasis :default ""}
-   :trend    {:type 'string  :reflects-attribute attr-trend    :default ""}
+  {:variant  {:type 'string  :reflects-attribute attr-variant  :default "" :enum variant-values}
+   :align    {:type 'string  :reflects-attribute attr-align    :default "" :enum align-values}
+   :size     {:type 'string  :reflects-attribute attr-size     :default "" :enum size-values}
+   :emphasis {:type 'string  :reflects-attribute attr-emphasis :default "" :enum emphasis-values}
+   :trend    {:type 'string  :reflects-attribute attr-trend    :default "" :enum trend-values}
    :loading  {:type 'boolean :reflects-attribute attr-loading}
    :label    {:type 'string  :reflects-attribute attr-label    :default ""}
    :value    {:type 'string  :reflects-attribute attr-value    :default ""}

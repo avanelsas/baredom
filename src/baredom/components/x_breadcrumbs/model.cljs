@@ -22,8 +22,8 @@
        attr-aria-label attr-aria-describedby])
 
 ;; ── Valid enum sets & defaults ────────────────────────────────────────────
-(def ^:private valid-sizes    #{"sm" "md" "lg"})
-(def ^:private valid-variants #{"default" "subtle" "text"})
+(def valid-sizes    #{"sm" "md" "lg"})
+(def valid-variants #{"default" "subtle" "text"})
 
 (def default-size          "md")
 (def default-variant       "default")
@@ -101,8 +101,8 @@
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api
   {:separator           {:type 'string  :reflects-attribute attr-separator}
-   :size                {:type 'string  :reflects-attribute attr-size}
-   :variant             {:type 'string  :reflects-attribute attr-variant}
+   :size                {:type 'string  :reflects-attribute attr-size :enum valid-sizes}
+   :variant             {:type 'string  :reflects-attribute attr-variant :enum valid-variants}
    :wrap                {:type 'boolean :reflects-attribute attr-wrap}
    :maxItems            {:type 'number  :reflects-attribute attr-max-items}
    :itemsBefore         {:type 'number  :reflects-attribute attr-items-before}

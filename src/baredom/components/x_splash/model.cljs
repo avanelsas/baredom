@@ -14,21 +14,23 @@
 
 (def event-hidden "x-splash-hidden")
 
+(def allowed-variants #{"default" "branded" "minimal"})
+
+(def allowed-overlays #{"solid" "blur" "transparent"})
+
 (def property-api
   {:active   {:type 'boolean :reflects-attribute attr-active}
-   :variant  {:type 'string  :reflects-attribute attr-variant}
+   :variant  {:type 'string  :reflects-attribute attr-variant :enum allowed-variants}
    :progress {:type 'number  :reflects-attribute attr-progress}
    :spinner  {:type 'boolean :reflects-attribute attr-spinner}
-   :overlay  {:type 'string  :reflects-attribute attr-overlay}})
+   :overlay  {:type 'string  :reflects-attribute attr-overlay :enum allowed-overlays}})
 
 (def event-schema
   {event-hidden {:detail     {}
                  :cancelable false}})
 
-(def ^:private allowed-variants #{"default" "branded" "minimal"})
 (def ^:private default-variant "default")
 
-(def ^:private allowed-overlays #{"solid" "blur" "transparent"})
 (def ^:private default-overlay "solid")
 
 (defn normalize-variant

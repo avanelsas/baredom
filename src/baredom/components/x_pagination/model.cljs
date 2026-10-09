@@ -140,7 +140,7 @@
    :totalPages     {:type 'number  :reflects-attribute attr-total-pages}
    :siblingCount   {:type 'number  :reflects-attribute attr-sibling-count}
    :boundaryCount  {:type 'number  :reflects-attribute attr-boundary-count}
-   :size           {:type 'string  :reflects-attribute attr-size}
+   :size           {:type 'string  :reflects-attribute attr-size :enum allowed-sizes}
    :disabled       {:type 'boolean :reflects-attribute attr-disabled}
    :label          {:type 'string  :reflects-attribute attr-label}})
 

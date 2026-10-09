@@ -19,7 +19,7 @@
 
 (def property-api
   {:open      {:type 'boolean :reflects-attribute attr-open}
-   :placement {:type 'string  :reflects-attribute attr-placement}
+   :placement {:type 'string  :reflects-attribute attr-placement :enum placement-values}
    :label     {:type 'string  :reflects-attribute attr-label}})
 
 (def event-schema

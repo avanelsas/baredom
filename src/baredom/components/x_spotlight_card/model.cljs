@@ -56,12 +56,12 @@
    "neutral"   "var(--x-color-text, #111827)"})
 
 (def property-api
-  {:variant   {:type 'string  :reflects-attribute attr-variant   :default default-variant}
-   :radius    {:type 'string  :reflects-attribute attr-radius    :default default-radius}
-   :padding   {:type 'string  :reflects-attribute attr-padding   :default default-padding}
-   :color     {:type 'string  :reflects-attribute attr-color     :default default-color}
-   :intensity {:type 'string  :reflects-attribute attr-intensity :default default-intensity}
-   :size      {:type 'string  :reflects-attribute attr-size      :default default-size}
+  {:variant   {:type 'string  :reflects-attribute attr-variant   :default default-variant :enum variant-values}
+   :radius    {:type 'string  :reflects-attribute attr-radius    :default default-radius :enum radius-values}
+   :padding   {:type 'string  :reflects-attribute attr-padding   :default default-padding :enum padding-values}
+   :color     {:type 'string  :reflects-attribute attr-color     :default default-color :enum color-values}
+   :intensity {:type 'string  :reflects-attribute attr-intensity :default default-intensity :enum intensity-values}
+   :size      {:type 'string  :reflects-attribute attr-size      :default default-size :enum size-values}
    :static    {:type 'boolean :reflects-attribute attr-static}})
 
 (def event-schema {})

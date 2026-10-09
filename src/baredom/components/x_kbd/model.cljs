@@ -19,8 +19,8 @@
 (def default-platform  "auto")
 (def detected-fallback "linux")
 
-(def ^:private valid-sizes     #{"sm" "md" "lg"})
-(def ^:private valid-platforms #{"auto" "mac" "win" "linux"})
+(def valid-sizes     #{"sm" "md" "lg"})
+(def valid-platforms #{"auto" "mac" "win" "linux"})
 (def ^:private resolved-platforms #{"mac" "win" "linux"})
 
 ;; ── Token map ─────────────────────────────────────────────────────────────
@@ -159,8 +159,8 @@
 (def property-api
   {:keys      {:type 'string :reflects-attribute attr-keys      :default ""}
    :separator {:type 'string :reflects-attribute attr-separator :default default-separator}
-   :size      {:type 'string :reflects-attribute attr-size      :default default-size}
-   :platform  {:type 'string :reflects-attribute attr-platform  :default default-platform}
+   :size      {:type 'string :reflects-attribute attr-size      :default default-size :enum valid-sizes}
+   :platform  {:type 'string :reflects-attribute attr-platform  :default default-platform :enum valid-platforms}
    :label     {:type 'string :reflects-attribute attr-label     :default ""}})
 
 (def event-schema {})

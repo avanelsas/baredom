@@ -12,10 +12,15 @@
 (def observed-attributes
   #js [attr-shape attr-path attr-animation attr-ratio attr-width attr-height])
 
+(def allowed-animations #{"none" "morph" "pulse" "float" "spin"})
+
+(def allowed-shapes
+  #{"blob-1" "blob-2" "blob-3" "pebble" "leaf" "droplet" "cloud" "wave"})
+
 (def property-api
-  {:shape   {:type 'string  :reflects-attribute attr-shape}
+  {:shape   {:type 'string  :reflects-attribute attr-shape :enum allowed-shapes}
    :path    {:type 'string  :reflects-attribute attr-path}
-   :animation {:type 'string :reflects-attribute attr-animation}
+   :animation {:type 'string :reflects-attribute attr-animation :enum allowed-animations}
    :ratio   {:type 'string  :reflects-attribute attr-ratio}
    :width   {:type 'string  :reflects-attribute attr-width}
    :height  {:type 'string  :reflects-attribute attr-height}})
@@ -25,11 +30,6 @@
 (def default-shape     "blob-1")
 (def default-ratio     "1/1")
 (def default-animation "none")
-
-(def allowed-animations #{"none" "morph" "pulse" "float" "spin"})
-
-(def allowed-shapes
-  #{"blob-1" "blob-2" "blob-3" "pebble" "leaf" "droplet" "cloud" "wave"})
 
 ;; Each preset has a :clip (static) and :clip-alt (morph target for animation).
 ;; Paths use percentage-based polygon() or path() values so they scale with the element.

@@ -26,6 +26,10 @@
 (def default-animation "float")
 (def default-blend     "normal")
 
+(def allowed-animations #{"float" "pulse" "none"})
+
+(def allowed-blends     #{"normal" "multiply" "screen" "overlay" "soft-light"})
+
 (def property-api
   {:colors    {:type 'string  :reflects-attribute attr-colors    :default default-colors}
    :blur      {:type 'string  :reflects-attribute attr-blur      :default "60"}
@@ -33,14 +37,11 @@
    :count     {:type 'string  :reflects-attribute attr-count     :default "5"}
    :size      {:type 'string  :reflects-attribute attr-size      :default "medium"}
    :opacity   {:type 'string  :reflects-attribute attr-opacity   :default "0.7"}
-   :animation {:type 'string  :reflects-attribute attr-animation :default default-animation}
-   :blend     {:type 'string  :reflects-attribute attr-blend     :default default-blend}
+   :animation {:type 'string  :reflects-attribute attr-animation :default default-animation :enum allowed-animations}
+   :blend     {:type 'string  :reflects-attribute attr-blend     :default default-blend :enum allowed-blends}
    :paused    {:type 'boolean :reflects-attribute attr-paused}})
 
 (def event-schema {})
-
-(def allowed-animations #{"float" "pulse" "none"})
-(def allowed-blends     #{"normal" "multiply" "screen" "overlay" "soft-light"})
 
 (def speed-presets
   {"slow"   18

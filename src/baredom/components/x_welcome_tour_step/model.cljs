@@ -23,11 +23,17 @@
 (def event-disconnected "x-welcome-tour-step-disconnected")
 
 ;; ── Public API metadata ─────────────────────────────────────────────────────
+(def allowed-placements
+  #{"top" "bottom" "left" "right"
+    "top-start" "top-end" "bottom-start" "bottom-end"})
+
+(def allowed-connectors #{"arrow" "line" "curve" "none"})
+
 (def property-api
   {:target        {:type 'string  :reflects-attribute attr-target}
    :title         {:type 'string  :reflects-attribute attr-title}
-   :placement     {:type 'string  :reflects-attribute attr-placement}
-   :connector     {:type 'string  :reflects-attribute attr-connector}
+   :placement     {:type 'string  :reflects-attribute attr-placement :enum allowed-placements}
+   :connector     {:type 'string  :reflects-attribute attr-connector :enum allowed-connectors}
    :cutoutPadding {:type 'number  :reflects-attribute attr-cutout-padding}
    :cutoutRadius  {:type 'number  :reflects-attribute attr-cutout-radius}
    :scrollTo      {:type 'boolean :reflects-attribute attr-scroll-to}})
@@ -37,13 +43,7 @@
    event-disconnected {:detail {} :cancelable false}})
 
 ;; ── Enums ───────────────────────────────────────────────────────────────────
-(def allowed-placements
-  #{"top" "bottom" "left" "right"
-    "top-start" "top-end" "bottom-start" "bottom-end"})
-
 (def default-placement "bottom")
-
-(def allowed-connectors #{"arrow" "line" "curve" "none"})
 
 ;; ── Parse helpers ───────────────────────────────────────────────────────────
 (defn parse-placement

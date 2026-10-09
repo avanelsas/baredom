@@ -24,7 +24,7 @@
 
 (def property-api
   {:text      {:type 'string  :reflects-attribute attr-text}
-   :placement {:type 'string  :reflects-attribute attr-placement}
+   :placement {:type 'string  :reflects-attribute attr-placement :enum allowed-placements}
    :delay     {:type 'number  :reflects-attribute attr-delay :default default-delay}
    :disabled  {:type 'boolean :reflects-attribute attr-disabled}
    :open      {:type 'boolean :reflects-attribute attr-open}})

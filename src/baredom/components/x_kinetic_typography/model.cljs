@@ -27,14 +27,27 @@
        attr-end-size attr-repeat attr-echo-count attr-echo-delay
        attr-echo-opacity attr-echo-scale])
 
+;; ── Allowed values ───────────────────────────────────────────────────────
+(def allowed-presets
+  #{"wave" "circle" "arc" "infinity" "spiral" "sine" "line" "crawl"})
+
+(def allowed-animations
+  #{"none" "scroll" "bounce" "oscillate"})
+
+(def allowed-directions
+  #{"normal" "reverse"})
+
+(def allowed-effects
+  #{"opacity-wave" "size-gradient" "size-pulse" "spacing-breathe" "color-shift" "color-wave"})
+
 ;; ── Property API ─────────────────────────────────────────────────────────
 (def property-api
   {:text         {:type 'string  :reflects-attribute attr-text}
    :path         {:type 'string  :reflects-attribute attr-path}
-   :preset       {:type 'string  :reflects-attribute attr-preset}
-   :animation    {:type 'string  :reflects-attribute attr-animation}
+   :preset       {:type 'string  :reflects-attribute attr-preset :enum allowed-presets}
+   :animation    {:type 'string  :reflects-attribute attr-animation :enum allowed-animations}
    :speed        {:type 'string  :reflects-attribute attr-speed}
-   :direction    {:type 'string  :reflects-attribute attr-direction}
+   :direction    {:type 'string  :reflects-attribute attr-direction :enum allowed-directions}
    :effect       {:type 'string  :reflects-attribute attr-effect}
    :fontSize     {:type 'string  :reflects-attribute attr-font-size}
    :startSize    {:type 'string  :reflects-attribute attr-start-size}
@@ -57,19 +70,6 @@
 (def default-echo-delay    0.3)
 (def default-echo-opacity  0.5)
 (def default-echo-scale    0.85)
-
-;; ── Allowed values ───────────────────────────────────────────────────────
-(def allowed-presets
-  #{"wave" "circle" "arc" "infinity" "spiral" "sine" "line" "crawl"})
-
-(def allowed-animations
-  #{"none" "scroll" "bounce" "oscillate"})
-
-(def allowed-directions
-  #{"normal" "reverse"})
-
-(def allowed-effects
-  #{"opacity-wave" "size-gradient" "size-pulse" "spacing-breathe" "color-shift" "color-wave"})
 
 ;; ── Path presets ─────────────────────────────────────────────────────────
 (def path-presets

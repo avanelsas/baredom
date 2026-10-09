@@ -22,9 +22,11 @@
 (def css-color-3 "--x-kinetic-canvas-color-3")
 (def css-matrix-font-size "--x-kinetic-canvas-matrix-font-size")
 
+(def allowed-types #{"starfield" "bubbles" "matrix"})
+
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:type       {:type 'string  :reflects-attribute attr-type}
+  {:type       {:type 'string  :reflects-attribute attr-type :enum allowed-types}
    :variant    {:type 'string  :reflects-attribute attr-variant}
    :speed      {:type 'string  :reflects-attribute attr-speed}
    :density    {:type 'string  :reflects-attribute attr-density}
@@ -38,8 +40,6 @@
 (def method-api {})
 
 ;; ── Allowed enum values ─────────────────────────────────────────────────────
-(def ^:private allowed-types #{"starfield" "bubbles" "matrix"})
-
 (def ^:private starfield-variants #{"motion" "twinkle"})
 
 (def ^:private named-speeds {"slow" 0.3 "medium" 1.0 "fast" 2.5})

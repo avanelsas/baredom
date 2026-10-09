@@ -26,11 +26,13 @@
 (def event-complete    "x-welcome-tour-complete")
 (def event-skip        "x-welcome-tour-skip")
 
+(def allowed-connectors #{"arrow" "line" "curve" "none"})
+
 ;; ── Public API metadata ─────────────────────────────────────────────────────
 (def property-api
   {:open       {:type 'boolean :reflects-attribute attr-open}
    :step       {:type 'number  :reflects-attribute attr-step}
-   :connector  {:type 'string  :reflects-attribute attr-connector}
+   :connector  {:type 'string  :reflects-attribute attr-connector :enum allowed-connectors}
    :prevLabel  {:type 'string  :reflects-attribute attr-prev-label}
    :nextLabel  {:type 'string  :reflects-attribute attr-next-label}
    :doneLabel  {:type 'string  :reflects-attribute attr-done-label}
@@ -48,7 +50,6 @@
    event-skip        {:detail {:step 'number} :cancelable false}})
 
 ;; ── Enums ───────────────────────────────────────────────────────────────────
-(def allowed-connectors #{"arrow" "line" "curve" "none"})
 (def default-connector "arrow")
 
 ;; ── Default labels ──────────────────────────────────────────────────────────

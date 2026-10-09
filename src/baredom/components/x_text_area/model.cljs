@@ -69,7 +69,7 @@
    :label        {:type 'string  :reflects-attribute attr-label}
    :hint         {:type 'string  :reflects-attribute attr-hint}
    :error        {:type 'string  :reflects-attribute attr-error}
-   :resize       {:type 'string  :reflects-attribute attr-resize}
+   :resize       {:type 'string  :reflects-attribute attr-resize :enum allowed-resize}
    :validity          {:type 'ValidityState   :readonly true}
    :validationMessage {:type 'string          :readonly true}
    :willValidate      {:type 'boolean         :readonly true}

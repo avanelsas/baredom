@@ -30,13 +30,16 @@
 (def css-glow            "--x-organic-progress-glow")
 (def css-opacity         "--x-organic-progress-opacity")
 
+(def allowed-variants  #{"vine" "honeycomb"})
+(def allowed-densities #{"sparse" "normal" "dense"})
+
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
   {:progress {:type 'string  :reflects-attribute attr-progress}
-   :variant  {:type 'string  :reflects-attribute attr-variant}
+   :variant  {:type 'string  :reflects-attribute attr-variant :enum allowed-variants}
    :color    {:type 'string  :reflects-attribute attr-color}
    :bloom    {:type 'boolean :reflects-attribute attr-bloom}
-   :density  {:type 'string  :reflects-attribute attr-density}
+   :density  {:type 'string  :reflects-attribute attr-density :enum allowed-densities}
    :seed     {:type 'number  :reflects-attribute attr-seed}
    :label    {:type 'string  :reflects-attribute attr-label}})
 
@@ -46,9 +49,6 @@
    event-bloom-end {:detail {:progress 'number} :cancelable false}})
 
 ;; ── Enums and defaults ──────────────────────────────────────────────────────
-(def ^:private allowed-variants  #{"vine" "honeycomb"})
-(def ^:private allowed-densities #{"sparse" "normal" "dense"})
-
 (def ^:private default-variant "vine")
 (def ^:private default-density "normal")
 (def ^:private default-seed    42)

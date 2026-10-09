@@ -50,15 +50,20 @@
 (def event-autoplay-pause  "x-scroll-timeline-autoplay-pause")
 (def event-autoplay-resume "x-scroll-timeline-autoplay-resume")
 
+;; ── Allowed enum values ─────────────────────────────────────────────────────
+(def allowed-layouts #{"alternating" "left" "right"})
+(def allowed-tracks  #{"straight" "curved"})
+(def allowed-markers #{"dot" "ring" "none"})
+
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:layout      {:type 'string  :reflects-attribute attr-layout}
-   :track       {:type 'string  :reflects-attribute attr-track}
+  {:layout      {:type 'string  :reflects-attribute attr-layout :enum allowed-layouts}
+   :track       {:type 'string  :reflects-attribute attr-track :enum allowed-tracks}
    :threshold   {:type 'number  :reflects-attribute attr-threshold}
    :noProgress  {:type 'boolean :reflects-attribute attr-no-progress}
    :disabled    {:type 'boolean :reflects-attribute attr-disabled}
    :label       {:type 'string  :reflects-attribute attr-label}
-   :marker      {:type 'string  :reflects-attribute attr-marker}
+   :marker      {:type 'string  :reflects-attribute attr-marker :enum allowed-markers}
    :activeIndex {:type 'number :readonly true}
    :progress    {:type 'number :readonly true}
    :autoplay          {:type 'boolean :reflects-attribute attr-autoplay}
@@ -84,11 +89,6 @@
                           :cancelable false}
    event-autoplay-resume {:detail {:progress 'number :activeIndex 'number :activeId 'string}
                           :cancelable false}})
-
-;; ── Allowed enum values ─────────────────────────────────────────────────────
-(def ^:private allowed-layouts #{"alternating" "left" "right"})
-(def ^:private allowed-tracks  #{"straight" "curved"})
-(def ^:private allowed-markers #{"dot" "ring" "none"})
 
 ;; ── Parsing functions ───────────────────────────────────────────────────────
 

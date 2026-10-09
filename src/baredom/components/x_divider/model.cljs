@@ -16,9 +16,9 @@
        attr-inset attr-length attr-label attr-align])
 
 ;; ── Valid enum sets & defaults ────────────────────────────────────────────
-(def ^:private valid-orientations #{"horizontal" "vertical"})
-(def ^:private valid-variants     #{"solid" "dashed" "dotted"})
-(def ^:private valid-aligns       #{"center" "start" "end"})
+(def valid-orientations #{"horizontal" "vertical"})
+(def valid-variants     #{"solid" "dashed" "dotted"})
+(def valid-aligns       #{"center" "start" "end"})
 
 (def default-orientation "horizontal")
 (def default-variant     "solid")
@@ -53,9 +53,9 @@
 
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api
-  {:orientation {:type 'string :reflects-attribute attr-orientation :default default-orientation}
-   :variant     {:type 'string :reflects-attribute attr-variant     :default default-variant}
-   :align       {:type 'string :reflects-attribute attr-align       :default default-align}
+  {:orientation {:type 'string :reflects-attribute attr-orientation :default default-orientation :enum valid-orientations}
+   :variant     {:type 'string :reflects-attribute attr-variant     :default default-variant :enum valid-variants}
+   :align       {:type 'string :reflects-attribute attr-align       :default default-align :enum valid-aligns}
    :label       {:type 'string :reflects-attribute attr-label}
    :thickness   {:type 'string :reflects-attribute attr-thickness}
    :color       {:type 'string :reflects-attribute attr-color}

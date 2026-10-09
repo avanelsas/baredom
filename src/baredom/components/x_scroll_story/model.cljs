@@ -32,9 +32,12 @@
 ;; ── Data attribute set on active step child ─────────────────────────────────
 (def data-active "data-active")
 
+;; ── Allowed enum values ─────────────────────────────────────────────────────
+(def allowed-layouts #{"left" "right" "top"})
+
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:layout            {:type 'string  :reflects-attribute attr-layout}
+  {:layout            {:type 'string  :reflects-attribute attr-layout :enum allowed-layouts}
    :threshold         {:type 'number  :reflects-attribute attr-threshold}
    :split             {:type 'number  :reflects-attribute attr-split}
    :disabled          {:type 'boolean :reflects-attribute attr-disabled}
@@ -64,9 +67,6 @@
                           :cancelable false}
    event-autoplay-resume {:detail {:progress 'number :activeIndex 'number :activeId 'string}
                           :cancelable false}})
-
-;; ── Allowed enum values ─────────────────────────────────────────────────────
-(def ^:private allowed-layouts #{"left" "right" "top"})
 
 ;; ── Parsing functions ───────────────────────────────────────────────────────
 

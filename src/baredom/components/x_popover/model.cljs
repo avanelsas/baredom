@@ -25,7 +25,7 @@
 
 (def property-api
   {:open       {:type 'boolean :reflects-attribute attr-open}
-   :placement  {:type 'string  :reflects-attribute attr-placement}
+   :placement  {:type 'string  :reflects-attribute attr-placement :enum allowed-placements}
    :heading    {:type 'string  :reflects-attribute attr-heading}
    :closeLabel {:type 'string  :reflects-attribute attr-close-label}
    :noClose    {:type 'boolean :reflects-attribute attr-no-close}

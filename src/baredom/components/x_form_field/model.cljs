@@ -44,7 +44,7 @@
 (def property-api
   {:value        {:type 'string  :reflects-attribute attr-value}
    :label        {:type 'string  :reflects-attribute attr-label}
-   :type         {:type 'string  :reflects-attribute attr-type}
+   :type         {:type 'string  :reflects-attribute attr-type :enum allowed-types}
    :name         {:type 'string  :reflects-attribute attr-name}
    :placeholder  {:type 'string  :reflects-attribute attr-placeholder}
    :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}

@@ -18,12 +18,14 @@
 (def event-change   "x-scroll-stack-change")
 (def event-progress "x-scroll-stack-progress")
 
+(def align-set #{"top" "center" "bottom"})
+
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
   {:peek           {:type 'number  :reflects-attribute attr-peek}
    :rotation       {:type 'number  :reflects-attribute attr-rotation}
    :scrollDistance  {:type 'number  :reflects-attribute attr-scroll-distance}
-   :align          {:type 'string  :reflects-attribute attr-align}
+   :align          {:type 'string  :reflects-attribute attr-align :enum align-set}
    :disabled       {:type 'boolean :reflects-attribute attr-disabled}
    :stackedCount   {:type 'number  :read-only true}
    :progress       {:type 'number  :read-only true}})
@@ -50,8 +52,6 @@
         n
         default))
     default))
-
-(def ^:private align-set #{"top" "center" "bottom"})
 
 (defn parse-align
   "Parse align attribute. Returns \"top\", \"center\", or \"bottom\"."

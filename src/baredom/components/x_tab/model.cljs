@@ -35,9 +35,9 @@
   {:selected    {:type 'boolean :reflects-attribute attr-selected}
    :disabled    {:type 'boolean :reflects-attribute attr-disabled}
    :value       {:type 'string  :reflects-attribute attr-value}
-   :orientation {:type 'string  :reflects-attribute attr-orientation :default default-orientation}
-   :size        {:type 'string  :reflects-attribute attr-size        :default default-size}
-   :variant     {:type 'string  :reflects-attribute attr-variant     :default default-variant}
+   :orientation {:type 'string  :reflects-attribute attr-orientation :default default-orientation :enum orientation-values}
+   :size        {:type 'string  :reflects-attribute attr-size        :default default-size :enum size-values}
+   :variant     {:type 'string  :reflects-attribute attr-variant     :default default-variant :enum variant-values}
    :label       {:type 'string  :reflects-attribute attr-label       :default ""}
    :controls    {:type 'string  :reflects-attribute attr-controls    :default ""}})
 

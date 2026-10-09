@@ -134,7 +134,7 @@
   {:name        {:type 'string  :reflects-attribute attr-name        :default ""}
    :value       {:type 'string  :reflects-attribute attr-value       :default ""}
    :length      {:type 'number  :reflects-attribute attr-length      :default default-length}
-   :type        {:type 'string  :reflects-attribute attr-type        :default default-type}
+   :type        {:type 'string  :reflects-attribute attr-type        :default default-type :enum allowed-types}
    :mask        {:type 'boolean :reflects-attribute attr-mask}
    :disabled    {:type 'boolean :reflects-attribute attr-disabled}
    :readonly    {:type 'boolean :reflects-attribute attr-readonly}

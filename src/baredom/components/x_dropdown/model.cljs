@@ -23,7 +23,7 @@
   {:open      {:type 'boolean :reflects-attribute attr-open}
    :disabled  {:type 'boolean :reflects-attribute attr-disabled}
    :label     {:type 'string  :reflects-attribute attr-label}
-   :placement {:type 'string  :reflects-attribute attr-placement}})
+   :placement {:type 'string  :reflects-attribute attr-placement :enum allowed-placements}})
 
 (def event-schema
   {event-toggle {:cancelable true

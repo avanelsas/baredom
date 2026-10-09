@@ -70,7 +70,7 @@
 
 (def property-api
   {:open  {:type 'boolean :reflects-attribute attr-open}
-   :size  {:type 'string  :reflects-attribute attr-size  :default default-size}
+   :size  {:type 'string  :reflects-attribute attr-size  :default default-size :enum allowed-sizes}
    :label {:type 'string  :reflects-attribute attr-label :default default-label}})
 
 (def event-schema

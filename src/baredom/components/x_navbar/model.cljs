@@ -44,10 +44,10 @@
   {:sticky      {:type 'boolean :reflects-attribute attr-sticky}
    :elevated    {:type 'boolean :reflects-attribute attr-elevated}
    :label       {:type 'string  :reflects-attribute attr-label       :default ""}
-   :variant     {:type 'string  :reflects-attribute attr-variant     :default ""}
-   :orientation {:type 'string  :reflects-attribute attr-orientation :default ""}
-   :alignment   {:type 'string  :reflects-attribute attr-alignment   :default ""}
-   :breakpoint  {:type 'string  :reflects-attribute attr-breakpoint  :default ""}})
+   :variant     {:type 'string  :reflects-attribute attr-variant     :default "" :enum allowed-variants}
+   :orientation {:type 'string  :reflects-attribute attr-orientation :default "" :enum allowed-orientations}
+   :alignment   {:type 'string  :reflects-attribute attr-alignment   :default "" :enum allowed-alignments}
+   :breakpoint  {:type 'string  :reflects-attribute attr-breakpoint  :default "" :enum allowed-breakpoints}})
 
 (def event-schema
   {event-focus-visible {:cancelable false :detail {}}

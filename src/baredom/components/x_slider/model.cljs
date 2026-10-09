@@ -68,7 +68,7 @@
    :showValue {:type 'boolean :reflects-attribute attr-show-value}
    :name      {:type 'string  :reflects-attribute attr-name}
    :label     {:type 'string  :reflects-attribute attr-label}
-   :size      {:type 'string  :reflects-attribute attr-size}
+   :size      {:type 'string  :reflects-attribute attr-size :enum allowed-sizes}
    :validity          {:type 'ValidityState   :readonly true}
    :validationMessage {:type 'string          :readonly true}
    :willValidate      {:type 'boolean         :readonly true}
