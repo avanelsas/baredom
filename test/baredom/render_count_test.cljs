@@ -12,7 +12,6 @@
    "x-date-picker"         #{:no-change-writes}
    "x-divider"             #{:change-renders-more-than-once}
    "x-notification-center" #{:no-change-writes}
-   "x-organic-shape"       #{:no-change-writes}
    "x-search-field"        #{:no-change-writes}
    "x-sidebar"             #{:no-change-writes}})
 
@@ -23,7 +22,6 @@
    "x-i18n"                #{:hold}
    "x-menu-item"           #{:hold}
    "x-notification-center" #{:renders :hold}
-   "x-organic-shape"       #{:renders :hold}
    "x-ripple-effect"       #{:renders :hold}
    "x-scroll-parallax"     #{:hold}
    "x-search-field"        #{:renders :hold}

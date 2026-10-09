@@ -7,6 +7,7 @@
 (def ^:private k-initialized "__xOrganicShapeInit")
 (def ^:private k-base        "__xOrganicShapeBase")
 (def ^:private k-slot        "__xOrganicShapeSlot")
+(def ^:private k-model       "__xOrganicShapeModel")
 (def ^:private k-slotchange  "__xOrganicShapeSlotHandler")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
@@ -138,10 +139,11 @@
         (du/set-attr! el "aria-hidden" "true"))))
 
 ;; ── Render ────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
-  (let [{:keys [clip clip-alt animation ratio width height]}
-        (model/normalize (read-inputs el))
-        ^js base (du/getv el k-base)
+(defn- read-model [^js el]
+  (model/normalize (read-inputs el)))
+
+(defn- apply-model! [^js el {:keys [clip clip-alt animation ratio width height] :as m}]
+  (let [^js base (du/getv el k-base)
         ^js slot-el (du/getv el k-slot)]
 
     ;; Set clip-path via CSS custom properties so the keyframes can reference them
@@ -170,7 +172,14 @@
       (du/remove-attr! el "data-animation"))
 
     ;; Accessibility
-    (update-a11y! el slot-el)))
+    (update-a11y! el slot-el)
+    (du/setv! el k-model m)))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (du/getv el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el new-m))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- remove-slotchange-listener! [^js el]
@@ -190,7 +199,7 @@
         handler (fn handle-slotchange [] (update-a11y! el slot-el))]
     (du/setv! el k-slotchange handler)
     (.addEventListener slot-el "slotchange" handler))
-  (render! el))
+  (apply-model! el (read-model el)))
 
 (defn- disconnected! [^js el]
   (remove-slotchange-listener! el))
@@ -198,7 +207,7 @@
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (when (du/getv el k-initialized)
-      (render! el))))
+      (update-from-attrs! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
