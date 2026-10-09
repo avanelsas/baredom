@@ -8,10 +8,15 @@
 
 (def ^:private known-defects
   "The defects each component has today. A component that is not named has none."
-  {"x-carousel"        #{:change-renders-more-than-once}
-   "x-divider"         #{:change-renders-more-than-once}
-   "x-metaball-cursor" #{:hold-renders-more-than-once}
-   "x-welcome-tour"    #{:change-renders-more-than-once :hold-renders-more-than-once}})
+  {"x-carousel"            #{:change-renders-more-than-once}
+   "x-date-picker"         #{:no-change-writes}
+   "x-divider"             #{:change-renders-more-than-once}
+   "x-metaball-cursor"     #{:no-change-writes :hold-renders-more-than-once}
+   "x-notification-center" #{:no-change-writes}
+   "x-organic-shape"       #{:no-change-writes}
+   "x-search-field"        #{:no-change-writes}
+   "x-sidebar"             #{:no-change-writes}
+   "x-welcome-tour"        #{:change-renders-more-than-once :no-change-writes :hold-renders-more-than-once}})
 
 (def ^:private known-gaps
   "What this test cannot measure in a component today: its renders, or its renders in a hold."
@@ -67,21 +72,34 @@
        (identical? el (:el payload))
        (str/ends-with? (:field payload) "Model")))
 
-(defn- count-model-write! [^js el seen payload]
-  (when (model-write? el payload)
+(def ^:private dom-writes #{:dom/attribute-set :dom/attribute-removed})
+
+(defn- write?
+  "True when `payload` is a write of the cached model of `el`, or a write to the DOM."
+  [^js el payload]
+  (or (model-write? el payload)
+      (contains? dom-writes (:type payload))))
+
+(defn- count-when! [counts? seen payload]
+  (when (counts? payload)
     (swap! seen inc)))
 
-(defn- renders!
-  "The number of times `el` writes its cached model while `work` runs."
-  [^js el work]
+(defn- counted!
+  "The number of trace payloads that `counts?` accepts while `work` runs."
+  [counts? work]
   (let [hook @du/trace-hook
         seen (atom 0)]
-    (reset! du/trace-hook (partial count-model-write! el seen))
+    (reset! du/trace-hook (partial count-when! counts? seen))
     (try
       (work)
       (finally
         (reset! du/trace-hook hook)))
     @seen))
+
+(defn- renders!
+  "The number of times `el` writes its cached model while `work` runs."
+  [^js el work]
+  (counted! (partial model-write? el) work))
 
 (defn- measured!
   "`change` with what it costs a new `tag` element: the renders of the change, and the renders
@@ -103,6 +121,24 @@
     (.remove el)
     n))
 
+(defn- call-back!
+  "Calls the attribute callback of `el` for `attr`, with no attribute changed."
+  [^js el attr]
+  (.attributeChangedCallback el attr "old" "new"))
+
+(defn- call-back-all! [^js el attrs]
+  (run! (partial call-back! el) attrs))
+
+(defn- idle-writes!
+  "The writes of a new `tag` element when each of `attrs` calls back with no attribute changed.
+   A first round of callbacks is not counted."
+  [tag attrs]
+  (let [el (mount! tag)
+        _  (call-back-all! el attrs)
+        n  (counted! (partial write? el) (partial call-back-all! el attrs))]
+    (.remove el)
+    n))
+
 (defn- change [attr [from to]]
   {:attr attr :from from :to to})
 
@@ -121,15 +157,16 @@
        (mapv first)))
 
 (defn- renders-of!
-  "What each change of `attrs` costs `tag`: one by one, in pairs inside a hold, and with
-   `disabled` inside a hold."
+  "What each change of `attrs` costs `tag`: one by one, in pairs inside a hold, with `disabled`
+   inside a hold, and with no attribute changed."
   [tag attrs]
   (let [changes (mapv (partial measured! tag) (mapcat changes-of attrs))
         lives   (live changes)]
     {:changes       changes
-      :held          (mapv (partial held-renders! tag) (partition 2 1 lives))
-      :disabled-held (when (and (some #{attr-disabled} attrs) (seq lives))
-                       (held-renders! tag [disabling (first lives)]))}))
+     :held          (mapv (partial held-renders! tag) (partition 2 1 lives))
+     :disabled-held (when (and (some #{attr-disabled} attrs) (seq lives))
+                      (held-renders! tag [disabling (first lives)]))
+     :idle          (idle-writes! tag attrs)}))
 
 (defn- measurement!
   "The renders of `tag`, with the number of errors its callbacks threw."
@@ -156,10 +193,11 @@
 
 (defn- defects
   "The defects that `measurement` shows, as a set of keywords."
-  [{:keys [changes held disabled-held thrown]}]
+  [{:keys [changes held disabled-held idle thrown]}]
   (cond-> #{}
     (some rendered-more-than-once? changes) (conj :change-renders-more-than-once)
     (some rendered-again? changes)          (conj :same-value-renders)
+    (pos? idle)                             (conj :no-change-writes)
     (some more-than-one? held)              (conj :hold-renders-more-than-once)
     (some-> disabled-held more-than-one?)   (conj :disabled-in-hold-renders-more-than-once)
     (pos? thrown)                           (conj :attribute-value-throws)))
@@ -176,12 +214,14 @@
   {:changes       [{:attr "a" :renders 1 :again 0} {:attr "b" :renders 1 :again 0}]
     :held          [1]
     :disabled-held 1
+    :idle          0
     :thrown        0})
 
 (deftest defects-names-each-defect-of-a-measurement
   (is (= #{} (defects clean)))
   (is (= #{:change-renders-more-than-once} (defects (assoc-in clean [:changes 0 :renders] 2))))
   (is (= #{:same-value-renders} (defects (assoc-in clean [:changes 0 :again] 1))))
+  (is (= #{:no-change-writes} (defects (assoc clean :idle 3))))
   (is (= #{:hold-renders-more-than-once} (defects (assoc clean :held [1 2]))))
   (is (= #{:disabled-in-hold-renders-more-than-once} (defects (assoc clean :disabled-held 2))))
   (is (= #{:attribute-value-throws} (defects (assoc clean :thrown 1))))
