@@ -275,7 +275,7 @@
 (defn collapsible?
   "True when `max-lines` is positive and the code has more lines than that."
   [max-lines line-count]
-  (boolean (and (pos? max-lines) (> line-count max-lines))))
+  (and (pos? max-lines) (> line-count max-lines)))
 
 (defn language-label
   "Short uppercase badge for a language, or \"\" for plain text."
@@ -336,4 +336,4 @@
      :line-count     n
      :lines          lines
      :collapsible?   (collapsible? max-lines n)
-     :header?        (boolean (or show? (not= "" filename)))}))
+     :header?        (or show? (not= "" filename))}))

@@ -309,7 +309,7 @@
 (defn interactable?
   "True when the slider accepts user interaction (not disabled, not readonly)."
   [{:keys [disabled? readonly?]}]
-  (boolean (and (not disabled?) (not readonly?))))
+  (and (not disabled?) (not readonly?)))
 
 (defn value-text
   "Header display text for the current range."

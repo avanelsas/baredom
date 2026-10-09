@@ -251,12 +251,12 @@
 
 (deftest enabled-false-by-default-test
   (testing "no URL param + no flag = disabled"
-    (is (false? (boolean (model/enabled? (fake-window {})))))))
+    (is (false? (model/enabled? (fake-window {}))))))
 
 (deftest enabled-via-url-param-test
   (testing "URL search containing baredom-trace-history activates"
-    (is (true? (boolean (model/enabled?
-                          (fake-window {:search "?baredom-trace-history"})))))))
+    (is (true? (model/enabled?
+                (fake-window {:search "?baredom-trace-history"}))))))
 
 (deftest enabled-via-window-flag-test
   (testing "window.BAREDOM_TRACE_HISTORY = true activates"
@@ -270,7 +270,7 @@
 (deftest enabled-via-raw-flag-test
   (testing "BAREDOM_TRACE_HISTORY = \"raw\" activates (forensic mode is
             still an active mode)"
-    (is (true? (boolean (model/enabled? (fake-window {:flag "raw"})))))))
+    (is (true? (model/enabled? (fake-window {:flag "raw"}))))))
 
 ;; ── forensic? ───────────────────────────────────────────────────────────────
 
@@ -288,9 +288,8 @@
 
 (deftest forensic-via-url-param-raw-test
   (testing "URL containing ?baredom-trace-history=raw enables forensic"
-    (is (true? (boolean
-                (model/forensic?
-                 (fake-window {:search "?baredom-trace-history=raw"})))))))
+    (is (true? (model/forensic?
+                (fake-window {:search "?baredom-trace-history=raw"}))))))
 
 (deftest forensic-bare-url-param-not-forensic-test
   (testing "Bare ?baredom-trace-history (no =raw) is normal mode"

@@ -71,9 +71,7 @@
    :value       value-raw
    :name        name-raw
    :error       (or error-raw "")
-   ;; Coerce to a strict boolean: tests call normalize with sparse maps, so
-   ;; `(and (string? nil) …)` must not leak nil into a has-error? predicate.
-   :has-error?  (boolean (and (string? error-raw) (not= error-raw "")))})
+   :has-error?  (and (string? error-raw) (not= error-raw ""))})
 
 (def method-api
   {:checkValidity  {:args [] :returns 'boolean}

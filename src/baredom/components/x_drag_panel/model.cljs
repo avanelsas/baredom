@@ -118,7 +118,7 @@
      :auto-scroll (normalize-auto-scroll auto-scroll-raw)
      :disabled?   disabled?
      :pending?    pending?
-     :draggable?  (boolean (and (not disabled?) (not pending?)))}))
+     :draggable?  (and (not disabled?) (not pending?))}))
 
 ;; ── Drag geometry ────────────────────────────────────────────────────────────
 (defn drag-position
@@ -147,8 +147,8 @@
   no longer scroll the board by swiping over a card. Mouse and pen have no such
   conflict, and handle mode targets a small deliberate strip."
   [{:keys [pointer-type grab]}]
-  (boolean (and (= pointer-type pointer-touch)
-                (= grab grab-surface))))
+  (and (= pointer-type pointer-touch)
+       (= grab grab-surface)))
 
 (defn travelled?
   "True when a pointer has moved beyond `slop` pixels from its press origin.
