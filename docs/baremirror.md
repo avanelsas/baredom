@@ -7,6 +7,15 @@ made again.
 
 The only memory is on the nodes. A node holds its key, and the item last written to it.
 
+## See it run
+
+- [One task list, rendered three ways](https://avanelsas.github.io/baredom/bare-html/mirror.html):
+  a rebuild, code by hand and these functions, side by side, with counts and times.
+- [The same page with no script](https://avanelsas.github.io/baredom/bare-html/mirror.static.html):
+  a copy made ahead of time.
+- [A task list](https://avanelsas.github.io/baredom/bare-html/tasks.html): the example of this
+  page, in full.
+
 **It is an alpha.** It ships inside the BareDOM package under names that say so, and a name may
 still change. It needs nothing from BareDOM and works on any HTML.
 

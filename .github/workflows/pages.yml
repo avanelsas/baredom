@@ -35,13 +35,29 @@ jobs:
       - name: Build demo JS
         run: npm run build:demo
 
+      - name: Build ESM library
+        run: npx shadow-cljs release lib
+
       - name: Assemble site
         run: |
           mkdir -p _site
           cp -rL public/* _site/
           rm -rf _site/demo
           cp -r demo _site/demo
+          cp -r dist _site/dist
+          mkdir _site/bare-html
+          cp -r bare-html/mirror.html bare-html/mirror bare-html/tasks.html _site/bare-html/
           touch _site/.nojekyll
+
+      - name: Make the copy of the mirror demo with no script
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 --directory _site >/dev/null 2>&1 &
+          sleep 1
+          node scripts/prerender.mjs --static "http://127.0.0.1:8000/bare-html/mirror.html?copy" _site/bare-html/mirror.static.html
+          test "$(grep -o 'data-x-key' _site/bare-html/mirror.static.html | wc -l)" -eq 3
+          test "$(grep -o '<script' _site/bare-html/mirror.static.html | wc -l)" -eq 0
+        env:
+          CHROME_FLAGS: "--no-sandbox"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
