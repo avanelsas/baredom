@@ -113,6 +113,7 @@ div[part=container]
 ## Accessibility
 
 - `role="separator"` (default) marks the element as a thematic separator. Pair with `aria-label` when context is needed.
+- The divider writes `role="separator"` only when the host has no `role`. A `role` that the author sets stays as written.
 - Set `role="presentation"` or `role="none"` for purely decorative dividers so assistive technology ignores them.
 - When `orientation="vertical"`, `aria-orientation="vertical"` is set on the host.
 

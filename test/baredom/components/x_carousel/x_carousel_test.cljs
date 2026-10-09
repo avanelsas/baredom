@@ -42,6 +42,13 @@
   (is (some? (.get js/customElements model/tag-name))))
 
 ;; ── Shadow DOM structure ─────────────────────────────────────────────────────
+(deftest the-host-gets-a-label-only-when-it-has-none
+  (is (= "Carousel" (.getAttribute (append! (make-el)) "aria-label")))
+  (let [^js el (make-el)]
+    (.setAttribute el "aria-label" "Product showcase")
+    (append! el)
+    (is (= "Product showcase" (.getAttribute el "aria-label")))))
+
 (deftest shadow-structure-test
   (let [^js el   (append! (make-el))
         ^js root (.-shadowRoot el)]

@@ -152,17 +152,12 @@
                   parts)))))))
 
 (defn blob-colors
-  "Returns a JS array of n color strings. When palette is non-nil, cycles
-   palette colors across blobs. Otherwise all blobs get the single color."
+  "Returns a vector of n color strings. A palette is cycled across the blobs, and without one
+   every blob gets `color`."
   [palette color n]
-  (let [out #js []]
-    (if (and palette (pos? (count palette)))
-      (let [pc (count palette)]
-        (dotimes [i n]
-          (.push out (nth palette (mod i pc)))))
-      (dotimes [_ n]
-        (.push out color)))
-    out))
+  (if (seq palette)
+    (vec (take n (cycle palette)))
+    (vec (repeat n color))))
 
 ;; ── Normalize ───────────────────────────────────────────────────────────────
 (defn normalize
@@ -185,7 +180,7 @@
     :blob-size        number
     :color            string
     :palette          vector | nil
-    :colors           JS array of color strings (one per blob)
+    :colors           vector of color strings (one per blob)
     :noise?           boolean
     :noise-scale      number
     :noise-speed      number

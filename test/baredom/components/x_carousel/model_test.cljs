@@ -160,8 +160,7 @@
     (is (= "slide" (:transition m)))
     (is (= "horizontal" (:direction m)))
     (is (= "0px" (:peek m)))
-    (is (= 0     (:slide-count m)))
-    (is (nil?    (:aria-label m)))))
+    (is (= 0     (:slide-count m)))))
 
 (deftest normalize-custom-values-test
   (let [m (model/normalize
@@ -175,7 +174,6 @@
             :transition-raw "fade"
             :direction-raw "vertical"
             :peek-raw "40px"
-            :aria-label-raw "Product gallery"
             :slide-count 5})]
     (is (true?  (:autoplay? m)))
     (is (= 3000 (:interval m)))
@@ -187,8 +185,7 @@
     (is (= "fade" (:transition m)))
     (is (= "vertical" (:direction m)))
     (is (= "40px" (:peek m)))
-    (is (= 5    (:slide-count m)))
-    (is (= "Product gallery" (:aria-label m)))))
+    (is (= 5    (:slide-count m)))))
 
 (deftest normalize-clamps-current-test
   (let [m (model/normalize {:current-raw "10" :slide-count 3})]

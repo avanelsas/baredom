@@ -14,6 +14,7 @@
 
 (def ^:private k-refs     "__xDatePickerRefs")
 (def ^:private k-state    "__xDatePickerState")
+(def ^:private k-model    "__xDatePickerModel")
 (def ^:private k-focused  "__xDatePickerFocused")
 (def ^:private k-display  "__xDatePickerDisplay")
 (def ^:private k-wd-done  "__xDatePickerWeekdaysDone")
@@ -930,6 +931,20 @@
 ;; Lifecycle
 ;; ---------------------------------------------------------------------------
 
+(defn- read-inputs
+  "The raw value of every observed attribute of `el`, with its disabled state."
+  [^js el]
+  (into {:disabled? (forms/disabled? el)}
+        (map (juxt identity (partial du/get-attr el)))
+        (array-seq model/observed-attributes)))
+
+(defn- render-from-attrs!
+  "Reads the state of `el` from its attributes and renders it. Caches `inputs`."
+  [^js el inputs]
+  (read-state! el)
+  (render! el)
+  (du/setv! el k-model inputs))
+
 (defn- connected!
   [^js el]
   (when-not (du/getv el k-refs)
@@ -938,8 +953,7 @@
       (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   (add-listeners! el)
-  (read-state! el)
-  (render! el))
+  (render-from-attrs! el (read-inputs el)))
 
 (defn- disconnected!
   [^js el]
@@ -953,8 +967,9 @@
     (when (and (forms/disabled? el)
                (du/has-attr? el "open"))
       (du/remove-attr! el "open"))
-    (read-state! el)
-    (render! el)))
+    (let [inputs (read-inputs el)]
+      (when (not= inputs (du/getv el k-model))
+        (render-from-attrs! el inputs)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Property definitions

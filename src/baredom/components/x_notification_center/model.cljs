@@ -45,6 +45,12 @@
         n
         default-max))))
 
+(defn normalize
+  "The model of the raw attribute values `position-raw` and `max-raw`."
+  [{:keys [position-raw max-raw]}]
+  {:position (parse-position position-raw)
+   :max      (parse-max max-raw)})
+
 (def property-api
   {:position {:type 'string  :reflects-attribute attr-position}
    :max      {:type 'number  :reflects-attribute attr-max}

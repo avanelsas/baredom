@@ -40,3 +40,9 @@
     (is (= 5 (model/parse-max "abc"))))
   (testing "empty string → 5"
     (is (= 5 (model/parse-max "")))))
+
+(deftest normalize-gives-the-position-and-the-maximum
+  (is (= {:position "bottom-left" :max 3}
+         (model/normalize {:position-raw "bottom-left" :max-raw "3"})))
+  (is (= {:position model/default-position :max model/default-max}
+         (model/normalize {}))))

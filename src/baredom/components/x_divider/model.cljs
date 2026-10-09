@@ -10,12 +10,10 @@
 (def attr-length      "length")
 (def attr-label       "label")
 (def attr-align       "align")
-(def attr-role        "role")
-(def attr-aria-label  "aria-label")
 
 (def observed-attributes
   #js [attr-orientation attr-variant attr-thickness attr-color
-       attr-inset attr-length attr-label attr-align attr-role attr-aria-label])
+       attr-inset attr-length attr-label attr-align])
 
 ;; ── Valid enum sets & defaults ────────────────────────────────────────────
 (def ^:private valid-orientations #{"horizontal" "vertical"})
@@ -35,12 +33,6 @@
 (defn parse-variant     [s] (parse-enum valid-variants     default-variant     s))
 (defn parse-align       [s] (parse-enum valid-aligns       default-align       s))
 
-(defn separator-role?
-  "Returns true when the divider should carry role=separator.
-   False when role is 'presentation' or 'none'."
-  [role]
-  (not (contains? #{"presentation" "none"} role)))
-
 (defn has-label?
   "Returns true when label is a non-empty string."
   [label]
@@ -49,7 +41,7 @@
 ;; ── Normalize ─────────────────────────────────────────────────────────────
 (defn normalize
   [{:keys [orientation-raw variant-raw thickness-raw color-raw inset-raw
-           length-raw label-raw align-raw role-raw aria-label-raw]}]
+           length-raw label-raw align-raw]}]
   {:orientation (parse-orientation orientation-raw)
    :variant     (parse-variant variant-raw)
    :align       (parse-align align-raw)
@@ -57,9 +49,7 @@
    :color       color-raw
    :inset       inset-raw
    :length      length-raw
-   :label       label-raw
-   :role        role-raw
-   :aria-label  aria-label-raw})
+   :label       label-raw})
 
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api

@@ -364,7 +364,6 @@
     :transition-raw    (du/get-attr el model/attr-transition)
     :direction-raw     (du/get-attr el model/attr-direction)
     :peek-raw          (du/get-attr el model/attr-peek)
-    :aria-label-raw    (du/get-attr el model/attr-aria-label)
     :slide-count       (or (du/getv el k-slide-count) 0)}))
 
 ;; ── Autoplay ───────────────────────────────────────────────────────────────
@@ -440,13 +439,11 @@
   (du/set-attr! el attr-data-transition transition)
   (.setProperty (.-style el) css-var-peek peek))
 
-(defn- apply-host-aria! [^js el {:keys [aria-label]}]
+(defn- apply-host-aria! [^js el]
   (du/set-attr! el attr-role               val-region)
   (du/set-attr! el attr-aria-roledescription val-carousel)
-  (if aria-label
-    (du/set-attr! el attr-aria-label aria-label)
-    (when-not (du/has-attr? el attr-aria-label)
-      (du/set-attr! el attr-aria-label val-default-label))))
+  (when-not (du/has-attr? el attr-aria-label)
+    (du/set-attr! el attr-aria-label val-default-label)))
 
 (defn- track-transform-str [vertical? peek-val current]
   (let [axis (if vertical? "Y" "X")]
@@ -496,7 +493,7 @@
         ^js dots-el  (gobj/get refs rk-dots)
         ^js live-el  (gobj/get refs rk-live)]
     (apply-host-data! el m)
-    (apply-host-aria! el m)
+    (apply-host-aria! el)
     (apply-track!     el track m)
     (apply-arrows!    prev-btn next-btn m)
     (apply-dots!      el dots-el m)

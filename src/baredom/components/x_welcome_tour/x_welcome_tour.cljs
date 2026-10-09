@@ -865,17 +865,23 @@
       (du/setv! el k-layer nil)))
   (deactivate-focus-trap! el))
 
+(defn- apply-change!
+  "Brings `el` from the model `old-m` to `new-m`."
+  [^js el old-m new-m]
+  (let [was-open (or (:open? old-m) false)
+        now-open (:open? new-m)]
+    (cond
+      (and (not was-open) now-open) (open-tour! el)
+      (and was-open (not now-open)) (close-tour! el)
+      now-open                      (render! el)
+      :else                         (du/setv! el k-model new-m))))
+
 (defn- attribute-changed! [^js el _attr-name old-val new-val]
   (when (and (not= old-val new-val) (.-isConnected el))
-    (let [old-m    (du/getv el k-model)
-          new-m    (read-model el)
-          was-open (or (:open? old-m) false)
-          now-open (:open? new-m)]
-      (du/setv! el k-model new-m)
-      (cond
-        (and (not was-open) now-open) (open-tour! el)
-        (and was-open (not now-open)) (close-tour! el)
-        now-open                      (render! el)))))
+    (let [old-m (du/getv el k-model)
+          new-m (read-model el)]
+      (when (not= old-m new-m)
+        (apply-change! el old-m new-m)))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

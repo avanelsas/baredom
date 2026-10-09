@@ -106,13 +106,19 @@
 
 (deftest role-presentation-test
   (let [^js el (append! (make-el))]
-    (.setAttribute el model/attr-role "presentation")
+    (.setAttribute el "role" "presentation")
     (is (= "presentation" (.getAttribute el "role")))))
+
+(deftest a-role-of-the-author-is-kept-when-the-divider-connects
+  (let [^js el (make-el)]
+    (.setAttribute el "role" "none")
+    (append! el)
+    (is (= "none" (.getAttribute el "role")))))
 
 (deftest role-none-test
   (let [^js el (append! (make-el))]
-    (.setAttribute el model/attr-role "none")
-    (is (= "presentation" (.getAttribute el "role")))))
+    (.setAttribute el "role" "none")
+    (is (= "none" (.getAttribute el "role")))))
 
 ;; ── Label rendering ───────────────────────────────────────────────────────
 (deftest label-text-rendered-test
@@ -139,7 +145,7 @@
 ;; ── aria-label ────────────────────────────────────────────────────────────
 (deftest aria-label-set-test
   (let [^js el (append! (make-el))]
-    (.setAttribute el model/attr-aria-label "Divides content")
+    (.setAttribute el "aria-label" "Divides content")
     (is (= "Divides content" (.getAttribute el "aria-label")))))
 
 (deftest aria-label-absent-test

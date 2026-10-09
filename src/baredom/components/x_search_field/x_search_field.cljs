@@ -9,6 +9,7 @@
 ;; Instance field keys (Closure-safe: access via gobj/get / gobj/set)
 ;; ---------------------------------------------------------------------------
 (def ^:private k-refs           "__xSearchFieldRefs")
+(def ^:private k-model          "__xSearchFieldModel")
 (def ^:private k-internals      "__xSearchFieldInternals")
 (def ^:private k-handlers       "__xSearchFieldHandlers")
 (def ^:private k-debounce-timer "__xSearchFieldDebounceTimer")
@@ -218,18 +219,20 @@
 ;; ---------------------------------------------------------------------------
 ;; Render
 ;; ---------------------------------------------------------------------------
-(defn- render! [^js el]
+(defn- read-model [^js el]
+  (model/normalize
+   {:name-raw          (du/get-attr el model/attr-name)
+    :value-raw         (du/get-attr el model/attr-value)
+    :placeholder-raw   (du/get-attr el model/attr-placeholder)
+    :label-raw         (du/get-attr el model/attr-label)
+    :disabled-present? (forms/disabled? el)
+    :required-present? (du/has-attr? el model/attr-required)
+    :autocomplete-raw  (du/get-attr el model/attr-autocomplete)}))
+
+(defn- apply-model! [^js el m]
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs "input")
-          ^js clear-el (gobj/get refs "clear")
-          m            (model/normalize
-                        {:name-raw          (du/get-attr el model/attr-name)
-                         :value-raw         (du/get-attr el model/attr-value)
-                         :placeholder-raw   (du/get-attr el model/attr-placeholder)
-                         :label-raw         (du/get-attr el model/attr-label)
-                         :disabled-present? (forms/disabled? el)
-                         :required-present? (du/has-attr? el model/attr-required)
-                         :autocomplete-raw  (du/get-attr el model/attr-autocomplete)})]
+          ^js clear-el (gobj/get refs "clear")]
 
       (set! (.-name input-el)         (:name m))
       (set! (.-placeholder input-el)  (:placeholder m))
@@ -248,7 +251,17 @@
       (toggle-clear-visibility! input-el clear-el el)
 
       (when-let [^js internals (du/getv el k-internals)]
-        (sync-validity! el internals input-el)))))
+        (sync-validity! el internals input-el))
+      (du/setv! el k-model m))))
+
+(defn- render! [^js el]
+  (apply-model! el (read-model el)))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (du/getv el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el new-m))))
 
 ;; ---------------------------------------------------------------------------
 ;; Event dispatch
@@ -403,12 +416,13 @@
 (defn- attribute-changed! [^js el name old new-val]
   ;; A value attr that changed goes to input.value, where the two differ. A write of the value
   ;; the attr already has leaves typed text as it is.
-  (when (and (= name model/attr-value) (not= old new-val))
-    (when-let [refs (du/getv el k-refs)]
-      (let [^js input-el (gobj/get refs "input")]
-        (when (not= (.-value input-el) new-val)
-          (set! (.-value input-el) (or new-val ""))))))
-  (render! el))
+  (when (not= old new-val)
+    (when (= name model/attr-value)
+      (when-let [refs (du/getv el k-refs)]
+        (let [^js input-el (gobj/get refs "input")]
+          (when (not= (.-value input-el) new-val)
+            (set! (.-value input-el) (or new-val ""))))))
+    (update-from-attrs! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Property helpers

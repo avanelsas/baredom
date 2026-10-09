@@ -8,7 +8,7 @@
 ;; ── Instance-field key constants ─────────────────────────────────────────────
 (def ^:private k-refs     "__xNcRefs")
 (def ^:private k-handlers "__xNcHandlers")
-(def ^:private k-max      "__xNcMax")
+(def ^:private k-model    "__xNcModel")
 
 ;; ── Module-level ID counter (no atom) ────────────────────────────────────────
 (def ^:private next-id-counter #js {"v" 0})
@@ -99,10 +99,19 @@
           (du/getv el k-refs))))
 
 ;; ── Position ──────────────────────────────────────────────────────────────────
-(defn- apply-position! [^js el]
-  (let [raw (du/get-attr el model/attr-position)
-        pos (model/parse-position raw)]
-    (du/set-attr! el model/data-position pos)))
+(defn- read-model [^js el]
+  (model/normalize {:position-raw (du/get-attr el model/attr-position)
+                    :max-raw      (du/get-attr el model/attr-max)}))
+
+(defn- apply-model! [^js el m]
+  (du/set-attr! el model/data-position (:position m))
+  (du/setv! el k-model m))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (du/getv el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el new-m))))
 
 ;; ── Event dispatch helpers ────────────────────────────────────────────────────
 ;; ── Alert dismiss handler ─────────────────────────────────────────────────────
@@ -147,7 +156,7 @@
 (defn- push! [^js el ^js opts]
   (let [refs      (ensure-refs! el)
         ^js container (gobj/get refs "container")
-        current-max (or (du/getv el k-max) model/default-max)
+        current-max (:max (read-model el))
         current-count (.-length (.querySelectorAll container model/alert-tag))]
     (when (< current-count current-max)
       (let [^js alert (.createElement js/document model/alert-tag)
@@ -216,15 +225,14 @@
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (apply-position! el))
+  (apply-model! el (read-model el)))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el n _old-val _new-val]
-  (cond
-    (= n model/attr-position) (apply-position! el)
-    (= n model/attr-max)      (du/setv! el k-max (model/parse-max (du/get-attr el model/attr-max)))))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
 
 (defn- install-methods! [^js proto]
   (.defineProperty js/Object proto "push"

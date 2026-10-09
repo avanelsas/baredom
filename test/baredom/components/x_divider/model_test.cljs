@@ -46,22 +46,6 @@
   (is (= "start" (model/parse-align "START")))
   (is (= "end"   (model/parse-align "END"))))
 
-;; ── separator-role? ───────────────────────────────────────────────────────
-(deftest separator-role-nil-test
-  (is (true? (model/separator-role? nil))))
-
-(deftest separator-role-separator-test
-  (is (true? (model/separator-role? "separator"))))
-
-(deftest separator-role-presentation-test
-  (is (false? (model/separator-role? "presentation"))))
-
-(deftest separator-role-none-test
-  (is (false? (model/separator-role? "none"))))
-
-(deftest separator-role-other-test
-  (is (true? (model/separator-role? "region"))))
-
 ;; ── has-label? ────────────────────────────────────────────────────────────
 (deftest has-label-valid-test
   (is (true? (model/has-label? "Section")))
@@ -86,9 +70,7 @@
     (is (nil?           (:color m)))
     (is (nil?           (:inset m)))
     (is (nil?           (:length m)))
-    (is (nil?           (:label m)))
-    (is (nil?           (:role m)))
-    (is (nil?           (:aria-label m)))))
+    (is (nil?           (:label m)))))
 
 (deftest normalize-full-test
   (let [m (model/normalize
@@ -99,9 +81,7 @@
             :color-raw       "#f00"
             :inset-raw       "16px"
             :length-raw      "200px"
-            :label-raw       "Section"
-            :role-raw        "presentation"
-            :aria-label-raw  "Divides sections"})]
+            :label-raw       "Section"})]
     (is (= "vertical"       (:orientation m)))
     (is (= "dashed"         (:variant m)))
     (is (= "start"          (:align m)))
@@ -109,9 +89,7 @@
     (is (= "#f00"           (:color m)))
     (is (= "16px"           (:inset m)))
     (is (= "200px"          (:length m)))
-    (is (= "Section"        (:label m)))
-    (is (= "presentation"   (:role m)))
-    (is (= "Divides sections" (:aria-label m)))))
+    (is (= "Section"        (:label m)))))
 
 (deftest normalize-invalid-enums-fall-to-defaults-test
   (let [m (model/normalize {:orientation-raw "diagonal"

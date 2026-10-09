@@ -13,7 +13,6 @@
 (def ^:private attr-part             "part")
 (def ^:private attr-name             "name")
 (def ^:private attr-role             "role")
-(def ^:private attr-aria-label       "aria-label")
 (def ^:private attr-aria-orientation "aria-orientation")
 (def ^:private attr-data-orientation "data-orientation")
 (def ^:private attr-data-variant     "data-variant")
@@ -28,7 +27,6 @@
 (def ^:private slot-name-label "label")
 
 (def ^:private val-separator    "separator")
-(def ^:private val-presentation "presentation")
 (def ^:private val-vertical     "vertical")
 (def ^:private val-default-thickness "1px")
 (def ^:private val-default-inset     "0px")
@@ -192,9 +190,7 @@
             :inset-raw       (du/get-attr el model/attr-inset)
             :length-raw      (du/get-attr el model/attr-length)
             :label-raw       (du/get-attr el model/attr-label)
-            :align-raw       (du/get-attr el model/attr-align)
-            :role-raw        (du/get-attr el model/attr-role)
-            :aria-label-raw  (du/get-attr el model/attr-aria-label)})]
+            :align-raw       (du/get-attr el model/attr-align)})]
     (assoc m :has-label? (model/has-label? (:label m)))))
 
 ;; ── Label-mode DOM swapping ───────────────────────────────────────────────
@@ -257,18 +253,14 @@
       (.setProperty    style css-var-color color)
       (.removeProperty style css-var-color))))
 
-(defn- apply-host-aria! [^js el {:keys [orientation aria-label role]}]
-  (if (model/separator-role? role)
-    (du/set-attr! el attr-role val-separator)
-    (du/set-attr! el attr-role val-presentation))
+(defn- apply-host-aria! [^js el {:keys [orientation]}]
+  (when-not (du/has-attr? el attr-role)
+    (du/set-attr! el attr-role val-separator))
   ;; aria-orientation only meaningful for separator role; reflect for both
   ;; orientations rather than removing, so AT can read explicit value.
   (if (= orientation val-vertical)
     (du/set-attr!    el attr-aria-orientation val-vertical)
-    (du/remove-attr! el attr-aria-orientation))
-  (if (and aria-label (pos? (.-length aria-label)))
-    (du/set-attr!    el attr-aria-label aria-label)
-    (du/remove-attr! el attr-aria-label)))
+    (du/remove-attr! el attr-aria-orientation)))
 
 (defn- apply-label-structure! [^js refs {:keys [has-label? label]}]
   (ensure-mode! refs (if has-label? mode-label mode-no-label))
