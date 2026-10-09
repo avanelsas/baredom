@@ -17,7 +17,7 @@
 (def ^:private k-panel-tabindex-added  "__xSidebarPanelTabindexAdded")
 (def ^:private k-restore-focus-target  "__xSidebarRestoreFocusTarget")
 (def ^:private k-tabbables             "__xSidebarTabbables")
-(def ^:private k-prev-state            "__xSidebarPrevState")
+(def ^:private k-model                 "__xSidebarModel")
 (def ^:private k-handlers              "__xSidebarHandlers")
 (def ^:private k-listening             "__xSidebarListening")
 
@@ -360,23 +360,28 @@
   (when-not (du/getv instance k-root)
     (assemble-shadow! instance)))
 
+(defn- apply-state!
+  [instance prev-state next-state]
+  (apply-host-state! instance next-state)
+  ;; Release/restore focus before aria-hidden is applied on close.
+  (sync-focus-trap! instance prev-state next-state)
+  (apply-a11y! instance next-state)
+  (apply-backdrop! instance next-state)
+  (apply-panel-state! instance next-state)
+  (dispatch-state-events! instance prev-state next-state)
+  (du/setv! instance k-model next-state))
+
 (defn render!
   [instance]
   (ensure-shadow! instance)
-  (let [prev-state (or (du/getv instance k-prev-state) {})
+  (let [prev-state (or (du/getv instance k-model) {})
         next-state (model/compute-state (read-inputs instance))]
-    (apply-host-state! instance next-state)
-    ;; Release/restore focus before aria-hidden is applied on close.
-    (sync-focus-trap! instance prev-state next-state)
-    (apply-a11y! instance next-state)
-    (apply-backdrop! instance next-state)
-    (apply-panel-state! instance next-state)
-    (dispatch-state-events! instance prev-state next-state)
-    (du/setv! instance k-prev-state next-state)))
+    (when (not= prev-state next-state)
+      (apply-state! instance prev-state next-state))))
 
 (defn on-backdrop-click
   [instance event]
-  (let [state (du/getv instance k-prev-state)
+  (let [state (du/getv instance k-model)
         backdrop (du/getv instance k-backdrop)]
     (when (and (or (:is-modal state) (:is-overlay state))
                (:open state)
@@ -386,7 +391,7 @@
 
 (defn on-keydown
   [instance event]
-  (let [state (du/getv instance k-prev-state)
+  (let [state (du/getv instance k-model)
         key (.-key event)]
     (when (and (or (:is-modal state) (:is-overlay state))
                (:open state))
