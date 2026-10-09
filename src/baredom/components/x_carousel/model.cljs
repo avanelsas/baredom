@@ -15,12 +15,11 @@
 (def attr-transition "transition")
 (def attr-direction  "direction")
 (def attr-peek       "peek")
-(def attr-aria-label "aria-label")
 
 (def observed-attributes
   #js [attr-autoplay attr-interval attr-loop attr-arrows attr-dots
        attr-disabled attr-current attr-transition attr-direction
-       attr-peek attr-aria-label])
+       attr-peek])
 
 ;; ── Event constants ─────────────────────────────────────────────────────────
 (def event-change "x-carousel-change")
@@ -137,7 +136,7 @@
   [{:keys [autoplay-present? interval-raw loop-present?
            arrows-raw dots-raw disabled-present?
            current-raw transition-raw direction-raw
-           peek-raw aria-label-raw slide-count]}]
+           peek-raw slide-count]}]
   (let [sc      (or slide-count 0)
         current (clamp-index (parse-non-neg-int current-raw default-current) sc)]
     {:autoplay?   (boolean autoplay-present?)
@@ -150,8 +149,7 @@
      :transition  (parse-transition transition-raw)
      :direction   (parse-direction direction-raw)
      :peek        (parse-peek peek-raw)
-     :slide-count sc
-     :aria-label  (when (mu/non-empty-string? aria-label-raw) aria-label-raw)}))
+     :slide-count sc}))
 
 ;; ── Navigation predicates ───────────────────────────────────────────────────
 

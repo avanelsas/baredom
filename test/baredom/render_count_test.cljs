@@ -8,8 +8,7 @@
 
 (def ^:private known-defects
   "The defects each component has today. A component that is not named has none."
-  {"x-carousel"    #{:change-renders-more-than-once}
-   "x-divider"     #{:change-renders-more-than-once}})
+  {})
 
 (def ^:private known-gaps
   "What this test cannot measure in a component today: its renders, or its renders in a hold."

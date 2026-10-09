@@ -2335,11 +2335,6 @@
         "type" : {
           "text" : "string"
         }
-      }, {
-        "name" : "aria-label",
-        "type" : {
-          "text" : "string"
-        }
       } ],
       "events" : [ {
         "name" : "x-carousel-change",
@@ -6208,16 +6203,6 @@
       }, {
         "name" : "align",
         "fieldName" : "align",
-        "type" : {
-          "text" : "string"
-        }
-      }, {
-        "name" : "role",
-        "type" : {
-          "text" : "string"
-        }
-      }, {
-        "name" : "aria-label",
         "type" : {
           "text" : "string"
         }
