@@ -50,7 +50,7 @@ jobs:
         run: |
           curl -sLO https://raw.githubusercontent.com/clj-kondo/clj-kondo/master/script/install-clj-kondo
           chmod +x install-clj-kondo
-          sudo ./install-clj-kondo --dir /usr/local/bin --version 2026.01.19
+          sudo ./install-clj-kondo --dir /usr/local/bin --version 2026.08.04
           clj-kondo --version
 
       - name: Setup Babashka
@@ -61,7 +61,7 @@ jobs:
           bb --version
 
       - name: Lint with clj-kondo
-        run: clj-kondo --lint src test --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
+        run: clj-kondo --lint src test baremirror --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
 
       - name: Build ESM library
         run: npm run build

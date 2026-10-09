@@ -37,7 +37,7 @@ jobs:
         run: |
           curl -sLO https://raw.githubusercontent.com/clj-kondo/clj-kondo/master/script/install-clj-kondo
           chmod +x install-clj-kondo
-          sudo ./install-clj-kondo --dir /usr/local/bin --version 2026.01.19
+          sudo ./install-clj-kondo --dir /usr/local/bin --version 2026.08.04
           clj-kondo --version
 
       - name: Setup Babashka
