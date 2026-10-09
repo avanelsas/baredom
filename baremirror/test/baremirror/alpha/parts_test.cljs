@@ -207,6 +207,31 @@
     (testing "the keyed node gives its own parts when it is the node given"
       (is (= #{"row" "label"} (part-names (.-firstElementChild node)))))))
 
+(deftest read-parts-leaves-out-a-keyed-node-at-any-depth
+  (let [node (mirror-parts/make-node! [:div {:data-x-part "page"}
+                                 [:section
+                                  [:ul
+                                   [:li {:data-x-key "1"}
+                                    [:span {:data-x-part "label"}
+                                     [:b {:data-x-part "deep"}]]]]]
+                                 [:footer {:data-x-part "foot"}]])]
+    (is (= #{"page" "foot"} (part-names node)))))
+
+(deftest read-parts-of-a-node-inside-a-keyed-node-finds-its-parts
+  (let [row (mirror-parts/make-node! [:li {:data-x-key "1" :data-x-part "row"}
+                                [:div
+                                 [:span {:data-x-part "label"}]]])]
+    (is (= #{"label"} (part-names (.-firstElementChild row))))))
+
+(deftest read-parts-of-a-node-inside-a-keyed-node-leaves-out-a-keyed-node-below
+  (let [row (mirror-parts/make-node! [:li {:data-x-key "1"}
+                                [:div {:data-x-part "cell"}
+                                 [:ul
+                                  [:li {:data-x-key "a" :data-x-part "inner"}
+                                   [:span {:data-x-part "deep"}]]]
+                                 [:b {:data-x-part "label"}]]])]
+    (is (= #{"cell" "label"} (part-names (.-firstElementChild row))))))
+
 (deftest read-parts-gives-the-last-node-of-a-name-that-occurs-twice
   (let [node (mirror-parts/make-node! [:div
                                  [:span {:data-x-part "label"}]

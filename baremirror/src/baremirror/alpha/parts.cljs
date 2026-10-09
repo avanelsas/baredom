@@ -92,14 +92,18 @@
   (when-some [part-name (.getAttribute node template/attr-part)]
     [part-name node]))
 
-(defn- unkeyed-children [^js node]
-  (remove places/keyed (array-seq (.-children node))))
+(def ^:private selector-parts-below
+  "Selects the parts below a node that are not a keyed node below it, and not in one."
+  (str "[" template/attr-part "]"
+       ":not(:scope [" places/attr-key "], :scope [" places/attr-key "] *)"))
 
 (defn read-parts
   "The parts of `node` by name: `node` itself and the parts below it.
    A keyed node below `node` is left out with everything in it."
   [^js node]
-  (into {} (keep part) (tree-seq (constantly true) unkeyed-children node)))
+  (into {}
+        (keep part)
+        (cons node (array-seq (.querySelectorAll node selector-parts-below)))))
 
 (defn- missing-parts
   "The part names of `writes` that have no node in `parts`."
