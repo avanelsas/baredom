@@ -127,3 +127,27 @@
   (when-some [missing (seq (missing-parts parts writes))]
     (throw (ex-info "write-parts!: no node has these part names." {:parts (vec missing)})))
   (run! (partial write-part! parts) writes))
+
+(def ^:private last-written
+  "The symbol under which a node holds the split template and the item last written to it."
+  (js/Symbol "baremirror.last-written"))
+
+(defn- written?
+  "True when `item` is what was last written to `node` through `split-template`, as `same?` sees it."
+  [same? ^js node split-template item]
+  (let [[template-then item-then] (unchecked-get node last-written)]
+    (and (identical? split-template template-then)
+         (same? item item-then))))
+
+(defn write-item!
+  "Brings `node` to `item` through `split-template`. Writes nothing when `same?`, by default
+   `=`, holds for `item` and the item it last wrote to `node`, in that order."
+  ([^js node split-template item]
+   (write-item! = node split-template item))
+  ([same? ^js node split-template item]
+   (when-not (template/split? split-template)
+     (throw (ex-info "write-item!: not a split template." {:given split-template})))
+   (when-not (written? same? node split-template item)
+     (write-parts! (read-parts node) (template/writes split-template item))
+     (unchecked-set node last-written [split-template item]))
+   nil))

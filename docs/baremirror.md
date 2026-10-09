@@ -2,8 +2,10 @@
 
 BareMirror is a small set of functions that bring a page to what your application wants to
 show. You keep the state. The functions place the nodes, write the values and turn events into
-messages. Nothing compares an old screen with a new one, and a node that stays is never made
-again.
+messages. No function compares an old screen with a new one, and a node that stays is never
+made again.
+
+The only memory is on the nodes. A node holds its key, and the item last written to it.
 
 **It is an alpha.** It ships inside the BareDOM package under names that say so, and a name may
 still change. It needs nothing from BareDOM and works on any HTML.
@@ -17,6 +19,7 @@ still change. It needs nothing from BareDOM and works on any HTML.
 | Places | Which keys are in which container, in order. |
 | Plan | What must happen to turn the current places into the wanted places. |
 | Template | A tag, an optional object of attributes, and children. Plain data. |
+| Item | The value that one node shows, such as one task. |
 | Hole | A function of an item, in a template. It says where a value goes. |
 | Part | A node marked with `data-x-part`. A write and an event find it by that name. |
 | Message | What your application receives: a meaning and an optional argument. |
@@ -54,8 +57,8 @@ A list of tasks with a counter. The page holds two parts:
 
 ```js
 import { init as initCheckbox } from '@vanelsas/baredom/x-checkbox';
-import { splitTemplate, makeNode, readParts, syncPlaces, writeParts, listen, dispatcher }
-  from '@vanelsas/baredom/baremirror-alpha';
+import { splitTemplate, makeNode, readParts, syncPlaces, writeParts, writeItem, listen,
+         dispatcher } from '@vanelsas/baredom/baremirror-alpha';
 import { requests } from '@vanelsas/baredom/requests';
 
 initCheckbox();
@@ -82,24 +85,33 @@ function view(state) {
   return {
     fixed: { counter: { text: `${remaining} remaining` } },
     order: state.tasks.map(task => task.id),
-    rows:  Object.fromEntries(state.tasks.map(task => [task.id, row.writes(task)])),
+    rows:  Object.fromEntries(state.tasks.map(task => [task.id, task])),
   };
 }
 
 const page = document.getElementById('app');
-const makeRow = () => makeNode(row.fixed);
+
+function made(task) {
+  const node = makeNode(row.fixed);
+  writeItem(node, row, task);
+  return node;
+}
 
 function render(vm) {
   const parts = readParts(page);
-  const nodes = syncPlaces({ tasks: { parent: parts.tasks } }, { tasks: vm.order }, makeRow);
+  const nodes = syncPlaces({ tasks: { parent: parts.tasks } }, { tasks: vm.order },
+                           key => made(vm.rows[key]));
   writeParts(parts, vm.fixed);
-  vm.order.forEach(key => writeParts(readParts(nodes[key]), vm.rows[key]));
+  vm.order.forEach(key => writeItem(nodes[key], row, vm.rows[key]));
 }
 
 const store = { value: initial };
 listen(page, { dispatch: dispatcher(store, step, view, render), requests, events: row.events });
 render(view(store.value));
 ```
+
+`made` writes a new row before `syncPlaces` puts it in the page, so its components render once.
+`writeItem` skips a row whose task is the same as last time.
 
 A click on a checkbox sends `['toggle', '1']`. The argument is the key of the row, because the
 template names no other. [`bare-html/tasks.html`](../bare-html/tasks.html) is a full task list
@@ -128,17 +140,19 @@ and a part name is a string.
 (defn view [{:keys [tasks]}]
   {:fixed {"counter" {:text (str (count (remove :done? tasks)) " remaining")}}
    :order (mapv :id tasks)
-   :rows  (into {} (map (juxt :id (partial template/writes row))) tasks)})
+   :rows  (into {} (map (juxt :id identity)) tasks)})
 
-(defn- make-row! [_key]
-  (parts/make-node! (:fixed row)))
+(defn- make-row! [rows k]
+  (doto (parts/make-node! (:fixed row))
+    (parts/write-item! row (rows k))))
 
 (defn- write-row! [nodes rows k]
-  (parts/write-parts! (parts/read-parts (nodes k)) (rows k)))
+  (parts/write-item! (nodes k) row (rows k)))
 
 (defn render! [page {:keys [fixed order rows]}]
   (let [page-parts (parts/read-parts page)
-        nodes      (places/sync! {:tasks {:parent (page-parts "tasks")}} {:tasks order} make-row!)]
+        nodes      (places/sync! {:tasks {:parent (page-parts "tasks")}} {:tasks order}
+                                 (partial make-row! rows))]
     (parts/write-parts! page-parts fixed)
     (run! (partial write-row! nodes rows) order)))
 
@@ -163,6 +177,7 @@ and a part name is a string.
 | `parts/make-node!` | `makeNode` | One detached element from a fixed template. |
 | `parts/read-parts` | `readParts` | The parts of a node and below it, by name. |
 | `parts/write-parts!` | `writeParts` | Applies writes to parts: text and attributes. |
+| `parts/write-item!` | `writeItem` | Brings a node to an item. Writes nothing when the item is the same as last time. Throws when it gets no split template. In ClojureScript, a first argument `same?` replaces `=`. |
 | `parts/set-attrs!` | `setAttrs` | Brings attributes to their values, where they differ. |
 | `parts/set-text!` | `setText` | Makes text the content of an element, where it differs. |
 | `parts/with-one-render!` | `withOneRender` | Runs work while a BareDOM element holds its render. |
@@ -181,6 +196,11 @@ A BareDOM component asks before it changes: `x-checkbox-change-request` is cance
 after the dispatch as before. So your `step` decides. When it leaves the state as it was, the
 checkbox stays as it was.
 
+In three cases a component can show a value that your state does not hold: your `step` accepts
+another value than the one asked for, `listen` has no `requests`, or your application has no
+entry for the event. `write-parts!` brings such a row back at the next render, and `write-item!`
+does not.
+
 ## Things to know
 
 - **An ARIA state needs text.** In a write, `true` sets an empty attribute and `false` removes
@@ -188,6 +208,19 @@ checkbox stays as it was.
   `'aria-checked': task => String(task.done)`.
 - **A node that stays keeps its state.** It keeps focus, a selection and a running animation.
   Where the browser offers `moveBefore`, it keeps them across a move too.
+- **An item is a value, and a hole reads the item alone.** `write-item!` skips an item that is
+  the same as last time. It cannot see a change inside the same object, or in anything else a
+  hole reads. Make a new item.
+- **Use one way of writing for a node.** `write-item!` skips the item it last wrote itself.
+  `write-parts!` compares with the page every time. Use `write-parts!` where something other
+  than your state can change the node.
+- **Split a template once.** Do it outside your render function. `write-item!` writes every
+  time it gets a split template it did not use for that node the last time.
+- **In JavaScript, an item is a flat object literal.** `writeItem` compares the fields of two
+  objects one level deep. A field that holds an array or an object counts as the same only when
+  it is the same array or object. An instance of a class and an array are written every time.
+- **Write a new node before it is placed.** The function that makes a node gets its key. A
+  component that is in the page renders for each write.
 - **A text hole is the only child of its element.** Wrap a value in an element of its own.
 - **A part gets a name by itself** when its element has a hole or an event. Give it
   `data-x-part` when the page must find it by a name you choose.

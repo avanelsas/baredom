@@ -332,7 +332,8 @@ that nothing else lands in the shared `base.js`. The same script checks it.
   places into the wanted places.
 - **Template**: a vector of a tag, an optional map of attributes, and children. **Hole**: a
   keyword or a function of the item, in a template. **Fixed template**: a template with no hole
-  and no `:on` entry. **Split template**: what `split` returns, as data.
+  and no `:on` entry. **Split template**: what `split` returns, as data. **Item**: the value
+  that one node shows.
 - **Part**: a node marked with `data-x-part`. **Message**: what the application receives.
   "Event" means a DOM event only.
 
@@ -352,7 +353,7 @@ event with no `:requests` is an action, and `listen!` cannot refuse it.
 
 **A component keeps its own writer.** A BareDOM component uses `places/sync!` for places and
 `du/set-attr-to!` for attributes, so its writes reach the trace recorder. It does not call
-`parts/set-attrs!`, which is for applications.
+`parts/set-attrs!` or `parts/write-item!`, which are for applications.
 
 **A component keeps `component/register!`.** `element/define-element!` makes an element class by
 hand, because BareMirror cannot require BareDOM. It is the one place that may. It is for an

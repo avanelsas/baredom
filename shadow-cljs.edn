@@ -600,6 +600,7 @@
       makeNode      baremirror.alpha.js/make-node
       readParts     baremirror.alpha.js/read-parts
       writeParts    baremirror.alpha.js/write-parts
+      writeItem     baremirror.alpha.js/write-item
       setAttrs      baremirror.alpha.js/set-attrs
       setText       baremirror.alpha.js/set-text
       withOneRender baremirror.alpha.js/with-one-render

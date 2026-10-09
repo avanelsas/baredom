@@ -145,6 +145,11 @@
           attrs (assoc :attrs (update-vals attrs (partial fill item)))
           text  (assoc :text (fill item text)))])
 
+(defn split?
+  "True when `x` is a split template."
+  [x]
+  (and (map? x) (contains? x :fixed) (contains? x :holes)))
+
 (defn writes
   "The writes of `item` for the holes of `split-template`, by part name."
   [split-template item]
