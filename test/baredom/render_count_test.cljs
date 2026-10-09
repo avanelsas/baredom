@@ -14,8 +14,7 @@
    "x-notification-center" #{:no-change-writes}
    "x-organic-shape"       #{:no-change-writes}
    "x-search-field"        #{:no-change-writes}
-   "x-sidebar"             #{:no-change-writes}
-   "x-welcome-tour"        #{:change-renders-more-than-once :no-change-writes :hold-renders-more-than-once}})
+   "x-sidebar"             #{:no-change-writes}})
 
 (def ^:private known-gaps
   "What this test cannot measure in a component today: its renders, or its renders in a hold."
