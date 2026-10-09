@@ -32,12 +32,17 @@
 (def css-radius        "--x-liquid-fill-radius")
 (def css-bar-height    "--x-liquid-fill-bar-height")
 
+;; ── Allowed enum values ─────────────────────────────────────────────────────
+(def allowed-orientations #{"vertical" "horizontal"})
+(def allowed-modes        #{"fill" "bar"})
+(def allowed-themes       #{"gold" "water" "lava" "custom"})
+
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
   {:target          {:type 'string  :reflects-attribute attr-target}
-   :orientation     {:type 'string  :reflects-attribute attr-orientation}
-   :mode            {:type 'string  :reflects-attribute attr-mode}
-   :theme           {:type 'string  :reflects-attribute attr-theme}
+   :orientation     {:type 'string  :reflects-attribute attr-orientation :enum allowed-orientations}
+   :mode            {:type 'string  :reflects-attribute attr-mode :enum allowed-modes}
+   :theme           {:type 'string  :reflects-attribute attr-theme :enum allowed-themes}
    :waveIntensity   {:type 'number  :reflects-attribute attr-wave-intensity}
    :splashIntensity {:type 'number  :reflects-attribute attr-splash-intensity}
    :layers          {:type 'number  :reflects-attribute attr-layers}
@@ -48,11 +53,6 @@
 (def event-schema
   {event-progress {:detail     {:progress 'number :velocity 'number}
                    :cancelable false}})
-
-;; ── Allowed enum values ─────────────────────────────────────────────────────
-(def ^:private allowed-orientations #{"vertical" "horizontal"})
-(def ^:private allowed-modes        #{"fill" "bar"})
-(def ^:private allowed-themes       #{"gold" "water" "lava" "custom"})
 
 ;; ── Theme color presets ─────────────────────────────────────────────────────
 (def theme-colors

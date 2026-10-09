@@ -17,8 +17,8 @@
   #js [attr-variant attr-animation attr-width attr-height])
 
 (def property-api
-  {:variant   {:type 'string :reflects-attribute attr-variant}
-   :animation {:type 'string :reflects-attribute attr-animation}
+  {:variant   {:type 'string :reflects-attribute attr-variant :enum allowed-variants}
+   :animation {:type 'string :reflects-attribute attr-animation :enum allowed-animations}
    :width     {:type 'string :reflects-attribute attr-width}
    :height    {:type 'string :reflects-attribute attr-height}})
 

@@ -19,9 +19,14 @@
 ;; ── Event name constants ──────────────────────────────────────────────────────
 (def event-dismiss "x-toaster-dismiss")
 
+;; ── Valid values ──────────────────────────────────────────────────────────────
+(def valid-positions
+  #{"top-start" "top-center" "top-end"
+    "bottom-start" "bottom-center" "bottom-end"})
+
 ;; ── Public API metadata ───────────────────────────────────────────────────────
 (def property-api
-  {:position  {:type 'string :reflects-attribute attr-position}
+  {:position  {:type 'string :reflects-attribute attr-position :enum valid-positions}
    :maxToasts {:type 'number :reflects-attribute attr-max-toasts}
    :label     {:type 'string :reflects-attribute attr-label}})
 
@@ -29,11 +34,6 @@
   {event-dismiss
    {:detail     {:type 'string :reason 'string :heading 'string :message 'string}
     :cancelable true}})
-
-;; ── Valid values ──────────────────────────────────────────────────────────────
-(def ^:private valid-positions
-  #{"top-start" "top-center" "top-end"
-    "bottom-start" "bottom-center" "bottom-end"})
 
 ;; ── Parse helpers ─────────────────────────────────────────────────────────────
 (defn parse-position

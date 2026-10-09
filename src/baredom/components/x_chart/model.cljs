@@ -36,13 +36,13 @@
 (def event-hover  "x-chart-hover")
 
 (def property-api
-  {:type     {:type 'string :reflects-attribute attr-type}
+  {:type     {:type 'string :reflects-attribute attr-type :enum allowed-types}
    :height   {:type 'number :reflects-attribute attr-height}
    :padding  {:type 'number :reflects-attribute attr-padding}
    :grid     {:type 'boolean :reflects-attribute attr-grid}
    :axes     {:type 'boolean :reflects-attribute attr-axes}
    :tooltip  {:type 'boolean :reflects-attribute attr-tooltip}
-   :cursor   {:type 'string :reflects-attribute attr-cursor}
+   :cursor   {:type 'string :reflects-attribute attr-cursor :enum allowed-cursors}
    :disabled {:type 'boolean :reflects-attribute attr-disabled}
    :loading  {:type 'boolean :reflects-attribute attr-loading}
    :selected {:type 'string :reflects-attribute attr-selected}

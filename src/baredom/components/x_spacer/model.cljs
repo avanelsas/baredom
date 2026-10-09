@@ -10,7 +10,7 @@
   #js [attr-size attr-axis attr-grow])
 
 ;; ── Valid enum sets & defaults ────────────────────────────────────────────
-(def ^:private valid-axes #{"vertical" "horizontal"})
+(def valid-axes #{"vertical" "horizontal"})
 
 (def default-axis "vertical")
 (def default-size "1rem")
@@ -57,7 +57,7 @@
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api
   {:size {:type 'string  :reflects-attribute attr-size}
-   :axis {:type 'string  :reflects-attribute attr-axis}
+   :axis {:type 'string  :reflects-attribute attr-axis :enum valid-axes}
    :grow {:type 'boolean :reflects-attribute attr-grow}})
 
 (def event-schema {})

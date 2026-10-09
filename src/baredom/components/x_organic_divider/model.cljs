@@ -14,13 +14,18 @@
 (def observed-attributes
   #js [attr-shape attr-layers attr-height attr-flip attr-mirror attr-animation attr-path])
 
+(def allowed-animations #{"none" "drift" "morph"})
+
+(def allowed-shapes
+  #{"wave" "waves" "blob-edge" "mountain" "drip" "slant" "scallop" "cloud"})
+
 (def property-api
-  {:shape     {:type 'string  :reflects-attribute attr-shape}
+  {:shape     {:type 'string  :reflects-attribute attr-shape :enum allowed-shapes}
    :layers    {:type 'string  :reflects-attribute attr-layers}
    :height    {:type 'string  :reflects-attribute attr-height}
    :flip      {:type 'boolean :reflects-attribute attr-flip}
    :mirror    {:type 'boolean :reflects-attribute attr-mirror}
-   :animation {:type 'string  :reflects-attribute attr-animation}
+   :animation {:type 'string  :reflects-attribute attr-animation :enum allowed-animations}
    :path      {:type 'string  :reflects-attribute attr-path}})
 
 (def event-schema {})
@@ -31,11 +36,6 @@
 (def default-animation "none")
 
 (def max-layers 5)
-
-(def allowed-animations #{"none" "drift" "morph"})
-
-(def allowed-shapes
-  #{"wave" "waves" "blob-edge" "mountain" "drip" "slant" "scallop" "cloud"})
 
 ;; ViewBox: 0 0 1200 120
 ;; Each path defines the top edge of a filled region extending down to y=120.

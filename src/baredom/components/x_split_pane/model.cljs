@@ -28,7 +28,7 @@
 (def orientation-horizontal "horizontal")
 (def orientation-vertical   "vertical")
 
-(def ^:private valid-orientations #{orientation-horizontal orientation-vertical})
+(def valid-orientations #{orientation-horizontal orientation-vertical})
 
 (def default-orientation   orientation-horizontal)
 (def default-position      50)
@@ -41,7 +41,7 @@
 
 ;; ── API metadata ─────────────────────────────────────────────────────────────
 (def property-api
-  {:orientation  {:type 'string  :reflects-attribute attr-orientation   :default default-orientation}
+  {:orientation  {:type 'string  :reflects-attribute attr-orientation   :default default-orientation :enum valid-orientations}
    :position     {:type 'number  :reflects-attribute attr-position      :default default-position}
    :minStart     {:type 'number  :reflects-attribute attr-min-start      :default 0}
    :minEnd       {:type 'number  :reflects-attribute attr-min-end        :default 0}

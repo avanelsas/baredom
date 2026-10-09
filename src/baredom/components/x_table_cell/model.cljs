@@ -29,17 +29,25 @@
 ;; Slot names
 (def slot-sort-icon "sort-icon")
 
+;; ── Enum sets ────────────────────────────────────────────────────────────────
+(def type-values      #{"data" "header"})
+(def scope-values     #{"col" "row" "colgroup" "rowgroup"})
+(def align-values     #{"start" "center" "end"})
+(def valign-values    #{"top" "middle" "bottom"})
+(def sticky-values    #{"none" "start" "end"})
+(def sort-dir-values  #{"none" "asc" "desc"})
+
 (def property-api
-  {:type          {:type 'string  :reflects-attribute attr-type}
-   :scope         {:type 'string  :reflects-attribute attr-scope}
-   :align         {:type 'string  :reflects-attribute attr-align}
-   :valign        {:type 'string  :reflects-attribute attr-valign}
+  {:type          {:type 'string  :reflects-attribute attr-type :enum type-values}
+   :scope         {:type 'string  :reflects-attribute attr-scope :enum scope-values}
+   :align         {:type 'string  :reflects-attribute attr-align :enum align-values}
+   :valign        {:type 'string  :reflects-attribute attr-valign :enum valign-values}
    :colSpan       {:type 'number  :reflects-attribute attr-col-span}
    :rowSpan       {:type 'number  :reflects-attribute attr-row-span}
    :truncate      {:type 'boolean :reflects-attribute attr-truncate}
-   :sticky        {:type 'string  :reflects-attribute attr-sticky}
+   :sticky        {:type 'string  :reflects-attribute attr-sticky :enum sticky-values}
    :sortable      {:type 'boolean :reflects-attribute attr-sortable}
-   :sortDirection {:type 'string  :reflects-attribute attr-sort-direction}
+   :sortDirection {:type 'string  :reflects-attribute attr-sort-direction :enum sort-dir-values}
    :disabled      {:type 'boolean :reflects-attribute attr-disabled}})
 
 (def event-schema
@@ -48,15 +56,6 @@
    event-connected  {:cancelable false :detail {:type 'string :scope 'string
                                                  :colSpan 'number :rowSpan 'number :align 'string}}
    event-disconnected {:cancelable false :detail {}}})
-
-;; ── Private enum sets ────────────────────────────────────────────────────────
-
-(def ^:private type-values      #{"data" "header"})
-(def ^:private scope-values     #{"col" "row" "colgroup" "rowgroup"})
-(def ^:private align-values     #{"start" "center" "end"})
-(def ^:private valign-values    #{"top" "middle" "bottom"})
-(def ^:private sticky-values    #{"none" "start" "end"})
-(def ^:private sort-dir-values  #{"none" "asc" "desc"})
 
 ;; ── Normalisation helpers ────────────────────────────────────────────────────
 

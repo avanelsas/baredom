@@ -25,11 +25,16 @@
 (def data-opacity "data-opacity")
 (def data-scale   "data-scale")
 
+;; ── Allowed enum values ─────────────────────────────────────────────────────
+(def allowed-directions #{"vertical" "horizontal"})
+(def allowed-sources    #{"document"})
+(def allowed-easings    #{"none" "smooth"})
+
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:direction {:type 'string  :reflects-attribute attr-direction}
-   :source    {:type 'string  :reflects-attribute attr-source}
-   :easing    {:type 'string  :reflects-attribute attr-easing}
+  {:direction {:type 'string  :reflects-attribute attr-direction :enum allowed-directions}
+   :source    {:type 'string  :reflects-attribute attr-source :enum allowed-sources}
+   :easing    {:type 'string  :reflects-attribute attr-easing :enum allowed-easings}
    :disabled  {:type 'boolean :reflects-attribute attr-disabled}
    :label     {:type 'string  :reflects-attribute attr-label}
    :progress  {:type 'number :read-only true}})
@@ -39,11 +44,6 @@
   {event-enter    {:detail {:progress 'number} :cancelable false}
    event-leave    {:detail {:progress 'number} :cancelable false}
    event-progress {:detail {:progress 'number} :cancelable false}})
-
-;; ── Allowed enum values ─────────────────────────────────────────────────────
-(def ^:private allowed-directions #{"vertical" "horizontal"})
-(def ^:private allowed-sources    #{"document"})
-(def ^:private allowed-easings    #{"none" "smooth"})
 
 ;; ── Parsing functions ───────────────────────────────────────────────────────
 

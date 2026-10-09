@@ -17,14 +17,20 @@
 (def event-load  "x-image-load")
 (def event-error "x-image-error")
 
+(def fit-values
+  #{"cover" "contain" "fill" "none" "scale-down"})
+
+(def loading-values
+  #{"lazy" "eager"})
+
 (def property-api
   {:src           {:type 'string  :reflects-attribute attr-src}
    :alt           {:type 'string  :reflects-attribute attr-alt}
    :decorative    {:type 'boolean :reflects-attribute attr-decorative}
    :ratio         {:type 'string  :reflects-attribute attr-ratio}
-   :fit           {:type 'string  :reflects-attribute attr-fit}
+   :fit           {:type 'string  :reflects-attribute attr-fit :enum fit-values}
    :position      {:type 'string  :reflects-attribute attr-position}
-   :loading       {:type 'string  :reflects-attribute attr-loading}
+   :loading       {:type 'string  :reflects-attribute attr-loading :enum loading-values}
    :naturalWidth  {:type 'number :readonly true}
    :naturalHeight {:type 'number :readonly true}
    :state         {:type 'string :readonly true}})
@@ -42,12 +48,6 @@
 (def default-fit      "cover")
 (def default-position "center")
 (def default-loading  "lazy")
-
-(def ^:private fit-values
-  #{"cover" "contain" "fill" "none" "scale-down"})
-
-(def ^:private loading-values
-  #{"lazy" "eager"})
 
 (defn parse-fit
   "Normalise fit attribute. Unknown / nil fall back to \"cover\"."

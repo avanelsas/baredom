@@ -52,7 +52,7 @@
    :max      (parse-max max-raw)})
 
 (def property-api
-  {:position {:type 'string  :reflects-attribute attr-position}
+  {:position {:type 'string  :reflects-attribute attr-position :enum valid-positions}
    :max      {:type 'number  :reflects-attribute attr-max}
    :count    {:type 'number :readonly true}})
 

@@ -26,6 +26,7 @@ Keys:
 - `:reflects-attribute` — the constant of the attribute that the property reads and writes
 - `:default` — what the property reads when the attribute is absent. Only `du/install-properties!` reads this key, so state it only in a component that installs its properties from the model
 - `:readonly` — `true` for read-only properties (optional)
+- `:enum`: the set of canonical values of a property that takes one value of a fixed set (optional). The model may accept more, such as another case, and the property returns the text of the attribute as it is. Name the set that the model normalises with, and define that set above `property-api`. A property that takes a list of values, or an open set, names none.
 
 **Every public attribute has a property that reflects it.** The manifest takes the type of an attribute from that property. The name of the property is the attribute in camel case, with no dash. Two kinds of attribute need no property: `role` and `aria-` attributes, which are text by the ARIA standard, and the attributes a model names in `internal-attributes`.
 

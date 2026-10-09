@@ -36,12 +36,12 @@
   {:columns       {:type 'string  :reflects-attribute attr-columns         :default ""}
    :minColumnSize {:type 'string  :reflects-attribute attr-min-column-size
                    :default default-min-column-size}
-   :gap           {:type 'string  :reflects-attribute attr-gap             :default default-gap}
-   :rowGap        {:type 'string  :reflects-attribute attr-row-gap         :default ""}
-   :columnGap     {:type 'string  :reflects-attribute attr-column-gap      :default ""}
-   :alignItems    {:type 'string  :reflects-attribute attr-align-items     :default default-align}
-   :justifyItems  {:type 'string  :reflects-attribute attr-justify-items   :default default-align}
-   :autoFlow      {:type 'string  :reflects-attribute attr-auto-flow       :default default-flow}
+   :gap           {:type 'string  :reflects-attribute attr-gap             :default default-gap :enum gap-values}
+   :rowGap        {:type 'string  :reflects-attribute attr-row-gap         :default "" :enum gap-values}
+   :columnGap     {:type 'string  :reflects-attribute attr-column-gap      :default "" :enum gap-values}
+   :alignItems    {:type 'string  :reflects-attribute attr-align-items     :default default-align :enum align-values}
+   :justifyItems  {:type 'string  :reflects-attribute attr-justify-items   :default default-align :enum align-values}
+   :autoFlow      {:type 'string  :reflects-attribute attr-auto-flow       :default default-flow :enum flow-values}
    :inline        {:type 'boolean :reflects-attribute attr-inline}})
 (def event-schema {})
 

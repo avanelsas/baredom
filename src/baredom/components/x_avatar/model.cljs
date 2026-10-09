@@ -18,10 +18,10 @@
        attr-size attr-shape attr-variant attr-status attr-disabled])
 
 ;; ── Valid enum sets & defaults ────────────────────────────────────────────
-(def ^:private valid-sizes    #{"xs" "sm" "md" "lg" "xl"})
-(def ^:private valid-shapes   #{"circle" "square" "rounded"})
-(def ^:private valid-variants #{"neutral" "brand" "subtle"})
-(def ^:private valid-statuses #{"online" "offline" "busy" "away"})
+(def valid-sizes    #{"xs" "sm" "md" "lg" "xl"})
+(def valid-shapes   #{"circle" "square" "rounded"})
+(def valid-variants #{"neutral" "brand" "subtle"})
+(def valid-statuses #{"online" "offline" "busy" "away"})
 
 (def default-size    "md")
 (def default-shape   "circle")
@@ -98,10 +98,10 @@
    :alt      {:type 'string  :reflects-attribute attr-alt}
    :name     {:type 'string  :reflects-attribute attr-name}
    :initials {:type 'string  :reflects-attribute attr-initials}
-   :size     {:type 'string  :reflects-attribute attr-size    :default default-size}
-   :shape    {:type 'string  :reflects-attribute attr-shape   :default default-shape}
-   :variant  {:type 'string  :reflects-attribute attr-variant :default default-variant}
-   :status   {:type 'string  :reflects-attribute attr-status}
+   :size     {:type 'string  :reflects-attribute attr-size    :default default-size :enum valid-sizes}
+   :shape    {:type 'string  :reflects-attribute attr-shape   :default default-shape :enum valid-shapes}
+   :variant  {:type 'string  :reflects-attribute attr-variant :default default-variant :enum valid-variants}
+   :status   {:type 'string  :reflects-attribute attr-status :enum valid-statuses}
    :disabled {:type 'boolean :reflects-attribute attr-disabled}})
 
 (def event-schema {})

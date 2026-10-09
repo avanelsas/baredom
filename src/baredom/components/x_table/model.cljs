@@ -21,12 +21,14 @@
 (def event-sort       "x-table-sort")
 (def event-row-select "x-table-row-select")
 
-;; ── Property API metadata ────────────────────────────────────────────────────
+;; ── Enum sets ────────────────────────────────────────────────────────────────
+(def selectable-values #{"none" "single" "multi"})
 
+;; ── Property API metadata ────────────────────────────────────────────────────
 (def property-api
   {:columns    {:type 'string  :reflects-attribute attr-columns}
    :caption    {:type 'string  :reflects-attribute attr-caption}
-   :selectable {:type 'string  :reflects-attribute attr-selectable}
+   :selectable {:type 'string  :reflects-attribute attr-selectable :enum selectable-values}
    :striped    {:type 'boolean :reflects-attribute attr-striped}
    :bordered   {:type 'boolean :reflects-attribute attr-bordered}
    :fullWidth  {:type 'boolean :reflects-attribute attr-full-width}
@@ -41,10 +43,6 @@
    event-row-select
    {:detail     {:rowIndex 'number :selected 'boolean :selectionMode 'string}
     :cancelable true}})
-
-;; ── Private enum sets ────────────────────────────────────────────────────────
-
-(def ^:private selectable-values #{"none" "single" "multi"})
 
 ;; ── Parse helpers ────────────────────────────────────────────────────────────
 

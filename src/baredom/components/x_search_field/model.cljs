@@ -50,7 +50,7 @@
    :name         {:type 'string  :reflects-attribute attr-name}
    :placeholder  {:type 'string  :reflects-attribute attr-placeholder}
    :label        {:type 'string  :reflects-attribute attr-label}
-   :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}
+   :autocomplete {:type 'string  :reflects-attribute attr-autocomplete :enum allowed-autocomplete}
    :disabled     {:type 'boolean :reflects-attribute attr-disabled}
    :required     {:type 'boolean :reflects-attribute attr-required}
    :debounce     {:type 'number  :reflects-attribute attr-debounce}

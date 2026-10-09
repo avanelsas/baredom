@@ -68,14 +68,14 @@
 (def property-api
   {:value      {:type 'string  :reflects-attribute attr-value}
    :max        {:type 'string  :reflects-attribute attr-max}
-   :precision  {:type 'string  :reflects-attribute attr-precision}
-   :shape      {:type 'string  :reflects-attribute attr-shape}
+   :precision  {:type 'string  :reflects-attribute attr-precision :enum allowed-precision}
+   :shape      {:type 'string  :reflects-attribute attr-shape :enum allowed-shapes}
    :allowClear {:type 'boolean :reflects-attribute attr-allow-clear}
    :disabled   {:type 'boolean :reflects-attribute attr-disabled}
    :readOnly   {:type 'boolean :reflects-attribute attr-readonly}
    :name       {:type 'string  :reflects-attribute attr-name}
    :label      {:type 'string  :reflects-attribute attr-label}
-   :size       {:type 'string  :reflects-attribute attr-size}
+   :size       {:type 'string  :reflects-attribute attr-size :enum allowed-sizes}
    :validity          {:type 'ValidityState   :readonly true}
    :validationMessage {:type 'string          :readonly true}
    :willValidate      {:type 'boolean         :readonly true}

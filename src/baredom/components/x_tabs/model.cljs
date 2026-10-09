@@ -26,8 +26,8 @@
 
 (def property-api
   {:value       {:type 'string  :reflects-attribute attr-value}
-   :orientation {:type 'string  :reflects-attribute attr-orientation :default default-orientation}
-   :activation  {:type 'string  :reflects-attribute attr-activation  :default default-activation}
+   :orientation {:type 'string  :reflects-attribute attr-orientation :default default-orientation :enum orientation-values}
+   :activation  {:type 'string  :reflects-attribute attr-activation  :default default-activation :enum activation-values}
    :label       {:type 'string  :reflects-attribute attr-label       :default ""}
    :loop        {:type 'boolean :reflects-attribute attr-loop}})
 

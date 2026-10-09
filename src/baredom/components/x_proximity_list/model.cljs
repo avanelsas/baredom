@@ -35,9 +35,12 @@
                  :composed   true
                  :cancelable true}})
 
+;; ── Allowed values ──────────────────────────────────────────────────────────
+(def allowed-directions #{"horizontal" "vertical"})
+
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:direction {:type 'string  :reflects-attribute attr-direction :default "horizontal"}
+  {:direction {:type 'string  :reflects-attribute attr-direction :default "horizontal" :enum allowed-directions}
    :radius    {:type 'number  :reflects-attribute attr-radius    :default 120}
    :maxScale  {:type 'number  :reflects-attribute attr-max-scale :default 1.5}
    :lift      {:type 'number  :reflects-attribute attr-lift      :default 0}
@@ -57,9 +60,6 @@
 ;; cross-axis the lift direction ramps linearly through zero, avoiding a
 ;; visible jump as the cursor crosses the item centre.
 (def ^:private lift-soft-band 30.0)
-
-;; ── Allowed values ──────────────────────────────────────────────────────────
-(def ^:private allowed-directions #{"horizontal" "vertical"})
 
 ;; ── Parse functions ─────────────────────────────────────────────────────────
 

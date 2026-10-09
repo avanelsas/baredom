@@ -38,10 +38,14 @@
 (def css-opsz-max   "--x-kinetic-font-opsz-max")
 (def css-skew-max   "--x-kinetic-font-skew-max")
 
+;; ── Allowed values ──────────────────────────────────────────────────────────
+(def allowed-triggers #{"cursor" "scroll" "both"})
+(def ^:private allowed-modes    #{"bulge" "lean" "stretch" "breathe"})
+
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
   {:text       {:type 'string  :reflects-attribute attr-text}
-   :trigger    {:type 'string  :reflects-attribute attr-trigger}
+   :trigger    {:type 'string  :reflects-attribute attr-trigger :enum allowed-triggers}
    :mode       {:type 'string  :reflects-attribute attr-mode}
    :perChar    {:type 'boolean :reflects-attribute attr-per-char}
    :mass       {:type 'number  :reflects-attribute attr-mass}
@@ -55,10 +59,6 @@
 (def event-schema
   {event-spring-activate {:detail {} :cancelable false}
    event-spring-settle   {:detail {} :cancelable false}})
-
-;; ── Allowed values ──────────────────────────────────────────────────────────
-(def ^:private allowed-triggers #{"cursor" "scroll" "both"})
-(def ^:private allowed-modes    #{"bulge" "lean" "stretch" "breathe"})
 
 ;; ── Defaults ────────────────────────────────────────────────────────────────
 (def ^:private default-trigger   "cursor")

@@ -18,8 +18,8 @@
   #js [attr-preset attr-animation attr-count])
 
 (def property-api
-  {:preset    {:type 'string  :reflects-attribute attr-preset    :default ""}
-   :animation {:type 'string  :reflects-attribute attr-animation :default ""}
+  {:preset    {:type 'string  :reflects-attribute attr-preset    :default "" :enum allowed-presets}
+   :animation {:type 'string  :reflects-attribute attr-animation :default "" :enum allowed-animations}
    :count     {:type 'number  :reflects-attribute attr-count     :default default-count}})
 
 ;; ---------------------------------------------------------------------------

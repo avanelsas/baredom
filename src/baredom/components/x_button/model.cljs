@@ -44,9 +44,9 @@
   {:disabled {:type 'boolean :reflects-attribute attr-disabled}
    :loading  {:type 'boolean :reflects-attribute attr-loading}
    :pressed  {:type 'boolean :reflects-attribute attr-pressed}
-   :type     {:type 'string  :reflects-attribute attr-type    :default default-type}
-   :variant  {:type 'string  :reflects-attribute attr-variant :default default-variant}
-   :size     {:type 'string  :reflects-attribute attr-size    :default default-size}
+   :type     {:type 'string  :reflects-attribute attr-type    :default default-type :enum allowed-types}
+   :variant  {:type 'string  :reflects-attribute attr-variant :default default-variant :enum allowed-variants}
+   :size     {:type 'string  :reflects-attribute attr-size    :default default-size :enum allowed-sizes}
    :label    {:type 'string  :reflects-attribute attr-label   :default ""}})
 
 (def event-schema

@@ -37,6 +37,9 @@
 (def css-radius              "--x-carousel-radius")
 (def css-gap                 "--x-carousel-gap")
 
+(def valid-transitions #{"slide" "fade"})
+(def valid-directions #{"horizontal" "vertical"})
+
 ;; ── Metadata ────────────────────────────────────────────────────────────────
 (def property-api
   {:currentSlide {:type 'number  :reflects-attribute attr-current}
@@ -46,8 +49,8 @@
    :arrows       {:type 'boolean :reflects-attribute attr-arrows}
    :dots         {:type 'boolean :reflects-attribute attr-dots}
    :disabled     {:type 'boolean :reflects-attribute attr-disabled}
-   :transition   {:type 'string  :reflects-attribute attr-transition}
-   :direction    {:type 'string  :reflects-attribute attr-direction}
+   :transition   {:type 'string  :reflects-attribute attr-transition :enum valid-transitions}
+   :direction    {:type 'string  :reflects-attribute attr-direction :enum valid-directions}
    :peek         {:type 'string  :reflects-attribute attr-peek}
    :slideCount   {:type 'number :readonly true}})
 
@@ -89,8 +92,6 @@
         fallback))
     fallback))
 
-(def ^:private valid-transitions #{"slide" "fade"})
-
 (defn parse-transition
   "Normalise transition attribute to \"slide\" or \"fade\"."
   [s]
@@ -98,8 +99,6 @@
     (let [v (.toLowerCase (.trim s))]
       (if (contains? valid-transitions v) v default-transition))
     default-transition))
-
-(def ^:private valid-directions #{"horizontal" "vertical"})
 
 (defn parse-direction
   "Normalise direction attribute to \"horizontal\" or \"vertical\"."

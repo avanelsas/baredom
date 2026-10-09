@@ -28,10 +28,14 @@
 (def event-end    "x-scroll-end")
 (def event-loop   "x-scroll-loop")
 
+;; ── Allowed enum values ─────────────────────────────────────────────────────
+(def allowed-modes    #{"horizontal" "vertical"})
+(def allowed-snaps    #{"none" "start" "center" "end"})
+
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:mode           {:type 'string  :reflects-attribute attr-mode}
-   :snap           {:type 'string  :reflects-attribute attr-snap}
+  {:mode           {:type 'string  :reflects-attribute attr-mode :enum allowed-modes}
+   :snap           {:type 'string  :reflects-attribute attr-snap :enum allowed-snaps}
    :loop           {:type 'boolean :reflects-attribute attr-loop}
    :autoPlay       {:type 'boolean :reflects-attribute attr-auto-play}
    :interval       {:type 'number  :reflects-attribute attr-interval}
@@ -52,10 +56,6 @@
                  :cancelable false}
    event-loop   {:detail     {:direction 'string}
                  :cancelable true}})
-
-;; ── Allowed enum values ─────────────────────────────────────────────────────
-(def ^:private allowed-modes    #{"horizontal" "vertical"})
-(def ^:private allowed-snaps    #{"none" "start" "center" "end"})
 
 ;; ── Parsing functions ───────────────────────────────────────────────────────
 

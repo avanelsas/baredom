@@ -19,18 +19,18 @@
 ;; ── Event name constants ──────────────────────────────────────────────────────
 (def event-select "x-timeline-select")
 
+;; ── Allowed values ────────────────────────────────────────────────────────────
+(def valid-positions #{"start" "end" "alternating"})
+
 ;; ── Public API metadata ───────────────────────────────────────────────────────
 (def property-api
   {:label    {:type 'string  :reflects-attribute attr-label}
-   :position {:type 'string  :reflects-attribute attr-position}
+   :position {:type 'string  :reflects-attribute attr-position :enum valid-positions}
    :striped  {:type 'boolean :reflects-attribute attr-striped}})
 
 (def event-schema
   {event-select {:detail     {:index 'number :status 'string :label 'string}
                  :cancelable false}})
-
-;; ── Private lookup ────────────────────────────────────────────────────────────
-(def ^:private valid-positions #{"start" "end" "alternating"})
 
 ;; ── Parse helpers ─────────────────────────────────────────────────────────────
 (defn parse-position

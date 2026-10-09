@@ -38,7 +38,7 @@
    :disabled    {:type 'boolean :reflects-attribute attr-disabled}
    :required    {:type 'boolean :reflects-attribute attr-required}
    :open        {:type 'boolean :reflects-attribute attr-open}
-   :placement   {:type 'string  :reflects-attribute attr-placement}
+   :placement   {:type 'string  :reflects-attribute attr-placement :enum allowed-placements}
    ;; `error` reflects the attribute so x-form's setFieldError can drive the
    ;; inline validation message, mirroring x-form-field.
    :error       {:type 'string  :reflects-attribute attr-error}

@@ -47,9 +47,12 @@
                  :composed   true
                  :cancelable true}})
 
+;; ── Allowed values ──────────────────────────────────────────────────────────
+(def allowed-positions #{"bottom" "top" "left" "right"})
+
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
-  {:position       {:type 'string  :reflects-attribute attr-position}
+  {:position       {:type 'string  :reflects-attribute attr-position :enum allowed-positions}
    :gap            {:type 'number  :reflects-attribute attr-gap}
    :blur           {:type 'number  :reflects-attribute attr-blur}
    :threshold      {:type 'string  :reflects-attribute attr-threshold}
@@ -71,9 +74,6 @@
 (def ^:private default-magnet-radius   150)
 (def ^:private default-magnet-strength 0.6)
 (def ^:private default-bob-intensity   1.0)
-
-;; ── Allowed values ──────────────────────────────────────────────────────────
-(def ^:private allowed-positions #{"bottom" "top" "left" "right"})
 
 ;; ── Parse functions ─────────────────────────────────────────────────────────
 

@@ -18,8 +18,8 @@
        attr-aria-label attr-aria-describedby])
 
 ;; ── Valid enum sets & defaults ────────────────────────────────────────────
-(def ^:private valid-variants #{"neutral" "info" "success" "warning" "error"})
-(def ^:private valid-sizes    #{"sm" "md"})
+(def valid-variants #{"neutral" "info" "success" "warning" "error"})
+(def valid-sizes    #{"sm" "md"})
 
 (def default-variant "neutral")
 (def default-size    "md")
@@ -86,8 +86,8 @@
 
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api
-  {:variant {:type 'string  :reflects-attribute attr-variant}
-   :size    {:type 'string  :reflects-attribute attr-size}
+  {:variant {:type 'string  :reflects-attribute attr-variant :enum valid-variants}
+   :size    {:type 'string  :reflects-attribute attr-size :enum valid-sizes}
    :pill    {:type 'boolean :reflects-attribute attr-pill}
    :dot     {:type 'boolean :reflects-attribute attr-dot}
    :count   {:type 'number  :reflects-attribute attr-count}

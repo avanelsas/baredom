@@ -10,24 +10,24 @@
 (def observed-attributes
   #js [attr-variant attr-align attr-truncate attr-line-clamp])
 
-(def property-api
-  {:variant   {:type 'string  :reflects-attribute attr-variant}
-   :align     {:type 'string  :reflects-attribute attr-align}
-   :truncate  {:type 'boolean :reflects-attribute attr-truncate}
-   :lineClamp {:type 'number  :reflects-attribute attr-line-clamp}})
-
-(def event-schema {})
-
-(def ^:private allowed-variants
+(def allowed-variants
   #{"h1" "h2" "h3" "h4" "h5" "h6"
     "subtitle1" "subtitle2"
     "body1" "body2"
     "caption" "overline"
     "blockquote" "code" "kbd" "small"})
 
-(def ^:private default-variant "body1")
+(def allowed-aligns #{"left" "center" "right" "justify"})
 
-(def ^:private allowed-aligns #{"left" "center" "right" "justify"})
+(def property-api
+  {:variant   {:type 'string  :reflects-attribute attr-variant :enum allowed-variants}
+   :align     {:type 'string  :reflects-attribute attr-align :enum allowed-aligns}
+   :truncate  {:type 'boolean :reflects-attribute attr-truncate}
+   :lineClamp {:type 'number  :reflects-attribute attr-line-clamp}})
+
+(def event-schema {})
+
+(def ^:private default-variant "body1")
 
 (def ^:private default-align "left")
 

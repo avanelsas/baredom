@@ -36,7 +36,7 @@
 (def property-api
   {:loading      {:type 'boolean :reflects-attribute attr-loading}
    :novalidate   {:type 'boolean :reflects-attribute attr-novalidate}
-   :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}})
+   :autocomplete {:type 'string  :reflects-attribute attr-autocomplete :enum allowed-autocomplete}})
 
 (def event-schema
   {event-submit {:cancelable true  :detail {:values 'object}}

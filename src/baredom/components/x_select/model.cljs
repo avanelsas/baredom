@@ -38,7 +38,7 @@
    ;; `error` reflects the attribute so x-form's setFieldError can drive the
    ;; inline error message, mirroring x-form-field.
    :error    {:type 'string  :reflects-attribute attr-error}
-   :size        {:type 'string  :reflects-attribute attr-size        :default default-size}
+   :size        {:type 'string  :reflects-attribute attr-size        :default default-size :enum allowed-sizes}
    :placeholder {:type 'string  :reflects-attribute attr-placeholder :default ""}
    :validity          {:type 'ValidityState   :readonly true}
    :validationMessage {:type 'string          :readonly true}

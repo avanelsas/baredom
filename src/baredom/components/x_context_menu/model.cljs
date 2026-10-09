@@ -31,7 +31,7 @@
 (def property-api
   {:open      {:type 'boolean :reflects-attribute attr-open}
    :disabled  {:type 'boolean :reflects-attribute attr-disabled}
-   :placement {:type 'string  :reflects-attribute attr-placement}
+   :placement {:type 'string  :reflects-attribute attr-placement :enum valid-placements}
    :offset    {:type 'string  :reflects-attribute attr-offset}
    :zIndex    {:type 'string  :reflects-attribute attr-z-index}})
 

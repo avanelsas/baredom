@@ -68,8 +68,8 @@
 
 ;; ── Property API (Tier 0) ────────────────────────────────────────────────────
 (def property-api
-  {:mode      {:type 'string  :reflects-attribute attr-mode      :default default-mode}
-   :origin    {:type 'string  :reflects-attribute attr-origin    :default default-origin}
+  {:mode      {:type 'string  :reflects-attribute attr-mode      :default default-mode :enum mode-values}
+   :origin    {:type 'string  :reflects-attribute attr-origin    :default default-origin :enum origin-values}
    :count     {:type 'number  :reflects-attribute attr-count     :default default-count}
    :spread    {:type 'number  :reflects-attribute attr-spread    :default default-spread}
    :velocity  {:type 'number  :reflects-attribute attr-velocity  :default default-velocity}

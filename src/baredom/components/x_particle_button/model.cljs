@@ -75,11 +75,11 @@
   {:disabled        {:type 'boolean :reflects-attribute attr-disabled}
    :loading         {:type 'boolean :reflects-attribute attr-loading}
    :pressed         {:type 'boolean :reflects-attribute attr-pressed}
-   :type            {:type 'string  :reflects-attribute attr-type    :default default-type}
-   :variant         {:type 'string  :reflects-attribute attr-variant :default default-variant}
-   :size            {:type 'string  :reflects-attribute attr-size    :default default-size}
+   :type            {:type 'string  :reflects-attribute attr-type    :default default-type :enum allowed-types}
+   :variant         {:type 'string  :reflects-attribute attr-variant :default default-variant :enum allowed-variants}
+   :size            {:type 'string  :reflects-attribute attr-size    :default default-size :enum allowed-sizes}
    :label           {:type 'string  :reflects-attribute attr-label   :default ""}
-   :mode            {:type 'string  :reflects-attribute attr-mode    :default default-mode}
+   :mode            {:type 'string  :reflects-attribute attr-mode    :default default-mode :enum allowed-modes}
    :particleCount   {:type 'number  :reflects-attribute attr-particle-count
                      :default default-particle-count}
    :intensity       {:type 'number  :reflects-attribute attr-intensity

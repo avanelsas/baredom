@@ -58,7 +58,7 @@
    :disabled {:type 'boolean :reflects-attribute attr-disabled}
    :readOnly {:type 'boolean :reflects-attribute attr-readonly}
    :name     {:type 'string  :reflects-attribute attr-name}
-   :mode     {:type 'string  :reflects-attribute attr-mode}
+   :mode     {:type 'string  :reflects-attribute attr-mode :enum allowed-modes}
    :open     {:type 'boolean :reflects-attribute attr-open}
    :label    {:type 'string  :reflects-attribute attr-label}
    :validity          {:type 'ValidityState   :readonly true}

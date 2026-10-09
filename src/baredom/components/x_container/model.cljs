@@ -29,9 +29,9 @@
 (def property-api
   {:center  {:type 'boolean :reflects-attribute attr-center}
    :fluid   {:type 'boolean :reflects-attribute attr-fluid}
-   :as      {:type 'string  :reflects-attribute attr-as}
-   :size    {:type 'string  :reflects-attribute attr-size}
-   :padding {:type 'string  :reflects-attribute attr-padding}
+   :as      {:type 'string  :reflects-attribute attr-as :enum allowed-as}
+   :size    {:type 'string  :reflects-attribute attr-size :enum allowed-sizes}
+   :padding {:type 'string  :reflects-attribute attr-padding :enum allowed-padding}
    :label   {:type 'string  :reflects-attribute attr-label}})
 
 (def event-schema {})
