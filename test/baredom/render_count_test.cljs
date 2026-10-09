@@ -9,13 +9,11 @@
 (def ^:private known-defects
   "The defects each component has today. A component that is not named has none."
   {"x-carousel"    #{:change-renders-more-than-once}
-   "x-date-picker" #{:no-change-writes}
    "x-divider"     #{:change-renders-more-than-once}})
 
 (def ^:private known-gaps
   "What this test cannot measure in a component today: its renders, or its renders in a hold."
   {"x-context-menu"        #{:renders :hold}
-   "x-date-picker"         #{:renders :hold}
    "x-i18n"                #{:hold}
    "x-menu-item"           #{:hold}
    "x-notification-center" #{:hold}
