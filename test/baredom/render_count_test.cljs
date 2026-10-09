@@ -11,7 +11,6 @@
   {"x-carousel"            #{:change-renders-more-than-once}
    "x-date-picker"         #{:no-change-writes}
    "x-divider"             #{:change-renders-more-than-once}
-   "x-metaball-cursor"     #{:no-change-writes :hold-renders-more-than-once}
    "x-notification-center" #{:no-change-writes}
    "x-organic-shape"       #{:no-change-writes}
    "x-search-field"        #{:no-change-writes}

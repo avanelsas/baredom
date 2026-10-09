@@ -186,7 +186,7 @@
         (set! (.-className div) "blob")
         (set! (.. div -style -width) (str size "px"))
         (set! (.. div -style -height) (str size "px"))
-        (set! (.. div -style -background) (aget colors i))
+        (set! (.. div -style -background) (nth colors i))
         (.appendChild viewport div)
         (.push arr div)
         (.push pos #js {:x 0 :y 0})))
@@ -235,7 +235,7 @@
             size    (aget sizes i)]
         (set! (.. div -style -width) (str size "px"))
         (set! (.. div -style -height) (str size "px"))
-        (set! (.. div -style -background) (aget colors i))))
+        (set! (.. div -style -background) (nth colors i))))
     ;; Recompute speeds
     (du/setv! el k-speeds (model/blob-speeds blob-count))))
 

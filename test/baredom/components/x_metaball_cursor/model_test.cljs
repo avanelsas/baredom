@@ -186,39 +186,29 @@
 
 ;; ── blob-colors ─────────────────────────────────────────────────────────────
 (deftest blob-colors-uniform-test
-  (let [colors (model/blob-colors nil "#6366f1" 3)]
-    (is (= 3 (.-length colors)))
-    (is (= "#6366f1" (aget colors 0)))
-    (is (= "#6366f1" (aget colors 1)))
-    (is (= "#6366f1" (aget colors 2)))))
+  (is (= ["#6366f1" "#6366f1" "#6366f1"] (model/blob-colors nil "#6366f1" 3))))
 
 (deftest blob-colors-palette-exact-test
-  (let [colors (model/blob-colors ["red" "blue" "green"] "#000" 3)]
-    (is (= "red"   (aget colors 0)))
-    (is (= "blue"  (aget colors 1)))
-    (is (= "green" (aget colors 2)))))
+  (is (= ["red" "blue" "green"] (model/blob-colors ["red" "blue" "green"] "#000" 3))))
 
 (deftest blob-colors-palette-cycles-test
-  (let [colors (model/blob-colors ["red" "blue"] "#000" 4)]
-    (is (= 4 (.-length colors)))
-    (is (= "red"  (aget colors 0)))
-    (is (= "blue" (aget colors 1)))
-    (is (= "red"  (aget colors 2)))
-    (is (= "blue" (aget colors 3)))))
+  (is (= ["red" "blue" "red" "blue"] (model/blob-colors ["red" "blue"] "#000" 4))))
+
+(deftest normalize-gives-equal-models-for-equal-inputs
+  (let [in {:palette-raw "ocean" :blob-count-raw "3"}]
+    (is (= (model/normalize in) (model/normalize in)))))
 
 ;; ── normalize with palette ──────────────────────────────────────────────────
 (deftest normalize-palette-test
   (let [m (model/normalize {:palette-raw "ocean" :blob-count-raw "3"})]
     (is (some? (:palette m)))
-    (is (= 3 (.-length (:colors m))))
-    (is (not= (aget (:colors m) 0) (aget (:colors m) 1)))))
+    (is (= 3 (count (:colors m))))
+    (is (not= (nth (:colors m) 0) (nth (:colors m) 1)))))
 
 (deftest normalize-no-palette-uniform-test
   (let [m (model/normalize {:color-raw "hotpink" :blob-count-raw "3"})]
     (is (nil? (:palette m)))
-    (is (= 3 (.-length (:colors m))))
-    (is (= "hotpink" (aget (:colors m) 0)))
-    (is (= "hotpink" (aget (:colors m) 1)))))
+    (is (= ["hotpink" "hotpink" "hotpink"] (:colors m)))))
 
 ;; ── blob-speeds ─────────────────────────────────────────────────────────────
 (deftest blob-speeds-count-test
