@@ -35,8 +35,15 @@ jobs:
       - name: Build demo JS
         run: npm run build:demo
 
+      - name: Setup Babashka
+        run: |
+          curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
+          chmod +x install
+          sudo ./install --dir /usr/local/bin
+          bb --version
+
       - name: Build ESM library
-        run: npx shadow-cljs release lib
+        run: npm run build
 
       - name: Assemble site
         run: |
