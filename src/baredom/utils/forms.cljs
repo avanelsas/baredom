@@ -20,13 +20,13 @@
   "Pure: the standard BareDOM constraint-validation projection.
 
    Returns a map `{:flags <#js validity-state> :message <string>}` ready for
-   `ElementInternals.setValidity`. Precedence: a present `error` wins as a
+   `ElementInternals.setValidity`. Precedence: a present `error` with a message wins as a
    `customError`; otherwise a `required?` control that is `empty?` reports
    `valueMissing`; otherwise the field is valid (empty flags + empty message)."
   [{:keys [has-error? error required? empty? missing-message]}]
   (cond
-    has-error?
-    {:flags #js {:customError true}  :message (or error "")}
+    (and has-error? (seq error))
+    {:flags #js {:customError true}  :message error}
     (and required? empty?)
     {:flags #js {:valueMissing true} :message (or missing-message default-value-missing)}
     :else

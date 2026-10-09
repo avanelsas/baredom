@@ -25,6 +25,11 @@
   (is (= :iso        (model/parse-format "iso")))
   (is (= :localized  (model/parse-format "localized"))))
 
+(deftest canonicalize-keeps-a-locale-only-when-it-is-a-language-tag
+  (is (= "nl-NL" (:locale (model/canonicalize {:locale "nl-NL"}))))
+  (is (nil? (:locale (model/canonicalize {:locale "a"}))))
+  (is (nil? (:locale (model/canonicalize {})))))
+
 (deftest canonicalize-single-test
   (testing "single mode defaults"
     (let [c (model/canonicalize {})]

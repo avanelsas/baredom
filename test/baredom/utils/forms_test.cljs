@@ -26,10 +26,11 @@
     (let [{:keys [flags message]} (forms/validity {:has-error? true :error "Bad value"})]
       (is (true? (.-customError flags)))
       (is (= "Bad value" message))))
-  (testing "customError with a nil error message coerces to empty string"
-    (let [{:keys [flags message]} (forms/validity {:has-error? true :error nil})]
-      (is (true? (.-customError flags)))
-      (is (= "" message)))))
+  (testing "an error with no message is no error"
+    (let [{:keys [flags message]} (forms/validity {:has-error? true :error ""})]
+      (is (nil? (.-customError flags)))
+      (is (= "" message)))
+    (is (nil? (.-customError (:flags (forms/validity {:has-error? true :error nil})))))))
 
 ;; ── validity: valueMissing from required + empty ────────────────────────────
 (deftest validity-value-missing-test

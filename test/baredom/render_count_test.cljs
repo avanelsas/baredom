@@ -9,9 +9,7 @@
 (def ^:private known-defects
   "The defects each component has today. A component that is not named has none."
   {"x-carousel"        #{:change-renders-more-than-once}
-   "x-date-picker"     #{:attribute-value-throws}
    "x-divider"         #{:change-renders-more-than-once}
-   "x-liquid-fill"     #{:attribute-value-throws}
    "x-metaball-cursor" #{:hold-renders-more-than-once}
    "x-welcome-tour"    #{:change-renders-more-than-once :hold-renders-more-than-once}})
 
