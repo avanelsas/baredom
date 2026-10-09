@@ -1,6 +1,8 @@
 (ns baredom.utils.forms-test
   (:require [cljs.test :refer-macros [deftest is testing]]
             [goog.object :as gobj]
+            [baredom.test-elements :as elements]
+            [baredom.utils.component :as component]
             [baredom.utils.forms :as forms]))
 
 ;; ── validity: valid (clear) ─────────────────────────────────────────────────
@@ -118,3 +120,28 @@
       (is (nil? (.-labels el)))
       (is (true? (.checkValidity el)))
       (is (true? (.reportValidity el))))))
+
+(def ^:private control-tag "x-forms-test-control")
+
+(component/register! control-tag
+                     {:observed-attributes  #js []
+                      :connected-fn         identity
+                      :attribute-changed-fn identity
+                      :form-associated?     true})
+
+(deftest disabled?-follows-the-attribute-and-the-fieldset
+  (testing "a control with no disabled attribute and no fieldset is not disabled"
+    (is (false? (forms/disabled? (.createElement js/document control-tag)))))
+  (testing "a control with its own disabled attribute is disabled, before it is connected"
+    (let [control (.createElement js/document control-tag)]
+      (.setAttribute control "disabled" "")
+      (is (true? (forms/disabled? control)))))
+  (testing "a control follows its fieldset both ways, and gets no attribute"
+    (let [[^js fieldset ^js control] (elements/in-fieldset! control-tag {})]
+      (is (false? (forms/disabled? control)))
+      (set! (.-disabled fieldset) true)
+      (is (true? (forms/disabled? control)))
+      (is (false? (.hasAttribute control "disabled")))
+      (set! (.-disabled fieldset) false)
+      (is (false? (forms/disabled? control)))
+      (elements/remove-all!))))

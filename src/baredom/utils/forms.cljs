@@ -50,6 +50,13 @@
     (.setFormValue internals value)
     (set-validity! internals anchor inputs)))
 
+(def ^:private selector-disabled ":disabled")
+
+(defn disabled?
+  "True when `el` is disabled by its own attribute or by a fieldset."
+  [^js el]
+  (.matches el selector-disabled))
+
 ;; ── Native-like validation API ───────────────────────────────────────────────
 (defn- define-getter!
   [^js proto prop-name getter-fn]
