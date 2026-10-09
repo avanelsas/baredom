@@ -12,23 +12,16 @@
 
 (def ^:private known-gaps
   "What this test cannot measure in a component today: its renders, or its renders in a hold."
-  {"x-context-menu"        #{:renders :hold}
-   "x-i18n"                #{:hold}
-   "x-menu-item"           #{:hold}
-   "x-notification-center" #{:hold}
-   "x-ripple-effect"       #{:renders :hold}
-   "x-scroll-parallax"     #{:hold}
-   "x-skeleton-group"      #{:hold}
-   "x-spinner"             #{:hold}
-   "x-spotlight-card"      #{:hold}
-   "x-stepper"             #{:hold}
-   "x-theme"               #{:hold}})
+  {"x-context-menu"  #{:renders :hold}
+   "x-i18n"          #{:hold}
+   "x-ripple-effect" #{:renders :hold}
+   "x-stepper"       #{:hold}})
 
 (def ^:private attr-disabled "disabled")
 
-(def ^:private values
-  "The values an attribute takes in turn. nil is an absent attribute."
-  [nil "" "a" "b" "1" "2" nil])
+(def ^:private plain-values
+  "The values every attribute takes in turn."
+  ["" "a" "b" "1" "2"])
 
 (def ^:private disabling {:attr attr-disabled :from nil :to ""})
 
@@ -68,21 +61,22 @@
   (or (model-write? el payload)
       (contains? dom-writes (:type payload))))
 
-(defn- count-when! [counts? seen payload]
-  (when (counts? payload)
-    (swap! seen inc)))
-
-(defn- counted!
-  "The number of trace payloads that `counts?` accepts while `work` runs."
-  [counts? work]
+(defn- traced!
+  "The trace payloads of `work`."
+  [work]
   (let [hook @du/trace-hook
-        seen (atom 0)]
-    (reset! du/trace-hook (partial count-when! counts? seen))
+        seen (atom [])]
+    (reset! du/trace-hook (partial swap! seen conj))
     (try
       (work)
       (finally
         (reset! du/trace-hook hook)))
     @seen))
+
+(defn- counted!
+  "The number of trace payloads that `counts?` accepts while `work` runs."
+  [counts? work]
+  (count (filter counts? (traced! work))))
 
 (defn- renders!
   "The number of times `el` writes its cached model while `work` runs."
@@ -130,8 +124,21 @@
 (defn- change [attr [from to]]
   {:attr attr :from from :to to})
 
-(defn- changes-of [attr]
-  (mapv (partial change attr) (partition 2 1 values)))
+(defn- allowed-values
+  "The values that the property of `properties` for `attr` allows, in order."
+  [properties attr]
+  (->> (vals properties)
+       (filter (comp #{attr} :reflects-attribute))
+       (mapcat :enum)
+       sort))
+
+(defn- values-of
+  "The values `attr` takes in turn: absent, the plain values, the allowed values, absent."
+  [properties attr]
+  (concat [nil] plain-values (allowed-values properties attr) [nil]))
+
+(defn- changes-of [properties attr]
+  (mapv (partial change attr) (partition 2 1 (values-of properties attr))))
 
 (defn- live? [{:keys [attr renders]}]
   (and (= 1 renders) (not= attr-disabled attr)))
@@ -147,10 +154,11 @@
 (defn- renders-of!
   "What each change of `attrs` costs `tag`: one by one, in pairs inside a hold, with `disabled`
    inside a hold, and with no attribute changed."
-  [tag attrs]
-  (let [changes (mapv (partial measured! tag) (mapcat changes-of attrs))
+  [tag properties attrs]
+  (let [changes (mapv (partial measured! tag) (mapcat (partial changes-of properties) attrs))
         lives   (live changes)]
-    {:changes       changes
+    {:attrs         (count (remove #{attr-disabled} attrs))
+     :changes       changes
      :held          (mapv (partial held-renders! tag) (partition 2 1 lives))
      :disabled-held (when (and (some #{attr-disabled} attrs) (seq lives))
                       (held-renders! tag [disabling (first lives)]))
@@ -158,12 +166,12 @@
 
 (defn- measurement!
   "The renders of `tag`, with the number of errors its callbacks threw."
-  [tag attrs]
+  [tag properties attrs]
   (let [handler (.-onerror js/window)
         thrown  (atom 0)]
     (set! (.-onerror js/window) (fn [& _] (swap! thrown inc) true))
     (try
-      (assoc (renders-of! tag attrs) :thrown @thrown)
+      (assoc (renders-of! tag properties attrs) :thrown @thrown)
       (finally
         (set! (.-onerror js/window) handler)))))
 
@@ -191,19 +199,21 @@
     (pos? thrown)                           (conj :attribute-value-throws)))
 
 (defn- gaps
-  "What `measurement` could not show, as a set of keywords."
-  [{:keys [changes held]}]
+  "What `measurement` could not show, as a set of keywords. A component with one attribute has no
+   hold."
+  [{:keys [attrs changes held]}]
   (cond-> #{}
-    (not-any? rendered? changes) (conj :renders)
-    (empty? held)                (conj :hold)))
+    (not-any? rendered? changes)    (conj :renders)
+    (and (empty? held) (< 1 attrs)) (conj :hold)))
 
 (def ^:private clean
   "The measurement of a component with two attributes and no defect."
-  {:changes       [{:attr "a" :renders 1 :again 0} {:attr "b" :renders 1 :again 0}]
-    :held          [1]
-    :disabled-held 1
-    :idle          0
-    :thrown        0})
+  {:attrs         2
+   :changes       [{:attr "a" :renders 1 :again 0} {:attr "b" :renders 1 :again 0}]
+   :held          [1]
+   :disabled-held 1
+   :idle          0
+   :thrown        0})
 
 (deftest defects-names-each-defect-of-a-measurement
   (is (= #{} (defects clean)))
@@ -215,15 +225,23 @@
   (is (= #{:attribute-value-throws} (defects (assoc clean :thrown 1))))
   (is (= #{} (defects (assoc clean :disabled-held nil)))))
 
+(deftest values-of-adds-the-allowed-values-of-the-property
+  (let [properties {:size  {:type 'string :reflects-attribute "size" :enum #{"sm" "lg"}}
+                    :label {:type 'string :reflects-attribute "label"}}]
+    (is (= [nil "" "a" "b" "1" "2" "lg" "sm" nil] (values-of properties "size")))
+    (is (= [nil "" "a" "b" "1" "2" nil] (values-of properties "label")))))
+
 (deftest gaps-names-what-a-measurement-could-not-show
   (is (= #{} (gaps clean)))
   (is (= #{:hold} (gaps (assoc clean :held []))))
-  (is (= #{:renders :hold} (gaps {:changes [{:attr "a" :renders 0 :again 0}] :held []}))))
+  (is (= #{} (gaps (assoc clean :held [] :attrs 1))))
+  (is (= #{:renders :hold} (gaps (assoc clean :held [] :changes [{:attr "a" :renders 0}]))))
+  (is (= #{:renders} (gaps (assoc clean :held [] :attrs 1 :changes [{:attr "a" :renders 0}])))))
 
 (deftest each-component-has-its-known-defects-and-gaps
-  (doseq [[register! {:keys [tag-name observed-attributes]}] table/components]
+  (doseq [[register! {:keys [tag-name properties observed-attributes]}] table/components]
     (register!)
     (testing tag-name
-      (let [measurement (measurement! tag-name (vec observed-attributes))]
+      (let [measurement (measurement! tag-name properties (vec observed-attributes))]
         (is (= (get known-defects tag-name #{}) (defects measurement)))
         (is (= (get known-gaps tag-name #{}) (gaps measurement)))))))
