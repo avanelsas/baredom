@@ -9,6 +9,7 @@
 
 ;; ── Instance field keys ─────────────────────────────────────────────────────
 (def ^:private k-state "__xPBState")
+(def ^:private k-model "__xPBModel")
 (def ^:private k-hover "__xPBHover")
 (def ^:private k-focus-visible "__xPBFocusVisible")
 (def ^:private k-active-source "__xPBActiveSource")
@@ -1300,16 +1301,22 @@
   (set-active-source! el nil)
   (set-last-activation-source! el nil))
 
+(defn- apply-public-state! [^js el state m]
+  (sync-noninteractive-state! el)
+  (render! el state)
+  ;; Re-extract colours on variant change. extract-color-palette!
+  ;; reads the resolved CSS custom property for the current variant,
+  ;; which updates synchronously with the cascade — no need to defer
+  ;; past the button's bg-color transition.
+  (when (gp el k-canvas-w)
+    (extract-color-palette! el))
+  (sp! el k-model m))
+
 (defn- attribute-changed! [^js el _name _old-value _new-value]
   (when-let [state (get-el-state el)]
-    (sync-noninteractive-state! el)
-    (render! el state)
-    ;; Re-extract colours on variant change. extract-color-palette!
-    ;; reads the resolved CSS custom property for the current variant,
-    ;; which updates synchronously with the cascade — no need to defer
-    ;; past the button's bg-color transition.
-    (when (gp el k-canvas-w)
-      (extract-color-palette! el))))
+    (let [m (read-public-state el)]
+      (when (not= m (gp el k-model))
+        (apply-public-state! el state m)))))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 

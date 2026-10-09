@@ -23,7 +23,6 @@
    "x-menu-item"           #{:hold}
    "x-notification-center" #{:renders :hold}
    "x-organic-shape"       #{:renders :hold}
-   "x-particle-button"     #{:renders :hold}
    "x-ripple-effect"       #{:renders :hold}
    "x-scroll-parallax"     #{:hold}
    "x-search-field"        #{:renders :hold}
