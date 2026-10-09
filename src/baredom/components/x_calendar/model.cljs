@@ -234,11 +234,11 @@
     {:iso         cell-iso
      :in-month?   (boolean in-month?)
      :today?      (boolean (and today-iso (= cell-iso today-iso)))
-     :disabled?   (boolean (or out-of-range?
-                               (contains? disabled-set cell-iso)))
-     :selected?   (boolean (or (= cell-iso value)
-                               (= cell-iso start)
-                               (= cell-iso end)))
+     :disabled?   (or out-of-range?
+                      (contains? disabled-set cell-iso))
+     :selected?   (or (= cell-iso value)
+                      (= cell-iso start)
+                      (= cell-iso end))
      :in-range?   (boolean (and (= mode :range) sd ed
                                 (dates/in-range? cell sd ed)))
      :range-edge? (boolean (and (= mode :range)

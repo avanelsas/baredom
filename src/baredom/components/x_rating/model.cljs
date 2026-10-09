@@ -279,7 +279,7 @@
 (defn interactable?
   "True when the rating accepts user interaction (not disabled, not readonly)."
   [{:keys [disabled? readonly?]}]
-  (boolean (and (not disabled?) (not readonly?))))
+  (and (not disabled?) (not readonly?)))
 
 (defn make-detail
   [value max-stars]

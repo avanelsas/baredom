@@ -203,7 +203,7 @@
     ;; x-progress-circle-complete event
     (when (and now-complete (not was-completed))
       (du/dispatch! el model/event-complete #js {:value value :max max}))
-    (du/setv! el k-completed (boolean now-complete))
+    (du/setv! el k-completed now-complete)
     (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]

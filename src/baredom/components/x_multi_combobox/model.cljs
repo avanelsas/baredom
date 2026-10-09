@@ -126,9 +126,7 @@
    :placement   (normalize-placement placement-raw)
    :max         (parse-max max-raw)
    :error       (or error-raw "")
-   ;; Coerce to a strict boolean: tests call normalize with sparse maps, so
-   ;; `(and (string? nil) …)` must not leak nil into a has-error? predicate.
-   :has-error?  (boolean (and (string? error-raw) (not= error-raw "")))})
+   :has-error?  (and (string? error-raw) (not= error-raw ""))})
 
 ;; ── Max enforcement ──────────────────────────────────────────────────────
 (defn max-reached?
@@ -237,7 +235,7 @@
   [options query wanted-active-idx {:keys [value max]}]
   (let [visible    (filter-options (mu/with-unique-keys :value options) query value)
         active-idx (clamp-active-idx wanted-active-idx (count visible))
-        at-max?    (boolean (max-reached? value max))]
+        at-max?    (max-reached? value max)]
     (if (empty? visible)
       {:items [{:key empty-key :text empty-message}] :active-id nil}
       {:items     (into [] (map-indexed (partial shown-option query active-idx at-max?)) visible)
