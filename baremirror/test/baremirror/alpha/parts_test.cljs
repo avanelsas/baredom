@@ -267,6 +267,94 @@
              (mapv attribute-name
                    (records-of! node (fn [] (write-task! node {:done? false :text "Buy milk"})))))))))
 
+(def ^:private other-row
+  (template/split :row [:li
+                      [:span {:role "checkbox" :aria-checked (comp str :done?) :aria-label :text}]
+                      [:span :text]]))
+
+(defn- checked-of [^js node]
+  (.getAttribute (.-firstElementChild node) "aria-checked"))
+
+(deftest write-item-brings-a-node-to-an-item
+  (let [node (mirror-parts/make-node! (:fixed task-row))]
+    (testing "a node that was never written is written"
+      (mirror-parts/write-item! node task-row {:done? true :text "Buy milk"})
+      (is (= "true" (checked-of node)))
+      (is (= "Buy milk" (.-textContent (.-lastElementChild node)))))
+    (testing "another item writes only what differs"
+      (is (= ["aria-checked"]
+             (mapv attribute-name
+                   (records-of! node (fn [] (mirror-parts/write-item! node task-row {:done? false :text "Buy milk"})))))))
+    (testing "it returns nothing"
+      (is (nil? (mirror-parts/write-item! node task-row {:done? true :text "Buy milk"}))))))
+
+(deftest write-item-writes-nothing-for-an-equal-item
+  (let [node (mirror-parts/make-node! (:fixed task-row))]
+    (mirror-parts/write-item! node task-row {:done? true :text "Buy milk"})
+    (.setAttribute (.-firstElementChild node) "aria-checked" "changed from outside")
+    (testing "an equal item leaves a change from outside as it is"
+      (is (= [] (records-of! node (fn [] (mirror-parts/write-item! node task-row {:done? true :text "Buy milk"})))))
+      (is (= "changed from outside" (checked-of node))))
+    (testing "write-parts! brings the node back"
+      (write-task! node {:done? true :text "Buy milk"})
+      (is (= "true" (checked-of node))))))
+
+(deftest write-item-writes-an-equal-item-through-another-template
+  (let [node (mirror-parts/make-node! (:fixed task-row))]
+    (mirror-parts/write-item! node task-row {:done? true :text "Buy milk"})
+    (.setAttribute (.-firstElementChild node) "aria-checked" "changed from outside")
+    (mirror-parts/write-item! node other-row {:done? true :text "Buy milk"})
+    (is (= "true" (checked-of node)))))
+
+(deftest write-item-refuses-what-is-not-a-split-template
+  (let [node (mirror-parts/make-node! (:fixed task-row))]
+    (is (thrown-with-msg? ExceptionInfo #"not a split template"
+                          (mirror-parts/write-item! node (:fixed task-row) {:done? true :text "Buy milk"})))
+    (is (thrown-with-msg? ExceptionInfo #"not a split template"
+                          (mirror-parts/write-item! node nil {:done? true :text "Buy milk"})))))
+
+(deftest write-item-that-throws-writes-the-same-item-the-next-time
+  (let [node (mirror-parts/make-node! (:fixed task-row))
+        text (.-lastElementChild node)
+        part (.getAttribute text "data-x-part")]
+    (.removeAttribute text "data-x-part")
+    (is (thrown? ExceptionInfo (mirror-parts/write-item! node task-row {:done? true :text "Buy milk"})))
+    (.setAttribute text "data-x-part" part)
+    (mirror-parts/write-item! node task-row {:done? true :text "Buy milk"})
+    (is (= "Buy milk" (.-textContent text)))))
+
+(deftest write-item-after-write-parts-skips-the-item-it-last-wrote
+  (let [node (mirror-parts/make-node! (:fixed task-row))]
+    (mirror-parts/write-item! node task-row {:done? true :text "Buy milk"})
+    (write-task! node {:done? false :text "Buy milk"})
+    (mirror-parts/write-item! node task-row {:done? true :text "Buy milk"})
+    (is (= "false" (checked-of node)))))
+
+(defn- milk-after-bread? [item item-then]
+  (and (= "Buy milk" (:text item)) (= "Buy bread" (:text item-then))))
+
+(deftest write-item-skips-an-item-that-same?-accepts
+  (let [node (mirror-parts/make-node! (:fixed task-row))]
+    (mirror-parts/write-item! (constantly true) node task-row {:done? true :text "Buy bread"})
+    (testing "a node that was never written is written, whatever same? answers"
+      (is (= "true" (checked-of node))))
+    (testing "an item that same? accepts is not written"
+      (mirror-parts/write-item! (constantly true) node task-row {:done? false :text "Buy bread"})
+      (is (= "true" (checked-of node))))
+    (testing "an item that same? refuses is written"
+      (mirror-parts/write-item! (constantly false) node task-row {:done? false :text "Buy bread"})
+      (is (= "false" (checked-of node))))
+    (testing "same? gets the item first and the item last written second"
+      (mirror-parts/write-item! milk-after-bread? node task-row {:done? true :text "Buy milk"})
+      (is (= "false" (checked-of node))))))
+
+(deftest write-item-writes-a-nil-item-once
+  (let [node (mirror-parts/make-node! (:fixed task-row))]
+    (mirror-parts/write-item! node task-row {:done? true :text "Buy milk"})
+    (mirror-parts/write-item! node task-row nil)
+    (is (= "" (.-textContent (.-lastElementChild node))))
+    (is (= [] (records-of! node (fn [] (mirror-parts/write-item! node task-row nil)))))))
+
 (deftest write-parts-applies-a-write-of-text-alone-and-of-attributes-alone
   (let [node (mirror-parts/make-node! [:div [:b {:data-x-part "count"}] [:i {:data-x-part "state"}]])]
     (mirror-parts/write-parts! (mirror-parts/read-parts node) {"count" {:text 3} "state" {:attrs {:hidden true}}})

@@ -90,6 +90,105 @@
     (is (= ["a" "b"] (keys-in parent)))
     (is (= #{"a" "b"} (set (js-keys nodes))))))
 
+(defn- checked-of [^js node]
+  (.getAttribute (.-firstElementChild node) "aria-checked"))
+
+(deftest write-item-brings-a-node-to-an-object
+  (let [split (mjs/split-template "row" (row-template))
+        node  (staged! (.-fixed split))]
+    (mjs/write-item node split #js {:done true :text "Buy milk"})
+    (is (= "" (checked-of node)))
+    (is (= "Buy milk" (.-textContent (.querySelector node "b"))))))
+
+(deftest write-item-writes-nothing-for-an-object-with-the-same-fields
+  (let [split (mjs/split-template "row" (row-template))
+        node  (staged! (.-fixed split))]
+    (mjs/write-item node split #js {:done true :text "Buy milk"})
+    (.setAttribute (.-firstElementChild node) "aria-checked" "changed from outside")
+    (testing "another object with the same fields is the same item"
+      (mjs/write-item node split #js {:done true :text "Buy milk"})
+      (is (= "changed from outside" (checked-of node))))
+    (testing "a field with another value is another item"
+      (mjs/write-item node split #js {:done false :text "Buy milk"})
+      (is (nil? (checked-of node))))))
+
+(deftest write-item-compares-the-fields-of-an-object-one-level-deep
+  (let [split (mjs/split-template "row" (row-template))
+        node  (staged! (.-fixed split))
+        tags  #js ["a"]]
+    (mjs/write-item node split #js {:done true :text "Buy milk" :tags tags})
+    (.setAttribute (.-firstElementChild node) "aria-checked" "changed from outside")
+    (testing "the same array in a field is the same value"
+      (mjs/write-item node split #js {:done true :text "Buy milk" :tags tags})
+      (is (= "changed from outside" (checked-of node))))
+    (testing "an equal array that is another array is another value"
+      (mjs/write-item node split #js {:done true :text "Buy milk" :tags #js ["a"]})
+      (is (= "" (checked-of node))))))
+
+(deftest write-item-takes-an-object-with-other-fields-as-another-item
+  (let [split (mjs/split-template "row" (row-template))
+        node  (staged! (.-fixed split))]
+    (mjs/write-item node split #js {:done true :text "Buy milk" :extra js/undefined})
+    (.setAttribute (.-firstElementChild node) "aria-checked" "changed from outside")
+    (mjs/write-item node split #js {:done true :text "Buy milk" :other js/undefined})
+    (is (= "" (checked-of node)))))
+
+(defn- changed-outside! [^js node]
+  (.setAttribute (.-firstElementChild node) "aria-checked" "changed from outside"))
+
+(deftest write-item-takes-a-field-of-the-prototype-as-no-field
+  (let [split (mjs/split-template "row" (row-template))
+        node  (staged! (.-fixed split))
+        item  (doto (js/Object.create #js {:text "Buy milk"})
+                (unchecked-set "done" true))]
+    (mjs/write-item node split #js {:done true :text "Buy milk"})
+    (changed-outside! node)
+    (mjs/write-item node split item)
+    (is (= "" (checked-of node)))))
+
+(deftest write-item-writes-an-object-that-is-not-plain-every-time
+  (let [split (mjs/split-template "row" (row-template))
+        node  (staged! (.-fixed split))
+        proto #js {:text "Buy milk"}
+        made  (fn [] (doto (js/Object.create proto) (unchecked-set "done" true)))]
+    (testing "two objects with the same prototype and the same fields are two items"
+      (mjs/write-item node split (made))
+      (changed-outside! node)
+      (mjs/write-item node split (made))
+      (is (= "" (checked-of node))))
+    (testing "two arrays with the same content are two items"
+      (mjs/write-item node split #js [1])
+      (changed-outside! node)
+      (mjs/write-item node split #js [1])
+      (is (nil? (checked-of node))))))
+
+(deftest write-item-takes-a-field-that-is-not-a-number-as-the-same-value
+  (let [split (mjs/split-template "row" (row-template))
+        node  (staged! (.-fixed split))]
+    (mjs/write-item node split #js {:done true :text "Buy milk" :rank js/NaN})
+    (changed-outside! node)
+    (mjs/write-item node split #js {:done true :text "Buy milk" :rank js/NaN})
+    (is (= "changed from outside" (checked-of node)))))
+
+(deftest write-item-writes-nothing-for-an-object-that-was-changed-in-place
+  (let [split (mjs/split-template "row" (row-template))
+        node  (staged! (.-fixed split))
+        item  #js {:done true :text "Buy milk"}]
+    (mjs/write-item node split item)
+    (unchecked-set item "done" false)
+    (mjs/write-item node split item)
+    (is (= "" (checked-of node)))))
+
+(deftest write-item-refuses-what-is-not-a-split-template
+  (let [split (mjs/split-template "row" (row-template))
+        node  (staged! (.-fixed split))]
+    (is (thrown-with-msg? ExceptionInfo #"not a split template"
+                          (mjs/write-item node (.-fixed split) #js {:done true :text "Buy milk"})))
+    (is (= (.-fixed split)
+           (:given (ex-data (try (mjs/write-item node (.-fixed split) #js {}) (catch :default e e))))))
+    (is (thrown-with-msg? ExceptionInfo #"not a split template"
+                          (mjs/write-item node nil #js {:done true :text "Buy milk"})))))
+
 (deftest write-parts-applies-an-object-of-writes-to-an-object-of-parts
   (let [node  (staged! #js ["div" #js ["b" #js {:data-x-part "count"} "0"]
                             #js ["i" #js {:data-x-part "state"}]])

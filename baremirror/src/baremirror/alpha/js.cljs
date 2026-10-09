@@ -58,15 +58,20 @@
           (map (partial ->child hole))
           (if attrs (rest more) more))))
 
+(def ^:private split-of
+  "The symbol under which a JavaScript split template holds the split template it stands for."
+  (js/Symbol "baremirror.split"))
+
 (defn split-template
   "Splits the template `array`. Returns a frozen object with `fixed`, `holes`, `events` as pairs
    of an event type with a part name and a meaning, and `writes`, a function of an item."
   [template-name array]
   (let [taken (template/split template-name (->template identity array))]
-    (frozen #js {:fixed  (clj->js (:fixed taken))
-                 :holes  (clj->js (:holes taken))
-                 :events (clj->js (vec (:events taken)))
-                 :writes (fn [item] (clj->js (template/writes taken item)))})))
+    (frozen (doto #js {:fixed  (clj->js (:fixed taken))
+                       :holes  (clj->js (:holes taken))
+                       :events (clj->js (vec (:events taken)))
+                       :writes (fn [item] (clj->js (template/writes taken item)))}
+              (unchecked-set split-of taken)))))
 
 (defn make-node
   "Makes one detached HTML element from the fixed template `array`."
@@ -89,6 +94,40 @@
   "Applies the object `writes` to the object `parts`, both by part name."
   [parts writes]
   (mirror-parts/write-parts! (object-map parts) (update-vals (object-map writes) ->write)))
+
+(defn- plain-object?
+  "True when `x` is an object with the prototype of an object literal."
+  [x]
+  (and (some? x)
+       (identical? (.-prototype js/Object) (js/Object.getPrototypeOf x))))
+
+(defn- own-field? [^js o k]
+  (.call (.. js/Object -prototype -hasOwnProperty) o k))
+
+(defn- same-field?
+  "True when the objects `a` and `b` both have the field `k` of their own, with the same value."
+  [^js a ^js b k]
+  (and (own-field? b k)
+       (js/Object.is (unchecked-get a k) (unchecked-get b k))))
+
+(defn- same-fields?
+  "True when `a` and `b` are the same value, or plain objects with the same fields of their own
+   and the same value in each. A field is not looked into."
+  [^js a ^js b]
+  (or (identical? a b)
+      (and (plain-object? a)
+           (plain-object? b)
+           (== (alength (js/Object.keys a)) (alength (js/Object.keys b)))
+           (every? (partial same-field? a b) (js/Object.keys a)))))
+
+(defn write-item
+  "Brings `node` to `item` through the split template `split`. Writes nothing when `item` has the
+   same fields as the item it last wrote to `node`."
+  [node ^js split item]
+  (let [taken (some-> split (unchecked-get split-of))]
+    (when (nil? taken)
+      (throw (ex-info "writeItem: not a split template." {:given split})))
+    (mirror-parts/write-item! same-fields? node taken item)))
 
 (defn set-text
   "Makes `text` the whole content of `el`, and writes only where it differs."

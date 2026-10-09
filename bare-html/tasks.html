@@ -52,7 +52,7 @@
     import { init as initFormField } from '../dist/x-form-field.js';
     import { init as initSelect }    from '../dist/x-select.js';
     import { init as initSwitch }    from '../dist/x-switch.js';
-    import { splitTemplate, makeNode, readParts, syncPlaces, writeParts, listen, dispatcher }
+    import { splitTemplate, makeNode, readParts, syncPlaces, writeParts, writeItem, listen, dispatcher }
       from '../dist/baremirror-alpha.js';
     import { requests } from '../dist/requests.js';
 
@@ -129,20 +129,26 @@
           empty:    { attrs: { hidden: rows.length > 0 } },
         },
         order: rows.map(task => task.id),
-        rows: Object.fromEntries(rows.map(task => [task.id, row.writes(shown(state, task))])),
+        rows: Object.fromEntries(rows.map(task => [task.id, shown(state, task)])),
       };
     }
 
     // 4. The effect. It decides nothing and knows nothing about tasks.
 
     const page = document.getElementById('app');
-    const makeRow = () => makeNode(row.fixed);
+
+    function made(task) {
+      const node = makeNode(row.fixed);
+      writeItem(node, row, task);
+      return node;
+    }
 
     function render(vm) {
       const parts = readParts(page);
-      const nodes = syncPlaces({ tasks: { parent: parts.tasks } }, { tasks: vm.order }, makeRow);
+      const nodes = syncPlaces({ tasks: { parent: parts.tasks } }, { tasks: vm.order },
+                               key => made(vm.rows[key]));
       writeParts(parts, vm.fixed);
-      vm.order.forEach(key => writeParts(readParts(nodes[key]), vm.rows[key]));
+      vm.order.forEach(key => writeItem(nodes[key], row, vm.rows[key]));
     }
 
     // The wiring: one place for the state, one table of events.

@@ -187,7 +187,7 @@ The script has four parts and a few lines of wiring:
 | `step` | What a message does to the state. A pure function. |
 | `row` | One template for a row: its shape, its holes and what its events mean. |
 | `view` | What the screen shows, as a value. A pure function. |
-| `render` | The effect. It places the rows with `syncPlaces` and writes the values with `writeParts`. |
+| `render` | The effect. It places the rows with `syncPlaces` and writes each row with `writeItem`. |
 | The wiring | `dispatcher` ties the four together, and `listen` turns events into messages. |
 
 Nothing in the script compares the old screen with the new one. A row that stays on the screen

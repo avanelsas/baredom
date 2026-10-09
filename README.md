@@ -154,7 +154,7 @@ Register your own preset, override individual tokens via CSS, or nest themes for
 
 ## BareMirror (alpha)
 
-A small set of functions for an application on top of the components: they place keyed nodes, write values into the parts of a template and turn events into messages, with no comparing of old and new. It ships inside this package as an alpha, for JavaScript and ClojureScript. See [`docs/baremirror.md`](./docs/baremirror.md).
+A small set of functions for an application on top of the components: they place keyed nodes, write values into the parts of a template and turn events into messages, with no comparing of old and new in your code. It ships inside this package as an alpha, for JavaScript and ClojureScript. See [`docs/baremirror.md`](./docs/baremirror.md).
 
 ---
 
