@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en" data-loading>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>One task list, two ways to render it</title>
+  <script>
+    window.BAREDOM_TRACE_HISTORY = 'raw';
+    window.BAREDOM_TRACE_HISTORY_CAPACITY = 1000000;
+  </script>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { margin: 0; }
+    x-trace-history { display: none; }
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; padding-block: 2rem; }
+    .title { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.25rem 1rem; }
+    .controls { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; }
+    .intro { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
+    .inside { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; align-content: start; }
+    .bar { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
+    .bar x-form-field { flex: 1 1 14rem; }
+    .bar.top { justify-content: space-between; align-items: center; }
+    .mode { display: inline-flex; gap: 0.5rem; align-items: center; }
+    .hint { flex: 1 1 16rem; }
+    .compare { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem 1.5rem; --flash: #f59e0b; }
+    @media (min-width: 48rem) {
+      .compare { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, auto);
+                 grid-auto-flow: column; }
+      [data-static] .compare { grid-template-rows: repeat(2, auto); }
+    }
+    .numbers { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.25rem 1rem; align-items: baseline; }
+    .number { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+    [data-rows="few"] .when-many { display: none; }
+    .rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+    .rows:empty::after { content: "Nothing here."; opacity: 0.6; font-size: 0.9rem; }
+    .rows li { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; align-items: center; }
+    .text { flex: 1 1 6rem; }
+    .note { flex: 0 1 7rem; min-width: 0; font: inherit; padding: 0.2rem 0.4rem; }
+    .try, .points { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.75rem; }
+    #sources { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; }
+    x-code { display: block; min-width: 0; max-width: 100%; }
+    .no-script { max-width: 40rem; margin: 2rem auto; padding-inline: 1rem; }
+    #static-note { display: none; }
+    [data-static] #static-note { display: block; }
+    [data-static] :is(.controls, .note, #preset, #left-renderer, #try, #notice, .live-only),
+    [data-static] .rows x-button { display: none; }
+  </style>
+</head>
+<body>
+  <noscript>
+    <p class="no-script">This page needs JavaScript. <a href="mirror.static.html">Here is a copy that shows without it.</a></p>
+  </noscript>
+  <x-theme id="theme" preset="default">
+  <x-container id="page" as="main" size="lg" padding="md" center data-rows="few">
+  <div class="stack">
+    <div class="intro">
+    <header class="bar top">
+      <x-typography variant="h4" role="heading" aria-level="1">One task list, two ways to render it</x-typography>
+      <x-select id="preset" value="default" aria-label="Theme">
+        <option value="default">Default theme</option>
+        <option value="ocean">Ocean</option>
+        <option value="forest">Forest</option>
+        <option value="sunset">Sunset</option>
+        <option value="neo-brutalist">Neo-brutalist</option>
+        <option value="aurora">Aurora</option>
+        <option value="mono-ai">Mono AI</option>
+        <option value="warm-mineral">Warm mineral</option>
+      </x-select>
+    </header>
+    <x-typography variant="body2">Both lists show the same state. They differ in one function: the one that brings the state to the screen.</x-typography>
+    </div>
+
+    <x-card id="static-note" variant="outlined" padding="md">
+      <x-typography variant="body2">This is a copy of the page, made ahead of time. No script runs here, so nothing reacts. <a href="mirror.html">Open the live page.</a></x-typography>
+    </x-card>
+
+    <x-collapse id="try" header="What to try" open>
+      <div class="inside" slot="content">
+      <x-typography variant="caption">The left side starts with the rebuild. Each "Left" line below is about the rebuild. Set the left side to "Track every change by hand" and try again: it then keeps its rows, as the right side does.</x-typography>
+      <ol class="try">
+        <li>
+          <x-typography variant="subtitle2">Turn on "Another user is editing". Then type a note in a row on the left, and in a row on the right.</x-typography>
+          <x-typography variant="caption">Left: the note and your cursor are gone every two seconds.</x-typography>
+          <x-typography variant="caption">Right: the note stays, and you can type on.</x-typography>
+        </li>
+        <li>
+          <x-typography variant="subtitle2">Press <x-kbd keys="Tab"></x-kbd> until a Remove button has focus. Then press "Move the first task to the end".</x-typography>
+          <x-typography variant="caption">Left: the focus is lost.</x-typography>
+          <x-typography variant="caption">Right: the focus stays on the same button.</x-typography>
+        </li>
+        <li>
+          <x-typography variant="subtitle2">Put the focus on a checkbox and press <x-kbd keys="Space"></x-kbd>.</x-typography>
+          <x-typography variant="caption">Left: the task moves to "Done", and the focus is lost.</x-typography>
+          <x-typography variant="caption">Right: the same row moves to "Done", with the focus on it.</x-typography>
+        </li>
+        <li>
+          <x-typography variant="subtitle2">Type in the "New task" field.</x-typography>
+          <x-typography variant="caption">Left: every row is made again for each key.</x-typography>
+          <x-typography variant="caption">Right: nothing happens to the rows.</x-typography>
+        </li>
+        <li>
+          <x-typography variant="subtitle2">Press "1,000 rows". Then move the first task to the end.</x-typography>
+          <x-typography variant="caption">Left: 1,000 rows are made again. Read the time.</x-typography>
+          <x-typography variant="caption">Right: one row moves. Read the time.</x-typography>
+        </li>
+        <li>
+          <x-typography variant="subtitle2"><a href="mirror.static.html">Open this page with no script.</a></x-typography>
+          <x-typography variant="caption">Every component shows. Nothing reacts.</x-typography>
+        </li>
+      </ol>
+      </div>
+    </x-collapse>
+
+    <div class="controls">
+    <div class="bar">
+      <x-form-field id="draft" name="draft" label="New task" placeholder="What needs doing?"></x-form-field>
+      <x-button id="add" variant="primary">Add</x-button>
+      <x-button id="rotate" variant="ghost">Move the first task to the end</x-button>
+    </div>
+
+    <div class="bar">
+      <label class="mode"><x-switch id="other-user" aria-label="Another user is editing"></x-switch><x-typography variant="caption">Another user is editing</x-typography></label>
+      <label class="mode"><x-switch id="refusing" aria-label="The server says no"></x-switch><x-typography variant="caption">The server says no</x-typography></label>
+      <x-button id="rows-few" variant="ghost" size="sm">10 rows</x-button>
+      <x-button id="rows-many" variant="ghost" size="sm">1,000 rows</x-button>
+    </div>
+
+    <div class="bar when-many">
+      <label class="mode"><x-switch id="counting" checked aria-label="Count the renders"></x-switch><x-typography variant="caption">Count the renders</x-typography></label>
+      <x-typography class="hint" variant="caption">Counting records every write to the page. That slows the left side. Turn it off to see true times.</x-typography>
+    </div>
+    </div>
+
+    <x-alert id="notice" type="error" hidden></x-alert>
+
+    <div class="compare">
+      <x-card variant="outlined" padding="md">
+        <div class="inside">
+          <div class="title">
+            <x-typography variant="h6" role="heading" aria-level="2">Plain DOM code</x-typography>
+            <x-typography id="left-lines" variant="caption"></x-typography>
+          </div>
+          <x-select id="left-renderer" value="rebuild" aria-label="How the left side renders">
+            <option value="rebuild">Rebuild every row on each change</option>
+            <option value="by-hand">Track every change by hand</option>
+          </x-select>
+        </div>
+      </x-card>
+      <x-card class="live-only" variant="outlined" padding="md">
+        <div class="numbers" id="left-stats">
+          <x-typography variant="caption">Rows on screen</x-typography><x-typography class="number" variant="caption" data-count="shown">0</x-typography>
+          <x-typography variant="caption">Rows made for the last change</x-typography><x-typography class="number" variant="caption" data-count="last">0</x-typography>
+          <x-typography variant="caption">Rows made, running total</x-typography><x-typography class="number" variant="caption" data-count="total">0</x-typography>
+          <x-typography class="when-many" variant="caption">Time for the last change</x-typography><x-typography class="when-many number" variant="caption" data-count="time">0</x-typography>
+          <x-typography variant="caption">Renders of components for the last change</x-typography><x-typography class="number" variant="caption" data-count="renders">0</x-typography>
+          <x-typography variant="caption">Renders of components, running total</x-typography><x-typography class="number" variant="caption" data-count="all-renders">0</x-typography>
+        </div>
+      </x-card>
+      <x-card variant="outlined" padding="md" id="left">
+        <div class="inside">
+          <x-typography variant="overline">To do</x-typography>
+          <ul class="rows" data-x-part="tasks"></ul>
+          <x-typography variant="overline">Done</x-typography>
+          <ul class="rows" data-x-part="done"></ul>
+        </div>
+      </x-card>
+
+      <x-card variant="outlined" padding="md">
+        <div class="inside">
+          <div class="title">
+            <x-typography variant="h6" role="heading" aria-level="2">The BareMirror functions</x-typography>
+            <x-typography id="right-lines" variant="caption"></x-typography>
+          </div>
+          <x-typography variant="caption">A row that stays keeps its node, in either list.</x-typography>
+        </div>
+      </x-card>
+      <x-card class="live-only" variant="outlined" padding="md">
+        <div class="numbers" id="right-stats">
+          <x-typography variant="caption">Rows on screen</x-typography><x-typography class="number" variant="caption" data-count="shown">0</x-typography>
+          <x-typography variant="caption">Rows made for the last change</x-typography><x-typography class="number" variant="caption" data-count="last">0</x-typography>
+          <x-typography variant="caption">Rows made, running total</x-typography><x-typography class="number" variant="caption" data-count="total">0</x-typography>
+          <x-typography class="when-many" variant="caption">Time for the last change</x-typography><x-typography class="when-many number" variant="caption" data-count="time">0</x-typography>
+          <x-typography variant="caption">Renders of components for the last change</x-typography><x-typography class="number" variant="caption" data-count="renders">0</x-typography>
+          <x-typography variant="caption">Renders of components, running total</x-typography><x-typography class="number" variant="caption" data-count="all-renders">0</x-typography>
+        </div>
+      </x-card>
+      <x-card variant="outlined" padding="md" id="right">
+        <div class="inside">
+          <x-typography variant="overline">To do</x-typography>
+          <ul class="rows" data-x-part="tasks"></ul>
+          <x-typography variant="overline">Done</x-typography>
+          <ul class="rows" data-x-part="done"></ul>
+        </div>
+      </x-card>
+    </div>
+
+    <x-grid min-column-size="18rem" gap="lg">
+      <x-card variant="outlined" padding="md">
+        <div class="inside">
+          <x-typography variant="h6" role="heading" aria-level="2">The state</x-typography>
+          <x-typography variant="caption">One value. Both sides show it.</x-typography>
+          <x-code id="state" language="json" max-lines="18"></x-code>
+        </div>
+      </x-card>
+      <x-card variant="outlined" padding="md">
+        <div class="inside">
+          <x-typography variant="h6" role="heading" aria-level="2">The plan</x-typography>
+          <x-typography variant="caption">The plan that the right side made and performed for the last change. After it, the functions write the values of each row that stayed.</x-typography>
+          <x-code id="plan" language="json" max-lines="18"></x-code>
+        </div>
+      </x-card>
+    </x-grid>
+
+    <x-card variant="outlined" padding="md">
+      <div class="inside">
+        <x-typography variant="h6" role="heading" aria-level="2">The BareMirror functions, in numbers</x-typography>
+        <x-typography id="size" variant="body2"></x-typography>
+      </div>
+    </x-card>
+
+    <x-card variant="outlined" padding="md">
+      <div class="inside">
+        <x-typography variant="h6" role="heading" aria-level="2">Where plain DOM code is ahead</x-typography>
+        <ul class="points">
+          <li><x-typography variant="caption"><b>A list of new rows.</b> Press "10 rows", then "1,000 rows", and read the two times. The functions take longer. They help when a list changes. When every row is new, there is nothing to keep.</x-typography></li>
+          <li><x-typography variant="caption"><b>A long list, tracked by hand.</b> Set the left side to "Track every change by hand", press "1,000 rows" and move a task. Compare the two times: the left side is faster. The functions read the place of every row from the page on each change. Careful code by hand remembers its rows and reads nothing. Its price is its length: read the two line counts.</x-typography></li>
+          <li><x-typography variant="caption"><b>The shortest code.</b> The rebuild is the shortest of the three files. It is also the one that loses your note and your focus.</x-typography></li>
+          <li><x-typography variant="caption"><b>No code to load.</b> The left side needs no file besides its own. The right side loads the functions.</x-typography></li>
+          <li><x-typography variant="caption"><b>Nothing to learn.</b> The left side uses only what the browser gives. The right side asks you to learn a template and a few functions.</x-typography></li>
+        </ul>
+      </div>
+    </x-card>
+
+    <x-card variant="outlined" padding="md">
+      <div class="inside">
+        <x-typography variant="h6" role="heading" aria-level="2">The limits of this page</x-typography>
+        <ul class="points">
+          <li><x-typography variant="caption"><b>Each change is a message.</b> The page has one function that takes a message, makes the next state and renders it. Both sides depend on that.</x-typography></li>
+          <li><x-typography variant="caption"><b>A row has no state of its own.</b> What a row shows comes from the state. The note is the exception: it is text in the node, and the page uses it to show what a rebuild destroys.</x-typography></li>
+          <li class="live-only"><x-typography variant="caption"><b>The focus across a move needs <code>moveBefore</code>.</b> <span id="move-before"></span></x-typography></li>
+          <li><x-typography variant="caption"><b>The count of renders uses the trace recorder of BareDOM.</b> It records every write, which costs time. For a long list the page turns it off and shows the time.</x-typography></li>
+          <li><x-typography variant="caption"><b>One render less for a tick is not about tracking.</b> The badge of a row has two attributes that change with a tick. Plain code writes them one after the other, and the badge renders twice. The functions write both in one hold, which every BareDOM element offers. Plain code could use that hold too.</x-typography></li>
+          <li><x-typography variant="caption"><b>The view has the shape that the functions take.</b> It gives the lists as ids and the rows by id. The two left renderers use the same shape.</x-typography></li>
+          <li><x-typography variant="caption"><b>The running totals start again</b> when you switch the left side. The total of renders also starts again when counting does.</x-typography></li>
+          <li><x-typography variant="caption"><b>The time is the time of the script.</b> The work of the browser after it, to lay out new rows, is not in the number.</x-typography></li>
+        </ul>
+      </div>
+    </x-card>
+
+    <x-card variant="outlined" padding="md">
+      <div class="inside">
+        <x-typography variant="h6" role="heading" aria-level="2">The source</x-typography>
+        <x-typography variant="caption">Every file of this page, in full. The application is <code>app.js</code>, one of the first three files, which are the three ways to render, and the few lines of <code>main.js</code> that hold the state and take a message. The rest is the instruments of this page: they count, measure and show.</x-typography>
+        <div id="sources"></div>
+      </div>
+    </x-card>
+  </div>
+  </x-container>
+  </x-theme>
+
+  <script type="module" src="mirror/main.js"></script>
+</body>
+</html>

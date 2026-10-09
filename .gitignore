@@ -46,3 +46,6 @@ adapters/*/test-app/node_modules/
 adapters/*/test-app/dist/
 adapters/*/test-app/.angular/
 adapters/*/.svelte-kit/
+
+# The copy of the mirror demo with no script, made by scripts/prerender.mjs
+bare-html/mirror.static.html
