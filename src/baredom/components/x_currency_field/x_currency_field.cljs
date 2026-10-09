@@ -129,7 +129,7 @@
    "[part=input]{flex:1;min-width:0;padding:0.5rem 0.75rem;background:transparent;color:var(--x-currency-field-color);border:none;outline:none;"
    "font-size:var(--x-font-size-base,1rem);line-height:1.5;font-family:inherit;}"
    "[part=input]:disabled{opacity:1;cursor:not-allowed;}"
-   ":host([disabled]) [part=input-wrapper]{opacity:var(--x-currency-field-disabled-opacity);cursor:not-allowed;}"
+   ":host(:disabled) [part=input-wrapper]{opacity:var(--x-currency-field-disabled-opacity);cursor:not-allowed;}"
    "[part=hint]{display:block;"
    "font-size:var(--x-font-size-sm,0.8125rem);color:var(--x-currency-field-hint-color);}"
    ".hint-hidden{display:none;}"
@@ -265,7 +265,7 @@
     :label-raw         (du/get-attr el model/attr-label)
     :hint-raw          (du/get-attr el model/attr-hint)
     :error-raw         (du/get-attr el model/attr-error)
-    :disabled-present? (du/has-attr? el model/attr-disabled)
+    :disabled-present? (forms/disabled? el)
     :required-present? (du/has-attr? el model/attr-required)
     :readonly-present? (du/has-attr? el model/attr-readonly)}))
 
@@ -437,10 +437,6 @@
       (du/setv! el k-handlers nil))))
 
 ;; ── Form-associated callbacks ─────────────────────────────────────────────
-(defn- form-disabled! [^js el disabled?]
-  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
-  (update-from-attrs! el))
-
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-value)
   (when-let [refs (du/getv el k-refs)]
@@ -540,6 +536,5 @@
                         :disconnected-fn      disconnected!
                         :attribute-changed-fn attribute-changed!
                         :form-associated?     true
-                        :form-disabled-fn     form-disabled!
                         :form-reset-fn        form-reset!
                         :setup-prototype-fn   install-property-accessors!}))

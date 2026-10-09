@@ -68,6 +68,15 @@ returns, so work that `f` starts and does not finish is not held.
 Shared policy for form-associated components. Every function here is composed by
 the component — none of it is reimplemented per control.
 
+### Disabled state
+
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `disabled?` | `[el]` | True when the control is disabled by its own `disabled` attribute or by a `fieldset` |
+
+A form control reads its disabled state with `disabled?`, in `read-model` and in its handlers. It
+never writes `disabled` on its host. Its style selects `:host(:disabled)`.
+
 ### Constraint validation
 
 | Function | Signature | Description |

@@ -230,7 +230,7 @@
       (let [^js inp     (gobj/get refs "input")
             ^js btn     (gobj/get refs "btn")
             ^js _sr     (gobj/get refs "sr")
-            disabled?   (du/has-attr? el model/attr-disabled)
+            disabled?   (forms/disabled? el)
             readonly?   (du/has-attr? el model/attr-readonly)
             placeholder (du/get-attr el model/attr-placeholder)
             aria-label  (du/get-attr el model/attr-aria-label)
@@ -745,7 +745,7 @@
 
 (defn- on-input-keydown!
   [^js el ^js e]
-  (when-not (du/has-attr? el model/attr-disabled)
+  (when-not (forms/disabled? el)
     (let [key (.-key e)]
       (cond
         (= key "Enter")
@@ -762,13 +762,13 @@
 (defn- on-input-blur!
   [^js el ^js _e]
   (du/setv! el k-focused false)
-  (when-not (du/has-attr? el model/attr-disabled)
+  (when-not (forms/disabled? el)
     (commit-display! el "blur"))
   (sync-input-display! el))
 
 (defn- on-btn-click!
   [^js el ^js _e]
-  (when-not (or (du/has-attr? el model/attr-disabled)
+  (when-not (or (forms/disabled? el)
                 (du/has-attr? el model/attr-readonly))
     (if (du/has-attr? el "open")
       (close-popover! el)
@@ -776,7 +776,7 @@
 
 (defn- on-nav-click!
   [^js el ^js e]
-  (when-not (du/has-attr? el model/attr-disabled)
+  (when-not (forms/disabled? el)
     (let [^js target (.-currentTarget e)
           dir        (.getAttribute target "data-nav")]
       (if (= dir "prev")
@@ -785,7 +785,7 @@
 
 (defn- on-grid-click!
   [^js el ^js e]
-  (when-not (or (du/has-attr? el model/attr-disabled)
+  (when-not (or (forms/disabled? el)
                 (du/has-attr? el model/attr-readonly))
     (let [^js target (.-target e)
           ^js btn    (.closest target "button[data-iso]")]
@@ -796,7 +796,7 @@
 
 (defn- on-grid-keydown!
   [^js el ^js e]
-  (when-not (du/has-attr? el model/attr-disabled)
+  (when-not (forms/disabled? el)
     (let [key     (.-key e)
           cur-iso (du/getv el k-grid-focus)
           ^js cur (when cur-iso (dates/iso->date cur-iso))
@@ -950,7 +950,7 @@
   (when (not= old-val new-val)
     ;; Force the popover closed when disabled is set while open. Done here, not
     ;; inside render!, so the render path doesn't write observed attrs.
-    (when (and (du/has-attr? el model/attr-disabled)
+    (when (and (forms/disabled? el)
                (du/has-attr? el "open"))
       (du/remove-attr! el "open"))
     (read-state! el)
@@ -983,11 +983,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
 ;; ---------------------------------------------------------------------------
-(defn- form-disabled! [^js el disabled?]
-  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
-  (read-state! el)
-  (render! el))
-
 ;; Reset clears the committed value(s) — mirroring x-form-field, which resets to
 ;; empty. render! then re-syncs the (now empty) form value + validity.
 (defn- form-reset! [^js el]
@@ -1027,6 +1022,5 @@
      :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
      :form-associated?       true
-     :form-disabled-fn       form-disabled!
      :form-reset-fn          form-reset!
      :setup-prototype-fn     install-property-accessors!}))

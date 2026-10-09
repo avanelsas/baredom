@@ -113,7 +113,7 @@ Dark-mode defaults are applied automatically via `@media (prefers-color-scheme: 
 
 | Callback             | Behaviour                                          |
 |----------------------|----------------------------------------------------|
-| `formDisabledCallback(d)` | Sets/removes `disabled` attribute, re-renders |
+| `formDisabledCallback(d)` | A disabled `fieldset` disables the control. The control gets no `disabled` attribute. |
 | `formResetCallback()`     | Clears input value, the `value` attribute and the `error` attribute, calls `setFormValue("")` |
 
 Validity is set via `setValidity`:

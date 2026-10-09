@@ -191,7 +191,7 @@
     :placeholder-raw   (du/get-attr el model/attr-placeholder)
     :hint-raw          (du/get-attr el model/attr-hint)
     :error-raw         (du/get-attr el model/attr-error)
-    :disabled-present? (du/has-attr? el model/attr-disabled)
+    :disabled-present? (forms/disabled? el)
     :readonly-present? (du/has-attr? el model/attr-readonly)
     :required-present? (du/has-attr? el model/attr-required)
     :autocomplete-raw  (du/get-attr el model/attr-autocomplete)}))
@@ -313,10 +313,6 @@
       (du/setv! el k-handlers nil))))
 
 ;; ── Form-associated callbacks ─────────────────────────────────────────────
-(defn- form-disabled! [^js el disabled?]
-  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
-  (update-from-attrs! el))
-
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-value)
   (du/remove-attr! el model/attr-error)
@@ -400,6 +396,5 @@
      :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
      :form-associated?       true
-     :form-disabled-fn       form-disabled!
      :form-reset-fn          form-reset!
      :setup-prototype-fn     install-property-accessors!}))

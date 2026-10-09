@@ -16,6 +16,22 @@
   [^js el change]
   (du/setv-untraced! el k-held-changes (conj (du/getv el k-held-changes) change)))
 
+(defn- change!
+  "Gives `change` to `attribute-changed-fn`, or holds it while `el` is held."
+  [attribute-changed-fn ^js el change]
+  (if (held? el)
+    (note-change! el change)
+    (apply attribute-changed-fn el change)))
+
+(def ^:private attr-disabled "disabled")
+
+(defn- disabled-change
+  "The change of the disabled attribute that stands for a control that is now `disabled?`."
+  [disabled?]
+  (if disabled?
+    [attr-disabled nil ""]
+    [attr-disabled "" nil]))
+
 (defn- deliver!
   "Gives one held change to `attribute-changed-fn`. An error is reported and not thrown."
   [attribute-changed-fn ^js el change]
@@ -57,6 +73,15 @@
   (when-some [h @lifecycle-hook]
     (try (h payload) (catch :default _ nil))))
 
+(defn- change-record
+  "The lifecycle record of `change` on `el`."
+  [^js el [n o v]]
+  {:type      :lifecycle/attribute-changed
+   :el        el
+   :attribute n
+   :old-value o
+   :new-value v})
+
 (defn make-element-class
   "Create a custom element class from a declarative options map.
 
@@ -67,8 +92,11 @@
 
    Optional keys:
      :disconnected-fn      — (fn [el] ...) called on disconnectedCallback
-     :form-associated?     — true to mark as form-associated element
-     :form-disabled-fn     — (fn [el disabled?] ...) called on formDisabledCallback
+     :form-associated?     true to mark as form-associated element. Its formDisabledCallback
+                           arrives as a change of its disabled attribute, with a lifecycle
+                           record of that change. The old and new
+                           values of that change are not the attribute's: a fieldset writes
+                           no attribute.
      :form-reset-fn        — (fn [el] ...) called on formResetCallback
      :setup-prototype-fn   — (fn [proto] ...) install properties/methods on prototype
      :internal?            — when true, skip firing the dev-tool lifecycle hook
@@ -82,7 +110,6 @@
            disconnected-fn
            attribute-changed-fn
            form-associated?
-           form-disabled-fn
            form-reset-fn
            setup-prototype-fn
            internal?]}]
@@ -111,23 +138,20 @@
     (set! (.-attributeChangedCallback proto)
           (fn [n o v]
             (this-as ^js this
-              (fire! {:type      :lifecycle/attribute-changed
-                      :el        this
-                      :attribute n
-                      :old-value o
-                      :new-value v})
-              (if (held? this)
-                (note-change! this [n o v])
-                (attribute-changed-fn this n o v)))))
+              (fire! (change-record this [n o v]))
+              (change! attribute-changed-fn this [n o v]))))
 
     (aset proto hold-key
           (fn [f]
             (this-as ^js this
               (with-held-changes! attribute-changed-fn this f))))
 
-    (when form-disabled-fn
+    (when form-associated?
       (set! (.-formDisabledCallback proto)
-            (fn [d] (this-as ^js this (form-disabled-fn this d)))))
+            (fn [d]
+              (this-as ^js this
+                (fire! (change-record this (disabled-change d)))
+                (change! attribute-changed-fn this (disabled-change d))))))
 
     (when form-reset-fn
       (set! (.-formResetCallback proto)

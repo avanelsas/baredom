@@ -215,7 +215,7 @@
     :min              (du/get-attr el model/attr-min)
     :max              (du/get-attr el model/attr-max)
     :step             (du/get-attr el model/attr-step)
-    :disabled         (du/has-attr? el model/attr-disabled)
+    :disabled         (forms/disabled? el)
     :readonly         (du/has-attr? el model/attr-readonly)
     :name             (du/get-attr el model/attr-name)
     :label            (du/get-attr el model/attr-label)
@@ -301,8 +301,8 @@
     (apply-form-value!  el m)
     (du/setv! el k-model m)))
 
-;; render! is the direct-write entry — form-disabled!/form-reset! mutate
-;; attributes synchronously and want the apply to run unconditionally.
+;; render! is the direct-write entry. form-reset! mutates attributes
+;; synchronously and wants the apply to run unconditionally.
 ;; attribute-changed! uses update-from-attrs! which gates on a model diff.
 (defn- render! [^js el]
   (when-let [refs (du/getv el k-refs)]
@@ -323,7 +323,7 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-input-handler [^js el]
   (fn [^js _evt]
-    (when-not (du/has-attr? el model/attr-disabled)
+    (when-not (forms/disabled? el)
       (let [^js refs     (du/getv el k-refs)
             ^js input-el (gobj/get refs "input")
             raw-val      (.-value input-el)
@@ -349,7 +349,7 @@
 
 (defn- make-change-handler [^js el]
   (fn [^js _evt]
-    (when-not (du/has-attr? el model/attr-disabled)
+    (when-not (forms/disabled? el)
       (let [^js refs     (du/getv el k-refs)
             ^js input-el (gobj/get refs "input")
             raw-val      (.-value input-el)
@@ -396,10 +396,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
 ;; ---------------------------------------------------------------------------
-(defn- form-disabled! [^js el disabled?]
-  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
-  (render! el))
-
 (defn- form-reset! [^js el]
   ;; Revert to default value (0)
   (du/set-attr! el model/attr-value (str model/default-value))
@@ -442,6 +438,5 @@
      :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
      :form-associated?       true
-     :form-disabled-fn       form-disabled!
      :form-reset-fn          form-reset!
      :setup-prototype-fn     install-property-accessors!}))

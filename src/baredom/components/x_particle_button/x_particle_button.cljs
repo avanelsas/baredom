@@ -1,6 +1,7 @@
 (ns baredom.components.x-particle-button.x-particle-button
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
+            [baredom.utils.forms :as forms]
             [baredom.components.x-particle-button.model :as model]))
 
 ;; ── Constants ───────────────────────────────────────────────────────────────
@@ -78,7 +79,7 @@
 
 (defn- read-public-state [^js el]
   (model/public-state
-   {:disabled (du/has-attr? el model/attr-disabled)
+   {:disabled (forms/disabled? el)
     :loading (du/has-attr? el model/attr-loading)
     :pressed (du/has-attr? el model/attr-pressed)
     :type (du/get-attr el model/attr-type)

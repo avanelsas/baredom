@@ -71,6 +71,9 @@ jobs:
       - name: Check that native controls take the font of the page
         run: bb scripts/check_control_font.bb
 
+      - name: Check that a form control reads its disabled state
+        run: bb scripts/check_form_disabled.bb
+
       - name: Check the css api the manifest publishes
         run: bb scripts/check_css_api.bb
 

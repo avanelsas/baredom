@@ -30,6 +30,17 @@ Components are registered via `baredom.utils.component/register!`, which creates
      :setup-prototype-fn     install-property-accessors!}))
 ```
 
+## Form-associated elements
+
+`:form-associated? true` is all a form control declares. `component/register!` installs
+`formDisabledCallback` for it. When a `fieldset` disables or enables the control, the callback
+reaches `attribute-changed!` as a change of the `disabled` attribute. It is held like any other
+change. The attribute itself is not written, so the old and new values of that change are not
+the attribute's.
+
+The component reads the state with `forms/disabled?` and styles it with `:host(:disabled)`. See
+[`UTILITIES.md`](UTILITIES.md).
+
 ## Property accessor tiers
 
 Components install JS property accessors at one of three tiers. **Pick the simplest tier the component qualifies for.** Mixing tiers within one `install-property-accessors!` is fine; document and justify any drop to a lower tier inline.

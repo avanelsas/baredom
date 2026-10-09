@@ -569,15 +569,6 @@
       (is (= "false" (.getAttribute inp "aria-invalid"))
           "reset clears aria-invalid on the input"))))
 
-(deftest form-disabled-callback-reflects-attr-test
-  (let [^js el (append! (make-el))]
-    (.formDisabledCallback el true)
-    (is (.hasAttribute el model/attr-disabled)
-        "formDisabledCallback true sets disabled (e.g. inside <fieldset disabled>)")
-    (.formDisabledCallback el false)
-    (is (not (.hasAttribute el model/attr-disabled))
-        "formDisabledCallback false clears disabled")))
-
 (deftest validity-value-missing-when-required-empty-test
   (async done
     (let [^js el (append! (make-el))]

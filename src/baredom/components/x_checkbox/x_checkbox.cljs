@@ -211,7 +211,7 @@
   (model/normalize
    {:checked-present?       (mu/parse-bool-attr (du/get-attr el model/attr-checked))
     :indeterminate-present? (mu/parse-bool-attr (du/get-attr el model/attr-indeterminate))
-    :disabled-present?      (mu/parse-bool-attr (du/get-attr el model/attr-disabled))
+    :disabled-present?      (forms/disabled? el)
     :readonly-present?      (mu/parse-bool-attr (du/get-attr el model/attr-readonly))
     :required-present?      (mu/parse-bool-attr (du/get-attr el model/attr-required))
     :name-raw               (du/get-attr el model/attr-name)
@@ -353,10 +353,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
 ;; ---------------------------------------------------------------------------
-(defn- form-disabled! [^js el disabled?]
-  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
-  (update-from-attrs! el))
-
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-checked)
   (du/remove-attr! el model/attr-indeterminate)
@@ -400,6 +396,5 @@
      :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
      :form-associated?       true
-     :form-disabled-fn       form-disabled!
      :form-reset-fn          form-reset!
      :setup-prototype-fn     install-property-accessors!}))

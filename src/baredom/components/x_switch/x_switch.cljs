@@ -129,7 +129,7 @@
 (defn- read-model [^js el]
   (model/normalize
    {:checked-present?      (du/has-attr? el model/attr-checked)
-    :disabled-present?     (du/has-attr? el model/attr-disabled)
+    :disabled-present?     (forms/disabled? el)
     :readonly-present?     (du/has-attr? el model/attr-readonly)
     :required-present?     (du/has-attr? el model/attr-required)
     :name-raw              (du/get-attr el model/attr-name)
@@ -177,8 +177,8 @@
     (apply-form-value! el m)
     (du/setv! el k-model m)))
 
-;; render! is the direct-write entry — try-toggle!/form-disabled!/form-reset!
-;; mutate attributes synchronously and want the apply to run unconditionally.
+;; render! is the direct-write entry. try-toggle! and form-reset! mutate
+;; attributes synchronously and want the apply to run unconditionally.
 ;; attribute-changed! uses update-from-attrs! which gates on a model diff.
 (defn- render! [^js el]
   (when-let [refs (du/getv el k-refs)]
@@ -250,10 +250,6 @@
       (du/setv! el k-handlers nil))))
 
 ;; ── Form-associated callbacks ─────────────────────────────────────────────────
-(defn- form-disabled! [^js el disabled?]
-  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
-  (render! el))
-
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-checked)
   (render! el))
@@ -290,6 +286,5 @@
      :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
      :form-associated?       true
-     :form-disabled-fn       form-disabled!
      :form-reset-fn          form-reset!
      :setup-prototype-fn     install-property-accessors!}))

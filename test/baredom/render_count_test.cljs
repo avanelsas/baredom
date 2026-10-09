@@ -9,24 +9,10 @@
 (def ^:private known-defects
   "The defects each component has today. A component that is not named has none."
   {"x-carousel"        #{:change-renders-more-than-once}
-   "x-checkbox"        #{:disabled-in-hold-renders-more-than-once}
-   "x-color-picker"    #{:disabled-in-hold-renders-more-than-once}
-   "x-combobox"        #{:disabled-in-hold-renders-more-than-once}
-   "x-currency-field"  #{:disabled-in-hold-renders-more-than-once}
    "x-date-picker"     #{:attribute-value-throws}
    "x-divider"         #{:change-renders-more-than-once}
-   "x-file-upload"     #{:disabled-in-hold-renders-more-than-once}
-   "x-form-field"      #{:disabled-in-hold-renders-more-than-once}
    "x-liquid-fill"     #{:attribute-value-throws}
    "x-metaball-cursor" #{:hold-renders-more-than-once}
-   "x-multi-combobox"  #{:disabled-in-hold-renders-more-than-once}
-   "x-radio"           #{:change-renders-more-than-once :disabled-in-hold-renders-more-than-once}
-   "x-range-slider"    #{:change-renders-more-than-once :disabled-in-hold-renders-more-than-once}
-   "x-rating"          #{:change-renders-more-than-once :disabled-in-hold-renders-more-than-once}
-   "x-select"          #{:disabled-in-hold-renders-more-than-once}
-   "x-slider"          #{:change-renders-more-than-once :disabled-in-hold-renders-more-than-once}
-   "x-switch"          #{:change-renders-more-than-once :disabled-in-hold-renders-more-than-once}
-   "x-text-area"       #{:change-renders-more-than-once :disabled-in-hold-renders-more-than-once}
    "x-welcome-tour"    #{:change-renders-more-than-once :hold-renders-more-than-once}})
 
 (def ^:private known-gaps
