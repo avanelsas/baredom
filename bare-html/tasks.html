@@ -52,7 +52,7 @@
     import { init as initFormField } from '../dist/x-form-field.js';
     import { init as initSelect }    from '../dist/x-select.js';
     import { init as initSwitch }    from '../dist/x-switch.js';
-    import { splitTemplate, makeNode, readParts, syncPlaces, writeParts, writeItem, listen, dispatcher }
+    import { splitTemplate, nodeMaker, readParts, syncPlaces, writeParts, writeItem, listen, dispatcher }
       from '../dist/baremirror-alpha.js';
     import { requests } from '../dist/requests.js';
 
@@ -136,9 +136,10 @@
     // 4. The effect. It decides nothing and knows nothing about tasks.
 
     const page = document.getElementById('app');
+    const makeRow = nodeMaker(row.fixed);
 
     function made(task) {
-      const node = makeNode(row.fixed);
+      const node = makeRow();
       writeItem(node, row, task);
       return node;
     }
