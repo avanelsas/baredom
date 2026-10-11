@@ -90,6 +90,79 @@
     (is (= ["a" "b"] (keys-in parent)))
     (is (= #{"a" "b"} (set (js-keys nodes))))))
 
+(deftest a-reading-and-a-plan-are-frozen
+  (let [parent         (staged! #js ["ul"])
+        [containers a] (items parent ["a" "b"])
+        ^js reading    (mjs/read-places containers)
+        ^js steps      (mjs/plan (.-places reading) a)]
+    (testing "a reading, with every array and object in it"
+      (is (js/Object.isFrozen reading))
+      (is (js/Object.isFrozen (.-places reading)))
+      (is (js/Object.isFrozen (.-nodes reading))))
+    (testing "a plan, with every array and object in it"
+      (is (js/Object.isFrozen steps))
+      (is (js/Object.isFrozen (.-place steps)))
+      (is (js/Object.isFrozen (aget (.-place steps) 0))))
+    (testing "a parent in a reading is left as it is"
+      (is (not (js/Object.isFrozen parent))))))
+
+(deftest perform-takes-a-reading-and-a-plan-made-by-hand
+  (let [parent  (staged! #js ["ul"])
+        reading #js {:containers #js {:items #js {:parent parent}} :nodes #js {}}
+        steps   #js {:remove #js []
+                     :place  #js [#js {:key "b" :in "items" :before nil}
+                                  #js {:key "a" :in "items" :before "b"}]}
+        nodes   (mjs/perform reading steps make-item)]
+    (is (= ["a" "b"] (keys-in parent)))
+    (is (= #{"a" "b"} (set (js-keys nodes))))))
+
+(defn- copy-with
+  "A copy of the object `o` with the fields of `changes`, as an object spread makes it."
+  [o changes]
+  (js/Object.assign #js {} o changes))
+
+(deftest perform-takes-a-copy-of-a-plan-as-the-object-it-is
+  (let [parent         (staged! #js ["ul"])
+        [containers a] (items parent ["a" "b" "c"])
+        ^js reading    (mjs/read-places containers)
+        ^js steps      (mjs/plan (.-places reading) a)
+        last-only      (copy-with steps #js {:place (.slice (.-place steps) 0 1)})]
+    (mjs/perform reading last-only make-item)
+    (testing "only the placement that the copy holds is performed"
+      (is (= ["c"] (keys-in parent))))))
+
+(deftest perform-takes-a-copy-of-a-reading-as-the-object-it-is
+  (let [parent         (staged! #js ["ul"])
+        other          (staged! #js ["ul"])
+        [containers a] (items parent ["a"])
+        ^js reading    (mjs/read-places containers)
+        moved          (copy-with reading #js {:containers #js {:items #js {:parent other}}})]
+    (mjs/perform moved (mjs/plan (.-places reading) a) make-item)
+    (testing "the node goes into the parent that the copy names"
+      (is (= [] (keys-in parent)))
+      (is (= ["a"] (keys-in other))))))
+
+(deftest write-item-refuses-a-copy-of-a-split-template
+  (let [split (mjs/split-template "row" (row-template))
+        node  (staged! (.-fixed split))]
+    (is (thrown-with-msg? ExceptionInfo #"not a split template"
+                          (mjs/write-item node (copy-with split #js {}) #js {:done true :text "Buy milk"})))))
+
+(deftest sync-places-takes-a-node-maker-as-the-function-that-makes-a-node
+  (let [parent         (staged! #js ["ul"])
+        [containers a] (items parent ["a" "b"])]
+    (mjs/sync-places containers a (mjs/node-maker #js ["li"]))
+    (is (= ["a" "b"] (keys-in parent)))))
+
+(deftest node-maker-makes-the-element-of-a-fixed-template-on-each-call
+  (let [fixed    #js ["li" #js {:class "row"} "Buy " #js ["b" "milk"]]
+        make-row (mjs/node-maker fixed)
+        node     (make-row)]
+    (testing "the element is the one that makeNode makes of the template"
+      (is (= (.-outerHTML (mjs/make-node fixed)) (.-outerHTML node))))
+    (testing "each call gives another element"
+      (is (not (identical? node (make-row)))))))
+
 (defn- checked-of [^js node]
   (.getAttribute (.-firstElementChild node) "aria-checked"))
 

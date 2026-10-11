@@ -1,7 +1,10 @@
 (ns baremirror.alpha.parts-test
-  (:require [baremirror.alpha.parts :as mirror-parts]
+  (:require [baremirror.alpha.element :as mirror-element]
+            [baremirror.alpha.parts :as mirror-parts]
+            [baremirror.alpha.places :as mirror-places]
             [baremirror.alpha.template :as template]
-            [baremirror.alpha.test-stage :refer [element! element-with! record-type records-of! remove-stages!]]
+            [baremirror.alpha.test-stage :refer [element! element-with! record-type records-of! remove-stages!
+                                                 stage!]]
             [clojure.test :refer [deftest is testing use-fixtures]]))
 
 (use-fixtures :each {:after remove-stages!})
@@ -178,6 +181,56 @@
 
 (deftest make-node-takes-a-template-of-a-tag-alone
   (is (= "li" (.-localName (mirror-parts/make-node! [:li])))))
+
+(def ^:private row-template
+  [:li {:class "row"} "Buy " [:b "milk"] [:x-button {:size "sm" :disabled true}]])
+
+(deftest node-maker-makes-the-element-of-a-template-on-each-call
+  (let [make-row (mirror-parts/node-maker row-template)
+        node     (make-row)]
+    (testing "the element is the one that make-node! makes of the template"
+      (is (= (.-outerHTML (mirror-parts/make-node! row-template)) (.-outerHTML node))))
+    (testing "each call gives another element"
+      (is (not (identical? node (make-row)))))
+    (testing "the element is in no document"
+      (is (not (.-isConnected node))))))
+
+(deftest node-maker-refuses-a-template-that-is-not-fixed
+  (testing "a hole as a child"
+    (is (thrown? ExceptionInfo (mirror-parts/node-maker [:span :text]))))
+  (testing "a hole in a template below"
+    (is (thrown? ExceptionInfo (mirror-parts/node-maker [:li [:span :text]])))))
+
+(deftest node-maker-makes-a-node-whatever-it-is-called-with
+  (let [make-row (mirror-parts/node-maker [:li "text"])
+        parent   (element! "ul")]
+    (testing "an argument is left alone"
+      (is (= "li" (.-localName (make-row "a")))))
+    (testing "sync! takes it as the function that makes the node of a key"
+      (mirror-places/sync! {:rows {:parent parent}} {:rows ["a" "b"]} make-row)
+      (is (= ["a" "b"] (mapv (fn [^js child] (.getAttribute child "data-x-key"))
+                             (array-seq (.-children parent))))))))
+
+(mirror-element/define-element! "bm-made-probe" {:attrs [] :template [:span "shown"] :css ""})
+
+(deftest node-maker-makes-an-element-that-is-a-component-once-it-is-in-the-page
+  (let [node  ((mirror-parts/node-maker [:li [:bm-made-probe]]))
+        probe (.-firstElementChild node)]
+    (testing "before it is placed, a custom element in it has shown nothing"
+      (is (nil? (.-shadowRoot probe))))
+    (.append (stage!) node)
+    (testing "in the page, the same element shows what it is defined to show"
+      (is (= "shown" (.-textContent (.-lastElementChild (.-shadowRoot probe))))))))
+
+(deftest write-item-skips-the-item-it-wrote-before-the-node-was-placed
+  (let [split (template/split :row [:li [:span :text]])
+        node  ((mirror-parts/node-maker (:fixed split)))]
+    (mirror-parts/write-item! node split {:text "Buy milk"})
+    (.append (stage!) node)
+    (testing "the node shows the item"
+      (is (= "Buy milk" (.-textContent node))))
+    (testing "the same item is not written again"
+      (is (empty? (records-of! node (partial mirror-parts/write-item! node split {:text "Buy milk"})))))))
 
 (defn- part-names [^js node]
   (set (keys (mirror-parts/read-parts node))))

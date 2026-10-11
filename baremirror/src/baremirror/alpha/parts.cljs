@@ -61,30 +61,50 @@
       (set! (.-textContent el) wanted)))
   nil)
 
-(declare make-node!)
+(declare make-node-in!)
 
 (defn- append-child!
   "Appends one child of a template to `el`: a node for a template, text for anything else."
-  [^js el child]
-  (.append el (if (vector? child) (make-node! child) (str child))))
+  [^js doc ^js el child]
+  (.append el (if (vector? child) (make-node-in! doc child) (str child))))
 
 (defn- fixed-pieces
   "The pieces of the template `fixed`. Throws when its element is not fixed."
   [fixed]
   (if (template/fixed? fixed)
     (template/pieces fixed)
-    (throw (ex-info "make-node!: the template is not fixed. split takes holes and :on out of it."
+    (throw (ex-info "A node is made from a fixed template. split takes holes and :on out of one."
                     {:tag (first fixed)}))))
+
+(defn- make-node-in!
+  "Makes one detached HTML element from the template `fixed`, in the document `doc`."
+  [^js doc fixed]
+  (let [[tag attrs children] (fixed-pieces fixed)
+        el                   (.createElement doc (name tag))]
+    (set-attrs! el attrs)
+    (run! (partial append-child! doc el) children)
+    el))
 
 (defn make-node!
   "Makes one detached HTML element from the template `fixed`.
    Throws when the template is not fixed, as `template/fixed?` defines it."
   [fixed]
-  (let [[tag attrs children] (fixed-pieces fixed)
-        el                   (.createElement js/document (name tag))]
-    (set-attrs! el attrs)
-    (run! (partial append-child! el) children)
-    el))
+  (make-node-in! js/document fixed))
+
+(defn- copy-of [^js node & _]
+  (.cloneNode node true))
+
+;; The first node is made in the document of a template element, where no element is defined.
+;; A copy of it is a plain element until it enters the page, so a write before that costs what
+;; an attribute costs.
+(defn node-maker
+  "A function that makes one detached HTML element from the template `fixed` each time,
+   whatever it is called with. Throws when the template is not fixed, as `template/fixed?`
+   defines it."
+  [fixed]
+  (let [^js holder (.createElement js/document "template")
+        ^js inert  (.-ownerDocument (.-content holder))]
+    (partial copy-of (make-node-in! inert fixed))))
 
 (defn part
   "The part name of `node` and the node, when it is a part."

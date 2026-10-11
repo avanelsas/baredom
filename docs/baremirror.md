@@ -184,6 +184,7 @@ and a part name is a string.
 | `template/split` | `splitTemplate` | The fixed template, the holes and the events of a template. |
 | `template/writes` | the `writes` of a split template | The writes of one item, by part name. Pure. |
 | `parts/make-node!` | `makeNode` | One detached element from a fixed template. |
+| `parts/node-maker` | `nodeMaker` | A function that makes one detached element from a fixed template each time, whatever it is called with. It copies one node, so use it for a template that makes many nodes. It can be the function that `sync!` makes a node with. |
 | `parts/read-parts` | `readParts` | The parts of a node and below it, by name. |
 | `parts/write-parts!` | `writeParts` | Applies writes to parts: text and attributes. |
 | `parts/write-item!` | `writeItem` | Brings a node to an item. Writes nothing when the item is the same as last time. Throws when it gets no split template. In ClojureScript, a first argument `same?` replaces `=`. |
@@ -230,6 +231,14 @@ does not.
   it is the same array or object. An instance of a class and an array are written every time.
 - **Write a new node before it is placed.** The function that makes a node gets its key. A
   component that is in the page renders for each write.
+- **A node from `node-maker` is not a component until it is in the page.** Its custom elements
+  are plain elements until then, so a write to it costs what an attribute costs. Write
+  attributes and text to it. A property or a method of a component is not there yet.
+- **In JavaScript, a reading and a plan are frozen.** `perform` takes them as `readPlaces` and
+  `plan` gave them. It also takes a plain object of the same shape: one that you made yourself,
+  or a copy with a field changed.
+- **In JavaScript, a copy of a split template is not a split template.** `writeItem` refuses it.
+  Split the changed template again.
 - **A text hole is the only child of its element.** Wrap a value in an element of its own.
 - **A part gets a name by itself** when its element has a hole or an event. Give it
   `data-x-part` when the page must find it by a name you choose.

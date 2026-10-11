@@ -101,6 +101,18 @@
   (testing "the plan of no places is empty"
     (is (= {:remove [] :place []} (plan/plan {} {})))))
 
+(deftest plan-takes-keys-that-are-equal-and-not-the-same-object
+  (testing "keywords that are made at run time"
+    (is (= {:remove [:c] :place [{:key :b :in :rows :before :a}]}
+           (plan/plan {:rows (mapv keyword ["a" "b" "c"])} {:rows (mapv keyword ["b" "a"])}))))
+  (testing "vectors"
+    (is (= {:remove [] :place [{:key ["row" 3] :in :rows :before ["row" 1]}]}
+           (plan/plan {:rows (mapv (partial vector "row") [1 2 3])}
+                      {:rows (mapv (partial vector "row") [3 1 2])}))))
+  (testing "strings in one container and keywords in another"
+    (is (= {:remove [:x] :place [{:key "b" :in :rows :before "a"}]}
+           (plan/plan {:rows ["a" "b"] :side [(keyword "x")]} {:rows ["b" "a"] :side []})))))
+
 (deftest a-move-in-two-thousand-keys-is-one-placement
   (let [current (mapv str (range 2000))
         wanted  (conj (subvec current 1) (first current))]
