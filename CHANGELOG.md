@@ -2,6 +2,37 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.2.0] - 2026-10-11
+
+BareDOM 4.2 lets BareMirror skip a row whose item did not change, and adds a demo that shows the
+functions beside plain DOM code. No component changed. The adapters are not released again.
+
+### Added
+
+- **`parts/write-item!`, and `writeItem` for JavaScript**, in the BareMirror alpha. It brings a
+  node to an item, and writes nothing when the item is the same as the one it last wrote to that
+  node. JavaScript compares the fields of two object literals, one level deep. See
+  [`docs/baremirror.md`](docs/baremirror.md).
+- **`template/split?`**, for ClojureScript. It is true for a split template.
+- **A demo of BareMirror.** One task list, rendered with a rebuild, with code by hand and with
+  the functions, side by side, with counts and times. It is
+  [on the demo site](https://avanelsas.github.io/baredom/bare-html/mirror.html), with
+  [a copy that shows with no script](https://avanelsas.github.io/baredom/bare-html/mirror.static.html).
+- **`scripts/prerender.mjs` takes `--static`.** The output has no `script` element, and its
+  `html` element has `data-static`. The script also waits while the `html` element of the page
+  has `data-loading`. See [`docs/PRERENDER.md`](docs/PRERENDER.md).
+
+### Changed
+
+- **`parts/read-parts` and `readParts` are faster.** One selector finds the parts of a node. The
+  parts of 1,000 rows, read one by one, take 0.9 ms where they took 5.1 ms. The result is the
+  same.
+
+### Fixed
+
+- **A prerendered page keeps its `html` tag.** `scripts/prerender.mjs` left the tag out, so the
+  page lost its `lang` attribute.
+
 ## [4.1.0] - 2026-10-09
 
 BareDOM 4.1 corrects how a form control follows its `fieldset`, and makes every component render
