@@ -2,6 +2,44 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [Unreleased]
+
+BareMirror is faster, and one function is new. The times are for the task list of the demo with
+1,000 rows, as medians in Chrome, for one whole render through the JavaScript functions.
+
+| Render | Before | After |
+|---|---|---|
+| The first one | 345 ms | 241 ms |
+| Nothing changed | 5.2 ms | 1.0 ms |
+| One row changed and moved to the other list | 6.3 ms | 2.5 ms |
+| The first row moved to the end | 13.0 ms | 2.9 ms |
+
+### Added
+
+- **`parts/node-maker`, and `nodeMaker` for JavaScript**, in the BareMirror alpha. It takes a
+  fixed template and returns a function that makes one detached element each time, by copying
+  one node. A custom element in a copy is a plain element until the copy is in the page, so the
+  first writes to it cost what an attribute costs. See [`docs/baremirror.md`](docs/baremirror.md).
+
+### Changed
+
+- **`plan/plan` is faster.** It finds the keys that stay with one pass and a binary search, and
+  in a browser it looks a key up in a map of the browser. The plan is the same.
+- **`readPlaces`, `plan`, `perform` and `syncPlaces` are faster in JavaScript.** A reading and a
+  plan hold the value they were made from, so `perform` does not read them again.
+- **In JavaScript, a reading and a plan are frozen.** `perform` still takes a plain object of
+  the same shape.
+- **The error for a template that is not fixed no longer names `make-node!`**, since
+  `node-maker` gives it too.
+
+### Fixed
+
+- **In JavaScript, a copy of a split template is no longer taken as the template it was copied
+  from.** `{ ...row, holes: other }` kept the first template inside it, and `writeItem` wrote
+  with that. `writeItem` now refuses a copy.
+- **`writeItem` compares two items faster.** The result is the same.
+- **The demo of BareMirror makes its rows with `nodeMaker`.**
+
 ## [4.2.0] - 2026-10-11
 
 BareDOM 4.2 lets BareMirror skip a row whose item did not change, and adds a demo that shows the

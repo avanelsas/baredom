@@ -58,6 +58,12 @@
           (map (partial ->child hole))
           (if attrs (rest more) more))))
 
+(defn- holding
+  "The JavaScript object `o` with the value `v` under the symbol `k`. A copy of the object does
+   not get the value."
+  [^js o k v]
+  (js/Object.defineProperty o k #js {:value v}))
+
 (def ^:private split-of
   "The symbol under which a JavaScript split template holds the split template it stands for."
   (js/Symbol "baremirror.split"))
@@ -67,16 +73,23 @@
    of an event type with a part name and a meaning, and `writes`, a function of an item."
   [template-name array]
   (let [taken (template/split template-name (->template identity array))]
-    (frozen (doto #js {:fixed  (clj->js (:fixed taken))
-                       :holes  (clj->js (:holes taken))
-                       :events (clj->js (vec (:events taken)))
-                       :writes (fn [item] (clj->js (template/writes taken item)))}
-              (unchecked-set split-of taken)))))
+    (frozen (holding #js {:fixed  (clj->js (:fixed taken))
+                          :holes  (clj->js (:holes taken))
+                          :events (clj->js (vec (:events taken)))
+                          :writes (fn [item] (clj->js (template/writes taken item)))}
+                     split-of
+                     taken))))
 
 (defn make-node
   "Makes one detached HTML element from the fixed template `array`."
   [array]
   (mirror-parts/make-node! (->template identity array)))
+
+(defn node-maker
+  "A function that makes one detached HTML element from the fixed template `array` each time,
+   whatever it is called with."
+  [array]
+  (mirror-parts/node-maker (->template identity array)))
 
 (defn read-parts
   "The parts of `node` as an object of part name to node."
@@ -110,6 +123,14 @@
   (and (own-field? b k)
        (js/Object.is (unchecked-get a k) (unchecked-get b k))))
 
+(defn- same-in-each?
+  "True when `b` has each of the fields `ks` of `a`, with the same value."
+  [^js a ^js b ^js ks]
+  (loop [i 0]
+    (or (== i (alength ks))
+        (and (same-field? a b (aget ks i))
+             (recur (inc i))))))
+
 (defn- same-fields?
   "True when `a` and `b` are the same value, or plain objects with the same fields of their own
    and the same value in each. A field is not looked into."
@@ -117,8 +138,9 @@
   (or (identical? a b)
       (and (plain-object? a)
            (plain-object? b)
-           (== (alength (js/Object.keys a)) (alength (js/Object.keys b)))
-           (every? (partial same-field? a b) (js/Object.keys a)))))
+           (let [ks (js/Object.keys a)]
+             (and (== (alength ks) (alength (js/Object.keys b)))
+                  (same-in-each? a b ks))))))
 
 (defn write-item
   "Brings `node` to `item` through the split template `split`. Writes nothing when `item` has the
@@ -165,33 +187,82 @@
   {:remove (vec (.-remove steps))
    :place  (mapv ->placement (.-place steps))})
 
+(def ^:private value-of
+  "The symbol under which a reading and a plan hold the value they were made from."
+  (js/Symbol "baremirror.value"))
+
+(defn- stood-for
+  "The value the JavaScript object `o` was made from, or nil when it holds none."
+  [^js o]
+  (some-> o (unchecked-get value-of)))
+
+(defn- put! [^js o k v]
+  (doto o (unchecked-set k v)))
+
+(defn- object-of
+  "A JavaScript object with the entries of the map `m`. The values stay as they are."
+  [m]
+  (reduce-kv put! #js {} m))
+
+(defn- push! [^js a x]
+  (doto a (.push x)))
+
+(defn- array-of
+  "A JavaScript array with the items of `xs`. The items stay as they are."
+  [xs]
+  (reduce push! #js [] xs))
+
+(defn- container->js [{:keys [parent before]}]
+  #js {:parent parent :before before})
+
+(defn- reading->js
+  "The reading as a frozen object with `containers`, `places` and `nodes`, holding the reading."
+  [{:keys [containers places nodes] :as reading}]
+  (frozen (holding #js {:containers (object-of (update-vals containers container->js))
+                        :places     (object-of (update-vals places array-of))
+                        :nodes      (object-of nodes)}
+                   value-of
+                   reading)))
+
 (defn- ->reading [^js reading]
-  {:containers (->containers (.-containers reading))
-   :nodes      (object-map (.-nodes reading))})
+  (or (stood-for reading)
+      {:containers (->containers (.-containers reading))
+       :nodes      (object-map (.-nodes reading))}))
+
+(defn- placement->js [{:keys [key in before]}]
+  #js {:key key :in in :before before})
+
+(defn- plan->js
+  "The plan as a frozen object with `remove` and `place`, holding the plan."
+  [{removed :remove placements :place :as steps}]
+  (frozen (holding #js {:remove (array-of removed)
+                        :place  (array-of (map placement->js placements))}
+                   value-of
+                   steps)))
 
 (defn plan
   "What must happen to turn the `current` places into the `wanted` places: an object with
    `remove`, the keys, and `place`, objects of `key`, `in` and `before`."
   [current wanted]
-  (clj->js (places-plan/plan (->places current) (->places wanted))))
+  (plan->js (places-plan/plan (->places current) (->places wanted))))
 
 (defn read-places
   "The current places of `containers`, with the node of each key: an object with `containers`,
    `places` and `nodes`."
   [containers]
-  (clj->js (mirror-places/read-places (->containers containers))))
+  (reading->js (mirror-places/read-places (->containers containers))))
 
 (defn perform
   "Performs the plan `steps` on what `read-places` returned, with `make` making the node of a
    new key. Returns an object of key to node."
   [reading steps make]
-  (clj->js (mirror-places/perform! (->reading reading) (->plan steps) make)))
+  (object-of (mirror-places/perform! (->reading reading) (or (stood-for steps) (->plan steps)) make)))
 
 (defn sync-places
   "Brings `containers` to the `wanted` places, with `make` making the node of a new key.
    Returns an object of key to node."
   [containers wanted make]
-  (clj->js (mirror-places/sync! (->containers containers) (->places wanted) make)))
+  (object-of (mirror-places/sync! (->containers containers) (->places wanted) make)))
 
 (defn- origin->js [{:keys [key-path part node]}]
   #js {:keyPath (clj->js key-path) :part part :node node})

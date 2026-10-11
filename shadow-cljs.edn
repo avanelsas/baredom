@@ -598,6 +598,7 @@
       syncPlaces    baremirror.alpha.js/sync-places
       release       baremirror.alpha.js/release
       makeNode      baremirror.alpha.js/make-node
+      nodeMaker     baremirror.alpha.js/node-maker
       readParts     baremirror.alpha.js/read-parts
       writeParts    baremirror.alpha.js/write-parts
       writeItem     baremirror.alpha.js/write-item

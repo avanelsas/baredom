@@ -1,4 +1,4 @@
-import { splitTemplate, makeNode, readParts, readPlaces, plan, perform, writeItem, listen }
+import { splitTemplate, nodeMaker, readParts, readPlaces, plan, perform, writeItem, listen }
   from '../../dist/baremirror-alpha.js';
 import { requests } from '../../dist/requests.js';
 
@@ -11,8 +11,10 @@ const row = splitTemplate('row',
     ['x-badge', { variant: task => task.tone, text: task => task.status }],
     ['x-button', { size: 'sm', variant: 'danger', on: { press: 'remove' } }, 'Remove']]);
 
+const makeRow = nodeMaker(row.fixed);
+
 function made(task) {
-  const node = makeNode(row.fixed);
+  const node = makeRow();
   writeItem(node, row, task);
   return node;
 }

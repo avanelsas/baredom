@@ -1,22 +1,97 @@
 (ns baremirror.alpha.plan
   "The plan that turns the current places into the wanted places.")
 
-(defn- extend-runs
-  "The runs after `x` is taken in. `runs` maps a rank to the best run that ends at it."
-  [rank runs x]
-  (let [r     (rank x)
-        above (first (subseq runs >= r))
-        below (first (rsubseq runs < r))]
-    (assoc (cond-> runs above (dissoc (key above)))
-           r (conj (some-> below val) x))))
+(defn- first-at-least
+  "The first position below `length` whose run ends at a rank of `r` or more, or `length`.
+   `ends` holds, for each length of run, the position that the best run of that length ends at."
+  [ranks ends length r]
+  (loop [low 0 high length]
+    (if (< low high)
+      (let [middle (quot (+ low high) 2)]
+        (if (< (aget ranks (aget ends middle)) r)
+          (recur (inc middle) high)
+          (recur low middle)))
+      low)))
 
+(defn- take-in!
+  "Takes position `i` into the runs, of which the longest has `length` positions. Returns the
+   length of the longest run after it."
+  [ranks ends before length i]
+  (let [at (first-at-least ranks ends length (aget ranks i))]
+    (aset before i (if (pos? at) (aget ends (dec at)) -1))
+    (aset ends at i)
+    (max length (inc at))))
+
+(defn- mark-run!
+  "Marks in `stays` each position of the run that ends at position `end`. `before` holds the
+   position that comes before each position in its run, or -1."
+  [stays before end]
+  (loop [i end]
+    (when-not (neg? i)
+      (aset stays i true)
+      (recur (aget before i))))
+  stays)
+
+;; Patience sorting: one pass over the ranks, and a binary search for each. The arrays `ends`
+;; and `before` never leave this function.
 (defn- longest-rising
-  "A longest run of `xs` whose ranks rise, as a set. An item without a rank is left out."
-  [rank xs]
-  (set (some-> (transduce (filter rank) (completing (partial extend-runs rank)) (sorted-map) xs)
-               rseq
-               first
-               val)))
+  "The positions of the array `ranks` that are in one longest run that rises, as an array with
+   true at each of them. A position with no rank is in no run."
+  [ranks]
+  (let [n      (alength ranks)
+        ends   (object-array n)
+        before (object-array n)
+        length (loop [i 0 length 0]
+                 (cond
+                   (== i n)              length
+                   (nil? (aget ranks i)) (recur (inc i) length)
+                   :else                 (recur (inc i) (take-in! ranks ends before length i))))]
+    (cond-> (object-array n)
+      (pos? length) (mark-run! before (aget ends (dec length))))))
+
+#?(:cljs
+   (defn- note-position! [^js found i k]
+     (.set found k i)
+     (inc i)))
+
+#?(:cljs
+   (defn- position-in [^js found k]
+     (.get found k)))
+
+;; The map of the host finds a string faster than a persistent map does, and it never leaves
+;; the function that is returned. It finds an object by identity, so it is for strings only.
+#?(:cljs
+   (defn- string-positions
+     "A function of a key that gives its position in the strings `ks`, or nil."
+     [ks]
+     (let [found (js/Map.)]
+       (reduce (partial note-position! found) 0 ks)
+       (partial position-in found))))
+
+(defn- positions
+  "A function of a key that gives its position in `ks`, or nil."
+  [ks]
+  (or #?(:cljs (when (every? string? ks) (string-positions ks)))
+      (zipmap ks (range))))
+
+#?(:cljs
+   (defn- note-key! [^js found k]
+     (doto found (.add k))))
+
+#?(:cljs
+   (defn- note-keys! [found ks]
+     (reduce note-key! found ks)))
+
+#?(:cljs
+   (defn- noted? [^js found k]
+     (.has found k)))
+
+(defn- among
+  "A function of a key that is true when the key is in one of the sequences `kss`."
+  [kss]
+  (or #?(:cljs (when (every? (partial every? string?) kss)
+                 (partial noted? (reduce note-keys! (js/Set.) kss))))
+      (into #{} cat kss)))
 
 (defn- same-from-start?
   "True when `xs` and `ys` hold the same item at position `i`."
@@ -50,15 +125,22 @@
   [container wanted i]
   {:key (nth wanted i) :in container :before (get wanted (inc i))})
 
+(defn- stays-at?
+  "True when the key at position `i` of the wanted keys stays where it is. `stays` starts at
+   the position `head`."
+  [stays head i]
+  (aget stays (- i head)))
+
 (defn- placements
   "The placements that turn `current` into `wanted` in one container, in the order to perform them.
    The keys that both share at the start and at the end are left alone."
   [container current wanted]
   (let [[head tail :as ends] (shared-ends current wanted)
-        stay                 (longest-rising (zipmap (middle current ends) (range))
-                                             (middle wanted ends))]
+        stays                (longest-rising
+                              (object-array (map (positions (middle current ends))
+                                                 (middle wanted ends))))]
     (into []
-          (comp (remove (comp stay wanted))
+          (comp (remove (partial stays-at? stays head))
                 (map (partial placement container wanted)))
           (range (- (count wanted) tail 1) (dec head) -1))))
 
@@ -73,7 +155,7 @@
   [current wanted]
   (if (= current wanted)
     {:remove [] :place []}
-    (let [wanted-anywhere (into #{} cat (vals wanted))]
+    (let [wanted-anywhere (among (vals wanted))]
       {:remove (into [] (comp cat (remove wanted-anywhere)) (vals current))
        :place  (into []
                      (mapcat (partial container-placements current wanted))
