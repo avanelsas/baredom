@@ -2,10 +2,13 @@
 
 All notable changes to BareDOM will be documented in this file.
 
-## [Unreleased]
+## [4.3.0] - 2026-10-11
 
-BareMirror is faster, and one function is new. The times are for the task list of the demo with
-1,000 rows, as medians in Chrome, for one whole render through the JavaScript functions.
+BareDOM 4.3 makes BareMirror faster at many rows, and adds a function that makes a node by
+copying one. No component changed. The adapters are not released again.
+
+The times are for the task list of the demo with 1,000 rows, as medians in Chrome, for one whole
+render through the JavaScript functions.
 
 | Render | Before | After |
 |---|---|---|
