@@ -38,7 +38,8 @@ BareMirror is faster, and one function is new. The times are for the task list o
   from.** `{ ...row, holes: other }` kept the first template inside it, and `writeItem` wrote
   with that. `writeItem` now refuses a copy.
 - **`writeItem` compares two items faster.** The result is the same.
-- **The demo of BareMirror makes its rows with `nodeMaker`.**
+- **The demo of BareMirror, the task list and the examples of the doc make their rows with
+  `nodeMaker` and `node-maker`.**
 
 ## [4.2.0] - 2026-10-11
 

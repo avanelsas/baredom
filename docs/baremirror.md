@@ -66,7 +66,7 @@ A list of tasks with a counter. The page holds two parts:
 
 ```js
 import { init as initCheckbox } from '@vanelsas/baredom/x-checkbox';
-import { splitTemplate, makeNode, readParts, syncPlaces, writeParts, writeItem, listen,
+import { splitTemplate, nodeMaker, readParts, syncPlaces, writeParts, writeItem, listen,
          dispatcher } from '@vanelsas/baredom/baremirror-alpha';
 import { requests } from '@vanelsas/baredom/requests';
 
@@ -99,9 +99,10 @@ function view(state) {
 }
 
 const page = document.getElementById('app');
+const makeRow = nodeMaker(row.fixed);
 
 function made(task) {
-  const node = makeNode(row.fixed);
+  const node = makeRow();
   writeItem(node, row, task);
   return node;
 }
@@ -151,8 +152,11 @@ and a part name is a string.
    :order (mapv :id tasks)
    :rows  (into {} (map (juxt :id identity)) tasks)})
 
+(def copy-row!
+  (parts/node-maker (:fixed row)))
+
 (defn- make-row! [rows k]
-  (doto (parts/make-node! (:fixed row))
+  (doto (copy-row!)
     (parts/write-item! row (rows k))))
 
 (defn- write-row! [nodes rows k]
