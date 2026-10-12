@@ -182,3 +182,13 @@
     (is (= "" (:src d)))
     (is (= 0 (:naturalWidth d)))
     (is (= 0 (:naturalHeight d)))))
+
+(deftest available?-test
+  (testing "an image element that is complete and has a width has its image already"
+    (is (true? (model/available? true 100))))
+  (testing "an element that is not complete, or whose image failed, has none"
+    (is (false? (model/available? false 100)))
+    (is (false? (model/available? true 0)))
+    (is (false? (model/available? nil nil)))
+    (is (false? (model/available? true nil)))))
+

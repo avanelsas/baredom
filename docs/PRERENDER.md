@@ -9,11 +9,24 @@ own tree.
 back out with the browser's own `getHTML`. It works for a page with open shadow roots, whatever
 it was built with.
 
+The script is in the npm package, as the command `baredom-prerender`.
+
 ## Use
 
 Serve the page, then:
 
     node scripts/prerender.mjs http://localhost:8000/page.html page.prerendered.html
+
+With the package installed, the same is:
+
+    npx baredom-prerender http://localhost:8000/page.html page.prerendered.html
+
+Give more pairs of a URL and a file to write more pages. One browser opens them all, one after
+the other, which is much quicker than a run for each page:
+
+    node scripts/prerender.mjs http://localhost:8000/ index.html http://localhost:8000/about/ about/index.html
+
+A page that fails stops the run. The pages before it stay written.
 
 It needs Node 22 or later, and Chrome. Set `CHROME_PATH` when Chrome is not found, and
 `CHROME_FLAGS` for more flags, such as `--no-sandbox` in a container.
@@ -24,6 +37,13 @@ The script waits until every custom element on the page is defined, and then for
 A page that loads more after that puts `data-loading` on its `html` element and removes it when
 it is ready. The script waits for that too.
 
+It then waits until every image has loaded or failed, in the page and in every shadow tree. An
+image that the browser loads lazily is loaded for this, and is lazy again in what is written.
+So an `x-image` is written as loaded, and the same page gives the same file each time. The script
+stops and names an image that never finishes.
+
+The directory of an output file is made when it is not there.
+
 With `--static` before the URL, the output has no `script` and no `noscript` element, and its
 `html` element has `data-static`. The page can use that attribute in its style to hide what
 needs a script. [`bare-html/mirror.html`](../bare-html/mirror.html) does.
@@ -32,7 +52,8 @@ needs a script. [`bare-html/mirror.html`](../bare-html/mirror.html) does.
 
 - The page is drawn before any script runs, in the theme's colours.
 - On the pages we watched, nothing flashed or moved when the scripts took over. A component
-  builds its tree again in the shadow root that is already there.
+  builds its tree again in the shadow root that is already there. An `x-image` whose picture
+  the page has already is loaded at once, with no shimmer and no fade.
 - A keyed row that is in the markup is adopted by BareMirror's `sync`. It is not made again.
 
 ## Limits

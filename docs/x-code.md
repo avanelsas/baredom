@@ -30,7 +30,7 @@ surrounding markup.
 
 | Name           | Type    | Default | Description                                                            |
 |----------------|---------|---------|------------------------------------------------------------------------|
-| `language`     | string  | `text`  | `js`, `json`, `css`, `html` (plus aliases). Anything else = no tokens. |
+| `language`     | string  | `text`  | `js`, `json`, `css`, `html`, `clojure` (plus aliases). Anything else = no tokens. |
 | `filename`     | string  | `""`    | Shown on the left of the header bar.                                   |
 | `show-copy`    | boolean | absent  | Shows a copy-to-clipboard button in the header.                        |
 | `line-numbers` | boolean | absent  | Renders a non-selectable line-number gutter.                           |
@@ -129,14 +129,19 @@ All token colours have separate light and dark fallbacks via
 ## Tokenizer & languages
 
 The tokenizer is in-house, regex-based, and intentionally lightweight. It
-supports `js`, `json`, `css`, and `html`; every other language renders as plain
-monospace text. Known limitations:
+supports `js`, `json`, `css`, `html` and `clojure`; every other language renders
+as plain monospace text. `clj`, `cljs`, `cljc`, `edn` and `bb` are aliases of
+`clojure`. Known limitations:
 
 - It is a highlighter, not a parser — there is no nested-language handling
   (`<script>` / `<style>` bodies inside HTML stay plain HTML text).
 - JavaScript regex literals are not recognised; `/` is treated as punctuation.
 - The CSS property heuristic (an identifier followed by `:`) can occasionally
   mis-colour a pseudo-class selector.
+- In Clojure the special forms and the common macros that define or branch are
+  coloured as keywords, a `:keyword` as a key, and a regex and a character as
+  strings. A symbol in the place of a function is plain, and so is what a `#_`
+  discards.
 
 These trade-offs keep the highlighter small and dependency-free.
 

@@ -149,6 +149,12 @@
      :loading      (parse-loading loading-raw)
      :warn-alt?    warn-alt?}))
 
+(defn available?
+  "True when an image element has its image already: it is complete, and the image has a
+   width. An element whose image failed is complete too, with no width."
+  [complete natural-width]
+  (boolean (and complete (number? natural-width) (pos? natural-width))))
+
 (defn load-detail
   "Build the event detail map for x-image-load."
   [src natural-w natural-h]

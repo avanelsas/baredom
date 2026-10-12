@@ -121,14 +121,25 @@
              @all-events)))))
 
 (deftest aria-hidden-updates-test
-  (testing "aria-hidden reflects open state"
+  (testing "an overlay sidebar is hidden when it is closed"
     (let [el (make-element!)
           sidebar-el (.querySelector (.-shadowRoot el) ".sidebar")]
+      ;; A breakpoint of 0 keeps the declared variant, whatever the width of the test page.
+      (.setAttribute el model/attr-breakpoint "0")
+      (.setAttribute el model/attr-variant model/variant-overlay)
       (is (= "true" (.getAttribute sidebar-el "aria-hidden")))
       (set! (.-open el) true)
       (is (= "false" (.getAttribute sidebar-el "aria-hidden")))
       (set! (.-open el) false)
-      (is (= "true" (.getAttribute sidebar-el "aria-hidden"))))))
+      (is (= "true" (.getAttribute sidebar-el "aria-hidden")))))
+  (testing "a docked sidebar is not hidden when it is closed"
+    (let [el (make-element!)
+          sidebar-el (.querySelector (.-shadowRoot el) ".sidebar")]
+      (.setAttribute el model/attr-breakpoint "0")
+      (.setAttribute el model/attr-variant model/variant-docked)
+      (is (= "false" (.getAttribute sidebar-el "aria-hidden")))
+      (set! (.-open el) true)
+      (is (= "false" (.getAttribute sidebar-el "aria-hidden"))))))
 
 (deftest host-state-projection-test
   (testing "host data attributes mirror computed state"

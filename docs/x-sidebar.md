@@ -97,6 +97,9 @@ Programmatic property or attribute changes can fire `toggle` when the effective 
  :backdrop-click-dismisses-when-modal true}
 ```
 
+A docked sidebar is in the page whether it is open or not, so it is never `aria-hidden`. An
+overlay or modal sidebar is `aria-hidden` while it is closed.
+
 ## Motion
 
 All user content is distributed through the default slot, and the slot is always inside the animated panel.
