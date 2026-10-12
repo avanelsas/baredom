@@ -5,8 +5,8 @@
    No DOM, no side effects. Every function here is a plain data transform and
    is exercised directly by model_test.cljs with sparse inputs.
 
-   The tokenizer is deliberately lightweight. It covers js / json / css / html
-   only and degrades any other language to plain text. It is a highlighter,
+   The tokenizer is deliberately lightweight. It covers js / json / css / html /
+   clojure only and degrades any other language to plain text. It is a highlighter,
    not a parser: it does not track nested languages, and a handful of
    context-sensitive cases are knowingly imperfect (see docs/x-code.md)."
   (:require [clojure.string :as str]))
@@ -39,6 +39,7 @@
 (def lang-json "json")
 (def lang-css  "css")
 (def lang-html "html")
+(def lang-clojure "clojure")
 (def lang-text "text")
 
 (def ^:private lang-aliases
@@ -52,6 +53,12 @@
    "htm"        lang-html
    "xml"        lang-html
    "svg"        lang-html
+   "clojure"    lang-clojure
+   "clj"        lang-clojure
+   "cljs"       lang-clojure
+   "cljc"       lang-clojure
+   "edn"        lang-clojure
+   "bb"         lang-clojure
    ""           lang-text
    "text"       lang-text
    "txt"        lang-text
@@ -81,8 +88,8 @@
 
 ;; ── Attribute parsers ────────────────────────────────────────────────────────
 (defn parse-language
-  "Canonicalise a `language` attribute. Aliases map onto js/json/css/html;
-   anything unknown (including nil) becomes `text`."
+  "Canonicalise a `language` attribute. Aliases map onto
+   js/json/css/html/clojure; anything unknown (including nil) becomes `text`."
   [s]
   (let [k (when (string? s) (.toLowerCase (.trim s)))]
     (get lang-aliases k default-language)))
@@ -187,6 +194,49 @@
    [:entity     #"&(?:#\d+|#[xX][0-9a-fA-F]+|[A-Za-z][A-Za-z0-9]*);"]
    [:punct      #"[<>/=]"]])
 
+;; Clojure has no word boundary that a regex knows: `my-def` is one symbol, and
+;; `def` is no word in it. So a symbol is a token of its own, of the type
+;; :plain, and comes after the special forms. The scan then never looks for a
+;; special form or a number inside a symbol. A special form and a number end
+;; where a symbol could not go on.
+(def ^:private clojure-symbol-char
+  "A character that a Clojure symbol or keyword may hold after its first, as the
+   source of a character class."
+  "[\\w*+!?<>=.'/$&%#:-]")
+
+(def ^:private clojure-symbol-start
+  "A character that a Clojure symbol may start with, as the source of a
+   character class."
+  "[A-Za-z_*+!?<>=.$&%-]")
+
+(def ^:private clojure-forms
+  "The special forms, and the macros that define or branch, that are coloured
+   as keywords."
+  ["def" "defn" "defn-" "defmacro" "defmulti" "defmethod" "defonce"
+   "defprotocol" "defrecord" "deftype" "deftest"
+   "fn" "let" "letfn" "loop" "recur" "do" "quote" "var" "new" "set!" "binding"
+   "if" "if-not" "if-let" "if-some" "when" "when-not" "when-let" "when-some"
+   "when-first" "cond" "condp" "case" "and" "or" "not"
+   "doseq" "dotimes" "for" "while" "try" "catch" "finally" "throw" "ns"
+   "true" "false" "nil"])
+
+(defn- pattern
+  "A regex from the sources `parts`, joined."
+  [& parts]
+  (js/RegExp. (apply str parts)))
+
+(def ^:private not-in-a-symbol
+  (str "(?!" clojure-symbol-char ")"))
+
+(def ^:private clojure-spec
+  [[:comment #";[^\n]*"]
+   [:string  #"#?\"(?:[^\"\\]|\\[\s\S])*\"|\\(?:newline|space|tab|formfeed|backspace|return|u[0-9a-fA-F]{4}|o[0-7]{1,3}|\S)"]
+   [:key     (pattern "::?" clojure-symbol-char "+")]
+   [:number  (pattern "[+-]?(?:0[xX][0-9a-fA-F]+|\\d+/\\d+|\\d+\\.?\\d*(?:[eE][+-]?\\d+)?)[MN]?" not-in-a-symbol)]
+   [:keyword (pattern "(?:" (str/join "|" clojure-forms) ")" not-in-a-symbol)]
+   [:plain   (pattern clojure-symbol-start clojure-symbol-char "*")]
+   [:punct   #"[()\[\]{}'`~@^#]"]])
+
 (defn- compile-spec
   "Turn a [[type pattern] ...] spec into {:source combined-regex-string
    :types [type ...]}."
@@ -194,10 +244,13 @@
   {:source (str/join "|" (map (fn [[_ ^js re]] (str "(" (.-source re) ")")) spec))
    :types  (mapv first spec)})
 
-(def ^:private js-compiled   (compile-spec js-spec))
-(def ^:private json-compiled (compile-spec json-spec))
-(def ^:private css-compiled  (compile-spec css-spec))
-(def ^:private html-compiled (compile-spec html-spec))
+(def ^:private compiled
+  "The compiled spec of each language that has one, by its canonical id."
+  {lang-js      (compile-spec js-spec)
+   lang-json    (compile-spec json-spec)
+   lang-css     (compile-spec css-spec)
+   lang-html    (compile-spec html-spec)
+   lang-clojure (compile-spec clojure-spec)})
 
 (defn- matched-group
   "Index (1-based) of the first capturing group that matched, capped so a
@@ -232,24 +285,25 @@
                 end   (+ start (.-length text))]
             (when (zero? (.-length text))
               (set! (.-lastIndex re) (inc (.-lastIndex re))))
-            (recur (cond-> tokens
-                     gap  (conj! gap)
-                     true (conj! [ttype text]))
-                   end)))))))
+            ;; A match of the type :plain stays in the text between tokens.
+            (if (= :plain ttype)
+              (recur tokens cursor)
+              (recur (cond-> tokens
+                       gap  (conj! gap)
+                       true (conj! [ttype text]))
+                     end))))))))
 
 (defn tokenize
   "Tokenize `code` for `language` into a flat [[type text] ...] vector.
    The `text` language and any unknown language degrade to a single :plain
    token spanning the whole input."
   [language code]
-  (let [code (str code)]
+  (let [code                   (str code)
+        {:keys [source types]} (compiled language)]
     (cond
-      (= "" code)            []
-      (= language lang-js)   (scan code (:source js-compiled)   (:types js-compiled))
-      (= language lang-json) (scan code (:source json-compiled) (:types json-compiled))
-      (= language lang-css)  (scan code (:source css-compiled)  (:types css-compiled))
-      (= language lang-html) (scan code (:source html-compiled) (:types html-compiled))
-      :else                  [[:plain code]])))
+      (= "" code) []
+      source      (scan code source types)
+      :else       [[:plain code]])))
 
 (defn tokens->lines
   "Split a flat token vector into per-line token vectors. A token whose text

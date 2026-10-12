@@ -16,7 +16,9 @@
     (is (= "js"   (model/parse-language "javascript")))
     (is (= "js"   (model/parse-language "jsx")))
     (is (= "html" (model/parse-language "htm")))
-    (is (= "html" (model/parse-language "xml"))))
+    (is (= "html" (model/parse-language "xml")))
+    (is (= ["clojure" "clojure" "clojure" "clojure" "clojure" "clojure"]
+           (map model/parse-language ["clojure" "clj" "cljs" "cljc" "edn" "bb"]))))
   (testing "case-insensitive and trimmed"
     (is (= "js"   (model/parse-language "  JS ")))
     (is (= "html" (model/parse-language "HTML"))))
@@ -87,6 +89,49 @@
     (is (contains? (types-of toks) :tag))
     (is (contains? (types-of toks) :attr-value))
     (is (contains? (types-of toks) :entity))))
+
+(deftest tokenize-clojure-test
+  (testing "a special form, a symbol, a keyword, a number and the brackets"
+    (is (= [[:punct "("] [:keyword "defn"] [:plain " greeting "] [:punct "["] [:plain "name"] [:punct "]"]
+            [:plain "\n  "] [:punct "("] [:plain "str "] [:string "\"Hello, \""] [:plain " name "]
+            [:key ":loud"] [:plain " "] [:number "42"] [:punct ")"] [:punct ")"]]
+           (model/tokenize "clojure" "(defn greeting [name]\n  (str \"Hello, \" name :loud 42))"))))
+  (testing "a special form inside a symbol is no special form"
+    (is (= [[:plain "my-def defn? redef if-valid"]]
+           (model/tokenize "clojure" "my-def defn? redef if-valid"))))
+  (testing "a special form with a dash in it is one token"
+    (is (= [[:punct "("] [:keyword "when-not"] [:plain " x"] [:punct ")"]]
+           (model/tokenize "clojure" "(when-not x)")))
+    (is (= [:keyword "defn-"] (second (model/tokenize "clojure" "(defn- f [])")))))
+  (testing "a digit inside a symbol is no number, and a number may have a sign, a ratio or a letter"
+    (is (= [[:plain "x1 v2.0"]] (model/tokenize "clojure" "x1 v2.0")))
+    (is (= [:number :number :number :number :number]
+           (remove #{:plain} (map first (model/tokenize "clojure" "-1 2.5 1/3 10M 0xFF"))))))
+  (testing "a keyword may have a namespace"
+    (is (= [[:key "::local"] [:plain " "] [:key ":bareblog.site/posts"]]
+           (model/tokenize "clojure" "::local :bareblog.site/posts"))))
+  (testing "a comment runs to the end of its line, and a special form in it stays in it"
+    (is (= [[:comment "; if this"] [:plain "\n"] [:punct "("] [:keyword "if"] [:plain " x"] [:punct ")"]]
+           (model/tokenize "clojure" "; if this\n(if x)"))))
+  (testing "a string may span lines, and a regex and a character are strings too"
+    (is (= [[:string "\"a\nb\""]] (model/tokenize "clojure" "\"a\nb\"")))
+    (is (= [[:string "#\"\\d+\""]] (model/tokenize "clojure" "#\"\\d+\"")))
+    (is (= [[:string "\\newline"] [:plain " "] [:string "\\a"]] (model/tokenize "clojure" "\\newline \\a"))))
+  (testing "the marks of the reader are punctuation"
+    (is (= [[:punct "'"] [:punct "("] [:plain "a "] [:punct "~"] [:punct "@"] [:plain "b"] [:punct ")"]
+            [:plain " "] [:punct "#"] [:punct "{"] [:number "1"] [:punct "}"] [:plain " "]
+            [:punct "^"] [:key ":private"] [:plain " x"]]
+           (model/tokenize "clojure" "'(a ~@b) #{1} ^:private x"))))
+  (testing "data in EDN is tokenized the same way"
+    (is (= [[:punct "{"] [:key ":title"] [:plain " "] [:string "\"Bare notes\""] [:plain " "]
+            [:key ":per-page"] [:plain " "] [:number "3"] [:plain " "] [:key ":draft?"] [:plain " "]
+            [:keyword "false"] [:punct "}"]]
+           (model/tokenize (model/parse-language "edn")
+                           "{:title \"Bare notes\" :per-page 3 :draft? false}")))))
+
+(deftest tokenize-plain-match-test
+  (testing "what a language matches as plain is joined with the text around it"
+    (is (= [[:plain "foo bar baz"]] (model/tokenize "clojure" "foo bar baz")))))
 
 (deftest tokenize-text-test
   (is (= [[:plain "const x"]] (model/tokenize "text" "const x")))

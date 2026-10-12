@@ -233,6 +233,17 @@
     (is (some? (part el ".tok-keyword")) "js keywords get a token class")
     (is (some? (part el ".tok-number"))  "js numbers get a token class")))
 
+(deftest clojure-tokenization-test
+  (let [el (make-el)]
+    (.setAttribute el model/attr-language "cljs")
+    (with-text el "(defn f [x] (str \"a\" :b 1))")
+    (append! el)
+    (is (some? (part el ".tok-keyword")) "a special form gets a token class")
+    (is (some? (part el ".tok-string"))  "a string gets a token class")
+    (is (some? (part el ".tok-key"))     "a keyword gets a token class")
+    (is (some? (part el ".tok-number"))  "a number gets a token class")
+    (is (= "defn" (.-textContent (part el ".tok-keyword"))))))
+
 (deftest plain-text-has-no-tokens-test
   (let [el (append! (with-text (make-el) "const total = 42;"))]
     (is (nil? (part el ".tok-keyword"))

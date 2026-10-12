@@ -223,6 +223,10 @@
   (du/dispatch! el model/event-error (clj->js (model/error-detail src))))
 
 ;; ── Image load / error handling ──────────────────────────────────────────
+(defn- loaded! [^js el ^js img src]
+  (set-host-state! el model/state-loaded)
+  (dispatch-load! el src (.-naturalWidth img) (.-naturalHeight img)))
+
 (defn- on-img-load [^js el]
   (let [{:keys [img]} (du/getv el k-refs)
         ^js img img
@@ -232,9 +236,10 @@
       ;; Compare against the attribute we set (not the resolved IDL), since
       ;; relative URLs resolve differently.
       (let [attr-src-val (.getAttribute img attr-src)]
-        (when (= attr-src-val expected)
-          (set-host-state! el model/state-loaded)
-          (dispatch-load! el expected (.-naturalWidth img) (.-naturalHeight img)))))))
+        ;; An image that was there already is loaded before its load event.
+        (when (and (= attr-src-val expected)
+                   (not= model/state-loaded (du/getv el k-state)))
+          (loaded! el img expected))))))
 
 (defn- on-img-error [^js el]
   (let [{:keys [img]} (du/getv el k-refs)
@@ -261,6 +266,21 @@
         (do
           (du/remove-attr! img attr-src)
           (set-host-state! el model/state-loading))))))
+
+;; The browser has an image at once when the document showed it before, as a
+;; prerendered page did. It is then loaded without a frame of the shimmer. This
+;; runs after the model is cached, so that a listener of the load event meets an
+;; element whose render is done.
+(defn- adopt-available! [^js el]
+  (let [{:keys [img]} (du/getv el k-refs)
+        ^js img img
+        src     (du/getv el k-current-src)]
+    (when (and img
+               (string? src)
+               (not= "" src)
+               (= model/state-loading (du/getv el k-state))
+               (model/available? (.-complete img) (.-naturalWidth img)))
+      (loaded! el img src))))
 
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────
 (defn- warn-once! [^js el key msg]
@@ -316,7 +336,8 @@
     (apply-accessibility! el img m)
     (apply-error-label!   error-box m)
     (apply-src!           el m prev-model)
-    (du/setv! el k-model m)))
+    (du/setv! el k-model m)
+    (adopt-available! el)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)

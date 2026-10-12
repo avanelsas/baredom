@@ -71,6 +71,24 @@
       (is (= true (:show-backdrop state)))
       (is (= true (:reduced-motion state))))))
 
+(deftest aria-hidden-test
+  (let [hidden? (fn [variant open? viewport-width]
+                  (:aria-hidden (model/compute-state {:open-attr       open?
+                                                      :variant-attr    variant
+                                                      :breakpoint-attr "768"
+                                                      :viewport-width  viewport-width})))]
+    (testing "an overlay or modal sidebar is hidden when it is closed, and not when it is open"
+      (is (true? (hidden? "overlay" false 1200)))
+      (is (false? (hidden? "overlay" true 1200)))
+      (is (true? (hidden? "modal" false 1200)))
+      (is (false? (hidden? "modal" true 1200))))
+    (testing "a docked sidebar is never hidden, since it is in the page whether it is open or not"
+      (is (false? (hidden? "docked" false 1200)))
+      (is (false? (hidden? "docked" true 1200))))
+    (testing "a docked sidebar in a narrow viewport is a modal one, and is hidden when it is closed"
+      (is (true? (hidden? "docked" false 375)))
+      (is (false? (hidden? "docked" true 375))))))
+
 (deftest toggle-should-fire-test
   (testing "toggle event transition detection"
     (is (false? (model/toggle-should-fire? {:open true} {:open true})))

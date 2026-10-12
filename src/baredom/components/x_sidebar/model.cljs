@@ -126,7 +126,9 @@
         is-overlay (= effective-variant variant-overlay)
         is-docked (= effective-variant variant-docked)
         collapsed-applied (and is-docked collapsed-requested)
-        show-backdrop (and open (or is-modal is-overlay))]
+        show-backdrop (and open (or is-modal is-overlay))
+        ;; A docked sidebar is in the page whether it is open or not.
+        hidden (and (not open) (not is-docked))]
     {:placement placement
      :declared-variant declared-variant
      :effective-variant effective-variant
@@ -139,7 +141,7 @@
      :is-overlay is-overlay
      :is-docked is-docked
      :show-backdrop show-backdrop
-     :aria-hidden (not open)
+     :aria-hidden hidden
      :reduced-motion (boolean prefers-reduced-motion)}))
 
 (defn toggle-event-detail

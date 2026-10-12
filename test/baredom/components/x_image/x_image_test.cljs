@@ -164,6 +164,40 @@
                     (js/setTimeout check 20)))]
           (check))))))
 
+;; ── An image that the document has already ───────────────────────────────────
+
+;; A picture that the document showed before is there at once for a new element, as it is
+;; when a prerendered page is taken over. The data URL below is of its own, so that no
+;; other test has loaded it.
+(def ^:private red-png-data-url
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==")
+
+(deftest image-already-there-test
+  (async done
+    (let [^js held (js/Image.)]
+      (set! (.-onload held)
+            (fn []
+              (.appendChild (.-body js/document) held)
+              (let [^js el (make-el)
+                    events (atom [])]
+                (.addEventListener el model/event-load (fn [^js e] (swap! events conj (.-detail e))))
+                (.setAttribute el model/attr-alt "Test")
+                (.setAttribute el model/attr-src red-png-data-url)
+                (append! el)
+                ;; Loaded in the same turn: no frame shows the shimmer.
+                (is (= "loaded" (.getAttribute el "data-state")))
+                (is (= 1 (count @events)))
+                ;; The load event of the inner image comes later, and says nothing twice.
+                (js/setTimeout
+                 (fn []
+                   (is (= "loaded" (.-state el)))
+                   (is (= 1 (count @events)))
+                   (.remove held)
+                   (done))
+                 100))))
+      (set! (.-onerror held) (fn [] (is false "the test image did not load") (done)))
+      (set! (.-src held) red-png-data-url))))
+
 ;; ── x-image-error event ──────────────────────────────────────────────────────
 (deftest error-event-test
   (async done

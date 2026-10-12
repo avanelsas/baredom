@@ -56,6 +56,8 @@ A stateless, themeable image component that reserves layout space via an optiona
 
 Events fire once per successful transition into their respective state. Changing `src` resets state to `loading` and will fire a new event when the new image resolves.
 
+An image that the document has already, such as one that a prerendered page showed before its script arrived, is `loaded` in the same turn that `src` is set. `x-image-load` fires then, once, and no frame shows the shimmer.
+
 ---
 
 ## Slots

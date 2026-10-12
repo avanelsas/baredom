@@ -574,11 +574,15 @@
   "homepage": "https://github.com/avanelsas/baredom#readme",
   "files": [
     "dist",
+    "scripts/prerender.mjs",
     "custom-elements.json",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
   ],
+  "bin": {
+    "baredom-prerender": "scripts/prerender.mjs"
+  },
   "types": "./dist/baredom.d.ts",
   "name": "@vanelsas/baredom",
   "keywords": [
@@ -597,7 +601,7 @@
   "bugs": {
     "url": "https://github.com/avanelsas/baredom/issues"
   },
-  "version": "4.3.0",
+  "version": "4.4.0",
   "sideEffects": [
     "./dist/*.js"
   ],

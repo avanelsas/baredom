@@ -2,6 +2,39 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.4.0] - 2026-10-12
+
+BareDOM 4.4 makes a prerendered page hold its pictures, and ships the script that prerenders.
+`x-code` colours Clojure. The adapters are not released again.
+
+### Added
+
+- **`x-code` colours Clojure.** The language is `clojure`, and `clj`, `cljs`, `cljc`, `edn` and
+  `bb` are aliases of it. The special forms and the macros that define or branch are keywords,
+  a `:keyword` is a key, and a regex and a character are strings. A symbol with a special form
+  in it, such as `my-def`, is plain. See [`docs/x-code.md`](docs/x-code.md).
+- **The prerender script is in the npm package**, as the command `baredom-prerender`.
+- **The prerender script writes many pages in one run.** Give it more pairs of a URL and a
+  file. One browser opens them all, so four pages take about the time that two took. See
+  [`docs/PRERENDER.md`](docs/PRERENDER.md).
+- **The prerender script makes the directory of an output file** when it is not there.
+
+### Changed
+
+- **The prerender script waits for every image**, in the page and in every shadow tree. An
+  image that the browser loads lazily is loaded for this, and is lazy again in what is written.
+  An `x-image` is so written as loaded, and the same page gives the same file each time. The
+  script stops and names an image that never finishes.
+- **A page that fails names its URL in the error.**
+
+### Fixed
+
+- **`x-image` no longer fades in a second time on a prerendered page.** An image that the
+  document has already is loaded in the turn that `src` is set, with no frame of the shimmer.
+  `x-image-load` fires once.
+- **A docked `x-sidebar` is no longer `aria-hidden` when it is not `open`.** It is in the page
+  whether it is open or not. An overlay or modal sidebar is still `aria-hidden` while closed.
+
 ## [4.3.0] - 2026-10-11
 
 BareDOM 4.3 makes BareMirror faster at many rows, and adds a function that makes a node by
