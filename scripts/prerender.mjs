@@ -2,9 +2,11 @@
 // Writes a page back out with every shadow tree in its markup, as a declarative shadow root, so
 // the page shows its components before any script has run.
 //
-// Usage:  node scripts/prerender.mjs [--static] <url> <output.html> [<url> <output.html> ...]
+// Usage:  node scripts/prerender.mjs [--static] [--tabs <n>] <url> <output.html> [<url> <output.html> ...]
 //         --static leaves out every script and noscript element and sets data-static on the
 //         html element, so the page can style a copy that runs no script.
+//         --tabs says how many pages are opened at once: 4 when it is not given, or fewer on a
+//         machine with fewer processors.
 //         Each url is written to the output that follows it. One browser opens them all.
 // Needs:  Node 22 or later, and Chrome. Set CHROME_PATH when Chrome is not found, and
 //         CHROME_FLAGS for more flags, such as --no-sandbox in a container.
@@ -15,11 +17,14 @@
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { availableParallelism, tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 
 const STEP_LIMIT_MS = 10_000;
 const PAGE_LIMIT_MS = 30_000;
+// A tab draws its page on a processor of its own, and a page that waits for one may not finish
+// within its limit. So no more tabs are opened than there are processors.
+const TABS = Math.min(4, availableParallelism());
 
 const CHROME_PATHS = [
   process.env.CHROME_PATH,
@@ -102,10 +107,16 @@ const pageAsMarkup = async (limitMs, isStatic) => {
   return `<!doctype html>\n${htmlTag}${inside}</html>\n`;
 };
 
+// Pages are opened in several tabs at once. Chrome slows down a tab that it takes to be in
+// the background, its frames and its timers, and the script waits for frames. So no tab is
+// slowed down, and each tab is told that it has the focus.
 const startChrome = (chromePath, profileDir) =>
   spawn(chromePath, [
     '--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profileDir}`,
-    '--no-first-run', '--disable-gpu', ...extraFlags(), 'about:blank',
+    '--no-first-run', '--disable-gpu',
+    '--disable-background-timer-throttling', '--disable-backgrounding-occluded-windows',
+    '--disable-renderer-backgrounding',
+    ...extraFlags(), 'about:blank',
   ]);
 
 const chromeAddress = chrome =>
@@ -126,7 +137,8 @@ const stopChrome = async (chrome, profileDir) => {
 };
 
 // A connection to Chrome over its debugging protocol: `send` gives the answer to one command,
-// and `next` the next event of one name.
+// and `next` the next event of one name in one tab. Several tabs share the connection, so an
+// event is matched by the session of its tab as well as by its name.
 const connect = async address => {
   const socket = new WebSocket(address);
   await new Promise((resolve, reject) => {
@@ -142,7 +154,8 @@ const connect = async address => {
     resolve?.(message);
   };
   const onAnswer = message => settle(answers, message.id, message);
-  const onEvent = message => settle(events, message.method, message);
+  const eventKey = (method, sessionId) => `${sessionId ?? ''} ${method}`;
+  const onEvent = message => settle(events, eventKey(message.method, message.sessionId), message);
   socket.onmessage = ({ data }) => {
     const message = JSON.parse(data);
     (message.id ? onAnswer : onEvent)(message);
@@ -155,7 +168,7 @@ const connect = async address => {
           error ? reject(new Error(`${method}: ${error.message}`)) : resolve(result));
         socket.send(JSON.stringify({ id: lastId, method, params, sessionId }));
       }),
-    next: method => new Promise(resolve => events.set(method, resolve)),
+    next: (method, sessionId) => new Promise(resolve => events.set(eventKey(method, sessionId), resolve)),
     close: () => socket.close(),
   };
 };
@@ -165,7 +178,8 @@ const prerender = async (browser, url, isStatic) => {
   try {
     const { sessionId } = await browser.send('Target.attachToTarget', { targetId, flatten: true });
     await browser.send('Page.enable', {}, sessionId);
-    const loaded = browser.next('Page.loadEventFired');
+    await browser.send('Emulation.setFocusEmulationEnabled', { enabled: true }, sessionId);
+    const loaded = browser.next('Page.loadEventFired', sessionId);
     const { errorText } = await browser.send('Page.navigate', { url }, sessionId);
     if (errorText) throw new Error(`Could not open ${url}: ${errorText}`);
     await loaded;
@@ -185,21 +199,57 @@ const prerender = async (browser, url, isStatic) => {
 
 const shadowRootCount = markup => markup.split('shadowrootmode').length - 1;
 
-// Each page is opened in a tab of its own, one after the other, and written as soon as it is
-// read. A page that fails stops the run, and the pages before it stay written.
-const writePages = async (browser, pages, isStatic) => {
-  for (const { url, output } of pages) {
-    const markup = await within(PAGE_LIMIT_MS, `prerendering ${url}`, prerender(browser, url, isStatic));
-    await mkdir(dirname(output), { recursive: true });
-    await writeFile(output, markup);
-    console.log(`${output}: ${markup.length} characters, ${shadowRootCount(markup)} shadow roots`);
-  }
+const writePage = async (browser, { url, output }, isStatic) => {
+  const markup = await within(PAGE_LIMIT_MS, `prerendering ${url}`, prerender(browser, url, isStatic));
+  await mkdir(dirname(output), { recursive: true });
+  await writeFile(output, markup);
+  console.log(`${output}: ${markup.length} characters, ${shadowRootCount(markup)} shadow roots`);
+};
+
+// The error of a run in which the pages of `failures` failed: the first, and how many more.
+const failed = failures =>
+  failures.length === 1
+    ? failures[0]
+    : new Error(`${failures[0].message}\n${failures.length - 1} more of the pages that were open failed too.`);
+
+// Each page is opened in a tab of its own, and written as soon as it is read. `tabs` pages are
+// open at once: each tab takes the next page of the list when it is done with one, so the pages
+// are written in the order in which they are done. A page that fails stops the run: no tab
+// takes another page, the pages that are open are written, and the run ends with the first
+// error, and says how many more failed.
+const writePages = async (browser, pages, isStatic, tabs) => {
+  let next = 0;
+  const failures = [];
+  const work = async () => {
+    while (failures.length === 0 && next < pages.length) {
+      const page = pages[next];
+      next += 1;
+      try {
+        await writePage(browser, page, isStatic);
+      } catch (error) {
+        failures.push(error);
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(tabs, pages.length) }, work));
+  if (failures.length > 0) throw failed(failures);
 };
 
 const STATIC_FLAG = '--static';
+const TABS_FLAG = '--tabs';
 
 // The script is run by its file, or as the command of the package. It names itself as it was run.
-const USAGE = `Usage: ${basename(process.argv[1] ?? 'prerender.mjs')} [--static] <url> <output.html> [<url> <output.html> ...]`;
+const USAGE = `Usage: ${basename(process.argv[1] ?? 'prerender.mjs')} [--static] [--tabs <n>] <url> <output.html> [<url> <output.html> ...]`;
+
+// The flags, and the arguments that are left: `--static`, and `--tabs` with the number that
+// follows it.
+const optionsOf = args => {
+  const at = args.indexOf(TABS_FLAG);
+  const tabs = at === -1 ? TABS : Number(args[at + 1]);
+  if (!Number.isInteger(tabs) || tabs < 1) throw new Error(`${TABS_FLAG} takes a whole number of 1 or more.\n${USAGE}`);
+  const rest = at === -1 ? args : [...args.slice(0, at), ...args.slice(at + 2)];
+  return { isStatic: rest.includes(STATIC_FLAG), tabs, rest: rest.filter(arg => arg !== STATIC_FLAG) };
+};
 
 // The arguments after the flag are pairs: a url, and the file it is written to.
 const pagesOf = args => {
@@ -208,8 +258,8 @@ const pagesOf = args => {
 };
 
 const main = async args => {
-  const isStatic = args.includes(STATIC_FLAG);
-  const pages = pagesOf(args.filter(arg => arg !== STATIC_FLAG));
+  const { isStatic, tabs, rest } = optionsOf(args);
+  const pages = pagesOf(rest);
   const chromePath = findChrome();
   if (!chromePath) throw new Error('Chrome was not found. Set CHROME_PATH.');
   const profileDir = await mkdtemp(join(tmpdir(), 'prerender-'));
@@ -217,7 +267,7 @@ const main = async args => {
   try {
     const browser = await connect(await chromeAddress(chrome));
     try {
-      await writePages(browser, pages, isStatic);
+      await writePages(browser, pages, isStatic, tabs);
     } finally {
       browser.close();
     }

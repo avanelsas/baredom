@@ -123,6 +123,11 @@ jobs:
         env:
           CHROME_FLAGS: "--no-sandbox"
 
+      - name: Test the prerender script
+        run: node --test scripts/prerender.test.mjs
+        env:
+          CHROME_FLAGS: "--no-sandbox"
+
       - name: Build React adapter
         run: |
           bb scripts/generate_react.bb
