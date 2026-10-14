@@ -99,6 +99,9 @@ jobs:
       - name: Test the script that writes defaults into the docs
         run: bb scripts/sync_doc_defaults_test.bb
 
+      - name: Test the script that writes all.js
+        run: bb scripts/generate_all_test.bb
+
       - name: Check the defaults in the component docs are current
         run: |
           bb scripts/sync_doc_defaults.bb

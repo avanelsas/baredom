@@ -95,5 +95,5 @@ needs a script. [`bare-html/mirror.html`](../bare-html/mirror.html) does.
   more slowly, so every tab is told that it has the focus, also when there is one. An element
   with `autofocus` takes it. One page with an `x-otp-input` and an `input` that both have
   `autofocus` was written the same with the focus as without it.
-- **Tried in Chrome.** The takeover was watched in Chrome. Firefox and Safari read declarative
-  shadow roots too, and were not watched.
+- **Tried in three browsers.** The takeover was watched in Chrome, Firefox 157 and Safari 26.5.
+  In Firefox and Safari the page's script was held back for 3 seconds, and nothing moved.

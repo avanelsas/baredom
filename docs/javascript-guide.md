@@ -40,6 +40,19 @@ initModal();
 
 Registration is idempotent — calling `init()` on an already-registered component is a no-op.
 
+#### Every component at once
+
+`@vanelsas/baredom/all` registers every component with one call:
+
+```js
+import { init } from '@vanelsas/baredom/all';
+
+init();
+```
+
+It loads all components, so a bundle can no longer leave out the ones you do not use. Use it for
+a prototype or a page with no build step. Import components one by one in production.
+
 ### Option B — Vanilla HTML (no build tool)
 
 Copy the `dist/` folder from a release or after running `npm run build`, then load components directly:
