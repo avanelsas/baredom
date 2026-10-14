@@ -67,6 +67,19 @@ No build tool, no npm, no ClojureScript required. Copy the `dist/` folder (from 
 
 Each component is a separate ES module. Import only the components you use — the browser loads only those files plus the shared `base.js` runtime.
 
+To register every component with one call, import `all.js`:
+
+```html
+<script type="module">
+  import { init } from './dist/all.js';
+
+  init();
+</script>
+```
+
+The browser then loads every component module, more than a hundred files. Use it for a
+prototype, not for a page that uses a few components.
+
 ---
 
 ## npm
