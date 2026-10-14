@@ -21,12 +21,27 @@ With the package installed, the same is:
 
     npx baredom-prerender http://localhost:8000/page.html page.prerendered.html
 
-Give more pairs of a URL and a file to write more pages. One browser opens them all, one after
-the other, which is much quicker than a run for each page:
+Give more pairs of a URL and a file to write more pages. One browser opens them all, which is
+much quicker than a run for each page:
 
     node scripts/prerender.mjs http://localhost:8000/ index.html http://localhost:8000/about/ about/index.html
 
-A page that fails stops the run. The pages before it stay written.
+Four pages are open at once, each in a tab of its own, or fewer on a machine with fewer
+processors. `--tabs` says how many:
+
+    node scripts/prerender.mjs --tabs 8 http://localhost:8000/ index.html ...
+
+Each page is written when it is done, so the pages are written in the order in which they are
+done, not in the order they were given. Each line that the script prints names its file.
+
+More tabs help as far as the machine does. On a machine with ten processors, 120 pages from a
+plain file server took 13 seconds with one tab, 6.9 with four and 5.6 with eight. 351 pages of
+a blog took 38 seconds with one tab and 18 with four, the work of the blog's own server
+included. More tabs than processors do not help.
+
+A page that fails stops the run: no tab takes another page, the pages that are open are
+written, and the script ends with the first error and says how many more failed. The pages
+written before it stay written.
 
 It needs Node 22 or later, and Chrome. Set `CHROME_PATH` when Chrome is not found, and
 `CHROME_FLAGS` for more flags, such as `--no-sandbox` in a container.
@@ -76,5 +91,9 @@ needs a script. [`bare-html/mirror.html`](../bare-html/mirror.html) does.
 - **A closed shadow root is not written out.** The script cannot see into it.
 - **Build the page from the release files.** A development build writes its own reload notice
   into the page.
+- **A page is drawn as if its window has the focus.** Chrome draws a tab in the background
+  more slowly, so every tab is told that it has the focus, also when there is one. An element
+  with `autofocus` takes it. One page with an `x-otp-input` and an `input` that both have
+  `autofocus` was written the same with the focus as without it.
 - **Tried in Chrome.** The takeover was watched in Chrome. Firefox and Safari read declarative
   shadow roots too, and were not watched.

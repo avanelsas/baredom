@@ -2,6 +2,24 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- **The prerender script opens four pages at once,** each in a tab of its own, or fewer on a
+  machine with fewer processors. `--tabs` says how many. 351 pages were written in half the
+  time. The pages are written in the order in which they are done. A page that fails
+  still stops the run: no tab takes another page, the pages that are open are written, and the
+  error says how many more failed. See [`docs/PRERENDER.md`](docs/PRERENDER.md).
+- **The prerender script tells Chrome to draw every tab as the one in front:** it turns off
+  the slowing down of background tabs, and tells each tab that it has the focus. A page is
+  so drawn as if its window has the focus, also with one tab.
+
+### Added
+
+- **Tests of the prerender script,** run with `node --test scripts/prerender.test.mjs`, and in
+  CI. They need Chrome.
+
 ## [4.4.0] - 2026-10-12
 
 BareDOM 4.4 makes a prerendered page hold its pictures, and ships the script that prerenders.
