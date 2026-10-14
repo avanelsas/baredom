@@ -221,7 +221,8 @@ does not.
   it. That is right for `checked` and wrong for `aria-checked`. Give the text:
   `'aria-checked': task => String(task.done)`.
 - **A node that stays keeps its state.** It keeps focus, a selection and a running animation.
-  Where the browser offers `moveBefore`, it keeps them across a move too.
+  Where the browser offers `moveBefore`, it keeps them across a move too. Safari 26.5 does not
+  offer it, so there a row that moves loses its focus.
 - **An item is a value, and a hole reads the item alone.** `write-item!` skips an item that is
   the same as last time. It cannot see a change inside the same object, or in anything else a
   hole reads. Make a new item.
