@@ -2,7 +2,10 @@
 
 All notable changes to BareDOM will be documented in this file.
 
-## [Unreleased]
+## [4.5.0] - 2026-10-14
+
+BareDOM 4.5 makes the prerender script open several pages at once. No component changes, and
+the adapters are not released again.
 
 ### Changed
 
