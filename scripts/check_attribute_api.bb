@@ -119,13 +119,26 @@
   "The property types that `du/install-properties!` installs."
   #{"boolean" "string" "number"})
 
+(defn- data-keys
+  "The property keys that `form` installs through `du/install-properties!`: every key of
+   `all-keys` for the whole `model/property-api`, the named keys for a `select-keys` of it."
+  [form all-keys]
+  (let [[head proto api] (when (seq? form) form)]
+    (when (and (= 'du/install-properties! head) (= 'proto proto))
+      (cond
+        (= 'model/property-api api)
+        all-keys
+
+        (and (seq? api) (= '(select-keys model/property-api) (take 2 api)))
+        (nth api 2)))))
+
 (defn- links
   "Each reflected property of a component with how its install was found: `:call`, `:data` or
    `:block` when it agrees, `:wrong` with the pairs that differ, or `:missing`."
   [{:keys [tag-name dir-name properties string-defs]}]
   (let [forms (subforms (component-forms dir-name))
         pairs (into #{} (keep #(install-pair % string-defs)) forms)
-        data? (some #{'(du/install-properties! proto model/property-api)} forms)]
+        data  (into #{} (mapcat #(data-keys % (keys properties))) forms)]
     (for [[k {:keys [type reflects-attribute readonly]}] properties
           :when (and reflects-attribute (not readonly))
           :let  [prop   (name k)
@@ -135,7 +148,7 @@
       {:tag tag-name :prop prop :attr attr :others others
        :how (cond
               (pairs link)                                              :call
-              (and data? (installed-by-data (normalize-type-sym type))) :data
+              (and (data k) (installed-by-data (normalize-type-sym type))) :data
               (some #(defines? % prop attr string-defs) forms)          :block
               (seq others)                                              :wrong
               :else                                                     :missing)})))

@@ -134,15 +134,25 @@
   [{:keys [page total-pages disabled]}]
   (or disabled (>= page total-pages)))
 
+(defn target-page
+  "The page that a button `request` asks for, or nil at an end. A request is [:prev], [:next]
+   or [:page n]."
+  [{:keys [page total-pages]} [kind n]]
+  (case kind
+    :prev (when (> page 1) (dec page))
+    :next (when (< page total-pages) (inc page))
+    :page n))
+
 ;; ── Metadata ──────────────────────────────────────────────────────────────
 (def property-api
   {:page           {:type 'number  :reflects-attribute attr-page}
    :totalPages     {:type 'number  :reflects-attribute attr-total-pages}
    :siblingCount   {:type 'number  :reflects-attribute attr-sibling-count}
    :boundaryCount  {:type 'number  :reflects-attribute attr-boundary-count}
-   :size           {:type 'string  :reflects-attribute attr-size :enum allowed-sizes}
+   :size           {:type 'string  :reflects-attribute attr-size :enum allowed-sizes
+                    :default default-size}
    :disabled       {:type 'boolean :reflects-attribute attr-disabled}
-   :label          {:type 'string  :reflects-attribute attr-label}})
+   :label          {:type 'string  :reflects-attribute attr-label :default default-label}})
 
 (def event-schema
   {event-change-request {:cancelable true

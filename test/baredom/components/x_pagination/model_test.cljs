@@ -158,3 +158,15 @@
           current (range 1 (inc total))
           :let    [ks (map :key (model/build-page-items current total 1 1))]]
     (is (= (count ks) (count (set ks))))))
+
+;; ── target-page ───────────────────────────────────────────────────────────
+(def ^:private on-page-3-of-5 {:page 3 :total-pages 5})
+
+(deftest target-page-of-each-button-test
+  (is (= 2 (model/target-page on-page-3-of-5 [:prev])))
+  (is (= 4 (model/target-page on-page-3-of-5 [:next])))
+  (is (= 5 (model/target-page on-page-3-of-5 [:page 5]))))
+
+(deftest target-page-stops-at-the-ends-test
+  (is (nil? (model/target-page {:page 1 :total-pages 5} [:prev])))
+  (is (nil? (model/target-page {:page 5 :total-pages 5} [:next]))))

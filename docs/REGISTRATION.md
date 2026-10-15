@@ -90,6 +90,14 @@ Use when most properties are simple but at least one needs a method or a custom 
   (aset proto "hide" (fn [] (this-as ^js this (do-hide! this)))))
 ```
 
+When only some properties are simple, install those from the data and the rest by hand:
+
+```clojure
+(defn- install-property-accessors! [^js proto]
+  (du/install-properties! proto (select-keys model/property-api [:size :disabled :label]))
+  (du/define-parsed-prop! proto "totalPages" model/attr-total-pages model/parse-total-pages))
+```
+
 Or keep it explicit when only a couple of helpers are needed:
 
 ```clojure
@@ -100,7 +108,7 @@ Or keep it explicit when only a couple of helpers are needed:
   (custom-method! proto))
 ```
 
-Reference: `x_dropdown`, `x_combobox`.
+Reference: `x_dropdown`, `x_combobox`, `x_pagination` (`select-keys`).
 
 ### Tier 2 — Hand-written `.defineProperty` (last resort)
 
