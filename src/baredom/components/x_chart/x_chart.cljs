@@ -81,7 +81,7 @@
    "[part=container]:focus-visible{"
    "box-shadow:0 0 0 3px var(--x-chart-focus-ring);"
    "}"
-   "[part=svg]{display:block;width:100%;height:auto;overflow:visible;}"
+   "[part=svg]{display:block;width:100%;overflow:visible;}"
    ":host([loading]) [part=container]{"
    "background:var(--x-chart-skeleton);"
    "background-size:200% 100%;"
