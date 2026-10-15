@@ -24,7 +24,7 @@ still change. It needs nothing from BareDOM and works on any HTML.
 | Word | What it is |
 |---|---|
 | Key | The text in the `data-x-key` attribute of a node. It says which item the node shows. |
-| Container | A parent node, with an optional node that its keyed children stay in front of. |
+| Container | A parent node, or the key of a node and a part in it. A parent node may come with a node that its keyed children stay in front of. |
 | Places | Which keys are in which container, in order. |
 | Plan | What must happen to turn the current places into the wanted places. |
 | Template | A tag, an optional object of attributes, and children. Plain data. |
@@ -126,6 +126,28 @@ render(view(store.value));
 A click on a checkbox sends `['toggle', '1']`. The argument is the key of the row, because the
 template names no other. [`bare-html/tasks.html`](../bare-html/tasks.html) is a full task list
 built this way, with adding, removing, a filter and a move.
+
+## A tree
+
+A tree is one call. A container can name its parent by the key of a node and a part in it, so
+you can name the container of a node that is new in this render before the node exists.
+
+```js
+const branch = splitTemplate('branch',
+  ['li', ['span', item => item.label], ['ul', { 'data-x-part': 'children' }]]);
+
+function render(vm) {
+  const containers = { tree: { parent: parts.tree } };
+  vm.branches.forEach(key => { containers[key] = { key, part: 'children' }; });
+  const nodes = syncPlaces(containers, vm.places, key => made(vm.items[key]));
+  vm.keys.forEach(key => writeItem(nodes[key], branch, vm.items[key]));
+}
+```
+
+`vm.places` maps `tree` and each branch key to its keys in order, and `made` writes a new node
+from `branch`, as `made` does for a row above. A node that moves to another branch keeps its
+node, and its focus where the browser offers `moveBefore`. Without a part, the node of the key
+is the parent itself.
 
 ## In ClojureScript
 
@@ -244,6 +266,9 @@ does not.
   or a copy with a field changed.
 - **In JavaScript, a copy of a split template is not a split template.** `writeItem` refuses it.
   Split the changed template again.
+- **A container you leave out is left alone.** Its keys are not read. A key of it that you want
+  elsewhere gets a second node. Name every container whose keys can move.
+- **A container named by a key takes no `:before` yet.**
 - **A text hole is the only child of its element.** Wrap a value in an element of its own.
 - **A part gets a name by itself** when its element has a hole or an event. Give it
   `data-x-part` when the page must find it by a name you choose.

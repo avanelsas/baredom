@@ -172,7 +172,10 @@
   (mirror-parts/set-attrs! el (object-map attrs)))
 
 (defn- ->container [^js container]
-  {:parent (.-parent container) :before (.-before container)})
+  {:parent (.-parent container)
+   :before (.-before container)
+   :key    (.-key container)
+   :part   (.-part container)})
 
 (defn- ->containers [containers]
   (update-vals (object-map containers) ->container))
@@ -212,8 +215,8 @@
   [xs]
   (reduce push! #js [] xs))
 
-(defn- container->js [{:keys [parent before]}]
-  #js {:parent parent :before before})
+(defn- container->js [{:keys [parent before part] k :key}]
+  #js {:parent parent :before before :key k :part part})
 
 (defn- reading->js
   "The reading as a frozen object with `containers`, `places` and `nodes`, holding the reading."

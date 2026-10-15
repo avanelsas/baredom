@@ -1,7 +1,8 @@
 (ns baremirror.alpha.places
   "The places of keyed nodes in the document. A key is a string, and a container is a parent
-   with an optional `:before` anchor."
-  (:require [baremirror.alpha.plan :as plan]))
+   with an optional `:before` anchor, or the key of a node and an optional part in it."
+  (:require [baremirror.alpha.plan :as plan]
+            [baremirror.alpha.template :as template]))
 
 (def attr-key "data-x-key")
 
@@ -18,14 +19,65 @@
   [{:keys [^js parent]}]
   (into [] (keep keyed) (array-seq (.-children parent))))
 
+(defn- checked-container
+  "The `container`. Throws when it does not name its parent by exactly one of `:parent` and
+   `:key`, or when it has both `:key` and `:before`."
+  [{:keys [parent before] k :key :as container}]
+  (cond
+    (= (some? parent) (some? k))
+    (throw (ex-info "read-places: a container names its parent by exactly one of :parent and :key."
+                    {:container container}))
+    (and (some? k) (some? before))
+    (throw (ex-info "read-places: a container named by a key takes no :before."
+                    {:container container}))
+    :else container))
+
+(defn- part-selector [part]
+  (let [named (str "[" template/attr-part "=\"" (js/CSS.escape part) "\"]")]
+    (str named ":not(:scope " selector-keyed ", :scope " selector-keyed " *)")))
+
+(defn- part-in
+  "The part `part` of `node`, or `node` itself when `part` is nil. A part in a keyed node below
+   `node` is left out. Throws when there is no such part."
+  [^js node k part]
+  (if (nil? part)
+    node
+    (or (.querySelector node (part-selector part))
+        (throw (ex-info "The node of a key has no part of that name." {:key k :part part})))))
+
+(defn- resolved
+  "The `container` with its `:parent`, when it is named by a key that has a node in `nodes`."
+  [nodes {:keys [parent part] k :key :as container}]
+  (if-some [node (when (nil? parent) (nodes k))]
+    (assoc container :parent (part-in node k part))
+    container))
+
+(defn- with-children
+  "The `children` by container, with the keyed children of each container that has a parent and
+   is not in `children` yet."
+  [containers children]
+  (into children
+        (comp (filter (comp some? :parent val))
+              (remove (comp (partial contains? children) key))
+              (map (juxt key (comp keyed-children val))))
+        containers))
+
+(defn- nodes-of [children]
+  (into {} cat (vals children)))
+
 (defn read-places
-  "The current places of `containers`, with the node of each key.
-   A parent belongs to one container."
+  "The current places of `containers`, with the node of each key, a parent in one container.
+   A container named by a key with no node has no parent and no keys."
   [containers]
-  (let [children (update-vals containers keyed-children)]
-    {:containers containers
-     :places     (update-vals children (partial mapv first))
-     :nodes      (into {} cat (vals children))}))
+  (loop [containers (update-vals containers checked-container)
+         children   (with-children containers {})]
+    (let [nodes (nodes-of children)
+          found (update-vals containers (partial resolved nodes))]
+      (if (= found containers)
+        {:containers containers
+         :places     (into {} (map (juxt identity (comp (partial mapv first) children))) (keys containers))
+         :nodes      nodes}
+        (recur found (with-children found children))))))
 
 (defn release!
   "Gives `node` up: it keeps its place in the document and loses its key."
@@ -76,12 +128,35 @@
              (conj ks (.getAttribute node attr-key)))
       ks)))
 
+(defn- container-holders
+  "The keys that hold `container`, nearest first. A container with no parent yet is held by its key."
+  [{:keys [parent] k :key}]
+  (if (some? parent) (holding-keys parent) [k]))
+
 (defn- holders-of
   "The keys that hold each container of `placements`, nearest first, by container."
   [containers placements]
   (into {}
-        (map (juxt identity (comp holding-keys :parent containers)))
+        (map (juxt identity (comp container-holders containers)))
         (distinct (map :in placements))))
+
+(defn- refusal
+  "A container of `holders` and why its placements cannot be performed, or nil.
+   The keys that hold a container count up to the first key that is placed."
+  [containers homes removed [container holding]]
+  (let [{:keys [parent] k :key} (containers container)]
+    (cond
+      (and (nil? parent) (not (contains? homes k)))
+      [container "a container is named by a key that is not wanted."]
+      (some removed (take-while (complement homes) holding))
+      [container "a key is placed in a node that is removed."])))
+
+(defn- checked-holders
+  "The `holders`. Throws when the placements into one of their containers cannot be performed."
+  [containers homes removed holders]
+  (when-some [[container reason] (some (partial refusal containers homes removed) holders)]
+    (throw (ex-info (str "perform!: " reason) {:container container})))
+  holders)
 
 (defn- depth
   "How many containers hold `container` through the keys placed in them. `holders` maps a
@@ -97,28 +172,32 @@
 
 (defn- parents-first
   "The `placements`, with those of a container after those of the containers that hold it.
-   The order within a container stays. `holders` is what `holders-of` gives."
-  [holders placements]
-  (let [homes  (into {} (map (juxt :key :in)) placements)
-        depths (into {} (map (juxt identity (partial depth holders homes))) (keys holders))]
+   The order within a container stays. `holders` is what `holders-of` gives, and `homes` maps a
+   placed key to its container."
+  [holders homes placements]
+  (let [depths (into {} (map (juxt identity (partial depth holders homes))) (keys holders))]
     (sort-by (comp depths :in) placements)))
 
 (defn perform!
   "Performs `plan` on what `read-places` returned, with `make-node` making the node of a new key.
-   Returns the node of each key that remains. Throws before any write when a key is placed
-   inside its own node."
+   Returns the node of each key that remains. Throws before any write to the page when the plan
+   cannot be performed as given."
   [{:keys [containers nodes]} {removed :remove placements :place} make-node]
-  (let [ordered   (parents-first (holders-of containers placements) placements)
-        remaining (with-new-nodes! make-node (apply dissoc nodes removed) placements)]
+  (let [known     (update-vals containers (partial resolved nodes))
+        homes     (into {} (map (juxt :key :in)) placements)
+        holders   (checked-holders known homes (set removed) (holders-of known placements))
+        ordered   (parents-first holders homes placements)
+        remaining (with-new-nodes! make-node (apply dissoc nodes removed) placements)
+        targets   (update-vals known (partial resolved remaining))]
     ;; A node that leaves a removed node moves while both are in the document, so moveBefore applies.
-    (run! (partial place! containers remaining) ordered)
+    (run! (partial place! targets remaining) ordered)
     (run! (comp remove-node! nodes) removed)
     remaining))
 
 (defn sync!
   "Brings `containers` to the `wanted` places, with `make-node` making the node of a new key.
-   Returns the node of each key that remains. Throws before any write when a key is placed
-   inside its own node."
+   Returns the node of each key that remains. Throws before any write to the page when the
+   containers or the wanted places cannot be performed."
   [containers wanted make-node]
   (let [reading (read-places containers)]
     (perform! reading (plan/plan (:places reading) wanted) make-node)))
