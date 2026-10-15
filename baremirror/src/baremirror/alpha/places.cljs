@@ -1,6 +1,7 @@
 (ns baremirror.alpha.places
   "The places of keyed nodes in the document. A key is a string, and a container is a parent
-   with an optional `:before` anchor, or the key of a node and an optional part in it."
+   with an optional `:before` anchor, the key of a node and an optional part in it, or a part
+   alone, which gives the node of every key a container."
   (:require [baremirror.alpha.plan :as plan]
             [baremirror.alpha.template :as template]))
 
@@ -19,18 +20,51 @@
   [{:keys [^js parent]}]
   (into [] (keep keyed) (array-seq (.-children parent))))
 
+(defn- part-alone?
+  "True when `container` names a part alone, the part of the node of every key."
+  [{:keys [parent part] k :key}]
+  (and (nil? parent) (nil? k) (some? part)))
+
 (defn- checked-container
-  "The `container`. Throws when it does not name its parent by exactly one of `:parent` and
-   `:key`, or when it has both `:key` and `:before`."
-  [{:keys [parent before] k :key :as container}]
+  "The `container`. Throws unless it names exactly one of `:parent`, `:key` and a part alone,
+   or when it has `:before` and no `:parent`."
+  [{:keys [parent before part] k :key :as container}]
   (cond
-    (= (some? parent) (some? k))
-    (throw (ex-info "read-places: a container names its parent by exactly one of :parent and :key."
+    (or (and (some? parent) (some? k)) (and (nil? parent) (nil? k) (nil? part)))
+    (throw (ex-info "read-places: a container names a :parent, a :key, or a :part alone."
                     {:container container}))
-    (and (some? k) (some? before))
-    (throw (ex-info "read-places: a container named by a key takes no :before."
+    (and (nil? parent) (some? before))
+    (throw (ex-info "read-places: a container named by a key or a part alone takes no :before."
                     {:container container}))
     :else container))
+
+(defn- part-alone
+  "The part that one of `containers` names alone, or nil. Throws when more than one does."
+  [containers]
+  (let [parts (into [] (comp (filter part-alone?) (map :part)) (vals containers))]
+    (when (next parts)
+      (throw (ex-info "read-places: only one container names a part alone." {:parts parts})))
+    (first parts)))
+
+(defn- key-container [part k]
+  {:key k :part part})
+
+(defn- with-part-containers
+  "The `containers` with a container in the part `part` for each of `ks` that has none.
+   The `containers` as they are when `part` is nil."
+  [part containers ks]
+  (if (nil? part)
+    containers
+    (into containers
+          (comp (remove (partial contains? containers))
+                (map (juxt identity (partial key-container part))))
+          ks)))
+
+(defn- clash
+  "The key `k` when it is the name of a container of `containers` not named by `k`, or nil."
+  [containers k]
+  (when-some [container (get containers k)]
+    (when (not= k (:key container)) k)))
 
 (defn- part-selector [part]
   (let [named (str "[" template/attr-part "=\"" (js/CSS.escape part) "\"]")]
@@ -65,19 +99,39 @@
 (defn- nodes-of [children]
   (into {} cat (vals children)))
 
+(defn- places-of
+  "The keys in `children` of each of `containers`, a part alone left out."
+  [containers children]
+  (into {}
+        (comp (remove (comp part-alone? containers))
+              (map (juxt identity (comp (partial mapv first) children))))
+        (keys containers)))
+
+(defn- checked-names
+  "The `containers`. Throws, with `where` in the message, when one of them names a part alone and
+   a key of `ks` is the name of another."
+  [where part containers ks]
+  (when-some [k (when (some? part) (some (partial clash containers) ks))]
+    (throw (ex-info (str where ": a key is also the name of a container.") {:key k})))
+  containers)
+
 (defn read-places
   "The current places of `containers`, with the node of each key, a parent in one container.
-   A container named by a key with no node has no parent and no keys."
+   A container named by a key with no node has no keys, and a part alone gives every key found
+   its container but is not in the places. With a part alone, every keyed node has that part."
   [containers]
-  (loop [containers (update-vals containers checked-container)
-         children   (with-children containers {})]
-    (let [nodes (nodes-of children)
-          found (update-vals containers (partial resolved nodes))]
-      (if (= found containers)
-        {:containers containers
-         :places     (into {} (map (juxt identity (comp (partial mapv first) children))) (keys containers))
-         :nodes      nodes}
-        (recur found (with-children found children))))))
+  (let [checked (update-vals containers checked-container)
+        part    (part-alone checked)]
+    (loop [containers checked
+           children   (with-children containers {})]
+      (let [nodes (nodes-of children)
+            found (update-vals (with-part-containers part containers (keys nodes))
+                               (partial resolved nodes))]
+        (if (= found containers)
+          {:containers (checked-names "read-places" part containers (keys nodes))
+           :places     (places-of containers children)
+           :nodes      nodes}
+          (recur found (with-children found children)))))))
 
 (defn release!
   "Gives `node` up: it keeps its place in the document and loses its key."
@@ -183,7 +237,10 @@
    Returns the node of each key that remains. Throws before any write to the page when the plan
    cannot be performed as given."
   [{:keys [containers nodes]} {removed :remove placements :place} make-node]
-  (let [known     (update-vals containers (partial resolved nodes))
+  (let [part      (part-alone containers)
+        checked   (checked-names "perform!" part containers (map :key placements))
+        named     (with-part-containers part checked (map :in placements))
+        known     (update-vals named (partial resolved nodes))
         homes     (into {} (map (juxt :key :in)) placements)
         holders   (checked-holders known homes (set removed) (holders-of known placements))
         ordered   (parents-first holders homes placements)

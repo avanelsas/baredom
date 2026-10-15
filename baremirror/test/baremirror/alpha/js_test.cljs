@@ -156,6 +156,18 @@
     (mjs/perform reading steps make-tree-node)
     (is (= ["b"] (children-keys a)))))
 
+(deftest sync-places-takes-a-container-of-a-part-alone
+  (let [parent     (staged! #js ["ul"])
+        containers #js {:tree #js {:parent parent} :rows #js {:part "children"}}
+        nodes      (mjs/sync-places containers #js {:tree #js ["a"] :a #js ["b"]} make-tree-node)
+        first-keys (children-keys (.-a nodes))
+        later      (mjs/sync-places containers #js {:tree #js ["b"]} make-tree-node)]
+    (testing "the part of a key holds its keys"
+      (is (= ["b"] first-keys)))
+    (testing "a key in a removed node keeps its node"
+      (is (identical? (.-b nodes) (.-b later)))
+      (is (= ["b"] (keys-in parent))))))
+
 (defn- copy-with
   "A copy of the object `o` with the fields of `changes`, as an object spread makes it."
   [o changes]

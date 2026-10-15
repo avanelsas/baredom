@@ -346,6 +346,11 @@
   [^js root ks]
   (into {:root {:parent root}} (map (juxt identity key-container)) ks))
 
+(defn- part-containers
+  "The containers of a tree under `root`: the root, and the part `children` of every key."
+  [^js root]
+  {:root {:parent root} :rows {:part part-children}})
+
 (defn- grow!
   "Appends to `parent` a tree node for each key of `container` in `places`, with its own keys
    below it."
@@ -386,9 +391,9 @@
                           (mirror-places/read-places (tree-containers root ["a"]))))))
 
 (deftest read-places-refuses-a-container-that-names-its-parent-both-ways-or-neither
-  (is (thrown-with-msg? js/Error #"exactly one of :parent and :key"
+  (is (thrown-with-msg? js/Error #"a :parent, a :key, or a :part alone"
                         (mirror-places/read-places {:c {:parent (element! "ul") :key "a"}})))
-  (is (thrown-with-msg? js/Error #"exactly one of :parent and :key"
+  (is (thrown-with-msg? js/Error #"a :parent, a :key, or a :part alone"
                         (mirror-places/read-places {:c {}}))))
 
 (deftest read-places-refuses-a-before-beside-a-key
@@ -465,12 +470,17 @@
 
 (def ^:private gen-tree (generators/tree :root tree-pool 8))
 
+(defn- listed-containers
+  "The containers of a tree under `root`, with one named by each key of the pool."
+  [^js root]
+  (tree-containers root tree-pool))
+
 (defn- tree-case!
-  "The nodes before and after `current` is grown and synced to `wanted`, and the places after.
-   The page is cleaned."
-  [current wanted]
+  "The nodes before and after `current` is grown and synced to `wanted` in the containers that
+   `containers-of` gives for the root, and the places after. The page is cleaned."
+  [containers-of current wanted]
   (let [root       (doto (mounted! (element! "ul")) (grow! current :root))
-        containers (tree-containers root tree-pool)
+        containers (containers-of root)
         before     (:nodes (mirror-places/read-places containers))
         nodes      (mirror-places/sync! containers wanted tree-node!)
         after      (mirror-places/read-places containers)]
@@ -480,10 +490,92 @@
 (defspec sync-brings-a-tree-to-the-wanted-places 100
   (prop/for-all [current gen-tree
                  wanted  gen-tree]
-    (= (filled wanted) (filled (get-in (tree-case! current wanted) [:after :places])))))
+    (= (filled wanted) (filled (get-in (tree-case! listed-containers current wanted) [:after :places])))))
 
 (defspec sync-keeps-the-node-of-each-key-that-was-in-the-tree 100
   (prop/for-all [current gen-tree
                  wanted  gen-tree]
-    (let [{:keys [before nodes]} (tree-case! current wanted)]
+    (let [{:keys [before nodes]} (tree-case! listed-containers current wanted)]
       (every? (partial same-node? nodes before) (filter before (keys nodes))))))
+
+(defspec sync-brings-a-tree-to-the-wanted-places-with-a-part-alone 100
+  (prop/for-all [current gen-tree
+                 wanted  gen-tree]
+    (= (filled wanted) (filled (get-in (tree-case! part-containers current wanted) [:after :places])))))
+
+(defspec sync-keeps-the-node-of-each-key-that-was-in-the-tree-with-a-part-alone 100
+  (prop/for-all [current gen-tree
+                 wanted  gen-tree]
+    (let [{:keys [before nodes]} (tree-case! part-containers current wanted)]
+      (every? (partial same-node? nodes before) (filter before (keys nodes))))))
+
+(deftest read-places-gives-every-key-a-container-through-a-part-alone
+  (let [b       (tree-node! "b")
+        a       (with-child! (tree-node! "a") b)
+        root    (mounted! (doto (element! "ul") (.append a)))
+        reading (mirror-places/read-places (part-containers root))]
+    (testing "each key has a container named by it, an empty one too, and the entry itself is none"
+      (is (= {:root ["a"] "a" ["b"] "b" []} (:places reading))))
+    (testing "the container of a key is its part"
+      (is (identical? (children-of b) (get-in reading [:containers "b" :parent]))))))
+
+(deftest read-places-keeps-a-container-named-by-a-key-over-the-one-of-a-part-alone
+  (let [a       (tree-node! "a")
+        root    (mounted! (doto (element! "ul") (.append a)))
+        reading (mirror-places/read-places (assoc (part-containers root) "a" {:key "a"}))]
+    (is (identical? a (get-in reading [:containers "a" :parent])))))
+
+(deftest sync-keeps-the-nodes-and-the-focus-of-the-keys-in-a-removed-node
+  (let [moved (focusable-tree-node! "c")
+        root  (mounted! (doto (element! "ul") (.append (with-child! (tree-node! "p") moved))))]
+    (.focus moved)
+    (mirror-places/sync! (part-containers root) {:root ["c"]} refuse-to-make!)
+    (testing "the node is the same node, where the removed node was"
+      (is (= [moved] (children-vec root))))
+    (when (.-moveBefore root)
+      (testing "it still has the focus"
+        (is (identical? moved (.-activeElement js/document)))))))
+
+(deftest sync-makes-a-tree-of-new-nodes-with-a-part-alone
+  (let [root   (mounted! (element! "ul"))
+        wanted {:root ["a"] "a" ["b"] "b" ["c"]}]
+    (mirror-places/sync! (part-containers root) wanted tree-node!)
+    (is (= wanted (filled (:places (mirror-places/read-places (part-containers root))))))))
+
+(deftest sync-keeps-the-focus-of-a-node-that-moves-under-a-new-key-with-a-part-alone
+  (let [moved (focusable-tree-node! "x")
+        root  (mounted! (doto (element! "ul") (.append (with-child! (tree-node! "a") moved))))]
+    (.focus moved)
+    (let [nodes (mirror-places/sync! (part-containers root) {:root ["a" "n"] "n" ["x"]} tree-node!)]
+      (testing "the node is the same node, under the new key"
+        (is (identical? moved (.-firstElementChild (children-of (nodes "n")))))))
+    (when (.-moveBefore root)
+      (testing "it still has the focus"
+        (is (identical? moved (.-activeElement js/document)))))))
+
+(deftest read-places-refuses-two-containers-of-a-part-alone
+  (is (thrown-with-msg? js/Error #"one container names a part alone"
+                        (mirror-places/read-places {:a {:part "children"} :b {:part "more"}}))))
+
+(deftest read-places-refuses-a-before-beside-a-part-alone
+  (is (thrown-with-msg? js/Error #"takes no :before"
+                        (mirror-places/read-places {:c {:part "children" :before (element! "li")}}))))
+
+(deftest read-places-refuses-a-key-that-names-another-container-beside-a-part-alone
+  (let [root (mounted! (doto (element! "ul") (.append (tree-node! "root"))))]
+    (is (thrown-with-msg? js/Error #"also the name of a container"
+                          (mirror-places/read-places {"root" {:parent root}
+                                                      :rows  {:part part-children}})))))
+
+(deftest sync-refuses-a-new-key-that-names-another-container-beside-a-part-alone-and-writes-nothing
+  (let [root (mounted! (element! "ul"))]
+    (is (thrown-with-msg? js/Error #"also the name of a container"
+                          (mirror-places/sync! {"root" {:parent root} :rows {:part part-children}}
+                                               {"root" ["root"]}
+                                               refuse-to-make!)))
+    (is (= [] (children-vec root)))))
+
+(deftest read-places-refuses-a-keyed-node-without-the-part-of-a-part-alone
+  (let [root (mounted! (doto (element! "ul") (.append (keyed-element! "li" "a"))))]
+    (is (thrown-with-msg? js/Error #"no part of that name"
+                          (mirror-places/read-places (part-containers root))))))
