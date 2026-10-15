@@ -1,13 +1,19 @@
 (ns baredom.components.x-i18n-provider.x-i18n-provider-test
-  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-i18n-provider.x-i18n-provider :as x]
             [baredom.components.x-i18n-provider.model :as model]))
 
 (x/init!)
 
+(def ^:private real-fetch (.-fetch js/window))
+
+(defn- use-fetch! [stub]
+  (set! (.-fetch js/window) stub))
+
 (defn cleanup-dom! []
   (doseq [node (.querySelectorAll js/document model/tag-name)]
-    (.remove node)))
+    (.remove node))
+  (use-fetch! real-fetch))
 
 (use-fixtures :each {:before cleanup-dom! :after cleanup-dom!})
 
@@ -171,3 +177,50 @@
     (is (= "Hello" (.getAttribute div "label")))
     (is (nil? (.getAttribute div "params"))
         "data-i18n-params should not be treated as a target attribute")))
+
+;; ── Reconnect ──────────────────────────────────────────────────────────────
+(defn- pending-fetch [_url _options]
+  (js/Promise. identity))
+
+(defn- json-body []
+  (js/Promise.resolve #js {"hi" "Hello"}))
+
+(defn- answered-fetch [_url _options]
+  (js/Promise.resolve #js {:ok true :json json-body}))
+
+(defn- ^js provider []
+  (let [el (make-el)]
+    (.setAttribute el model/attr-src "/t/{locale}.json")
+    (.setAttribute el model/attr-locale "en")
+    el))
+
+(defn- count-loadings! [^js el]
+  (let [seen (atom 0)]
+    (.addEventListener el model/event-loading (fn [_] (swap! seen inc)))
+    seen))
+
+(defn- reconnect! [^js el]
+  (.remove el)
+  (append! el))
+
+(deftest reconnect-during-a-fetch-fetches-again-test
+  (use-fetch! pending-fetch)
+  (let [el       (provider)
+        loadings (count-loadings! el)]
+    (append! el)
+    (reconnect! el)
+    (is (= 2 @loadings))))
+
+(deftest reconnect-after-a-fetch-keeps-the-translations-test
+  (async done
+    (use-fetch! answered-fetch)
+    (let [el       (provider)
+          loadings (count-loadings! el)]
+      (.addEventListener el model/event-change
+                         (fn [_]
+                           (reconnect! el)
+                           (is (= 1 @loadings))
+                           (is (some? (.-translations el)))
+                           (done))
+                         #js {:once true})
+      (append! el))))

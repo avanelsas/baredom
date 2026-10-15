@@ -15,6 +15,7 @@
 (def ^:private k-active-idx "__xComboboxActiveIdx")
 (def ^:private k-query      "__xComboboxQuery")
 (def ^:private k-internals  "__xComboboxInternals")
+(def ^:private k-doc-click  "__xComboboxDocClick")
 
 (def ^:private msg-value-missing "Please select an item in the list.")
 
@@ -37,7 +38,6 @@
 (def ^:private hk-panel-click     "panelClick")
 (def ^:private hk-focusout        "focusout")
 (def ^:private hk-slotchange      "slotchange")
-(def ^:private hk-doc-click       "docClick")
 
 ;; ── String-literal constants ───────────────────────────────────────────────
 (def ^:private attr-part           "part")
@@ -753,19 +753,18 @@
 (defn- add-doc-listeners! [^js el]
   (js/setTimeout
    (fn defer-doc-click-bind []
-     (when (and (.-isConnected el) (du/has-attr? el model/attr-open))
+     (when (and (.-isConnected el)
+                (du/has-attr? el model/attr-open)
+                (nil? (du/getv el k-doc-click)))
        (let [wrapped (fn handle-doc-click [evt] (on-doc-click el evt))]
-         ;; Stash the wrapper on the handlers object so remove can find it.
-         (when-let [hs (du/getv el k-handlers)]
-           (gobj/set hs hk-doc-click wrapped))
+         (du/setv! el k-doc-click wrapped)
          (.addEventListener js/document ev-click wrapped))))
    0))
 
 (defn- remove-doc-listeners! [^js el]
-  (when-let [hs (du/getv el k-handlers)]
-    (when-let [wrapped (gobj/get hs hk-doc-click)]
-      (.removeEventListener js/document ev-click wrapped)
-      (gobj/set hs hk-doc-click nil))))
+  (when-let [wrapped (du/getv el k-doc-click)]
+    (.removeEventListener js/document ev-click wrapped)
+    (du/setv! el k-doc-click nil)))
 
 ;; ── Form-associated callbacks ────────────────────────────────────────────────
 ;; Reset clears the selection — mirroring x-form-field's reset-to-empty.
@@ -785,6 +784,8 @@
   (remove-listeners! el)
   (remove-doc-listeners! el)
   (add-listeners! el)
+  (when (du/has-attr? el model/attr-open)
+    (add-doc-listeners! el))
   (sync-options! el)
   (update-from-attrs! el))
 

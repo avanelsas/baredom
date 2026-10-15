@@ -457,3 +457,23 @@
   (is (.includes (text-font-in! "font-family:PageFontTest,serif;--x-font-family:ThemeFontTest")
                  "ThemeFontTest")))
 
+
+;; ── Reconnect ───────────────────────────────────────────────────────────────
+
+(defn- reconnect! [el]
+  (.remove el)
+  (append! el))
+
+(deftest reconnected-element-animates-again-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-text "Test")
+    (.setAttribute el model/attr-animation "scroll")
+    (reconnect! el)
+    (is (some? (shadow-query el "textPath animate")))))
+
+(deftest reconnected-element-has-its-echoes-again-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-text "Echo")
+    (.setAttribute el model/attr-echo-count "2")
+    (reconnect! el)
+    (is (= 2 (.-length (shadow-query-all el "[part=text-echo]"))))))

@@ -531,3 +531,40 @@
          (done))
        50))))
 
+
+;; ── Reconnect ─────────────────────────────────────────────────────────────
+;; The document listener of an open combobox binds one task after the open. The tests open by
+;; attribute: show focuses the input, and its removal would close the panel on focusout.
+
+(defn- after-a-task [f]
+  (js/setTimeout f 10))
+
+(defn- ^js open-combobox! []
+  (doto (append! (make-el))
+    (.setAttribute model/attr-open "")))
+
+(defn- click-outside! []
+  (.click (.-body js/document)))
+
+(deftest removed-open-combobox-ignores-an-outside-click-test
+  (async done
+    (let [^js el (open-combobox!)]
+      (after-a-task
+       (fn []
+         (.remove el)
+         (click-outside!)
+         (is (.hasAttribute el model/attr-open) "a removed combobox keeps no document listener")
+         (done))))))
+
+(deftest reconnected-open-combobox-closes-on-an-outside-click-test
+  (async done
+    (let [^js el (open-combobox!)]
+      (after-a-task
+       (fn []
+         (.remove el)
+         (append! el)
+         (after-a-task
+          (fn []
+            (click-outside!)
+            (is (not (.hasAttribute el model/attr-open)))
+            (done))))))))

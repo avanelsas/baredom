@@ -1037,7 +1037,7 @@
       (sp! el k-canvas-h h)
       (sp! el k-pad canvas-pad))))
 
-(defn- setup-resize-observer! [^js el ^js button-el]
+(defn- make-resize-observer! [^js el]
   (let [ro (js/ResizeObserver.
             (fn [entries]
               (when (pos? (alength entries))
@@ -1048,8 +1048,12 @@
                   (when (and (> w 0) (> h 0))
                     (resize-canvas! el w h)
                     (extract-color-palette! el))))))]
-    (.observe ro button-el)
     (sp! el k-resize-observer ro)))
+
+(defn- observe-resize!
+  "Starts the resize observer of `el` on its button."
+  [^js el]
+  (.observe (gp el k-resize-observer) (aget (get-el-state el) "button")))
 
 ;; ── Interaction setup ───────────────────────────────────────────────────────
 (defn- end-active-press! [^js el]
@@ -1285,17 +1289,16 @@
       (setup-press! el button-el)
       (setup-focus! el button-el)
       (setup-slots! el state)
-      (setup-resize-observer! el button-el)
+      (make-resize-observer! el)
       (set-el-state! el state)))
+  (observe-resize! el)
   (sync-noninteractive-state! el)
   (render! el (get-el-state el)))
 
 (defn- disconnected! [^js el]
   (stop-animation! el)
   (set-phase! el :idle)
-  (when-let [ro (gp el k-resize-observer)]
-    (.disconnect ro)
-    (sp! el k-resize-observer nil))
+  (.disconnect (gp el k-resize-observer))
   (set-hover! el false)
   (set-focus-visible! el false)
   (set-active-source! el nil)

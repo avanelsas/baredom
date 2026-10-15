@@ -552,7 +552,9 @@
 
 (defn- disconnected! [^js el]
   (remove-animate! el)
-  (clear-echoes! el))
+  (clear-echoes! el)
+  ;; The model is no longer drawn, so a reconnect draws it again.
+  (du/setv! el k-model nil))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
