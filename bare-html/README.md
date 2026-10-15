@@ -195,12 +195,25 @@ keeps its node, so it keeps focus when it moves. [`docs/baremirror.md`](../docs/
 describes the pattern and every function. With "The server says no" switched on, a tick
 on a checkbox is refused and the checkbox stays as it was.
 
+## A tree with BareMirror
+
+`tree.html` shows the same tree twice, from one state. The left side calls `syncPlaces` once for
+each list of children. The right side calls it once for the whole tree, with a container that
+names a part alone. Type a note in a row and move the row with the buttons: each side says what
+it did, and only the right side keeps a row that changes its parent. Open
+[http://localhost:8000/bare-html/tree.html](http://localhost:8000/bare-html/tree.html).
+
 ## Project structure
 
 ```
 bare-html/
 ├── demo.html    # Everything in one file: CSS, HTML markup, JS wiring, event log
-└── tasks.html   # The task list with BareMirror, in one file
+├── mirror.html  # One task list, rendered two ways side by side
+├── mirror/      # The scripts of mirror.html
+├── tasks.html   # The task list with BareMirror, in one file
+├── tree.html    # One tree, synced per list and in one call, side by side
+└── tree/        # The scripts of tree.html
 ```
 
-All CSS, HTML, and JavaScript live in a single self-contained file. There is no `package.json`, no `node_modules`, and no build output to manage.
+`demo.html` and `tasks.html` are each one self-contained file. `mirror.html` and `tree.html` load
+their scripts from a folder of their own. There is no `package.json`, no `node_modules`, and no build output to manage.

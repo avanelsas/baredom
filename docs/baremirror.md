@@ -24,7 +24,7 @@ still change. It needs nothing from BareDOM and works on any HTML.
 | Word | What it is |
 |---|---|
 | Key | The text in the `data-x-key` attribute of a node. It says which item the node shows. |
-| Container | A parent node, with an optional node that its keyed children stay in front of. |
+| Container | A parent node, the key of a node and a part in it, or a part alone: the part in the node of every key. A parent node may come with a node that its keyed children stay in front of. |
 | Places | Which keys are in which container, in order. |
 | Plan | What must happen to turn the current places into the wanted places. |
 | Template | A tag, an optional object of attributes, and children. Plain data. |
@@ -126,6 +126,29 @@ render(view(store.value));
 A click on a checkbox sends `['toggle', '1']`. The argument is the key of the row, because the
 template names no other. [`bare-html/tasks.html`](../bare-html/tasks.html) is a full task list
 built this way, with adding, removing, a filter and a move.
+
+## A tree
+
+A tree is one call. A container that names a part alone gives the node of every key a container:
+that part, named by the key. The node of a key that is new in this render gets one too.
+
+```js
+const branch = splitTemplate('branch',
+  ['li', ['span', item => item.label], ['ul', { 'data-x-part': 'children' }]]);
+
+function render(vm) {
+  const containers = { tree: { parent: parts.tree }, branches: { part: 'children' } };
+  const nodes = syncPlaces(containers, vm.places, key => made(vm.items[key]));
+  vm.keys.forEach(key => writeItem(nodes[key], branch, vm.items[key]));
+}
+```
+
+`vm.places` maps `tree` and each key to its keys in order, and `made` writes a new node from
+`branch`, as `made` does for a row above. A node that moves to another branch keeps its node,
+and its focus where the browser offers `moveBefore`. So do the nodes in a branch that is removed,
+when the plan moves them. `{ key: 'a', part: 'children' }` names the container of one node, and
+`{ key: 'a' }` names the node itself. [`bare-html/tree.html`](../bare-html/tree.html) shows a tree
+synced this way beside one that is synced one list at a time.
 
 ## In ClojureScript
 
@@ -244,6 +267,11 @@ does not.
   or a copy with a field changed.
 - **In JavaScript, a copy of a split template is not a split template.** `writeItem` refuses it.
   Split the changed template again.
+- **A container you leave out is left alone.** Its keys are not read. A key of it that you want
+  elsewhere gets a second node. In a tree, name a part alone, so that every node has its container.
+- **One container may name a part alone,** because its containers are named by the key. Every
+  keyed node in those containers has that part, and no key is the name of another container.
+- **A container named by a key or a part alone takes no `:before` yet.**
 - **A text hole is the only child of its element.** Wrap a value in an element of its own.
 - **A part gets a name by itself** when its element has a hole or an event. Give it
   `data-x-part` when the page must find it by a name you choose.

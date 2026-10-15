@@ -44,3 +44,18 @@
   (gen/let [places gen-places
             edits  (gen/vector (edit-of containers) 0 limit)]
     [places (reduce edit places (map-indexed vector edits))]))
+
+(defn- put-in-tree
+  "The `places` with the numbered key `k` in `root` or in the container of a key before it.
+   The container of a key is the key itself."
+  [root ks places [i [k pick]]]
+  (let [holders (into [root] (take i ks))]
+    (update places (nth holders (mod pick (count holders))) (fnil conj []) k)))
+
+(defn tree
+  "A generator of places that form a tree: up to `limit` keys of `pool`, each in `root` or in
+   the container of a key before it."
+  [root pool limit]
+  (gen/let [ks    (gen/vector-distinct (gen/elements pool) {:max-elements limit})
+            picks (gen/vector gen/nat (count ks))]
+    (reduce (partial put-in-tree root ks) {root []} (map-indexed vector (map vector ks picks)))))

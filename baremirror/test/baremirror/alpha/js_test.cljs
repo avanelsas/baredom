@@ -116,6 +116,58 @@
     (is (= ["a" "b"] (keys-in parent)))
     (is (= #{"a" "b"} (set (js-keys nodes))))))
 
+(defn- make-tree-node [_key]
+  (mjs/make-node #js ["li" #js ["ul" #js {"data-x-part" "children"}]]))
+
+(defn- children-keys [^js node]
+  (keys-in (.-lastElementChild node)))
+
+(deftest sync-places-takes-a-container-named-by-a-key-and-a-part
+  (let [parent     (staged! #js ["ul"])
+        containers #js {:tree #js {:parent parent} :a #js {:key "a" :part "children"}}
+        nodes      (mjs/sync-places containers #js {:tree #js ["a"] :a #js ["b"]} make-tree-node)]
+    (is (= ["a"] (keys-in parent)))
+    (is (= ["b"] (children-keys (.-a nodes))))))
+
+(deftest read-places-gives-a-container-named-by-a-key-its-key-and-part
+  (let [containers  #js {:tree #js {:parent (staged! #js ["ul"])} :n #js {:key "n" :part "children"}}
+        ^js reading (mjs/read-places containers)]
+    (is (= {"key" "n" "part" "children" "parent" nil "before" nil}
+           (data (.. reading -containers -n))))
+    (is (= [] (data (.. reading -places -n))))))
+
+(deftest perform-takes-a-reading-made-by-hand-with-a-container-named-by-a-key
+  (let [parent  (staged! #js ["ul"])
+        reading #js {:containers #js {:tree #js {:parent parent} :a #js {:key "a" :part "children"}}
+                     :nodes      #js {}}
+        steps   #js {:remove #js []
+                     :place  #js [#js {:key "a" :in "tree" :before nil}
+                                  #js {:key "b" :in "a" :before nil}]}
+        nodes   (mjs/perform reading steps make-tree-node)]
+    (is (= ["a"] (keys-in parent)))
+    (is (= ["b"] (children-keys (.-a nodes))))))
+
+(deftest perform-takes-a-reading-made-by-hand-with-a-container-named-by-a-key-that-has-a-node
+  (let [a       (doto ^js (make-tree-node "a") (.setAttribute "data-x-key" "a"))
+        parent  (doto (staged! #js ["ul"]) (.append a))
+        reading #js {:containers #js {:tree #js {:parent parent} :a #js {:key "a" :part "children"}}
+                     :nodes      #js {:a a}}
+        steps   #js {:remove #js [] :place #js [#js {:key "b" :in "a" :before nil}]}]
+    (mjs/perform reading steps make-tree-node)
+    (is (= ["b"] (children-keys a)))))
+
+(deftest sync-places-takes-a-container-of-a-part-alone
+  (let [parent     (staged! #js ["ul"])
+        containers #js {:tree #js {:parent parent} :rows #js {:part "children"}}
+        nodes      (mjs/sync-places containers #js {:tree #js ["a"] :a #js ["b"]} make-tree-node)
+        first-keys (children-keys (.-a nodes))
+        later      (mjs/sync-places containers #js {:tree #js ["b"]} make-tree-node)]
+    (testing "the part of a key holds its keys"
+      (is (= ["b"] first-keys)))
+    (testing "a key in a removed node keeps its node"
+      (is (identical? (.-b nodes) (.-b later)))
+      (is (= ["b"] (keys-in parent))))))
+
 (defn- copy-with
   "A copy of the object `o` with the fields of `changes`, as an object spread makes it."
   [o changes]

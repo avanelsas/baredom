@@ -323,11 +323,13 @@ enforces it in CI. BareDOM may require BareMirror.
 **It is an alpha.** The namespaces are `baremirror.alpha.plan`, `template`, `places`, `parts`,
 `events` and `element`, and JavaScript gets `@vanelsas/baredom/baremirror-alpha`. A name there
 may still change. A BareDOM component requires `baremirror.alpha.places` and `plan` only, so
-that nothing else lands in the shared `base.js`. The same script checks it.
+that nothing else lands in the shared `base.js` but the name of the part attribute. The same
+script checks it.
 
 **The words.** Use these and no others:
 
-- **Key**: text in `data-x-key`. **Container**: a parent with an optional `:before` anchor.
+- **Key**: text in `data-x-key`. **Container**: a parent with an optional `:before` anchor, the
+  key of a node and an optional part in it, or a part alone in the node of every key.
   **Places**: a map from a container to its keys, in order. **Plan**: what turns the current
   places into the wanted places.
 - **Template**: a vector of a tag, an optional map of attributes, and children. **Hole**: a
