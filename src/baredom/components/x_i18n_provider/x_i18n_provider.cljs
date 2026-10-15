@@ -177,7 +177,10 @@
   (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
-  (abort-fetch! el))
+  ;; A fetch cut short is forgotten with the model, so a reconnect fetches again.
+  (when (du/getv el k-abort)
+    (abort-fetch! el)
+    (du/setv! el k-model nil)))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
