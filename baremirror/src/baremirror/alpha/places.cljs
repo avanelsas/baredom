@@ -70,8 +70,9 @@
    Returns the node of each key that remains."
   [{:keys [containers nodes]} {removed :remove placements :place} make-node]
   (let [remaining (with-new-nodes! make-node (apply dissoc nodes removed) placements)]
-    (run! (comp remove-node! nodes) removed)
+    ;; A node that leaves a removed node moves while both are in the document, so moveBefore applies.
     (run! (partial place! containers remaining) placements)
+    (run! (comp remove-node! nodes) removed)
     remaining))
 
 (defn sync!

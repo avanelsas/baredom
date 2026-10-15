@@ -15,11 +15,17 @@
 (defn- make-item! [_k]
   (element! "li"))
 
+(defn- parent-of
+  "A parent of `tag` that holds a keyed `child-tag` for each of `ks`."
+  [tag child-tag ks]
+  (let [parent (element! tag)]
+    (run! (fn [k] (.append parent (keyed-element! child-tag k))) ks)
+    parent))
+
 (defn- parent-with!
   "A parent of `tag` in `stage` that holds a keyed `child-tag` for each of `ks`."
   [^js stage tag child-tag ks]
-  (let [parent (element! tag)]
-    (run! (fn [k] (.append parent (keyed-element! child-tag k))) ks)
+  (let [parent (parent-of tag child-tag ks)]
     (.append stage parent)
     parent))
 
@@ -195,5 +201,36 @@
     (testing "the moved node is the same node, at the end"
       (is (identical? moved (.-lastElementChild parent))))
     (when (.-moveBefore parent)
+      (testing "it still has the focus"
+        (is (identical? moved (.-activeElement js/document)))))))
+
+(defn- mounted!
+  "The `node`, put in a new stage."
+  [^js node]
+  (.append (stage!) node)
+  node)
+
+(defn- branch!
+  "A keyed `li` for `k` that holds a `ul` with a keyed `button` for each of `ks`."
+  [k ks]
+  (doto (keyed-element! "li" k)
+    (.append (parent-of "ul" "button" ks))))
+
+(deftest perform-keeps-the-focus-of-a-node-it-moves-out-of-a-removed-node
+  (let [a          (branch! "A" ["x"])
+        b          (branch! "B" ["z"])
+        root       (mounted! (doto (element! "ul") (.append a b)))
+        containers {:root {:parent root}
+                    :A    {:parent (.-lastElementChild a)}
+                    :B    {:parent (.-lastElementChild b)}}
+        reading    (mirror-places/read-places containers)
+        moved      (get-in reading [:nodes "x"])]
+    (.focus moved)
+    (mirror-places/perform! reading
+                            (plan/plan (:places reading) {:root ["B"] :B ["x" "z"]})
+                            make-item!)
+    (testing "the node is the same node, first in the other container"
+      (is (identical? moved (.. b -lastElementChild -firstElementChild))))
+    (when (.-moveBefore root)
       (testing "it still has the focus"
         (is (identical? moved (.-activeElement js/document)))))))
