@@ -177,6 +177,14 @@
            (mapv #(.getAttribute el %) ["total-pages" "sibling-count" "boundary-count"])))
     (is (= [20 2 3] [(.-totalPages el) (.-siblingCount el) (.-boundaryCount el)]))))
 
+(deftest the-number-properties-parse-like-the-model
+  (let [^js el (make-el {"page" "2.5" "total-pages" "0" "sibling-count" "-1"})]
+    (is (= [2 1 1] [(.-page el) (.-totalPages el) (.-siblingCount el)]))))
+
+(deftest the-text-properties-read-their-defaults
+  (let [^js el (make-el {})]
+    (is (= [model/default-size model/default-label] [(.-size el) (.-label el)]))))
+
 (deftest disabled-property-getter-test
   (let [^js el (make-el {})]
     (is (false? (.-disabled el)))))

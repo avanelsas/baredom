@@ -2,13 +2,11 @@
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
             [baremirror.alpha.places :as places]
-            [goog.object :as gobj]
             [baredom.components.x-pagination.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
-(def ^:private k-refs     "__xPaginationRefs")
-(def ^:private k-handlers "__xPaginationHandlers")
-(def ^:private k-model    "__xPaginationModel")
+(def ^:private k-refs  "__xPaginationRefs")
+(def ^:private k-model "__xPaginationModel")
 
 (def ^:private sel-page-button "[part~='button-page']")
 
@@ -116,6 +114,33 @@
    "[part~='button']{min-width:2.75rem;height:2.75rem;}"
    "}"))
 
+;; ── Event dispatch ────────────────────────────────────────────────────────
+(defn- dispatch-page-change!
+  "Asks to go from the page of `m` to `page`, and announces it unless the request is refused."
+  [^js el {cur-page :page} page]
+  (when (du/dispatch-cancelable! el model/event-change-request
+                                 #js {:page page :previousPage cur-page})
+    (du/dispatch! el model/event-page-change #js {:page page})))
+
+;; ── Click handler (event delegation) ─────────────────────────────────────
+(defn- button? [^js node]
+  (= "BUTTON" (.-tagName node)))
+
+(defn- button-request
+  "What the button `btn` asks for: [:prev], [:next] or [:page n]."
+  [{:keys [prev-btn next-btn]} ^js btn]
+  (condp identical? btn
+    prev-btn [:prev]
+    next-btn [:next]
+    [:page (some-> (.getAttribute btn "data-page") parse-long)]))
+
+(defn- on-click! [^js el ^js ev]
+  (let [^js btn (first (filter button? (.composedPath ev)))]
+    (when (and btn (not (.hasAttribute btn "disabled")))
+      (let [m (du/getv el k-model)]
+        (some->> (model/target-page m (button-request (du/getv el k-refs) btn))
+                 (dispatch-page-change! el m))))))
+
 ;; ── DOM initialisation ────────────────────────────────────────────────────
 (defn- make-prev-li! []
   (let [li  (.createElement js/document "li")
@@ -158,6 +183,8 @@
     (.appendChild nav ol)
     (.appendChild root style)
     (.appendChild root nav)
+    ;; The list lives as long as the shadow tree, so its listener needs no remove path.
+    (.addEventListener ol "click" (fn on-list-click [ev] (on-click! el ev)))
     (du/setv! el k-refs {:nav      nav
                          :ol       ol
                          :prev-li  (:li prev)
@@ -212,16 +239,12 @@
     :disabled-present?   (du/has-attr? el model/attr-disabled)
     :label-raw           (du/get-attr el model/attr-label)}))
 
-(defn- item-with-key [items k]
-  (first (filter (comp #{k} :key) items)))
-
 (defn- make-item!
-  "A new node for the item with key `k`."
-  [items k]
-  (let [{:keys [type n]} (item-with-key items k)]
-    (if (= :ellipsis type)
-      (make-ellipsis-li!)
-      (make-page-li! n))))
+  "A new node for `item`."
+  [{:keys [type n]}]
+  (if (= :ellipsis type)
+    (make-ellipsis-li!)
+    (make-page-li! n)))
 
 (defn- apply-item! [nodes page disabled? {:keys [type n key]}]
   (when (= :page type)
@@ -230,9 +253,10 @@
 (defn- render-items!
   "Brings the page items of the list in step with `items`. An item that stays keeps its node."
   [^js ol ^js next-li {:keys [page disabled]} items]
-  (let [nodes (places/sync! {:items {:parent ol :before next-li}}
-                            {:items (mapv :key items)}
-                            (partial make-item! items))]
+  (let [by-key (into {} (map (juxt :key identity)) items)
+        nodes  (places/sync! {:items {:parent ol :before next-li}}
+                             {:items (mapv :key items)}
+                             (comp make-item! by-key))]
     (run! (partial apply-item! nodes page disabled) items)))
 
 ;; ── Render ────────────────────────────────────────────────────────────────
@@ -252,71 +276,6 @@
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
-;; ── Event dispatch ────────────────────────────────────────────────────────
-(defn- dispatch-page-change! [^js el page]
-  (let [m        (read-model el)
-        cur-page (:page m)
-        allowed? (du/dispatch-cancelable!
-                  el model/event-change-request
-                  #js {:page page :previousPage cur-page})]
-    (when allowed?
-      (du/dispatch! el model/event-page-change #js {:page page}))))
-
-;; ── Click handler (event delegation) ─────────────────────────────────────
-(defn- find-button-in-path [^js ev]
-  (let [path (.composedPath ev)
-        len  (.-length path)]
-    (loop [i 0]
-      (when (< i len)
-        (let [^js node (aget path i)
-              tag      (when node (.-tagName node))]
-          (if (= "BUTTON" tag)
-            node
-            (recur (inc i))))))))
-
-(defn- on-click! [^js el ^js ev]
-  (let [btn (find-button-in-path ev)]
-    (when (and btn (not (.hasAttribute btn "disabled")))
-      (let [refs     (du/getv el k-refs)
-            prev-btn (:prev-btn refs)
-            next-btn (:next-btn refs)
-            page-attr (.getAttribute btn "data-page")]
-        (cond
-          (identical? btn prev-btn)
-          (let [m   (read-model el)
-                cur (:page m)]
-            (when (> cur 1)
-              (dispatch-page-change! el (dec cur))))
-
-          (identical? btn next-btn)
-          (let [m   (read-model el)
-                cur (:page m)
-                tot (:total-pages m)]
-            (when (< cur tot)
-              (dispatch-page-change! el (inc cur))))
-
-          (some? page-attr)
-          (let [n (js/parseInt page-attr 10)]
-            (when (js/isFinite n)
-              (dispatch-page-change! el n))))))))
-
-;; ── Listener management ───────────────────────────────────────────────────
-(defn- add-listeners! [^js el]
-  (let [refs    (ensure-refs! el)
-        ^js ol  (:ol refs)
-        handler (fn [^js ev] (on-click! el ev))]
-    (.addEventListener ol "click" handler)
-    (du/setv! el k-handlers #js {:click handler})))
-
-(defn- remove-listeners! [^js el]
-  (when-let [hs (du/getv el k-handlers)]
-    (when-let [refs (du/getv el k-refs)]
-      (let [^js ol   (:ol refs)
-            on-click (gobj/get hs "click")]
-        (when (and ol on-click)
-          (.removeEventListener ol "click" on-click)))))
-  (du/setv! el k-handlers nil))
-
 ;; ── Property accessors ────────────────────────────────────────────────────
 ;; `page` is the only int prop without a 1-arg parse fn in the model
 ;; (model/parse-page also takes total-pages), so wrap parse-pos-int inline.
@@ -324,23 +283,16 @@
   (model/parse-pos-int s model/default-page))
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-parsed-prop! proto model/attr-page           model/attr-page           parse-page-attr)
-  (du/define-parsed-prop! proto "totalPages"              model/attr-total-pages    model/parse-total-pages)
-  (du/define-parsed-prop! proto "siblingCount"            model/attr-sibling-count  model/parse-sibling-count)
-  (du/define-parsed-prop! proto "boundaryCount"           model/attr-boundary-count model/parse-boundary-count)
-  (du/define-string-prop! proto model/attr-size           model/attr-size           model/default-size)
-  (du/define-bool-prop!   proto model/attr-disabled       model/attr-disabled)
-  (du/define-string-prop! proto model/attr-label          model/attr-label          model/default-label))
+  (du/install-properties! proto (select-keys model/property-api [:size :disabled :label]))
+  (du/define-parsed-prop! proto "page"          model/attr-page           parse-page-attr)
+  (du/define-parsed-prop! proto "totalPages"    model/attr-total-pages    model/parse-total-pages)
+  (du/define-parsed-prop! proto "siblingCount"  model/attr-sibling-count  model/parse-sibling-count)
+  (du/define-parsed-prop! proto "boundaryCount" model/attr-boundary-count model/parse-boundary-count))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
-  (remove-listeners! el)
-  (add-listeners! el)
   (update-from-attrs! el))
-
-(defn- disconnected! [^js el]
-  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _attr-name old-val new-val]
   (when (not= old-val new-val)
@@ -352,6 +304,5 @@
   (component/register! model/tag-name
     {:observed-attributes    model/observed-attributes
      :connected-fn           connected!
-     :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
      :setup-prototype-fn     install-property-accessors!}))

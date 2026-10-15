@@ -123,8 +123,8 @@ Reference by name when discussing architecture:
 - **`keyed-list`**: a list in a component whose items come and go. The model gives each item a
   `:key`. The component hands the keys to `places/sync!` with a function that makes the node of
   a new key, then brings each node to its item with `du/set-attr-to!`. A node that stays is never
-  made again, so it keeps focus and state. References: `x-pagination` (`render-items!`),
-  `x-multi-combobox` (`render-chips!`).
+  made again, so it keeps focus and state. Reference: `x-pagination` (`render-items!`). For a
+  node that leaves with an animation and keeps the focus: `x-multi-combobox` (`remove-item!`).
 
 ## Writing style
 
@@ -399,7 +399,7 @@ Follow these stages in order. **Do not skip or merge stages.**
 
 ## Performance & Context Management
 
-1. **Reference Implementation:** Use `src/baredom/components/x_icon/` as the primary Golden Sample — it demonstrates all three named patterns correctly: render-pipeline, model-layer, and registration-idiom. Use `x-button` as secondary reference for event dispatch (`du/dispatch!`) and complex interaction state.
+1. **Reference Implementation:** Use `src/baredom/components/x_icon/` as the primary Golden Sample — it demonstrates all three named patterns correctly: render-pipeline, model-layer, and registration-idiom. Use `x-button` as secondary reference for event dispatch (`du/dispatch!`) and complex interaction state. Use `x-pagination` as the reference for variable structure: a `keyed-list` in a full component.
 2. **No-Scan Folders:** Ignore `dist/`, `target/`, and `.shadow-cljs/`.
 
 **If information is missing that affects the public API shape (attributes, properties, events, methods, slots), do not assume — list it as an open question. Never invent API surface.**
