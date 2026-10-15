@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en" data-loading>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Move a row, keep your note</title>
+  <script>
+    window.BAREDOM_TRACE_HISTORY = 'raw';
+    window.BAREDOM_TRACE_HISTORY_CAPACITY = 1000000;
+  </script>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; --flash: #f59e0b; }
+    body { margin: 0; }
+    x-trace-history { display: none; }
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; padding-block: 2rem; }
+    .inside { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; align-content: start; }
+    .steps { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.25rem; }
+    .bar { display: flex; gap: 0.5rem 0.75rem; align-items: center; flex-wrap: wrap; }
+    .mode { display: inline-flex; gap: 0.5rem; align-items: center; }
+    .compare { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem 1.5rem; }
+    @media (min-width: 48rem) { .compare { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .title { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+    .result { min-height: 3em; }
+    .three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+    .three > div { display: grid; }
+    .numbers { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.25rem 1rem; align-items: baseline; }
+    .number { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .numbers .number { text-align: right; }
+    .rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.25rem; }
+    .rows .rows { padding-left: 1.25rem; border-left: 1px solid color-mix(in srgb, currentColor 20%, transparent); }
+    .rows:empty { display: none; }
+    .rows li { display: grid; gap: 0.25rem; border-radius: 4px; animation: arrive 0.9s ease-out; }
+    .line { display: flex; gap: 0.5rem; align-items: center; padding: 0.15rem 0.35rem; border-radius: 4px; }
+    li[data-selected] > .line { background: color-mix(in srgb, var(--x-color-primary, #2563eb) 15%, transparent); }
+    .label { flex: 1 1 auto; }
+    .line x-badge { flex: none; }
+    .note { flex: 0 1 9rem; min-width: 0; font: inherit; padding: 0.2rem 0.4rem; }
+    @keyframes arrive {
+      from { outline: 2px solid var(--flash); outline-offset: 2px; }
+      to   { outline: 2px solid transparent; outline-offset: 2px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .rows li { animation-timing-function: steps(1, end); } }
+    .points { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.5rem; }
+    #sources { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; }
+    x-code { display: block; min-width: 0; max-width: 100%; }
+    .no-script { max-width: 40rem; margin: 2rem auto; padding-inline: 1rem; }
+  </style>
+</head>
+<body>
+  <noscript><p class="no-script">This page needs JavaScript.</p></noscript>
+  <x-container as="main" size="lg" padding="md" center>
+  <div class="stack">
+
+    <div class="inside">
+      <x-typography variant="h4" role="heading" aria-level="1">Move a row, keep your note</x-typography>
+      <x-typography variant="body2">The same tree twice, from the same state. The left side brings each list of children to the page on its own. The right side brings the whole tree in one call. Only the right side keeps a row that changes its parent.</x-typography>
+      <ol class="steps">
+        <li><x-typography variant="body2">Type a note in a row. The note shows on both sides, and that row is now yours.</x-typography></li>
+        <li><x-typography variant="body2">Press a button below. It moves your row.</x-typography></li>
+        <li><x-typography variant="body2">Read what each side did.</x-typography></li>
+      </ol>
+    </div>
+
+    <x-card variant="outlined" padding="md">
+      <div class="inside">
+        <x-typography variant="body2">Your row: <b id="selected">none yet</b></x-typography>
+        <div class="bar">
+          <x-button id="act-indent" size="sm" disabled>Indent</x-button>
+          <x-button id="act-outdent" size="sm" disabled>Outdent</x-button>
+          <x-button id="act-wrap" size="sm" disabled>Wrap in a group</x-button>
+          <x-button id="act-swap" size="sm" disabled>Swap with its parent</x-button>
+          <x-button id="act-removeParent" size="sm" variant="danger" disabled>Remove its parent</x-button>
+        </div>
+        <x-typography id="reasons" variant="caption"></x-typography>
+        <label class="mode"><x-switch id="other-user" aria-label="Another user moves your row every 2 seconds"></x-switch><x-typography variant="caption">Another user moves your row every 2 seconds</x-typography></label>
+      </div>
+    </x-card>
+
+    <div class="compare">
+      <x-card variant="outlined" padding="md">
+        <div class="inside">
+          <div class="title">
+            <x-typography variant="h6" role="heading" aria-level="2">One call per list</x-typography>
+            <x-typography id="left-lines" variant="caption"></x-typography>
+          </div>
+          <x-typography id="left-result" class="result" variant="subtitle1" aria-live="polite"></x-typography>
+          <div class="three" id="left-numbers">
+            <div><x-typography variant="caption">Rows made</x-typography><x-typography class="number" variant="body1" data-count="made">0</x-typography></div>
+            <div><x-typography variant="caption">Notes lost</x-typography><x-typography class="number" variant="body1" data-count="lost">0</x-typography></div>
+            <div><x-typography variant="caption">Focus</x-typography><x-typography class="number" variant="body1" data-count="focus">–</x-typography></div>
+          </div>
+          <div id="left"><ul class="rows" data-x-part="tree"></ul></div>
+        </div>
+      </x-card>
+
+      <x-card variant="outlined" padding="md">
+        <div class="inside">
+          <div class="title">
+            <x-typography variant="h6" role="heading" aria-level="2">One call for the tree</x-typography>
+            <x-typography id="right-lines" variant="caption"></x-typography>
+          </div>
+          <x-typography id="right-result" class="result" variant="subtitle1" aria-live="polite"></x-typography>
+          <div class="three" id="right-numbers">
+            <div><x-typography variant="caption">Rows made</x-typography><x-typography class="number" variant="body1" data-count="made">0</x-typography></div>
+            <div><x-typography variant="caption">Notes lost</x-typography><x-typography class="number" variant="body1" data-count="lost">0</x-typography></div>
+            <div><x-typography variant="caption">Focus</x-typography><x-typography class="number" variant="body1" data-count="focus">–</x-typography></div>
+          </div>
+          <div id="right"><ul class="rows" data-x-part="tree"></ul></div>
+        </div>
+      </x-card>
+    </div>
+
+    <x-typography variant="caption">A row flashes when it is made, or when it is taken out of the page and put back. A row that moves where the browser offers <code>moveBefore</code> does not flash. The numbers are for the last change.</x-typography>
+
+    <x-collapse header="Details">
+      <div class="inside" slot="content">
+
+        <x-grid min-column-size="16rem" gap="lg">
+          <div class="inside">
+            <x-typography variant="subtitle2">One call per list</x-typography>
+            <div class="numbers" id="left-details">
+              <x-typography variant="caption">Rows on screen</x-typography><x-typography class="number" variant="caption" data-count="shown">0</x-typography>
+              <x-typography variant="caption">Rows made, running total</x-typography><x-typography class="number" variant="caption" data-count="total">0</x-typography>
+              <x-typography variant="caption">Rows put into the page</x-typography><x-typography class="number" variant="caption" data-count="put">0</x-typography>
+              <x-typography variant="caption">Time</x-typography><x-typography class="number" variant="caption" data-count="time">0</x-typography>
+              <x-typography variant="caption">Renders of components</x-typography><x-typography class="number" variant="caption" data-count="renders">0</x-typography>
+              <x-typography variant="caption">Renders of components, running total</x-typography><x-typography class="number" variant="caption" data-count="all-renders">0</x-typography>
+              <x-typography variant="caption">Components connected</x-typography><x-typography class="number" variant="caption" data-count="connects">0</x-typography>
+            </div>
+          </div>
+          <div class="inside">
+            <x-typography variant="subtitle2">One call for the tree</x-typography>
+            <div class="numbers" id="right-details">
+              <x-typography variant="caption">Rows on screen</x-typography><x-typography class="number" variant="caption" data-count="shown">0</x-typography>
+              <x-typography variant="caption">Rows made, running total</x-typography><x-typography class="number" variant="caption" data-count="total">0</x-typography>
+              <x-typography variant="caption">Rows put into the page</x-typography><x-typography class="number" variant="caption" data-count="put">0</x-typography>
+              <x-typography variant="caption">Time</x-typography><x-typography class="number" variant="caption" data-count="time">0</x-typography>
+              <x-typography variant="caption">Renders of components</x-typography><x-typography class="number" variant="caption" data-count="renders">0</x-typography>
+              <x-typography variant="caption">Renders of components, running total</x-typography><x-typography class="number" variant="caption" data-count="all-renders">0</x-typography>
+              <x-typography variant="caption">Components connected</x-typography><x-typography class="number" variant="caption" data-count="connects">0</x-typography>
+            </div>
+          </div>
+        </x-grid>
+
+        <x-typography variant="subtitle2">A big tree</x-typography>
+        <x-typography variant="caption">Press "300 rows". Type a note in "Row 11", press Indent, and read the time on each side. The left side makes Row 11 again with the nine rows inside it. The right side moves one row.</x-typography>
+        <div class="bar">
+          <x-button id="rows-many" variant="ghost" size="sm">300 rows</x-button>
+          <x-button id="rows-few" variant="ghost" size="sm">A few rows</x-button>
+          <label class="mode"><x-switch id="counting" checked aria-label="Count the renders"></x-switch><x-typography variant="caption">Count the renders. It records every write and slows both sides, so "300 rows" turns it off.</x-typography></label>
+        </div>
+
+        <x-grid min-column-size="16rem" gap="lg">
+          <div class="inside">
+            <x-typography variant="subtitle2">The state</x-typography>
+            <x-code id="state" language="json" max-lines="14"></x-code>
+          </div>
+          <div class="inside">
+            <x-typography variant="subtitle2">The plan of the right side</x-typography>
+            <x-code id="plan" language="json" max-lines="14"></x-code>
+          </div>
+        </x-grid>
+
+        <x-typography variant="subtitle2">The functions</x-typography>
+        <x-typography id="size" variant="caption"></x-typography>
+
+        <x-typography variant="subtitle2">The limits of this page</x-typography>
+        <ul class="points">
+          <li><x-typography variant="caption"><b>The note is not in the state.</b> It is text in the node, so it shows which rows keep their node. A note counts as lost when its row is still on screen and the text is gone. The page copies what you type to the same row on the other side. That copy is code of this page, not of BareMirror.</x-typography></li>
+          <li><x-typography variant="caption"><b>The focus across a move needs <code>moveBefore</code>.</b> <span id="move-before"></span></x-typography></li>
+          <li><x-typography variant="caption"><b>A moved component still connects again.</b> BareDOM components do not define <code>connectedMoveCallback</code> yet, so the browser calls their callbacks on a move.</x-typography></li>
+          <li><x-typography variant="caption"><b>When no row changes its parent, the two sides are the same.</b></x-typography></li>
+          <li><x-typography variant="caption"><b>The time is the time of the script.</b> The work of the browser after it is not in the number.</x-typography></li>
+        </ul>
+
+        <x-typography variant="subtitle2">The source</x-typography>
+        <x-typography variant="caption">The two ways to sync are the first two files. Both use the row of <code>row.js</code> and the application of <code>app.js</code>. Two instruments are shared with <a href="mirror.html">the task list page</a>.</x-typography>
+        <div id="sources"></div>
+      </div>
+    </x-collapse>
+  </div>
+  </x-container>
+
+  <script type="module" src="tree/main.js"></script>
+</body>
+</html>

@@ -147,7 +147,8 @@ function render(vm) {
 `branch`, as `made` does for a row above. A node that moves to another branch keeps its node,
 and its focus where the browser offers `moveBefore`. So do the nodes in a branch that is removed,
 when the plan moves them. `{ key: 'a', part: 'children' }` names the container of one node, and
-`{ key: 'a' }` names the node itself.
+`{ key: 'a' }` names the node itself. [`bare-html/tree.html`](../bare-html/tree.html) shows a tree
+synced this way beside one that is synced one list at a time.
 
 ## In ClojureScript
 
