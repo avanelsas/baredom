@@ -234,3 +234,76 @@
     (when (.-moveBefore root)
       (testing "it still has the focus"
         (is (identical? moved (.-activeElement js/document)))))))
+
+(defn- holding!
+  "A keyed `li` for `k` that holds a `ul` with `child` in it."
+  [k ^js child]
+  (doto (keyed-element! "li" k)
+    (.append (doto (element! "ul") (.append child)))))
+
+(deftest perform-keeps-the-focus-of-a-node-it-moves-into-a-new-node
+  (let [a          (branch! "A" ["x"])
+        n          (branch! "N" [])
+        root       (mounted! (doto (element! "ul") (.append a)))
+        containers {:N    {:parent (.-lastElementChild n)}
+                    :A    {:parent (.-lastElementChild a)}
+                    :root {:parent root}}
+        reading    (mirror-places/read-places containers)
+        moved      (get-in reading [:nodes "x"])]
+    (.focus moved)
+    (mirror-places/perform! reading
+                            {:remove [] :place [{:key "x" :in :N :before nil}
+                                                {:key "N" :in :root :before nil}]}
+                            {"N" n})
+    (testing "the node is the same node, in the new node"
+      (is (identical? moved (.. n -lastElementChild -firstElementChild))))
+    (when (.-moveBefore root)
+      (testing "it still has the focus"
+        (is (identical? moved (.-activeElement js/document)))))))
+
+(deftest perform-keeps-the-focus-of-a-node-it-moves-into-a-node-that-stays-inside-a-new-node
+  (let [a          (branch! "A" ["x"])
+        k          (branch! "K" [])
+        n          (holding! "N" k)
+        root       (mounted! (doto (element! "ul") (.append a)))
+        containers {:K    {:parent (.-lastElementChild k)}
+                    :A    {:parent (.-lastElementChild a)}
+                    :root {:parent root}}
+        reading    (mirror-places/read-places containers)
+        moved      (get-in reading [:nodes "x"])]
+    (.focus moved)
+    (mirror-places/perform! reading
+                            {:remove [] :place [{:key "x" :in :K :before nil}
+                                                {:key "N" :in :root :before nil}]}
+                            {"N" n})
+    (testing "the node is the same node, in the node inside the new node"
+      (is (identical? moved (.. k -lastElementChild -firstElementChild))))
+    (when (.-moveBefore root)
+      (testing "it still has the focus"
+        (is (identical? moved (.-activeElement js/document)))))))
+
+(deftest perform-puts-a-node-into-the-node-it-was-in
+  (let [b          (branch! "B" [])
+        a          (holding! "A" b)
+        root       (mounted! (doto (element! "ul") (.append a)))
+        containers {:B    {:parent (.-lastElementChild b)}
+                    :A    {:parent (.-lastElementChild a)}
+                    :root {:parent root}}]
+    (mirror-places/perform! (mirror-places/read-places containers)
+                            {:remove [] :place [{:key "A" :in :B :before nil}
+                                                {:key "B" :in :root :before nil}]}
+                            make-item!)
+    (testing "the node that was inside holds the other"
+      (is (= {:B ["A"] :A [] :root ["B"]} (:places (mirror-places/read-places containers)))))))
+
+(deftest perform-refuses-a-key-inside-its-own-node-and-writes-nothing
+  (let [a          (branch! "A" [])
+        root       (mounted! (doto (element! "ul") (.append a)))
+        containers {:A {:parent (.-lastElementChild a)} :root {:parent root}}
+        reading    (mirror-places/read-places containers)]
+    (is (thrown-with-msg? js/Error #"inside its own node"
+                          (mirror-places/perform! reading
+                                                  {:remove [] :place [{:key "A" :in :A :before nil}]}
+                                                  make-item!)))
+    (testing "the page is as it was"
+      (is (= {:A [] :root ["A"]} (:places (mirror-places/read-places containers)))))))
