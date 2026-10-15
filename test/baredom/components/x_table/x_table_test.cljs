@@ -472,3 +472,16 @@
 
     ;; Should fire exactly once, not twice
     (is (= 1 (count @events)))))
+
+;; ── a moved row ──────────────────────────────────────────────────────────────
+(deftest moved-row-restripes-test
+  (let [^js table (append! (make-table {:columns "1" :striped true}))
+        rows      (vec (repeatedly 3 make-row))
+        [^js row1 ^js row2 ^js row3] rows]
+    (doseq [^js r rows]
+      (.appendChild table r))
+    (.moveBefore table row3 row1)
+    ;; Order is now row3, row1, row2: only the second row is even.
+    (is (not (.hasAttribute row3 "data-stripe")))
+    (is (= "even" (.getAttribute row1 "data-stripe")))
+    (is (not (.hasAttribute row2 "data-stripe")))))

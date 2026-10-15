@@ -144,6 +144,20 @@
     (is (= 1 (count @cancelled)))
     (is (= model/reason-escape (.-reason (first @cancelled))))))
 
+(deftest a-drag-survives-a-move-and-ends-cleanly-test
+  (let [^js el     (append! (make-el))
+        ^js parent (append! (.createElement js/document "div"))
+        cancelled  (collect! el model/event-drag-cancel)]
+    (press! el)
+    (.moveBefore parent el nil)
+    (testing "the drag goes on after the move"
+      (is (.hasAttribute el "data-dragging")))
+    (escape!)
+    (testing "Escape still ends it once"
+      (is (not (.hasAttribute el "data-dragging")))
+      (is (= 1 (count @cancelled))))
+    (.remove parent)))
+
 (deftest disabled-panel-does-not-arm-test
   (let [^js el  (append! (make-el))
         _       (.setAttribute el model/attr-disabled "")

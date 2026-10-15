@@ -119,6 +119,7 @@ if (_api) {
       }
       case "lifecycle/connected":
       case "lifecycle/disconnected":
+      case "lifecycle/moved":
         break;
       case "lifecycle/attribute-changed": {
         const ov: string | null = r.oldValue;

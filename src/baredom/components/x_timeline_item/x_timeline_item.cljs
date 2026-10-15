@@ -464,6 +464,12 @@
     (du/setv! el k-entered nil)
     (dispatch-disconnected! el m)))
 
+(defn- moved!
+  "Disconnects and connects `el` again, so the listeners of its events hear of the move."
+  [^js el]
+  (disconnected! el)
+  (connected! el))
+
 (defn- attribute-changed! [^js el attr-name old-val new-val]
   (when (not= old-val new-val)
     (if (and (= attr-name model/data-attr-position)
@@ -481,5 +487,6 @@
     {:observed-attributes    model/observed-attributes
      :connected-fn           connected!
      :disconnected-fn        disconnected!
+     :moved-fn               moved!
      :attribute-changed-fn   attribute-changed!
      :setup-prototype-fn     install-property-accessors!}))

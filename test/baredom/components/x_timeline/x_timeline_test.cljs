@@ -367,3 +367,19 @@
                                             :composed   true
                                             :cancelable true}))
       (is (= 1 @fire-count)))))
+
+;; ── A moved item ──────────────────────────────────────────────────────────────
+
+(deftest moved-item-reindexes-test
+  (testing "an item moved to the front takes index 0 and the old first item is last"
+    (let [^js tl    (make-timeline)
+          ^js item0 (make-item)
+          ^js item1 (make-item)]
+      (.appendChild tl item0)
+      (.appendChild tl item1)
+      (append! tl)
+      (.moveBefore tl item1 item0)
+      (is (= "0" (.getAttribute item1 "data-index")))
+      (is (= "1" (.getAttribute item0 "data-index")))
+      (is (not (.hasAttribute item1 "data-last")))
+      (is (.hasAttribute item0 "data-last")))))

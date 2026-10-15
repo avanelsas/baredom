@@ -292,6 +292,10 @@ export interface TraceRecordLifecycleDisconnected extends TraceRecordBase {
   type: \"lifecycle/disconnected\";
 }
 
+export interface TraceRecordLifecycleMoved extends TraceRecordBase {
+  type: \"lifecycle/moved\";
+}
+
 export interface TraceRecordLifecycleAttributeChanged extends TraceRecordBase {
   type: \"lifecycle/attribute-changed\";
   attribute: string;
@@ -310,6 +314,7 @@ export type TraceRecord =
   | TraceRecordAttributeRemoved
   | TraceRecordLifecycleConnected
   | TraceRecordLifecycleDisconnected
+  | TraceRecordLifecycleMoved
   | TraceRecordLifecycleAttributeChanged;
 
 /**
@@ -557,6 +562,7 @@ declare global {
                       "  TraceRecordAttributeRemoved,\n"
                       "  TraceRecordLifecycleConnected,\n"
                       "  TraceRecordLifecycleDisconnected,\n"
+                      "  TraceRecordLifecycleMoved,\n"
                       "  TraceRecordLifecycleAttributeChanged,\n"
                       "  TraceComponentInfo,\n"
                       "  TraceEnvelope,\n"

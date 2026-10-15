@@ -26,9 +26,21 @@ Components are registered via `baredom.utils.component/register!`, which creates
      :attribute-changed-fn   attribute-changed!
      ;; Optional:
      :disconnected-fn        disconnected!
+     :moved-fn               moved!
      :form-associated?       true
      :setup-prototype-fn     install-property-accessors!}))
 ```
+
+## Moves
+
+`component/register!` installs `connectedMoveCallback` on every component. A move with
+`moveBefore` keeps the element connected, so it calls neither `connected!` nor `disconnected!`.
+Its state, listeners and open overlays stay as they were. A remove and an insert still call both.
+
+A component that reads its parent gives `:moved-fn`, called after such a move. `x-i18n` joins
+the provider around it now. `x-radio` joins the group of its new form. A component whose parent
+listens to its connect and disconnect events disconnects and connects again in `:moved-fn`, as
+`x-table-row` does.
 
 ## Form-associated elements
 

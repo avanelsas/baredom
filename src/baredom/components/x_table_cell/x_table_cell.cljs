@@ -360,6 +360,12 @@
   (remove-listeners! el)
   (dispatch-disconnected! el))
 
+(defn- moved!
+  "Disconnects and connects `el` again, so the listeners of its events hear of the move."
+  [^js el]
+  (disconnected! el)
+  (connected! el))
+
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (update-from-attrs! el)))
@@ -371,5 +377,6 @@
     {:observed-attributes    model/observed-attributes
      :connected-fn           connected!
      :disconnected-fn        disconnected!
+     :moved-fn               moved!
      :attribute-changed-fn   attribute-changed!
      :setup-prototype-fn     install-property-accessors!}))

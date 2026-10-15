@@ -142,7 +142,7 @@
         (gobj/set "newValue"  (:new-value payload)))
 
       ;; Lifecycle events that have no type-specific fields:
-      (:lifecycle/connected :lifecycle/disconnected) r
+      (:lifecycle/connected :lifecycle/disconnected :lifecycle/moved) r
 
       ;; Anything else: the record carries its `type` string for the
       ;; consumer to inspect but no type-specific fields. The recorder
@@ -397,12 +397,13 @@
 
 (def event-type-categories
   "Map of UI category keyword → set of record-type strings the dock groups
-   under it. The dock filter uses categories rather than the 9 raw subtypes
+   under it. The dock filter uses categories rather than the raw subtypes
    so the checkbox row stays scannable."
   {:events    #{"event/dispatch" "event/dispatch-cancelable" "event/dispatch-document"}
    :state     #{"state/instance-field-set"}
    :dom       #{"dom/attribute-set" "dom/attribute-removed"}
-   :lifecycle #{"lifecycle/connected" "lifecycle/disconnected" "lifecycle/attribute-changed"}})
+   :lifecycle #{"lifecycle/connected" "lifecycle/disconnected" "lifecycle/moved"
+                "lifecycle/attribute-changed"}})
 
 (def all-categories
   "All category keywords in stable display order."
@@ -549,6 +550,7 @@
 
     "lifecycle/connected"      "connected"
     "lifecycle/disconnected"   "disconnected"
+    "lifecycle/moved"          "moved"
     "lifecycle/attribute-changed"
     (str (.-attribute r) ": " (pr-str (.-oldValue r)) " → " (pr-str (.-newValue r)))
 

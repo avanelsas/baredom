@@ -72,9 +72,17 @@ for file in "$DIST_DIR"/*.js; do
   printf "%-40s %8s B %8s B %s\n" "$name" "$raw" "$gz" "$status"
 done
 
+# The externs do not name connectedMoveCallback, so a missing ^js hint lets the release build
+# rename it and every move connects again.
+if ! grep -q "connectedMoveCallback" "$DIST_DIR/base.js"; then
+  echo ""
+  echo "FAIL: base.js has no connectedMoveCallback. The release build renamed it."
+  FAILED=1
+fi
+
 echo ""
 if [ "$FAILED" -eq 1 ]; then
-  echo "FAIL: One or more modules exceed their size budget."
+  echo "FAIL: See above."
   exit 1
 else
   echo "All modules within budget."

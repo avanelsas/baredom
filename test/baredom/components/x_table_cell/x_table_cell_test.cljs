@@ -415,3 +415,16 @@
           "[part=cell] should fill the host height so border-bottom aligns"))
 
     (.remove container)))
+
+;; ── A moved cell ─────────────────────────────────────────────────────────────
+(deftest moved-cell-sends-both-events-test
+  (let [events     (atom [])
+        ^js el     (append! (make-el))
+        ^js parent (append! (.createElement js/document "div"))]
+    (.addEventListener js/document model/event-disconnected
+                       (fn [^js _e] (swap! events conj :disconnected)))
+    (.addEventListener js/document model/event-connected
+                       (fn [^js _e] (swap! events conj :connected)))
+    (.moveBefore parent el nil)
+    (is (= [:disconnected :connected] @events))
+    (.remove parent)))

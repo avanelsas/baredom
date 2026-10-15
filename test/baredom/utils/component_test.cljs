@@ -42,11 +42,34 @@
                       :attribute-changed-fn record-disabled-change!
                       :form-associated?     true})
 
+(def ^:private move-tag "x-move-probe")
+
+(def ^:private lifecycle (atom []))
+
+(defn- note! [step _el]
+  (swap! lifecycle conj step))
+
+(component/register! move-tag
+                     {:observed-attributes  #js []
+                      :connected-fn         (partial note! :connected)
+                      :disconnected-fn      (partial note! :disconnected)
+                      :moved-fn             (partial note! :moved)
+                      :attribute-changed-fn identity})
+
+(def ^:private quiet-tag "x-quiet-move-probe")
+
+(component/register! quiet-tag
+                     {:observed-attributes  #js []
+                      :connected-fn         (partial note! :connected)
+                      :disconnected-fn      (partial note! :disconnected)
+                      :attribute-changed-fn identity})
+
 (x-progress/init!)
 
 (defn- cleanup! []
   (reset! calls [])
   (reset! disabled-changes [])
+  (reset! lifecycle [])
   (reset! component/lifecycle-hook nil)
   (run! (fn [^js node] (.remove node))
         (.querySelectorAll js/document (str probe-tag "," progress-model/tag-name)))
@@ -192,3 +215,37 @@
       (is (= [] @during)))
     (testing "each change arrives after the work"
       (is (= [["a" "1" "2"] ["b" "1" "2"]] @calls)))))
+
+(defn- move!
+  "Moves `el` to the end of `parent` with moveBefore, so it stays connected."
+  [^js parent ^js el]
+  (.moveBefore parent el nil))
+
+(defn- reinsert! [^js parent ^js el]
+  (.insertBefore parent el nil))
+
+(defn- moved-steps
+  "The lifecycle steps of a `tag` element when `put!` takes it to a second parent."
+  [tag put!]
+  (let [el     (elements/in-body! tag {})
+        parent (elements/in-body! "div" {})]
+    (reset! lifecycle [])
+    (put! parent el)
+    @lifecycle))
+
+(deftest a-moved-element-runs-its-moved-fn-only
+  (is (= [:moved] (moved-steps move-tag move!))))
+
+(deftest a-moved-element-without-a-moved-fn-runs-nothing
+  (is (= [] (moved-steps quiet-tag move!))))
+
+(deftest an-element-taken-out-and-put-back-disconnects-and-connects
+  (is (= [:disconnected :connected] (moved-steps move-tag reinsert!))))
+
+(deftest a-move-leaves-a-record-of-the-move
+  (let [records (atom [])
+        el      (elements/in-body! quiet-tag {})
+        parent  (elements/in-body! "div" {})]
+    (reset! component/lifecycle-hook (partial swap! records conj))
+    (move! parent el)
+    (is (= [:lifecycle/moved] (mapv :type @records)))))

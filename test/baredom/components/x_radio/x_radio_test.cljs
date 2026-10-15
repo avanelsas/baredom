@@ -435,3 +435,31 @@
          (is (= 1 @count) "event should fire exactly once after reconnect")
          (done))
        0))))
+
+;; ---------------------------------------------------------------------------
+;; A move to another form
+;; ---------------------------------------------------------------------------
+
+(defn- ^js radio-in! [^js form name-val]
+  (let [el (make-el)]
+    (.setAttribute el model/attr-name name-val)
+    (.appendChild form el)
+    el))
+
+(defn- ^js form! []
+  (append! (.createElement js/document "form")))
+
+(defn- tab-index [^js el]
+  (.-tabIndex (shadow-part el "[part=control]")))
+
+(deftest moved-to-another-form-joins-its-group-test
+  (let [^js from         (form!)
+        ^js to           (form!)
+        ^js checked      (radio-in! from "g")
+        ^js first-there  (radio-in! to "g")
+        ^js second-there (radio-in! to "g")]
+    (.setAttribute checked model/attr-checked "")
+    (.moveBefore to checked nil)
+    (is (= 0 (tab-index checked)) "the checked radio is the tab stop of its new group")
+    (is (= -1 (tab-index first-there)) "the first radio there is no longer the tab stop")
+    (is (= -1 (tab-index second-there)))))
