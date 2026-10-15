@@ -746,11 +746,10 @@
       (du/setv! el k-refs refs))
 
     ;; ResizeObserver — viewport-width is in the model, so the change-guard
-    ;; correctly fires a rerender on every resize.
+    ;; correctly fires a rerender on every resize. connected! starts it.
     (let [^js ro (js/ResizeObserver.
                   (fn on-resize [_]
                     (update-from-attrs! el)))]
-      (.observe ro container)
       (gobj/set (du/getv el k-refs) "ro" ro))
 
     ;; Keyboard navigation
@@ -758,16 +757,20 @@
 
 ;; ---- Lifecycle ----
 
+(defn- observe-resize!
+  "Starts the resize observer of `el` on its container."
+  [^js el]
+  (let [^js refs (du/getv el k-refs)]
+    (.observe (gobj/get refs "ro") (gobj/get refs "container"))))
+
 (defn- connected! [^js el]
   (when-not (du/getv el k-refs)
     (make-shadow! el))
+  (observe-resize! el)
   (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
-  (let [^js refs (du/getv el k-refs)]
-    (when refs
-      (let [^js ro (gobj/get refs "ro")]
-        (when ro (.disconnect ro))))))
+  (.disconnect (gobj/get (du/getv el k-refs) "ro")))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)

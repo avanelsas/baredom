@@ -285,3 +285,24 @@
                       "Palette base colour differs after the variant change")
                   (done))))))
         100))))
+
+;; ── Reconnect ───────────────────────────────────────────────────────────────
+
+(deftest reconnected-button-follows-a-resize-test
+  (async done
+    (let [^js el (make-el)]
+      (set! (.. el -style -display) "block")
+      (set! (.. el -style -width) "120px")
+      (append! el)
+      (.remove el)
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (let [before (.-width (shadow-canvas el))]
+           (set! (.. el -style -width) "320px")
+           (js/setTimeout
+            (fn []
+              (is (< before (.-width (shadow-canvas el))) "the canvas grows with the element")
+              (done))
+            100)))
+       100))))

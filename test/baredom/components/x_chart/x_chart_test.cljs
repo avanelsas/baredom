@@ -301,3 +301,24 @@
         (.dispatchEvent container
                         (js/KeyboardEvent. "keydown"
                                            #js {:key "Enter" :bubbles true}))))))
+
+;; ---- Reconnect ----
+
+(defn- svg-width [^js el]
+  (parse-long (.getAttribute (shadow-part el "svg") "width")))
+
+(deftest reconnected-chart-follows-a-resize-test
+  (async done
+    (let [^js el (make-el)]
+      (set! (.. el -style -display) "block")
+      (set! (.. el -style -width) "300px")
+      (append! el)
+      (.remove el)
+      (append! el)
+      (let [before (svg-width el)]
+        (set! (.. el -style -width) "500px")
+        (js/setTimeout
+         (fn []
+           (is (< before (svg-width el)) "the drawing grows with the element")
+           (done))
+         100)))))
