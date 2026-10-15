@@ -100,6 +100,13 @@
 (defn- disconnected! [^js el]
   (detach-provider! el))
 
+(defn- moved!
+  "Leaves the old provider of `el` and shows the text of the provider around it now."
+  [^js el]
+  (detach-provider! el)
+  (attach-provider! el)
+  (on-provider-change! el))
+
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (when (du/getv el k-refs)
@@ -124,5 +131,6 @@
     {:observed-attributes  model/observed-attributes
      :connected-fn         connected!
      :disconnected-fn      disconnected!
+     :moved-fn             moved!
      :attribute-changed-fn attribute-changed!
      :setup-prototype-fn   install-property-accessors!}))

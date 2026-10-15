@@ -611,6 +611,12 @@
     (when (and (some? target-sel) (nil? scroll-tgt))
       (js/requestAnimationFrame (fn [_] (retry-scroll-target! el))))))
 
+(defn- retarget-scroll!
+  "Resolves the scroll target of `el` again and moves its scroll listener there."
+  [^js el]
+  (detach-scroll-listener! el)
+  (setup-scroll-target! el))
+
 ;; ── Listener management ────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (let [scroll-h (fn [_e] (on-scroll el))]
@@ -674,8 +680,7 @@
     (apply-theme! el (:theme new-m)))
   ;; Re-resolve scroll target if target attribute changed
   (when (or (nil? old-m) (not= (:target new-m) (:target old-m)))
-    (detach-scroll-listener! el)
-    (setup-scroll-target! el))
+    (retarget-scroll! el))
   ;; Re-render
   (let [w (du/getv el k-width)
         h (du/getv el k-height)]
@@ -750,5 +755,6 @@
     {:observed-attributes    model/observed-attributes
      :connected-fn           connected!
      :disconnected-fn        disconnected!
+     :moved-fn               retarget-scroll!
      :attribute-changed-fn   attribute-changed!
      :setup-prototype-fn     install-property-accessors!}))

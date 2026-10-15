@@ -279,3 +279,36 @@
             (done))
           300))
        200))))
+
+;; ── A move into a scrollable container ──────────────────────────────────────
+
+(defn- ^js scroll-box! []
+  (let [^js box   (.createElement js/document "div")
+        ^js inner (.createElement js/document "div")]
+    (set! (.. box -style -cssText) "overflow:auto;height:100px;width:200px;")
+    (set! (.. inner -style -height) "500px")
+    (.appendChild box inner)
+    (append! box)))
+
+(deftest moved-into-a-scroll-box-follows-it-test
+  (async done
+    (let [^js box (scroll-box!)
+          ^js el  (make-el)
+          events  (atom 0)]
+      (set! (.. el -style -width) "200px")
+      (set! (.. el -style -height) "100px")
+      (append! el)
+      (.moveBefore box el (.-firstChild box))
+      (.addEventListener el model/event-progress (fn [_] (swap! events inc)))
+      (js/setTimeout
+       (fn []
+         (reset! events 0)
+         (set! (.-scrollTop box) 100)
+         (.dispatchEvent box (js/Event. "scroll"))
+         (js/setTimeout
+          (fn []
+            (is (pos? @events) "a scroll of the box moves the fill")
+            (.remove box)
+            (done))
+          300))
+       500))))

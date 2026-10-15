@@ -316,6 +316,7 @@ function describe(r: TraceRecord): string {
       return `${r.tag} [${r.attribute}]`;
     case "lifecycle/connected":
     case "lifecycle/disconnected":
+    case "lifecycle/moved":
       return `${r.tag} ${r.type}`;
     case "lifecycle/attribute-changed":
       return `${r.tag} attr ${r.attribute}`;

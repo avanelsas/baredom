@@ -361,6 +361,7 @@
     {:observed-attributes    model/observed-attributes
      :connected-fn           connected!
      :disconnected-fn        disconnected!
+     :moved-fn               sync-tabindexes!
      :attribute-changed-fn   attribute-changed!
      :form-associated?       true
      :form-reset-fn          form-reset!

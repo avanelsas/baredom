@@ -193,6 +193,14 @@
                  0 0)]
       (is (= "lifecycle/disconnected" (.-type r))))))
 
+(deftest make-record-lifecycle-moved-test
+  (testing "lifecycle/moved has only common fields"
+    (let [^js r (model/make-record
+                 {:type :lifecycle/moved :tag "x-button"}
+                 0 0)]
+      (is (= "lifecycle/moved" (.-type r)))
+      (is (undefined?          (.-attribute r))))))
+
 (deftest make-record-lifecycle-attribute-changed-test
   (testing "lifecycle/attribute-changed has attribute, oldValue, newValue"
     (let [^js r (model/make-record
@@ -331,6 +339,7 @@
 (deftest categorize-type-lifecycle-test
   (is (= :lifecycle (model/categorize-type "lifecycle/connected")))
   (is (= :lifecycle (model/categorize-type "lifecycle/disconnected")))
+  (is (= :lifecycle (model/categorize-type "lifecycle/moved")))
   (is (= :lifecycle (model/categorize-type "lifecycle/attribute-changed"))))
 
 (deftest categorize-type-other-test
@@ -610,6 +619,10 @@
 (deftest payload-preview-lifecycle-disconnected-test
   (is (= "disconnected"
          (preview-of {:type :lifecycle/disconnected :tag "x-button"}))))
+
+(deftest payload-preview-lifecycle-moved-test
+  (is (= "moved"
+         (preview-of {:type :lifecycle/moved :tag "x-button"}))))
 
 (deftest payload-preview-lifecycle-attr-changed-test
   (let [p (preview-of {:type :lifecycle/attribute-changed :tag "x-button"

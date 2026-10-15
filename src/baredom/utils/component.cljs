@@ -62,7 +62,7 @@
 
 (defonce ^{:doc "Dev-only extension point for dev/x-trace-history. Holds a
                  1-arg function called on each lifecycle callback (connected,
-                 disconnected, attribute-changed). nil by default — each
+                 disconnected, moved, attribute-changed). nil by default — each
                  callback site is a single atom-deref + nil check when off."}
   lifecycle-hook (atom nil))
 
@@ -92,6 +92,8 @@
 
    Optional keys:
      :disconnected-fn      — (fn [el] ...) called on disconnectedCallback
+     :moved-fn             — (fn [el] ...) called on connectedMoveCallback. A move with
+                             moveBefore calls neither connected-fn nor disconnected-fn.
      :form-associated?     true to mark as form-associated element. Its formDisabledCallback
                            arrives as a change of its disabled attribute, with a lifecycle
                            record of that change. The old and new
@@ -108,13 +110,16 @@
   [{:keys [observed-attributes
            connected-fn
            disconnected-fn
+           moved-fn
            attribute-changed-fn
            form-associated?
            form-reset-fn
            setup-prototype-fn
            internal?]}]
   (let [klass (js* "(class extends HTMLElement {})")
-        proto (.-prototype klass)
+        ;; ^js keeps connectedMoveCallback, which the externs do not name, through the
+        ;; release build.
+        ^js proto (.-prototype klass)
         fire! (if internal? (fn [_]) fire-lifecycle-hook!)]
 
     (set! (.-observedAttributes klass) observed-attributes)
@@ -134,6 +139,13 @@
               (this-as ^js this
                 (fire! {:type :lifecycle/disconnected :el this})
                 (disconnected-fn this)))))
+
+    (set! (.-connectedMoveCallback proto)
+          (fn []
+            (this-as ^js this
+              (fire! {:type :lifecycle/moved :el this})
+              (when moved-fn
+                (moved-fn this)))))
 
     (set! (.-attributeChangedCallback proto)
           (fn [n o v]

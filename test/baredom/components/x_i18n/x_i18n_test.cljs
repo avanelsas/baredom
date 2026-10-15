@@ -166,3 +166,27 @@
     (set-translations! prov #js {"nav" #js {"home" "Home"}} nil)
     (du/dispatch! prov provider-model/event-change #js {:locale "en"})
     (is (= "Home" (.-value el)))))
+
+;; ── A move to another provider ──────────────────────────────────────────────
+(defn- ^js provider-saying! [text]
+  (let [^js prov (append! (make-provider))]
+    (set-translations! prov #js {"greeting" text} nil)
+    prov))
+
+(defn- change! [^js prov]
+  (du/dispatch! prov provider-model/event-change #js {:locale "en"}))
+
+(deftest moved-to-another-provider-test
+  (let [^js english (provider-saying! "Hello")
+        ^js dutch   (provider-saying! "Hallo")
+        ^js el      (make-el)]
+    (.setAttribute el "key" "greeting")
+    (.appendChild english el)
+    (.moveBefore dutch el nil)
+    (is (= "Hallo" (.-value el)) "it shows the text of its new provider")
+    (set-translations! english #js {"greeting" "Hi"} nil)
+    (change! english)
+    (is (= "Hallo" (.-value el)) "it no longer follows its old provider")
+    (set-translations! dutch #js {"greeting" "Hoi"} nil)
+    (change! dutch)
+    (is (= "Hoi" (.-value el)) "it follows its new provider")))
