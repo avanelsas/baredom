@@ -100,6 +100,23 @@
     (du/set-attr-to! el "value" nil)
     (is (= 0 (attribute-writes el (fn [] (du/set-attr-to! el "value" nil)))))))
 
+(deftest set-style-to-writes-only-where-the-value-differs-test
+  (let [el (make-el)]
+    (du/set-style-to! el "display" "none")
+    (is (= "none" (.. el -style -display)))
+    (is (= 0 (attribute-writes el (fn [] (du/set-style-to! el "display" "none")))))
+    (is (= 1 (attribute-writes el (fn [] (du/set-style-to! el "display" "")))))
+    (is (= "" (.. el -style -display)))))
+
+(deftest set-bool-attr-to-writes-only-where-the-presence-differs-test
+  (let [el (make-el)]
+    (.setAttribute el "selected" "true")
+    (is (= 0 (attribute-writes el (fn [] (du/set-bool-attr-to! el "selected" true)))))
+    (is (= "true" (.getAttribute el "selected")) "an attribute that stays keeps its value")
+    (is (= 1 (attribute-writes el (fn [] (du/set-bool-attr-to! el "selected" false)))))
+    (is (not (.hasAttribute el "selected")))
+    (is (= 0 (attribute-writes el (fn [] (du/set-bool-attr-to! el "selected" nil)))))))
+
 ;; ── Instance-field access ───────────────────────────────────────────────────
 
 (deftest getv-setv-test

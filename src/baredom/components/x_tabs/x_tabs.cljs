@@ -61,37 +61,17 @@
 
       :else nil)))
 
-(defn- set-tab-selected-if-needed! [^js tab selected?]
-  (let [has-selected? (.hasAttribute tab "selected")]
-    (cond
-      (and selected? (not has-selected?))
-      (du/set-attr! tab "selected" "")
-
-      (and (not selected?) has-selected?)
-      (du/remove-attr! tab "selected")
-
-      :else nil)))
-
-(defn- set-tab-tabindex-if-needed! [^js tab tabindex]
-  (let [current (.getAttribute tab "tabindex")]
-    (when (not= current tabindex)
-      (du/set-attr! tab "tabindex" tabindex))))
-
 (defn- select-tab! [tabs value]
   (doseq [tab tabs]
     (let [selected? (= (tab-value tab) value)]
-      (set-tab-selected-if-needed! tab selected?)
-      (if (and selected? (enabled-tab? tab))
-        (set-tab-tabindex-if-needed! tab "0")
-        (set-tab-tabindex-if-needed! tab "-1")))))
+      (du/set-bool-attr-to! tab "selected" selected?)
+      (du/set-attr-to! tab "tabindex" (if (and selected? (enabled-tab? tab)) "0" "-1")))))
 
 (defn- hide-panel! [^js tab visible?]
   (let [id (.getAttribute tab "controls")]
     (when (and id (not= id ""))
       (when-let [panel (.getElementById js/document id)]
-        (if visible?
-          (du/remove-attr! panel "hidden")
-          (du/set-attr! panel "hidden" ""))))))
+        (du/set-bool-attr-to! panel "hidden" (not visible?))))))
 
 (defn- update-panels! [tabs selected-value]
   (doseq [tab tabs]

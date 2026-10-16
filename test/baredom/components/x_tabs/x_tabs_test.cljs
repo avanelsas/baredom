@@ -1,7 +1,8 @@
 (ns baredom.components.x-tabs.x-tabs-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-tabs.x-tabs :as x]
-            [baredom.components.x-tabs.model :as model]))
+            [baredom.components.x-tabs.model :as model]
+            [baredom.test-writes :as writes]))
 
 (x/init!)
 
@@ -514,4 +515,24 @@
                 "value should NOT change when change-request is cancelled")
             (done))
           50))
+       50))))
+
+;; ── A child change ──────────────────────────────────────────────────────────
+(deftest a-new-tab-writes-nothing-on-the-panels-test
+  (async done
+    (let [^js el (make-el)
+          parts  (setup-tabs-with-panels! el)]
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (let [counts (mapv (fn count-writes [^js node]
+                              (writes/count-attr-writes! node ["hidden" "selected" "tabindex"]))
+                            (vals parts))]
+           (.appendChild el (make-tab "extra" "Extra"))
+           (js/setTimeout
+            (fn []
+              (is (= 0 (reduce + (map deref counts)))
+                  "the panels and the tabs that were there keep their attributes")
+              (done))
+            50)))
        50))))

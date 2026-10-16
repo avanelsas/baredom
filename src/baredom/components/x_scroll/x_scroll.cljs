@@ -283,7 +283,7 @@
   (dotimes [i cnt]
     (let [^js child (aget children i)
           offset    (model/effective-offset i active cnt)]
-      (set! (.. child -style -order) (str offset)))))
+      (du/set-style-to! child "order" (str offset)))))
 
 (defn- position-slides!
   "Position all slides and the track based on the current model."
@@ -313,7 +313,7 @@
         (do
           ;; Reset order on all children
           (dotimes [i cnt]
-            (set! (.. ^js (aget children i) -style -order) ""))
+            (du/set-style-to! (aget children i) "order" ""))
           (let [offset (- (* active (+ size gap)) snap-off)]
             (set-track-transform! track
                                   (if (horizontal? m)
@@ -657,7 +657,7 @@
       (set! (.-disabled prev-btn) (not (model/can-go-prev? m2 cnt)))
       (set! (.-disabled next-btn) (not (model/can-go-next? m2 cnt)))
       (when (pos? cnt)
-        (set! (.-textContent live) (str "Slide " (inc (:active-index m2)) " of " cnt)))
+        (du/set-text-to! live (str "Slide " (inc (:active-index m2)) " of " cnt)))
       (position-slides! el m2))))
 
 (defn- on-indicator-click

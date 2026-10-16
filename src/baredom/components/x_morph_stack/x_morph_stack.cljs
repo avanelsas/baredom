@@ -220,12 +220,8 @@
     (dotimes [i (.-length roots)]
       (let [^js r (aget roots i)
             n (.getAttribute r model/attr-data-state)]
-        (if (= n active-name)
-          (set! (.. r -style -display) "")
-          (set! (.. r -style -display) "none")))))
-  (if active-name
-    (du/set-attr! el model/attr-data-active-state active-name)
-    (du/remove-attr! el model/attr-data-active-state))
+        (du/set-style-to! r "display" (if (= n active-name) "" "none")))))
+  (du/set-attr-to! el model/attr-data-active-state active-name)
   (du/setv! el k-current-state active-name))
 
 (defn- prefers-reduced-motion? []

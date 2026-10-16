@@ -1,7 +1,8 @@
 (ns baredom.components.x-scroll.x-scroll-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-scroll.x-scroll :as x-scroll]
-            [baredom.components.x-scroll.model :as model]))
+            [baredom.components.x-scroll.model :as model]
+            [baredom.test-writes :as writes]))
 
 (x-scroll/init!)
 
@@ -681,3 +682,33 @@
          (done))
        50))))
 
+;; ── A child change ──────────────────────────────────────────────────────────
+(deftest a-new-slide-in-a-loop-writes-nothing-on-the-active-one-test
+  (cljs.test/async done
+    (let [^js el    (make-scroll-with-slides 3)
+          ^js slide (.-firstElementChild el)]
+      (.setAttribute el model/attr-loop "")
+      (js/setTimeout
+       (fn []
+         (let [n (writes/count-attr-writes! slide ["style"])]
+           (add-slides! el 1)
+           (js/setTimeout
+            (fn []
+              (is (= 0 @n) "the active slide keeps its order")
+              (done))
+            50)))
+       50))))
+
+(deftest a-change-that-keeps-the-count-keeps-the-live-text-test
+  (cljs.test/async done
+    (let [^js el (make-scroll-with-slides 3)]
+      (js/setTimeout
+       (fn []
+         (let [n (writes/count-child-changes! (shadow-part el "[part=live]"))]
+           (.appendChild el (.createTextNode js/document " "))
+           (js/setTimeout
+            (fn []
+              (is (= 0 @n) "the live region is not written again")
+              (done))
+            50)))
+       50))))

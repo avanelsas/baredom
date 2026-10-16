@@ -1,7 +1,8 @@
 (ns baredom.components.x-tooltip.x-tooltip-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-tooltip.x-tooltip :as x]
-            [baredom.components.x-tooltip.model     :as model]))
+            [baredom.components.x-tooltip.model     :as model]
+            [baredom.test-writes                    :as writes]))
 
 (x/init!)
 
@@ -276,3 +277,22 @@
     (is (some? id1))
     (is (some? id2))
     (is (not= id1 id2))))
+
+;; ── A child change ──────────────────────────────────────────────────────────
+(deftest a-second-child-writes-nothing-on-the-trigger-test
+  (async done
+    (let [^js el  (make-el)
+          ^js btn (.createElement js/document "button")]
+      (.appendChild el btn)
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (let [n (writes/count-attr-writes! el ["aria-describedby"])]
+           (.appendChild el (.createElement js/document "span"))
+           (js/setTimeout
+            (fn []
+              (is (= 0 @n) "the trigger keeps aria-describedby")
+              (is (some? (.getAttribute btn "aria-describedby")))
+              (done))
+            50)))
+       50))))

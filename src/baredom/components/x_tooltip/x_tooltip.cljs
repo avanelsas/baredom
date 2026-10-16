@@ -313,20 +313,16 @@
 ;; ---------------------------------------------------------------------------
 ;; aria-describedby management
 ;; ---------------------------------------------------------------------------
-(defn- update-trigger-a11y! [^js el]
+(defn- update-trigger-a11y!
+  "Moves aria-describedby to the first slotted element, only when that element changes."
+  [^js el]
   (when-let [refs (du/getv el k-refs)]
-    (let [^js slot     (gobj/get refs "triggerSlot")
-          ^js elements (.assignedElements slot)
-          tid          (du/getv el k-tooltip-id)]
-      ;; Clean up old trigger
-      (when-let [^js old-trigger (du/getv el k-trigger-el)]
-        (du/remove-attr! old-trigger "aria-describedby")
-        (du/setv! el k-trigger-el nil))
-      ;; Set on new trigger
-      (when (pos? (.-length elements))
-        (let [^js trigger (aget elements 0)]
-          (du/set-attr! trigger "aria-describedby" tid)
-          (du/setv! el k-trigger-el trigger))))))
+    (let [^js trigger (first (.assignedElements (gobj/get refs "triggerSlot")))
+          ^js old     (du/getv el k-trigger-el)]
+      (when-not (identical? trigger old)
+        (some-> old (du/remove-attr! "aria-describedby"))
+        (some-> trigger (du/set-attr! "aria-describedby" (du/getv el k-tooltip-id)))
+        (du/setv! el k-trigger-el trigger)))))
 
 (defn- cleanup-trigger-a11y! [^js el]
   (when-let [^js old-trigger (du/getv el k-trigger-el)]

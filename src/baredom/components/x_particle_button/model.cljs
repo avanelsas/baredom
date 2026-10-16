@@ -171,6 +171,36 @@
              (mu/non-empty-string? label))
     label))
 
+(defn- flag [b] (if b "true" "false"))
+
+(defn button-attrs
+  "The attributes of the inner button for the view `v`, as a map. A nil value removes one."
+  [{:keys [disabled loading pressed variant size mode hover? active? focus-visible?
+           has-icon-start? has-icon-end? has-spinner?] :as v}]
+  {"type"                (:type v)
+   "disabled"            (when (or disabled loading) "")
+   "aria-busy"           (aria-busy v)
+   "aria-pressed"        (when pressed "true")
+   "aria-label"          (aria-label v)
+   "data-variant"        variant
+   "data-size"           size
+   "data-mode"           mode
+   "data-loading"        (flag loading)
+   "data-disabled"       (flag disabled)
+   "data-hover"          (flag hover?)
+   "data-active"         (flag active?)
+   "data-focus-visible"  (flag focus-visible?)
+   "data-has-icon-start" (flag has-icon-start?)
+   "data-has-icon-end"   (flag has-icon-end?)
+   "data-has-spinner"    (flag has-spinner?)})
+
+(defn host-attrs
+  "The attributes of the host for the view `v`, as a map."
+  [{:keys [variant size mode]}]
+  {"data-variant" variant
+   "data-size"    size
+   "data-mode"    mode})
+
 ;; --- Particle type selection ---
 (defn pick-particle-type
   "Returns type-dust, type-fragment, or type-streak based on mode ratios."
