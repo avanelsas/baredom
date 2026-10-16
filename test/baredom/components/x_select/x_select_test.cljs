@@ -746,3 +746,50 @@
          (is (= "Not allowed" (.-validationMessage el)))
          (done))
        0))))
+
+;; ---------------------------------------------------------------------------
+;; Keyed options
+;; ---------------------------------------------------------------------------
+
+(defn- add-option! [^js el value]
+  (let [^js opt (.createElement js/document "option")]
+    (.setAttribute opt "value" value)
+    (set! (.-textContent opt) value)
+    (.appendChild el opt)
+    opt))
+
+(deftest an-option-whose-source-stays-keeps-its-copy-test
+  (async done
+    (let [el (append! (make-el))]
+      (add-option! el "a")
+      (add-option! el "b")
+      (js/setTimeout
+       (fn []
+         (let [^js sel (shadow-part el "[part=select]")
+               copy-a  (aget (.-options sel) 1)]
+           (add-option! el "c")
+           (js/setTimeout
+            (fn []
+              (is (identical? copy-a (aget (.-options sel) 1)))
+              (is (= 4 (.-length (.-options sel))) "the placeholder and three copies")
+              (done))
+            0)))
+       0))))
+
+(deftest adding-an-option-keeps-the-choice-of-the-user-test
+  (async done
+    (let [el (append! (make-el))]
+      (.setAttribute (add-option! el "a") "selected" "")
+      (add-option! el "b")
+      (js/setTimeout
+       (fn []
+         (let [^js sel (shadow-part el "[part=select]")]
+           (set! (.-value sel) "b")
+           (.dispatchEvent sel (js/Event. "change" #js {:bubbles true}))
+           (add-option! el "c")
+           (js/setTimeout
+            (fn []
+              (is (= "b" (.-value sel)))
+              (done))
+            0)))
+       0))))

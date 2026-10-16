@@ -110,3 +110,7 @@
 (deftest row-select-detail-nil-index-test
   (let [d (model/row-select-detail nil false "multi")]
     (is (= 0 (:rowIndex d)))))
+
+;; ── row-stripe ───────────────────────────────────────────────────────────────
+(deftest row-stripe-test
+  (is (= [nil "even" nil "even"] (mapv model/row-stripe (range 4)))))

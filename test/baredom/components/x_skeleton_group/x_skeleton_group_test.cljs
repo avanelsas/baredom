@@ -1,7 +1,8 @@
 (ns baredom.components.x-skeleton-group.x-skeleton-group-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-skeleton-group.x-skeleton-group :as x]
-            [baredom.components.x-skeleton-group.model            :as model]))
+            [baredom.components.x-skeleton-group.model            :as model]
+            [baredom.test-writes                                  :as writes]))
 
 (x/init!)
 
@@ -187,3 +188,43 @@
     (.setAttribute el model/attr-preset "unknown")
     (let [^js preset-el (shadow-part el "[part=preset-container]")]
       (is (zero? (.-childElementCount preset-el))))))
+
+;; ── A child change ──────────────────────────────────────────────────────────
+(defn- delay-of [^js node]
+  (.getPropertyValue (.-style node) "--x-skeleton-delay"))
+
+(deftest a-new-skeleton-keeps-the-others-in-phase-test
+  (async done
+    (let [^js el    (make-el)
+          ^js skeleton (.createElement js/document "x-skeleton")]
+      (.appendChild el skeleton)
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (let [host-delay (delay-of el)
+               n          (writes/count-attr-writes! skeleton ["animation" "style"])
+               ^js added  (.createElement js/document "x-skeleton")]
+           (.appendChild el added)
+           (js/setTimeout
+            (fn []
+              (is (= host-delay (delay-of el)) "the host delay stays the same")
+              (is (= 0 @n) "the first skeleton is not written")
+              (is (not= "" (delay-of added)) "the new skeleton gets a delay of its own")
+              (done))
+            50)))
+       50))))
+
+(deftest a-new-animation-puts-the-slotted-skeletons-in-phase-again-test
+  (async done
+    (let [^js el       (make-el)
+          ^js skeleton (.createElement js/document "x-skeleton")]
+      (.appendChild el skeleton)
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (let [before (delay-of skeleton)]
+           (.setAttribute el model/attr-animation "wave")
+           (is (= "wave" (.getAttribute skeleton "animation")))
+           (is (not= before (delay-of skeleton)) "the skeleton gets the delay of its new animation")
+           (done)))
+       50))))

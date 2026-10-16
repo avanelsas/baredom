@@ -410,3 +410,83 @@
              (is (= 0 (.-length dates))))
            (done))
          100)))))
+
+;; ── A child change ──────────────────────────────────────────────────────────
+(defn- ^js tall-timeline
+  "A visible timeline whose first entry covers the trigger line, all with dates."
+  []
+  (let [^js el (create-timeline {:entries [{:id "e1" :data-date "2020"}
+                                           {:id "e2" :data-date "2021"}]})]
+    (set! (.. el -firstElementChild -style -height) "3000px")
+    el))
+
+(defn- count-entry-enters!
+  "An atom that counts the entry-enter events of `el` by entry id."
+  [^js el]
+  (let [enters (atom {})]
+    (.addEventListener el model/event-entry-enter
+                       (fn count-enter [^js e]
+                         (swap! enters update (.. e -detail -id) (fnil inc 0))))
+    enters))
+
+(defn- append-entry! [^js el id]
+  (let [^js child (.createElement js/document "div")]
+    (.setAttribute child "id" id)
+    (.setAttribute child "data-date" "2022")
+    (.appendChild el child)))
+
+(defn- markers [^js el]
+  (vec (array-seq (.querySelectorAll (.-shadowRoot el) ".tl-marker"))))
+
+(deftest an-appended-entry-keeps-the-markers-and-the-active-one-test
+  (async done
+    (let [^js el (tall-timeline)
+          enters (count-entry-enters! el)]
+      (js/setTimeout
+       (fn []
+         (is (= {"e1" 1} @enters) "the first entry enters once")
+         (let [[first-marker second-marker] (markers el)]
+           (is (.hasAttribute first-marker "data-active"))
+           (append-entry! el "e3")
+           (js/setTimeout
+            (fn []
+              (let [after (markers el)]
+                (is (= 3 (count after)))
+                (is (identical? first-marker (first after)))
+                (is (identical? second-marker (second after)))
+                (is (.hasAttribute ^js (first after) "data-active")))
+              (is (= {"e1" 1} @enters))
+              (done))
+            300)))
+       300))))
+
+(deftest a-resize-does-not-enter-the-current-entry-again-test
+  (async done
+    (let [^js el (tall-timeline)
+          enters (count-entry-enters! el)]
+      (js/setTimeout
+       (fn []
+         (.dispatchEvent js/window (js/Event. "resize"))
+         (js/setTimeout
+          (fn []
+            (is (= {"e1" 1} @enters))
+            (done))
+          300))
+       300))))
+
+(deftest an-entry-inserted-before-the-active-one-moves-the-mark-with-it-test
+  (async done
+    (let [^js el (tall-timeline)]
+      (js/setTimeout
+       (fn []
+         (let [^js child (.createElement js/document "div")]
+           (.setAttribute child "id" "e0")
+           (.insertBefore el child (.-firstElementChild el))
+           (.then (js/Promise.resolve)
+                  (fn after-slotchange []
+                    (let [[first-marker second-marker] (markers el)]
+                      (is (not (.hasAttribute ^js first-marker "data-active")))
+                      (is (.hasAttribute ^js second-marker "data-active")))
+                    (is (= "1" (.getAttribute el "data-active-index")))
+                    (done)))))
+       300))))

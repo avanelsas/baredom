@@ -89,3 +89,8 @@
     (is (= "" (:error m)))
     (is (false? (:has-error? m))
         "an empty-string error is treated as no error")))
+
+(deftest normalize-option-keys-test
+  (is (= ["<option>a</option>|0" "<option>a</option>|1"]
+         (:option-keys
+          (model/normalize {:option-htmls ["<option>a</option>" "<option>a</option>"]})))))

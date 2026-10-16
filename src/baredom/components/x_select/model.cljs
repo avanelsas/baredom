@@ -1,4 +1,5 @@
-(ns baredom.components.x-select.model)
+(ns baredom.components.x-select.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-select")
 
@@ -63,7 +64,7 @@
 (defn normalize
   "Derives a complete view-model map from raw attribute presence/values."
   [{:keys [disabled-present? required-present? size-raw placeholder-raw
-           value-raw name-raw error-raw]}]
+           value-raw name-raw error-raw option-htmls]}]
   {:disabled?   (boolean disabled-present?)
    :required?   (boolean required-present?)
    :size        (normalize-size size-raw)
@@ -71,7 +72,8 @@
    :value       value-raw
    :name        name-raw
    :error       (or error-raw "")
-   :has-error?  (and (string? error-raw) (not= error-raw ""))})
+   :has-error?  (and (string? error-raw) (not= error-raw ""))
+   :option-keys (mu/unique-keys option-htmls)})
 
 (def method-api
   {:checkValidity  {:args [] :returns 'boolean}

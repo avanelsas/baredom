@@ -309,7 +309,7 @@
   ;; attributeChangedCallback, which is observed. The k-self-pos flag
   ;; suppresses the resulting feedback loop — see attribute-changed!.
   (du/setv! el k-self-pos true)
-  (du/set-attr! el "data-position" (name effective-position))
+  (du/set-attr-to! el model/data-attr-position (name effective-position))
   (du/setv! el k-self-pos nil)
   (case connector
     :dashed (du/set-attr! el "data-connector" "dashed")

@@ -15,8 +15,9 @@
 (def ^:private k-raf          "__xScrollTimelineRAF")
 (def ^:private k-visible      "__xScrollTimelineVisible")
 (def ^:private k-active-index "__xScrollTimelineActiveIndex")
+(def ^:private k-active-el    "__xScrollTimelineActiveEl")
 (def ^:private k-last-prog    "__xScrollTimelineLastProg")
-(def ^:private k-entry-states "__xScrollTimelineEntryStates")
+(def ^:private k-entered      "__xScrollTimelineEntered")
 (def ^:private k-marker-els       "__xScrollTimelineMarkerEls")
 (def ^:private k-date-els         "__xScrollTimelineDateEls")
 (def ^:private k-autoplay-raf     "__xScrollTimelineAutoplayRAF")
@@ -385,13 +386,11 @@
 
 ;; ── Child attribute management ──────────────────────────────────────────────
 (defn- assign-child-attrs!
-  "Set data-side and data-index on each child based on layout."
+  "Writes data-side and data-index on each child where they differ."
   [^js _el children layout]
-  (dotimes [i (.-length children)]
-    (let [^js child (aget children i)
-          side (model/entry-side layout i)]
-      (du/set-attr! child model/data-side side)
-      (du/set-attr! child model/data-index (str i)))))
+  (doseq [[i ^js child] (map-indexed vector (array-seq children))]
+    (du/set-attr-to! child model/data-side (model/entry-side layout i))
+    (du/set-attr-to! child model/data-index (str i))))
 
 (defn- clean-entry-attrs!
   "Remove component-managed attributes from children."
@@ -404,50 +403,50 @@
         (du/remove-attr! child model/data-index)))))
 
 ;; ── Marker management ───────────────────────────────────────────────────────
-(defn- rebuild-markers!
-  "Create/remove marker elements in shadow DOM to match child count."
-  [^js el children]
-  (let [{:keys [container]} (du/getv el k-refs)
-        ^js container container
-        old-markers (or (du/getv el k-marker-els) #js [])
-        n (.-length children)]
-    ;; Remove old markers
-    (dotimes [i (.-length old-markers)]
-      (let [^js m (aget old-markers i)]
-        (.remove m)))
-    ;; Create new markers
-    (let [markers (make-array n)]
-      (dotimes [i n]
-        (let [m (.createElement js/document "div")]
-          (.add (.-classList m) "tl-marker")
-          (.appendChild container m)
-          (aset markers i m)))
-      (du/setv! el k-marker-els markers))))
+(defn- make-overlay! [^js container tag class-name]
+  (let [^js node (.createElement js/document tag)]
+    (.add (.-classList node) class-name)
+    (.appendChild container node)
+    node))
 
-(defn- rebuild-date-labels!
-  "Create/remove date label elements in shadow DOM."
+(defn- remove-node! [^js node]
+  (.remove node))
+
+(defn- sync-markers!
+  "Keeps one marker per child."
   [^js el children]
   (let [{:keys [container]} (du/getv el k-refs)
-        ^js container container
-        old-dates (or (du/getv el k-date-els) #js [])
-        n (.-length children)]
-    ;; Remove old date labels (some entries may be nil)
-    (dotimes [i (.-length old-dates)]
-      (when-let [^js d (aget old-dates i)]
-        (.remove d)))
-    ;; Create date labels for children with data-date
-    (let [dates (make-array n)]
-      (dotimes [i n]
-        (let [^js child (aget children i)
-              date-text (.getAttribute child model/data-date)]
-          (if (and (string? date-text) (not= date-text ""))
-            (let [d (.createElement js/document "span")]
-              (.add (.-classList d) "tl-date")
-              (set! (.-textContent d) date-text)
-              (.appendChild container d)
-              (aset dates i d))
-            (aset dates i nil))))
-      (du/setv! el k-date-els dates))))
+        n       (.-length children)
+        markers (or (du/getv el k-marker-els) [])
+        kept    (subvec markers 0 (min n (count markers)))]
+    (run! remove-node! (drop n markers))
+    (du/setv! el k-marker-els
+              (into kept (repeatedly (- n (count kept))
+                                     (partial make-overlay! container "div" "tl-marker"))))))
+
+(defn- sync-date-labels!
+  "Keeps a date label for each child with a date and writes its text where it differs."
+  [^js el children]
+  (let [{:keys [container]} (du/getv el k-refs)
+        old (or (du/getv el k-date-els) [])
+        date-label (fn date-label [i ^js child]
+                     (let [text (.getAttribute child model/data-date)
+                           ^js label (get old i)]
+                       (if (and (string? text) (not= text ""))
+                         (doto (or label (make-overlay! container "span" "tl-date"))
+                           (du/set-text-to! text))
+                         (do (some-> label remove-node!) nil))))
+        labels (mapv date-label (range) (array-seq children))]
+    (run! remove-node! (keep identity (drop (count labels) old)))
+    (du/setv! el k-date-els labels)))
+
+(defn- mark-active-overlays!
+  "Writes data-active on the marker and the date label at `idx`, and removes it from the others."
+  [^js el idx]
+  (doseq [overlays [(du/getv el k-marker-els) (du/getv el k-date-els)]
+          [i ^js node] (map-indexed vector overlays)
+          :when node]
+    (du/set-attr-to! node "data-active" (when (= i idx) ""))))
 
 (defn- position-overlays!
   "Reposition markers and date labels to align with child centers."
@@ -466,10 +465,10 @@
             center-y  (- (+ (.-top rect) (/ (.-height rect) 2.0)) cont-top)
             side      (model/entry-side layout i)]
         ;; Position marker
-        (when-let [^js marker (and markers (aget markers i))]
+        (when-let [^js marker (get markers i)]
           (set! (.. marker -style -top) (str center-y "px")))
         ;; Position and side date label
-        (when-let [^js date-el (and dates (aget dates i))]
+        (when-let [^js date-el (get dates i)]
           (set! (.. date-el -style -top) (str center-y "px"))
           (du/set-attr! date-el model/data-side side))))))
 
@@ -535,83 +534,54 @@
       (du/set-attr! fill-path "stroke-dashoffset" (str (- 1.0 progress))))))
 
 ;; ── Entry activation ────────────────────────────────────────────────────────
-(defn- swap-active-attr!
-  "Move an attribute from old-idx to new-idx within a JS array of
-   elements. `nil` array is a no-op; out-of-range indices are skipped.
-   Used to keep `data-active` in sync across entry / marker / date
-   element arrays without re-hand-rolling the bounds check each time."
-  [^js arr old-idx new-idx attr-name]
-  (when arr
-    (when (and (>= old-idx 0) (< old-idx (.-length arr)))
-      (when-let [^js old-el (aget arr old-idx)]
-        (du/remove-attr! old-el attr-name)))
-    (when (and (>= new-idx 0) (< new-idx (.-length arr)))
-      (when-let [^js new-el (aget arr new-idx)]
-        (du/set-attr! new-el attr-name "")))))
+(defn- apply-active-index!
+  "Writes the index of the active entry on the host and marks its overlays."
+  [^js el idx]
+  (when (not= idx (du/getv el k-active-index))
+    (du/set-attr-to! el "data-active-index" (when (>= idx 0) (str idx)))
+    (du/setv! el k-active-index idx)
+    (mark-active-overlays! el idx)))
 
-(defn- entry-id-at
-  "Read the entry id at idx, or nil if out of bounds."
-  [^js children idx]
-  (when (and (>= idx 0) (< idx (.-length children)))
-    (entry-id (aget children idx))))
+(defn- entry-at [^js children i]
+  (when (< -1 i (.-length children)) (aget children i)))
 
 (defn- update-active-entry!
-  "Mark an entry child as active (set data-active), remove from previous."
-  [^js el children new-index]
-  (let [old-index (or (du/getv el k-active-index) -1)]
-    (when (not= old-index new-index)
-      (swap-active-attr! children                      old-index new-index model/data-active)
-      (swap-active-attr! (du/getv el k-marker-els)    old-index new-index "data-active")
-      (swap-active-attr! (du/getv el k-date-els)      old-index new-index "data-active")
-      (if (>= new-index 0)
-        (du/set-attr! el "data-active-index" (str new-index))
-        (du/remove-attr! el "data-active-index"))
-      (du/setv! el k-active-index new-index)
+  "Marks the entry at `new-index` active. An entry that only moved fires no event."
+  [^js el ^js children new-index]
+  (let [^js old-el (du/getv el k-active-el)
+        ^js new-el (entry-at children new-index)]
+    (apply-active-index! el new-index)
+    (when-not (identical? old-el new-el)
+      (some-> old-el (du/remove-attr! model/data-active))
+      (some-> new-el (du/set-attr! model/data-active ""))
+      (du/setv! el k-active-el new-el)
       (du/dispatch! el model/event-entry-change
                     #js {:index         new-index
-                         :id            (entry-id-at children new-index)
-                         :previousIndex old-index
-                         :previousId    (entry-id-at children old-index)})
+                         :id            (some-> new-el entry-id)
+                         :previousIndex (.indexOf children old-el)
+                         :previousId    (some-> old-el entry-id)})
       (announce! el (str "Entry " (inc new-index) " active")))))
 
 ;; ── Entry enter/leave tracking ──────────────────────────────────────────────
-(defn- ensure-entry-states!
-  "Ensure the entry states array matches the current child count."
-  [^js el n]
-  (let [states (du/getv el k-entry-states)]
-    (if (and states (= (.-length states) n))
-      states
-      (let [new-states (make-array n)]
-        (dotimes [i n]
-          (aset new-states i
-                (if (and states (< i (.-length states)))
-                  (aget states i)
-                  false)))
-        (du/setv! el k-entry-states new-states)
-        new-states))))
-
 (defn- update-entry-states!
-  "Track which entries are in the trigger zone and fire enter/leave events."
+  "Fires entry-enter for each entry that came into the trigger zone and entry-leave for each that
+   left. A removed entry leaves without an event."
   [^js el children entry-rects trigger-y]
-  (let [n      (.-length children)
-        states (ensure-entry-states! el n)]
-    (dotimes [i n]
-      (when (< i (count entry-rects))
-        (let [{:keys [top bottom]} (nth entry-rects i)
-              was-in? (aget states i)
-              is-in?  (and (<= top trigger-y) (> bottom trigger-y))
-              ^js child (aget children i)
-              id (entry-id child)
-              progress (model/compute-entry-progress top (- bottom top) trigger-y)]
-          (cond
-            (and (not was-in?) is-in?)
-            (do (aset states i true)
-                (du/dispatch! el model/event-entry-enter
-                           #js {:index i :id id :progress progress}))
-            (and was-in? (not is-in?))
-            (do (aset states i false)
-                (du/dispatch! el model/event-entry-leave
-                           #js {:index i :id id :progress progress}))))))))
+  (let [was-in  (or (du/getv el k-entered) #{})
+        entries (map vector (array-seq children) entry-rects (range))
+        now-in  (into #{} (keep (fn in-zone [[child rect]]
+                                  (when (model/in-trigger-zone? rect trigger-y) child)))
+                      entries)]
+    (doseq [[child {:keys [top bottom]} i] entries
+            :let [entered? (contains? now-in child)]
+            :when (not= entered? (contains? was-in child))
+            :let [id       (entry-id child)
+                  progress (model/compute-entry-progress top (- bottom top) trigger-y)]]
+      (if entered?
+        (du/dispatch! el model/event-entry-enter #js {:index i :id id :progress progress})
+        (du/dispatch! el model/event-entry-leave #js {:index i :id id :progress progress})))
+    (when (not= was-in now-in)
+      (du/setv! el k-entered now-in))))
 
 ;; ── Scroll update ───────────────────────────────────────────────────────────
 (defn- read-entry-rects
@@ -860,8 +830,11 @@
     ;; Assign child attributes
     (assign-child-attrs! el children (:layout m))
     ;; Rebuild markers and date labels
-    (rebuild-markers! el children)
-    (rebuild-date-labels! el children)
+    (sync-markers! el children)
+    (sync-date-labels! el children)
+    (let [idx (.indexOf children (du/getv el k-active-el))]
+      (apply-active-index! el idx)
+      (mark-active-overlays! el idx))
     ;; Position overlays after a microtask (let layout settle).
     ;; Guard on isConnected so the callback no-ops after disconnect —
     ;; the rAF id isn't tracked, so we can't cancel it, but we can
@@ -879,8 +852,6 @@
              (update-scroll! el))))))))
 
 (defn- on-slotchange [^js el]
-  ;; Reset entry states cache
-  (du/setv! el k-entry-states nil)
   (rebuild-layout! el))
 
 ;; ── Listener management ────────────────────────────────────────────────────
@@ -890,7 +861,6 @@
         scroll-h    (fn [_e] (on-scroll el))
         slot-h      (fn [_e] (on-slotchange el))
         resize-h    (fn [_e] (when (du/getv el k-visible)
-                               (du/setv! el k-entry-states nil)
                                (rebuild-layout! el)))]
     (.addEventListener slot "slotchange" slot-h)
     (.addEventListener js/window "resize" resize-h)
@@ -952,7 +922,8 @@
   [^js el]
   (clean-entry-attrs! el)
   (du/setv! el k-active-index -1)
-  (du/setv! el k-entry-states nil)
+  (du/setv! el k-active-el nil)
+  (du/setv! el k-entered nil)
   (detach-scroll-listener! el)
   (stop-autoplay! el))
 
@@ -1078,8 +1049,9 @@
   (teardown-observer! el)
   (du/setv! el k-visible false)
   (du/setv! el k-active-index -1)
+  (du/setv! el k-active-el nil)
   (du/setv! el k-last-prog nil)
-  (du/setv! el k-entry-states nil))
+  (du/setv! el k-entered nil))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)

@@ -97,3 +97,11 @@
       (is (= 0  (:index d)))
       (is (= "" (:status d)))
       (is (= "" (:label d))))))
+
+;; ── item-attrs ────────────────────────────────────────────────────────────────
+
+(deftest item-attrs-test
+  (is (= {"data-index" "1" "data-last" nil "data-position" "end" "data-striped" ""}
+         (model/item-attrs {:position "alternating" :striped? true} 1 3)))
+  (is (= {"data-index" "2" "data-last" "" "data-position" "start" "data-striped" nil}
+         (model/item-attrs {:position "start" :striped? false} 2 3))))

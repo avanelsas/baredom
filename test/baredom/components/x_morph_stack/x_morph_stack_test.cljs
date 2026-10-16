@@ -1,7 +1,8 @@
 (ns baredom.components.x-morph-stack.x-morph-stack-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-morph-stack.x-morph-stack :as x]
-            [baredom.components.x-morph-stack.model         :as model]))
+            [baredom.components.x-morph-stack.model         :as model]
+            [baredom.test-writes                            :as writes]))
 
 (x/init!)
 
@@ -262,3 +263,23 @@
     (.prev el)
     (.goTo el "anything")
     (is (nil? (.getAttribute el model/attr-data-active-state)))))
+
+;; ── A child change ──────────────────────────────────────────────────────────
+(deftest a-new-state-writes-nothing-on-the-others-test
+  (async done
+    (let [^js a  (make-state "a" "A")
+          ^js b  (make-state "b" "B")
+          ^js el (make-stack [a b])
+          na     (writes/count-attr-writes! a ["style"])
+          nb     (writes/count-attr-writes! b ["style"])
+          nh     (writes/count-attr-writes! el [model/attr-data-active-state])
+          ^js c  (make-state "c" "C")]
+      (.appendChild el c)
+      (js/setTimeout
+       (fn []
+         (is (= 0 @na) "the active state keeps its style")
+         (is (= 0 @nb) "a hidden state keeps its style")
+         (is (= 0 @nh) "the host keeps data-active-state")
+         (is (= "none" (.. c -style -display)) "the new state is hidden")
+         (done))
+       50))))

@@ -565,53 +565,26 @@
          :spinner-slot spinner-slot-el}))
 
 ;; ── Render ──────────────────────────────────────────────────────────────────
+(defn- read-view
+  "The public state of `el` with its interaction state and the content of its slots."
+  [^js el state]
+  (assoc (read-public-state el)
+         :has-default-text? (slot-has-meaningful-text? (aget state "label-slot"))
+         :has-icon-start?   (slot-has-content? (aget state "icon-start-slot"))
+         :has-icon-end?     (slot-has-content? (aget state "icon-end-slot"))
+         :has-spinner?      (slot-has-content? (aget state "spinner-slot"))
+         :hover?            (get-hover el)
+         :active?           (some? (get-active-source el))
+         :focus-visible?    (get-focus-visible el)))
+
+(defn- set-attrs-to! [^js node attrs]
+  (doseq [[attr-name value] attrs]
+    (du/set-attr-to! node attr-name value)))
+
 (defn- render! [^js el state]
-  (let [button-el (aget state "button")
-        label-slot-el (aget state "label-slot")
-        icon-start-slot-el (aget state "icon-start-slot")
-        icon-end-slot-el (aget state "icon-end-slot")
-        spinner-slot-el (aget state "spinner-slot")
-        ps (read-public-state el)
-        has-default-text? (slot-has-meaningful-text? label-slot-el)
-        has-icon-start? (slot-has-content? icon-start-slot-el)
-        has-icon-end? (slot-has-content? icon-end-slot-el)
-        has-spinner? (slot-has-content? spinner-slot-el)
-        hover? (get-hover el)
-        active? (some? (get-active-source el))
-        focus-visible? (get-focus-visible el)
-        aria-label-value (model/aria-label
-                          (assoc ps :has-default-text? has-default-text?))]
-
-    (du/set-attr! button-el "type" (:type ps))
-    (set! (.-disabled button-el) (or (:disabled ps) (:loading ps)))
-
-    (if-let [v (model/aria-busy ps)]
-      (du/set-attr! button-el "aria-busy" v)
-      (du/remove-attr! button-el "aria-busy"))
-
-    (if (:pressed ps)
-      (du/set-attr! button-el "aria-pressed" "true")
-      (du/remove-attr! button-el "aria-pressed"))
-
-    (if aria-label-value
-      (du/set-attr! button-el "aria-label" aria-label-value)
-      (du/remove-attr! button-el "aria-label"))
-
-    (du/set-attr! button-el "data-variant" (:variant ps))
-    (du/set-attr! button-el "data-size" (:size ps))
-    (du/set-attr! button-el "data-mode" (:mode ps))
-    (du/set-attr! button-el "data-loading" (if (:loading ps) "true" "false"))
-    (du/set-attr! button-el "data-disabled" (if (:disabled ps) "true" "false"))
-    (du/set-attr! button-el "data-hover" (if hover? "true" "false"))
-    (du/set-attr! button-el "data-active" (if active? "true" "false"))
-    (du/set-attr! button-el "data-focus-visible" (if focus-visible? "true" "false"))
-    (du/set-attr! button-el "data-has-icon-start" (if has-icon-start? "true" "false"))
-    (du/set-attr! button-el "data-has-icon-end" (if has-icon-end? "true" "false"))
-    (du/set-attr! button-el "data-has-spinner" (if has-spinner? "true" "false"))
-
-    (du/set-attr! el "data-variant" (:variant ps))
-    (du/set-attr! el "data-size" (:size ps))
-    (du/set-attr! el "data-mode" (:mode ps))))
+  (let [v (read-view el state)]
+    (set-attrs-to! (aget state "button") (model/button-attrs v))
+    (set-attrs-to! el (model/host-attrs v))))
 
 ;; ── Particle pool ───────────────────────────────────────────────────────────
 (defn- init-particle-pool! [^js el]

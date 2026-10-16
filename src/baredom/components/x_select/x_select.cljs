@@ -3,6 +3,7 @@
             [baredom.utils.dom :as du]
             [baredom.utils.forms :as forms]
             [goog.object :as gobj]
+            [baremirror.alpha.places :as places]
             [baredom.components.x-select.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -255,6 +256,14 @@
 ;; ---------------------------------------------------------------------------
 ;; Read element state from attributes
 ;; ---------------------------------------------------------------------------
+(defn- option-sources
+  "The slotted options and optgroups of `el`, or nil before it has a shadow."
+  [^js el]
+  (when-let [refs (du/getv el k-refs)]
+    (let [^js slot-el (gobj/get refs "slot")]
+      (filterv (fn option-source? [^js node] (contains? slot-tags (.-tagName node)))
+               (array-seq (.assignedElements slot-el #js {:flatten true}))))))
+
 (defn- read-model [^js el]
   (model/normalize
    {:disabled-present? (forms/disabled? el)
@@ -263,12 +272,21 @@
     :placeholder-raw   (du/get-attr el model/attr-placeholder)
     :value-raw         (du/get-attr el model/attr-value)
     :name-raw          (du/get-attr el model/attr-name)
-    :error-raw         (du/get-attr el model/attr-error)}))
+    :error-raw         (du/get-attr el model/attr-error)
+    :option-htmls      (map (fn outer-html [^js node] (.-outerHTML node)) (option-sources el))}))
 
 ;; ---------------------------------------------------------------------------
 ;; Render (render-orchestrator: apply-model! reads as a phase list, caches
 ;; the model at the tail; update-from-attrs! gates the work behind a diff)
 ;; ---------------------------------------------------------------------------
+
+(defn- apply-options!
+  "Brings the options in `select-el` to `option-keys`, with a clone of the source of a new key."
+  [^js el ^js select-el option-keys]
+  (let [by-key (zipmap option-keys (option-sources el))]
+    (places/sync! {:options {:parent select-el}}
+                  {:options option-keys}
+                  (fn clone-source [k] (.cloneNode ^js (by-key k) true)))))
 
 (defn- apply-disabled! [^js select-el disabled?]
   (if disabled?
@@ -335,6 +353,7 @@
           name-val       (:name m)
           placeholder    (:placeholder m)
           has-error?     (:has-error? m)]
+      (apply-options!        el select-el (:option-keys m))
       (apply-disabled!       select-el disabled?)
       (apply-required!       select-el (:required? m))
       (apply-name!           select-el name-val)
@@ -347,9 +366,6 @@
       (sync-form-state!      el select-el)
       (du/setv! el k-model m))))
 
-;; Unconditional re-render — `sync-options!` invalidates non-attribute state
-;; (the option list inside <select>) and must re-apply the model regardless
-;; of whether the attribute-derived model has changed.
 (defn- render! [^js el]
   (apply-model! el (read-model el)))
 
@@ -360,29 +376,6 @@
         old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
-
-;; ---------------------------------------------------------------------------
-;; Option sync from slot
-;; ---------------------------------------------------------------------------
-(defn- sync-options! [^js el]
-  (when-let [refs (du/getv el k-refs)]
-    (let [^js select-el (gobj/get refs "select")
-          ^js ph-opt-el (gobj/get refs "placeholder-opt")
-          ^js slot-el   (gobj/get refs "slot")
-          assigned      (.assignedElements slot-el #js {:flatten true})]
-      ;; Remove all children of select except the placeholder option
-      (loop []
-        (let [^js last-child (.-lastChild select-el)]
-          (when (and last-child (not (identical? last-child ph-opt-el)))
-            (.removeChild select-el last-child)
-            (recur))))
-      ;; Append clones of assigned option/optgroup elements
-      (doseq [^js node (array-seq assigned)]
-        (when (contains? slot-tags (.-tagName node))
-          (.appendChild select-el (.cloneNode node true))))
-      ;; Invalidate cached model so render! re-applies value to new options
-      (du/setv! el k-model nil)
-      (render! el))))
 
 ;; ---------------------------------------------------------------------------
 ;; Event dispatch
@@ -414,12 +407,6 @@
           (set! (.-value sel) prev-value))))))
 
 ;; ---------------------------------------------------------------------------
-;; Slotchange handler
-;; ---------------------------------------------------------------------------
-(defn- make-slotchange-handler [^js el]
-  (fn [^js _] (sync-options! el)))
-
-;; ---------------------------------------------------------------------------
 ;; Listener management
 ;; ---------------------------------------------------------------------------
 (defn- add-listeners! [^js el]
@@ -427,7 +414,7 @@
     (let [^js select-el  (gobj/get refs "select")
           ^js slot-el    (gobj/get refs "slot")
           change-h       (make-change-handler el)
-          slotchange-h   (make-slotchange-handler el)
+          slotchange-h   (fn on-slotchange [^js _] (update-from-attrs! el))
           handlers       #js {:change change-h :slotchange slotchange-h}]
       (.addEventListener select-el "change"     change-h)
       (.addEventListener slot-el   "slotchange" slotchange-h)
@@ -470,7 +457,6 @@
       (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   (add-listeners! el)
-  (sync-options! el)
   (render! el))
 
 (defn- disconnected! [^js el]

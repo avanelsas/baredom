@@ -14,7 +14,6 @@
 (def ^:private cell-tag      "x-table-cell")
 (def ^:private selected-attr "selected")
 (def ^:private stripe-attr   "data-stripe")
-(def ^:private stripe-even   "even")
 (def ^:private hk-sort       "sort")
 (def ^:private hk-row-click  "row-click")
 (def ^:private attr-data-striped    "data-striped")
@@ -103,14 +102,12 @@
     :row-count-raw  (du/get-attr el model/attr-row-count)}))
 
 ;; ── Stripe helper ────────────────────────────────────────────────────────────
-(defn- update-stripe-attrs! [^js el]
-  ;; Walk direct x-table-row children, assigning data-stripe="even" on even
-  ;; (1-indexed) rows and removing it from odd rows.
+(defn- update-stripe-attrs!
+  "Writes the stripe of each direct row where it differs."
+  [^js el]
   (let [rows (array-seq (.querySelectorAll el (str ":scope > " row-tag)))]
-    (doseq [[^js row i] (map vector rows (range))]
-      (if (zero? (mod (inc i) 2))
-        (du/set-attr! row stripe-attr stripe-even)
-        (du/remove-attr! row stripe-attr)))))
+    (doseq [[i ^js row] (map-indexed vector rows)]
+      (du/set-attr-to! row stripe-attr (model/row-stripe i)))))
 
 ;; ── Child watch ──────────────────────────────────────────────────────────────
 (defn- on-rows-changed!
@@ -179,23 +176,27 @@
   (if full-width? (du/set-attr! el attr-data-full-width "") (du/remove-attr! el attr-data-full-width))
   (if compact?    (du/set-attr! el attr-data-compact    "") (du/remove-attr! el attr-data-compact)))
 
-(defn- apply-model! [^js el {:keys [striped?] :as m}]
+(defn- apply-stripes!
+  "Stripes the rows when `striped?` turns on from `old-m` to `m`."
+  [^js el old-m m]
+  (when (and (:striped? m) (not (:striped? old-m)))
+    (update-stripe-attrs! el)))
+
+(defn- apply-model! [^js el old-m m]
   (let [{:keys [caption-div]} (ensure-refs! el)
         ^js caption-div caption-div]
     (apply-grid-template! el m)
     (apply-aria!          el m)
     (apply-caption!       caption-div m)
     (apply-data-flags!    el m)
-    ;; Recompute stripe attributes on child rows when striped is on.
-    (when striped?
-      (update-stripe-attrs! el))
+    (apply-stripes!       el old-m m)
     (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (du/getv el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m))))
+      (apply-model! el old-m new-m))))
 
 ;; ── Column index helper ───────────────────────────────────────────────────────
 (defn- col-index-of [^js cell]

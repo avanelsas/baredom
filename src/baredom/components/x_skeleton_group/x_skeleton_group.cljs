@@ -143,21 +143,40 @@
 ;; ---------------------------------------------------------------------------
 ;; Animation sync
 ;; ---------------------------------------------------------------------------
-(defn- sync-animations! [^js el]
-  (let [now      (js/performance.now)
-        delay-ms (- (mod now sync-duration-ms))]
-    (.setProperty (.-style el) "--x-skeleton-delay" (str delay-ms "ms"))))
+(def ^:private delay-prop "--x-skeleton-delay")
+
+(defn- phase-delay
+  "The animation delay that puts an animation started now in phase with the others."
+  []
+  (str (- (mod (js/performance.now) sync-duration-ms)) "ms"))
+
+(defn- phase!
+  "Gives `node` the delay that puts an animation started now in phase with the others."
+  [^js node]
+  (.setProperty (.-style node) delay-prop (phase-delay)))
+
+(defn- phased? [^js node]
+  (not= "" (.getPropertyValue (.-style node) delay-prop)))
 
 ;; ---------------------------------------------------------------------------
 ;; Animation propagation to slotted children
 ;; ---------------------------------------------------------------------------
-(defn- propagate-animation! [^js el animation]
+(defn- slotted-skeletons [^js el]
   (when-let [refs (du/getv el k-refs)]
-    (let [^js slot-el (gobj/get refs "slot")
-          ^js nodes   (.assignedElements slot-el #js {:flatten true})]
-      (doseq [^js node (array-seq nodes)]
-        (when (= skeleton-tag-upper (.-tagName node))
-          (du/set-attr! node "animation" animation))))))
+    (->> (.assignedElements (gobj/get refs "slot") #js {:flatten true})
+         array-seq
+         (filter (fn skeleton? [^js node] (= skeleton-tag-upper (.-tagName node)))))))
+
+(defn- apply-skeleton!
+  "Gives `node` the animation of the group, and a delay in phase whenever its animation starts."
+  [^js node animation]
+  (when (or (not= animation (du/get-attr node "animation")) (not (phased? node)))
+    (phase! node))
+  (du/set-attr-to! node "animation" animation))
+
+(defn- apply-skeletons! [^js el animation]
+  (doseq [^js node (slotted-skeletons el)]
+    (apply-skeleton! node animation)))
 
 ;; ---------------------------------------------------------------------------
 ;; Render
@@ -174,12 +193,10 @@
           (if preset
             (build-preset! preset-el preset animation count)
             (clear-preset! preset-el))
+          (phase! el)
 
           ;; Propagate animation to slotted children
-          (propagate-animation! el animation))
-
-        ;; Sync animation timing
-        (sync-animations! el)
+          (apply-skeletons! el animation))
 
         ;; Accessibility
         (when-not (du/has-attr? el "aria-hidden")
@@ -192,9 +209,7 @@
 ;; Handlers
 ;; ---------------------------------------------------------------------------
 (defn- handle-slotchange [^js el ^js _evt]
-  (let [{:keys [animation]} (read-model el)]
-    (propagate-animation! el animation)
-    (sync-animations! el)))
+  (apply-skeletons! el (:animation (read-model el))))
 
 (defn- make-handlers [^js el]
   #js {:slotchange (fn on-slotchange [evt] (handle-slotchange el evt))})

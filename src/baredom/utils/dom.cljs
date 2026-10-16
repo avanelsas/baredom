@@ -148,11 +148,27 @@
       (set-attr! el attr-name value)
       (remove-attr! el attr-name))))
 
+(defn set-bool-attr-to!
+  "Adds `attr-name` to `el` when `on?`, or removes it, only where its presence differs.
+   An attribute that stays keeps its value."
+  [^js el attr-name on?]
+  (when (not= (boolean on?) (has-attr? el attr-name))
+    (set-bool-attr! el attr-name on?)))
+
 (defn set-text-to!
   "Sets the text of `node` to `text`, only where it differs."
   [^js node text]
   (when (not= text (.-textContent node))
     (set! (.-textContent node) text)))
+
+(defn set-style-to!
+  "Sets the inline style property `prop` of `node` to `value`, only where it differs.
+   `value` is compared with the value the browser serialises, so pass it in that form.
+   An empty value removes the property."
+  [^js node prop value]
+  (let [^js style (.-style node)]
+    (when (not= value (.getPropertyValue style prop))
+      (.setProperty style prop value))))
 
 (def control-font-rule
   "The CSS rule that gives the native controls of a component its font family.

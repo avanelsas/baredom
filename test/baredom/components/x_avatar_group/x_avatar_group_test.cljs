@@ -1,7 +1,8 @@
 (ns baredom.components.x-avatar-group.x-avatar-group-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-avatar-group.x-avatar-group :as x]
-            [baredom.components.x-avatar-group.model          :as model]))
+            [baredom.components.x-avatar-group.model          :as model]
+            [baredom.test-writes                              :as writes]))
 
 (x/init!)
 
@@ -156,3 +157,24 @@
     (.remove el)
     (.appendChild (.-body js/document) el)
     (is (= "lg" (.getAttribute el "data-size")))))
+
+;; ── A child change ──────────────────────────────────────────────────────────
+(deftest a-new-avatar-writes-nothing-on-the-others-test
+  (async done
+    (let [^js el    (make-el)
+          ^js avatar (make-avatar)]
+      (.appendChild el avatar)
+      (.appendChild el (make-avatar))
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (let [n (writes/count-attr-writes! avatar ["size" "disabled" "style"])
+               h (writes/count-attr-writes! el ["data-size" "role" "aria-label"])]
+           (.appendChild el (make-avatar))
+           (js/setTimeout
+            (fn []
+              (is (= 0 @n) "the first avatar keeps its attributes and style")
+              (is (= 0 @h) "the host keeps its attributes")
+              (done))
+            50)))
+       50))))

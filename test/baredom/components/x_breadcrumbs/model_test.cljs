@@ -134,3 +134,21 @@
     (is (true?          (:preserve-aria-current m)))
     (is (= "Navigation" (:aria-label m)))
     (is (= "desc-id"    (:aria-describedby m)))))
+
+;; ── list-items ───────────────────────────────────────────────────────────
+(deftest list-items-test
+  (is (= [{:kind :crumb :key "crumb a" :index 0 :current? false}
+          {:kind :separator :key "separator b"}
+          {:kind :crumb :key "crumb b" :index 1 :current? true}]
+         (model/list-items {:visible [0 1] :ellipsis-at -1} ["a" "b"] false))))
+
+(deftest list-items-ellipsis-test
+  (is (= ["crumb a" "ellipsis" "separator d" "crumb d"]
+         (mapv :key (model/list-items {:visible [0 3] :ellipsis-at 1} ["a" "b" "c" "d"] false)))))
+
+(deftest list-items-preserve-aria-current-test
+  (is (not-any? :current? (model/list-items {:visible [0 1] :ellipsis-at -1} ["a" "b"] true))))
+
+(deftest normalize-items-test
+  (is (= ["crumb <a>x</a>|0" "separator <a>x</a>|1" "crumb <a>x</a>|1"]
+         (mapv :key (:items (model/normalize {:crumb-htmls ["<a>x</a>" "<a>x</a>"]}))))))

@@ -2,7 +2,8 @@
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [goog.object :as gobj]
             [baredom.components.x-particle-button.x-particle-button :as component]
-            [baredom.components.x-particle-button.model :as model]))
+            [baredom.components.x-particle-button.model :as model]
+            [baredom.test-writes :as writes]))
 
 (component/init!)
 
@@ -306,3 +307,27 @@
               (done))
             100)))
        100))))
+
+;; ── A child change ──────────────────────────────────────────────────────────
+(def ^:private rendered-attrs
+  ["type" "disabled" "aria-busy" "aria-pressed" "aria-label" "data-variant" "data-size"
+   "data-mode" "data-loading" "data-disabled" "data-hover" "data-active" "data-focus-visible"
+   "data-has-icon-start" "data-has-icon-end" "data-has-spinner"])
+
+(deftest more-label-text-writes-nothing-on-the-button-test
+  (async done
+    (let [^js el (make-el)]
+      (set! (.-textContent el) "Save")
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (let [n (writes/count-attr-writes! (.-shadowRoot el) rendered-attrs)
+               h (writes/count-attr-writes! el rendered-attrs)]
+           (.appendChild el (.createTextNode js/document " now"))
+           (js/setTimeout
+            (fn []
+              (is (= 0 @n) "the inner button keeps its attributes")
+              (is (= 0 @h) "the host keeps its attributes")
+              (done))
+            50)))
+       50))))

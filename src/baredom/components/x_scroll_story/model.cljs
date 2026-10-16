@@ -150,6 +150,11 @@
         scrolled (- viewport-height container-top)]
     (max 0.0 (min 1.0 (/ scrolled total)))))
 
+(defn in-trigger-zone?
+  "True when the trigger line at `trigger-y` crosses the rect from `top` to `bottom`."
+  [{:keys [top bottom]} trigger-y]
+  (and (<= top trigger-y) (> bottom trigger-y)))
+
 (defn find-active-step
   "Given a vector of {:top :bottom} rects and a trigger-y position (pixels
   from the top of the viewport), return the index of the active step or -1.
@@ -165,9 +170,9 @@
              last-above -1]
         (if (>= i n)
           (if (>= spanning 0) spanning last-above)
-          (let [{:keys [top bottom]} (nth step-rects i)]
+          (let [{:keys [top] :as rect} (nth step-rects i)]
             (recur (inc i)
-                   (if (and (<= top trigger-y) (> bottom trigger-y)) i spanning)
+                   (if (in-trigger-zone? rect trigger-y) i spanning)
                    (if (<= top trigger-y) i last-above))))))))
 
 (defn compute-step-progress

@@ -3,6 +3,7 @@
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
    [goog.object :as gobj]
+   [baremirror.alpha.places :as places]
    [baredom.components.x-breadcrumbs.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
@@ -156,6 +157,12 @@
   (or (du/getv el k-refs) (init-dom! el)))
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
+(defn- crumb-sources
+  "The slotted children of `el`, or nil before it has a shadow."
+  [^js el]
+  (when-let [{:keys [slot-el]} (du/getv el k-refs)]
+    (array-seq (.assignedElements ^js slot-el))))
+
 (defn- read-model [^js el]
   (model/normalize
    {:separator-raw                  (du/get-attr el model/attr-separator)
@@ -168,7 +175,9 @@
     :disabled-present?              (du/has-attr? el model/attr-disabled)
     :preserve-aria-current-present? (du/has-attr? el model/attr-preserve-aria-current)
     :aria-label-raw                 (du/get-attr el model/attr-aria-label)
-    :aria-describedby-raw           (du/get-attr el model/attr-aria-describedby)}))
+    :aria-describedby-raw           (du/get-attr el model/attr-aria-describedby)
+    :crumb-htmls                    (map (fn outer-html [^js node] (.-outerHTML node))
+                                         (crumb-sources el))}))
 
 ;; ── DOM patching ──────────────────────────────────────────────────────────
 (defn- make-separator-el [sep-text]
@@ -193,48 +202,42 @@
     (.appendChild li btn)
     li))
 
-(defn- make-crumb-el [^js source-child current?]
+(defn- make-crumb-el [^js source-child]
   (let [li      (.createElement js/document "li")
-        wrapper (.createElement js/document "span")
-        clone   (.cloneNode source-child true)]
+        wrapper (.createElement js/document "span")]
     (du/set-attr! li      attr-class cls-crumb)
     (du/set-attr! wrapper attr-class cls-crumb-content)
-    (.appendChild wrapper clone)
+    (.appendChild wrapper (.cloneNode source-child true))
     (.appendChild li wrapper)
-    (when current?
-      (du/set-attr! li      attr-data-current "")
-      (du/set-attr! wrapper attr-aria-current val-aria-current-page))
     li))
 
-(defn- rebuild-list! [^js el {:keys [separator max-items items-before items-after
-                                     preserve-aria-current]}]
-  (let [{:keys [slot-el ol]} (ensure-refs! el)
-        ^js slot-el slot-el
-        ^js ol      ol
-        children    (array-seq (.assignedElements slot-el))
-        total       (count children)
-        plan        (model/build-plan total max-items items-before items-after)
-        visible     (:visible plan)
-        ellipsis-at (:ellipsis-at plan)]
+(defn- make-item-el
+  "A new node for `item`, with a copy of its child for a crumb."
+  [sources separator {:keys [kind index]}]
+  (case kind
+    :crumb     (make-crumb-el (nth sources index))
+    :separator (make-separator-el separator)
+    :ellipsis  (make-ellipsis-el separator)))
 
-    (set! (.-innerHTML ol) "")
+(defn- apply-item!
+  "Brings the node of `item` to the separator text and the current crumb."
+  [nodes separator {:keys [kind current?] k :key}]
+  (let [^js node (nodes k)]
+    (case kind
+      :crumb     (do (du/set-attr-to! node attr-data-current (when current? ""))
+                     (du/set-attr-to! (.-firstElementChild node) attr-aria-current
+                                      (when current? val-aria-current-page)))
+      :separator (du/set-text-to! node separator)
+      :ellipsis  (du/set-text-to! (.-firstElementChild node) separator))))
 
-    (doseq [[pos idx] (map-indexed vector visible)]
-      (let [child    (nth children idx nil)
-            last?    (= pos (dec (count visible)))
-            current? (and last? (not preserve-aria-current))]
-        (when (= pos ellipsis-at)
-          (.appendChild ol (make-ellipsis-el separator)))
-        (when (and (pos? pos)
-                   (not (= pos ellipsis-at)))
-          (.appendChild ol (make-separator-el separator)))
-        (when (= pos ellipsis-at)
-          (.appendChild ol (make-separator-el separator)))
-        (when child
-          (.appendChild ol (make-crumb-el child current?)))))
-
-    (when (= ellipsis-at (count visible))
-      (.appendChild ol (make-ellipsis-el separator)))))
+(defn- apply-list!
+  "Brings the list to the items of `m`, with a copy only for a child that is new or changed."
+  [^js el {:keys [separator items]}]
+  (let [{:keys [ol]} (ensure-refs! el)
+        by-key       (zipmap (map :key items) items)
+        make-node    (comp (partial make-item-el (crumb-sources el) separator) by-key)
+        nodes        (places/sync! {:items {:parent ol}} {:items (mapv :key items)} make-node)]
+    (run! (partial apply-item! nodes separator) items)))
 
 (defn- apply-model! [^js el {:keys [size variant wrap aria-label aria-describedby] :as m}]
   (let [{:keys [nav]} (ensure-refs! el)
@@ -250,7 +253,7 @@
       (du/set-attr! nav attr-aria-describedby aria-describedby)
       (du/remove-attr! nav attr-aria-describedby))
 
-    (rebuild-list! el m)
+    (apply-list! el m)
 
     (du/setv! el k-model m)))
 
@@ -261,15 +264,10 @@
       (apply-model! el new-m))))
 
 ;; ── Listener management ───────────────────────────────────────────────────
-(defn- on-slot-change!
-  "Slot children changed — always rebuild (children aren't in the model)."
-  [^js el]
-  (apply-model! el (read-model el)))
-
 (defn- add-listeners! [^js el]
   (let [{:keys [slot-el]} (ensure-refs! el)
         ^js slot-el slot-el
-        on-slot  (fn handle-slotchange [_] (on-slot-change! el))
+        on-slot  (fn handle-slotchange [_] (update-from-attrs! el))
         handlers #js {}]
     (when slot-el (.addEventListener slot-el ev-slotchange on-slot))
     (gobj/set handlers handler-slot on-slot)

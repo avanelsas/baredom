@@ -121,30 +121,23 @@
 ;; output so the orchestrator stays a phase list, not a 50-line monolith.
 
 (defn- apply-host-data! [^js el {:keys [size overlap direction]}]
-  (du/set-attr! el attr-data-size      size)
-  (du/set-attr! el attr-data-overlap   overlap)
-  (du/set-attr! el attr-data-direction direction))
+  (du/set-attr-to! el attr-data-size      size)
+  (du/set-attr-to! el attr-data-overlap   overlap)
+  (du/set-attr-to! el attr-data-direction direction))
 
 (defn- apply-host-aria! [^js el {:keys [disabled label]}]
-  (du/set-attr! el attr-role role-group)
-  (if label
-    (du/set-attr!    el attr-aria-label label)
-    (du/remove-attr! el attr-aria-label))
-  (if disabled
-    (du/set-attr!    el attr-aria-disabled val-true)
-    (du/remove-attr! el attr-aria-disabled)))
+  (du/set-attr-to! el attr-role role-group)
+  (du/set-attr-to! el attr-aria-label label)
+  (du/set-attr-to! el attr-aria-disabled (when disabled val-true)))
 
 (defn- show-visible-child! [^js child {:keys [size disabled]} margin idx]
-  (set! (.. child -style -display) "")
-  (du/set-attr! child model/attr-size size)
-  (if disabled
-    (du/set-attr!    child model/attr-disabled "")
-    (du/remove-attr! child model/attr-disabled))
-  (set! (.. child -style -marginInlineStart)
-        (if (pos? idx) margin "0px")))
+  (du/set-style-to! child "display" "")
+  (du/set-attr-to! child model/attr-size size)
+  (du/set-bool-attr-to! child model/attr-disabled disabled)
+  (du/set-style-to! child "margin-inline-start" (if (pos? idx) margin "0px")))
 
 (defn- hide-child! [^js child]
-  (set! (.. child -style -display) "none"))
+  (du/set-style-to! child "display" "none"))
 
 (defn- apply-children! [children vis-count m margin]
   (doseq [[^js child idx] (map vector children (range))]
@@ -153,15 +146,15 @@
       (hide-child! child))))
 
 (defn- show-overflow-bubble! [^js overflow hidden-count margin]
-  (set! (.-textContent overflow) (str "+" hidden-count))
-  (du/set-attr! overflow attr-role       role-img)
-  (du/set-attr! overflow attr-aria-label (str hidden-count " more"))
-  (set! (.. overflow -style -display)           "inline-flex")
-  (set! (.. overflow -style -marginInlineStart) margin))
+  (du/set-text-to! overflow (str "+" hidden-count))
+  (du/set-attr-to! overflow attr-role       role-img)
+  (du/set-attr-to! overflow attr-aria-label (str hidden-count " more"))
+  (du/set-style-to! overflow "display" "inline-flex")
+  (du/set-style-to! overflow "margin-inline-start" margin))
 
 (defn- hide-overflow-bubble! [^js overflow]
-  (set! (.-textContent overflow) "")
-  (set! (.. overflow -style -display) "none"))
+  (du/set-text-to! overflow "")
+  (du/set-style-to! overflow "display" "none"))
 
 (defn- apply-overflow! [^js overflow hidden-count margin]
   (if (pos? hidden-count)

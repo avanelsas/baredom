@@ -13,6 +13,10 @@
 ;; ── Child component constants (no cross-namespace import) ─────────────────────
 (def child-tag         "x-timeline-item")
 (def child-event-click "x-timeline-item-click")
+(def child-attr-index    "data-index")
+(def child-attr-last     "data-last")
+(def child-attr-position "data-position")
+(def child-attr-striped  "data-striped")
 
 ;; ── Event name constants ──────────────────────────────────────────────────────
 (def event-select "x-timeline-select")
@@ -53,6 +57,14 @@
     "end"         "end"
     "alternating" (if (zero? (mod index 2)) "start" "end")
     "start"))
+
+(defn item-attrs
+  "Return the data attributes of the item at `index` among `n` items. A nil value means absent."
+  [{:keys [position striped?]} index n]
+  {child-attr-index    (str index)
+   child-attr-last     (when (= index (dec n)) "")
+   child-attr-position (item-position position index)
+   child-attr-striped  (when striped? "")})
 
 ;; ── Normalize ─────────────────────────────────────────────────────────────────
 (defn normalize

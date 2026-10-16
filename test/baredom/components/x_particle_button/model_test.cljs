@@ -104,6 +104,32 @@
   (is (= nil
          (model/aria-label {:label nil :has-default-text? false}))))
 
+(deftest button-attrs-test
+  (testing "a loading button is disabled and busy"
+    (let [attrs (model/button-attrs {:type "button" :loading true})]
+      (is (= "" (get attrs "disabled")))
+      (is (= "true" (get attrs "aria-busy")))
+      (is (= "true" (get attrs "data-loading")))
+      (is (= "false" (get attrs "data-disabled")))))
+  (testing "an idle button removes disabled, aria-busy and aria-pressed"
+    (let [attrs (model/button-attrs {:type "submit"})]
+      (is (= "submit" (get attrs "type")))
+      (is (nil? (get attrs "disabled")))
+      (is (nil? (get attrs "aria-busy")))
+      (is (nil? (get attrs "aria-pressed")))))
+  (testing "the label names the button only without default text"
+    (is (= "Close" (get (model/button-attrs {:label "Close"}) "aria-label")))
+    (is (nil? (get (model/button-attrs {:label "Close" :has-default-text? true}) "aria-label"))))
+  (testing "the interaction flags"
+    (let [attrs (model/button-attrs {:hover? true :active? false :has-spinner? true})]
+      (is (= "true" (get attrs "data-hover")))
+      (is (= "false" (get attrs "data-active")))
+      (is (= "true" (get attrs "data-has-spinner"))))))
+
+(deftest host-attrs-test
+  (is (= {"data-variant" "primary" "data-size" "md" "data-mode" "dust"}
+         (model/host-attrs {:variant "primary" :size "md" :mode "dust" :type "button"}))))
+
 (deftest public-state-test
   (testing "defaults for empty input"
     (let [s (model/public-state {})]
