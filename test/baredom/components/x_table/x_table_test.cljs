@@ -6,7 +6,8 @@
             [baredom.components.x-table-row.x-table-row :as x-row]
             [baredom.components.x-table-row.model   :as row-model]
             [baredom.components.x-table-cell.x-table-cell :as x-cell]
-            [baredom.components.x-table-cell.model  :as cell-model]))
+            [baredom.components.x-table-cell.model  :as cell-model]
+            [baredom.test-writes :as writes]))
 
 (x/init!)
 (x-row/init!)
@@ -516,3 +517,32 @@
          (is (= "even" (.getAttribute row3 "data-stripe")))
          (is (not (.hasAttribute row4 "data-stripe")))
          (done))))))
+
+(deftest removing-the-last-row-writes-no-stripes-test
+  (async done
+    (let [^js table (append! (make-table {:columns "1" :striped true}))
+          rows      (vec (repeatedly 4 make-row))]
+      (doseq [^js r rows]
+        (.appendChild table r))
+      (after-slotchange
+       (fn []
+         (let [n (writes/count-attr-writes! table ["data-stripe"])]
+           (.remove ^js (peek rows))
+           (after-slotchange
+            (fn []
+              (is (= 0 @n))
+              (done)))))))))
+
+(deftest a-caption-change-writes-no-stripes-test
+  (async done
+    (let [^js table (append! (make-table {:columns "1" :striped true}))]
+      (dotimes [_ 4]
+        (.appendChild table (make-row)))
+      (after-slotchange
+       (fn []
+         (let [n (writes/count-attr-writes! table ["data-stripe"])]
+           (.setAttribute table model/attr-caption "Changed")
+           (after-slotchange
+            (fn []
+              (is (= 0 @n))
+              (done)))))))))

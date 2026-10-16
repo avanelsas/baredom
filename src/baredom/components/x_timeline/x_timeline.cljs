@@ -43,23 +43,19 @@
     :striped?     (du/has-attr? el model/attr-striped)}))
 
 ;; ── Child watch ──────────────────────────────────────────────────────────────
-(defn- update-items! [^js el]
-  (let [{:keys [position striped?]} (or (du/getv el k-model) (read-model el))
-        ^js items (.querySelectorAll el (str ":scope > " model/child-tag))
-        len       (.-length items)]
-    (loop [i 0]
-      (when (< i len)
-        (let [^js item (aget items i)
-              last?    (= i (dec len))]
-          (du/set-attr! item "data-index" (str i))
-          (if last?
-            (du/set-attr! item "data-last" "")
-            (du/remove-attr! item "data-last"))
-          (du/set-attr! item "data-position" (model/item-position position i))
-          (if striped?
-            (du/set-attr! item "data-striped" "")
-            (du/remove-attr! item "data-striped")))
-        (recur (inc i))))))
+(defn- update-items!
+  "Writes to each direct item the data attributes of model `m` that differ."
+  [^js el m]
+  (let [items (array-seq (.querySelectorAll el (str ":scope > " model/child-tag)))
+        n     (count items)]
+    (doseq [[i ^js item] (map-indexed vector items)
+            [attr value] (model/item-attrs m i n)]
+      (du/set-attr-to! item attr value))))
+
+(defn- on-items-changed!
+  "Brings the items up to date after items come, go or move."
+  [^js el]
+  (update-items! el (or (du/getv el k-model) (read-model el))))
 
 ;; ── DOM initialisation ───────────────────────────────────────────────────────
 (defn- init-dom! [^js el]
@@ -77,7 +73,7 @@
     (.appendChild root label-div)
     (.appendChild root slot-el)
     ;; The slot lives as long as the shadow tree, so its listener needs no remove path.
-    (.addEventListener slot-el "slotchange" (fn on-slotchange [_] (update-items! el)))
+    (.addEventListener slot-el "slotchange" (fn on-slotchange [_] (on-items-changed! el)))
 
     (du/setv! el k-refs {:root      root
                          :label-div label-div
@@ -106,6 +102,7 @@
       (do (set! (.-textContent label-div) "")
           (du/set-attr! label-div "hidden" "")))
 
+    (update-items! el m)
     (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
@@ -122,7 +119,7 @@
 (defn- on-item-click [^js el ^js e]
   (.stopPropagation e)
   (let [^js target   (.-target e)
-        index-str    (.getAttribute target "data-index")
+        index-str    (.getAttribute target model/child-attr-index)
         index        (when (string? index-str)
                        (let [n (js/parseInt index-str 10)]
                          (when-not (js/isNaN n) n)))
@@ -174,15 +171,14 @@
   (update-from-attrs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (update-items! el))
+  (on-items-changed! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (update-from-attrs! el)
-    (update-items! el)))
+    (update-from-attrs! el)))
 
 ;; ── Public API ────────────────────────────────────────────────────────────────
 

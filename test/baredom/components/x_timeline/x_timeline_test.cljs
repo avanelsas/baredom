@@ -4,7 +4,8 @@
             [baredom.components.x-timeline.x-timeline      :as x]
             [baredom.components.x-timeline.model           :as model]
             [baredom.components.x-timeline-item.x-timeline-item :as x-item]
-            [baredom.components.x-timeline-item.model      :as item-model]))
+            [baredom.components.x-timeline-item.model      :as item-model]
+            [baredom.test-writes :as writes]))
 
 (x/init!)
 (x-item/init!)
@@ -400,23 +401,18 @@
 
 ;; ── Child watch ───────────────────────────────────────────────────────────────
 
-(defn- count-index-writes!
-  "An atom that counts the data-index writes inside `tl` from now on."
-  [^js tl]
-  (let [writes (atom 0)]
-    (.observe (js/MutationObserver. (fn count-records [records] (swap! writes + (.-length records))))
-              tl #js {:subtree true :attributeFilter #js ["data-index"]})
-    writes))
+(def ^:private item-data-attrs
+  [model/child-attr-index model/child-attr-last model/child-attr-position model/child-attr-striped])
 
 (deftest items-added-together-are-indexed-once-test
   (async done
     (let [^js tl     (append! (make-timeline))
-          writes     (count-index-writes! tl)]
+          n          (writes/count-attr-writes! tl [model/child-attr-index])]
       (dotimes [_ 50]
         (.appendChild tl (make-item)))
       (after-slotchange
        (fn []
-         (is (= 50 @writes) "each item gets its index once")
+         (is (= 50 @n) "each item gets its index once")
          (done))))))
 
 (deftest an-item-leaving-another-timeline-leaves-this-one-alone-test
@@ -429,11 +425,11 @@
       (.appendChild other-tl leaving)
       (after-slotchange
        (fn []
-         (let [writes (count-index-writes! this-tl)]
+         (let [n (writes/count-attr-writes! this-tl [model/child-attr-index])]
            (.remove leaving)
            (after-slotchange
             (fn []
-              (is (= 0 @writes))
+              (is (= 0 @n))
               (done)))))))))
 
 (deftest a-nested-timeline-keeps-its-own-items-test
@@ -451,3 +447,31 @@
          (is (.hasAttribute outer-item "data-last") "the outer timeline has one item")
          (is (= ["0" "1"] (mapv #(.getAttribute ^js % "data-index") inner-items)))
          (done))))))
+
+(deftest a-child-change-writes-only-what-changed-test
+  (async done
+    (let [^js tl (append! (make-timeline))]
+      (dotimes [_ 3]
+        (.appendChild tl (make-item)))
+      (after-slotchange
+       (fn []
+         (let [n (writes/count-attr-writes! tl item-data-attrs)]
+           (.appendChild tl (make-item))
+           (after-slotchange
+            (fn []
+              (is (= 4 @n) "the new item gets three, and the old last item loses data-last")
+              (done)))))))))
+
+(deftest a-label-change-writes-nothing-on-the-items-test
+  (async done
+    (let [^js tl (append! (make-timeline))]
+      (dotimes [_ 3]
+        (.appendChild tl (make-item)))
+      (after-slotchange
+       (fn []
+         (let [n (writes/count-attr-writes! tl item-data-attrs)]
+           (.setAttribute tl model/attr-label "Changed")
+           (after-slotchange
+            (fn []
+              (is (= 0 @n))
+              (done)))))))))

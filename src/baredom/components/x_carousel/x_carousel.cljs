@@ -390,48 +390,47 @@
                        (go-to! el (model/next-index m2) reason-autoplay))))
                  (:interval m))))))
 
-;; ── Dots rebuild ───────────────────────────────────────────────────────────
-(defn- rebuild-dots! [^js el ^js dots-el slide-count current]
-  (let [prev-count (or (du/getv el k-dot-count) -1)]
-    (when (not= prev-count slide-count)
-      (set! (.-innerHTML dots-el) "")
-      (dotimes [i slide-count]
-        (let [^js dot (.createElement js/document "button")]
-          (du/set-attr! dot attr-part       part-dot)
-          (du/set-attr! dot attr-type       val-button)
-          (du/set-attr! dot attr-role       val-tab)
-          (du/set-attr! dot attr-aria-label (str "Go to slide " (inc i)))
-          (du/set-attr! dot attr-data-index (str i))
-          (.appendChild dots-el dot)))
-      (du/setv! el k-dot-count slide-count))
-    (let [children (.-children dots-el)]
-      (dotimes [i (.-length children)]
-        (let [^js dot (aget children i)]
-          (du/set-attr! dot attr-aria-current  (str (= i current)))
-          (du/set-attr! dot attr-aria-selected (str (= i current))))))))
+;; ── Dots ───────────────────────────────────────────────────────────────────
+(defn- rebuild-dots!
+  "Makes one dot per slide when the slide count differs from the dot count."
+  [^js el ^js dots-el slide-count]
+  (when (not= slide-count (du/getv el k-dot-count))
+    (set! (.-innerHTML dots-el) "")
+    (dotimes [i slide-count]
+      (let [^js dot (.createElement js/document "button")]
+        (du/set-attr! dot attr-part       part-dot)
+        (du/set-attr! dot attr-type       val-button)
+        (du/set-attr! dot attr-role       val-tab)
+        (du/set-attr! dot attr-aria-label (str "Go to slide " (inc i)))
+        (du/set-attr! dot attr-data-index (str i))
+        (.appendChild dots-el dot)))
+    (du/setv! el k-dot-count slide-count)))
 
-;; ── Fade-mode helpers ──────────────────────────────────────────────────────
-;; Switch the active slotted child via the `data-active` attribute. CSS in
-;; style-text (`::slotted([data-active]){opacity:1}`) handles the visual.
-;; Avoids polluting consumer light-DOM children's inline `style.opacity`
-;; — those nodes are owned by the page, not by the component.
+(defn- apply-dot-selection!
+  "Marks the dot of the current slide as selected, and the others as not."
+  [^js dots-el current]
+  (doseq [[i ^js dot] (map-indexed vector (array-seq (.-children dots-el)))
+          :let [selected (str (= i current))]]
+    (du/set-attr-to! dot attr-aria-current  selected)
+    (du/set-attr-to! dot attr-aria-selected selected)))
+
+;; ── Active slide ─────────────────────────────────────────────────────────
+;; In fade mode, CSS shows the slotted child with `data-active`.
 
 (def ^:private attr-data-active "data-active")
 
-(defn- update-fade-active! [^js el current]
-  (let [^js slot-el (gobj/get (du/getv el k-refs) rk-slot)
-        children    (.assignedElements slot-el)]
-    (dotimes [i (.-length children)]
-      (let [^js child (aget children i)]
-        (if (= i current)
-          (du/set-attr!    child attr-data-active "")
-          (du/remove-attr! child attr-data-active))))))
+(defn- slides
+  "The slotted slides of `el`."
+  [^js el]
+  (let [^js slot-el (gobj/get (du/getv el k-refs) rk-slot)]
+    (array-seq (.assignedElements slot-el))))
 
-(defn- clear-fade-styles! [^js el]
-  (let [^js slot-el (gobj/get (du/getv el k-refs) rk-slot)
-        children    (.assignedElements slot-el)]
-    (dotimes [i (.-length children)]
-      (du/remove-attr! (aget children i) attr-data-active))))
+(defn- apply-active-slide!
+  "Gives `data-active` to the current slide in fade mode, and to no slide otherwise."
+  [^js el {:keys [transition current]}]
+  (doseq [[i ^js slide] (map-indexed vector (slides el))]
+    (du/set-attr-to! slide attr-data-active
+                     (when (and (not= transition val-slide) (= i current)) ""))))
 
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ───────
 (defn- apply-host-data! [^js el {:keys [direction transition peek]}]
@@ -453,15 +452,11 @@
            (* current -1) " * (100% - " peek-val " * 2) + "
            peek-val "))"))))
 
-(defn- apply-track! [^js el ^js track {:keys [current transition direction peek] :as _m}]
-  (let [vertical? (= direction val-vertical)]
-    (if (= transition val-slide)
-      (do
-        (set! (.. track -style -transform) (track-transform-str vertical? peek current))
-        (clear-fade-styles! el))
-      (do
-        (set! (.. track -style -transform) "")
-        (update-fade-active! el current)))))
+(defn- apply-track! [^js track {:keys [current transition direction peek]}]
+  (set! (.. track -style -transform)
+        (if (= transition val-slide)
+          (track-transform-str (= direction val-vertical) peek current)
+          "")))
 
 (defn- apply-arrows! [^js prev-btn ^js next-btn m]
   (if (model/show-arrows? m)
@@ -476,7 +471,8 @@
   (du/set-attr! dots-el attr-aria-orientation direction)
   (if (model/show-dots? m)
     (do (set! (.. dots-el -style -display) "flex")
-        (rebuild-dots! el dots-el slide-count current))
+        (rebuild-dots! el dots-el slide-count)
+        (apply-dot-selection! dots-el current))
     (set! (.. dots-el -style -display) "none")))
 
 (defn- apply-live! [^js live-el {:keys [autoplay? current slide-count]}]
@@ -492,12 +488,13 @@
         ^js next-btn (gobj/get refs rk-next)
         ^js dots-el  (gobj/get refs rk-dots)
         ^js live-el  (gobj/get refs rk-live)]
-    (apply-host-data! el m)
-    (apply-host-aria! el)
-    (apply-track!     el track m)
-    (apply-arrows!    prev-btn next-btn m)
-    (apply-dots!      el dots-el m)
-    (apply-live!      live-el m)
+    (apply-host-data!    el m)
+    (apply-host-aria!    el)
+    (apply-track!        track m)
+    (apply-active-slide! el m)
+    (apply-arrows!       prev-btn next-btn m)
+    (apply-dots!         el dots-el m)
+    (apply-live!         live-el m)
     ;; Cache write at the END so partial DOM writes don't leave a lying cache.
     (du/setv! el k-model m)))
 
@@ -634,16 +631,24 @@
     (du/setv! el k-paused false)
     (start-autoplay! el)))
 
-(defn- on-slotchange [^js el ^js _evt]
-  (let [^js slot (gobj/get (du/getv el k-refs) rk-slot)
-        cnt      (.-length (.assignedElements slot))]
-    (du/setv! el k-slide-count cnt)
-    (let [m       (read-model el)
-          clamped (model/clamp-index (:current m) cnt)]
-      (when (not= clamped (:current m))
-        (du/set-attr! el model/attr-current (str clamped))))
-    (update-from-attrs! el)
-    (start-autoplay! el)))
+(defn- on-slide-count-change!
+  "Keeps `current` within `cnt` slides, renders, and starts autoplay again."
+  [^js el cnt]
+  (du/setv! el k-slide-count cnt)
+  (let [m       (read-model el)
+        clamped (model/clamp-index (:current m) cnt)]
+    (when (not= clamped (:current m))
+      (du/set-attr! el model/attr-current (str clamped))))
+  (update-from-attrs! el)
+  (start-autoplay! el))
+
+(defn- on-slotchange
+  "Handles a change of the slides. A change of count renders, and every change marks the active slide."
+  [^js el ^js _evt]
+  (let [cnt (count (slides el))]
+    (when (not= cnt (du/getv el k-slide-count))
+      (on-slide-count-change! el cnt))
+    (apply-active-slide! el (du/getv el k-model))))
 
 ;; ── Listener-spec named pattern ────────────────────────────────────────────
 ;; [refs-key handler-key event-name handler-fn]

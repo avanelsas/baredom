@@ -134,4 +134,9 @@
    :selected      selected?
    :selectionMode selectable})
 
+(defn row-stripe
+  "Return \"even\" for every second row, and nil for the others. `index` counts from zero."
+  [index]
+  (when (odd? index) "even"))
+
 (def method-api {})

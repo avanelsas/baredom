@@ -1,7 +1,8 @@
 (ns baredom.components.x-carousel.x-carousel-test
   (:require [cljs.test :refer-macros [deftest is async use-fixtures]]
             [baredom.components.x-carousel.x-carousel :as x]
-            [baredom.components.x-carousel.model       :as model]))
+            [baredom.components.x-carousel.model       :as model]
+            [baredom.test-writes :as writes]))
 
 (x/init!)
 
@@ -653,3 +654,55 @@
             (fn []
               (is (= 0 (count @events)) "drag should be disabled when disabled")
               (done)))))))))
+
+;; ── A child change ──────────────────────────────────────────────────────────
+(defn- replace-first-slide!
+  "Replaces the first slide of `el` with a new one, so the count stays the same."
+  [^js el]
+  (.replaceChild el (.createElement js/document "div") (.-firstElementChild el)))
+
+(deftest replacing-a-slide-keeps-autoplay-running-test
+  (async done
+    (let [^js el (make-el)
+          events (atom 0)]
+      (.setAttribute el model/attr-autoplay "")
+      (.setAttribute el model/attr-interval "100")
+      (.setAttribute el model/attr-loop "")
+      (add-slides! el 3)
+      (.addEventListener el model/event-change (fn count-change [_] (swap! events inc)))
+      (append! el)
+      (let [replacing (js/setInterval (fn replace-tick [] (replace-first-slide! el)) 40)]
+        (js/setTimeout
+         (fn []
+           (js/clearInterval replacing)
+           (is (pos? @events) "autoplay advances while slides are replaced")
+           (done))
+         250)))))
+
+(deftest replacing-the-active-slide-in-fade-mode-makes-the-new-slide-active-test
+  (async done
+    (let [^js el (make-el)]
+      (.setAttribute el model/attr-transition "fade")
+      (add-slides! el 3)
+      (append! el)
+      (replace-first-slide! el)
+      (wait-frame
+       (fn []
+         (is (.hasAttribute (.-firstElementChild el) "data-active"))
+         (done))))))
+
+;; ── Dot selection ───────────────────────────────────────────────────────────
+(deftest moving-to-the-next-slide-writes-only-the-changed-dots-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (add-slides! el 5)
+      (wait-frame
+       (fn []
+         (let [n (writes/count-attr-writes! (shadow-part el "[part=dots]")
+                                            ["aria-current" "aria-selected"])]
+           (.click (shadow-part el "[part=next-btn]"))
+           (js/setTimeout
+            (fn []
+              (is (= 4 @n) "two dots flip, each with two attributes")
+              (done))
+            0)))))))
