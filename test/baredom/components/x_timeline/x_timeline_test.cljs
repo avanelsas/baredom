@@ -1,5 +1,5 @@
 (ns baredom.components.x-timeline.x-timeline-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
             [goog.object :as gobj]
             [baredom.components.x-timeline.x-timeline      :as x]
             [baredom.components.x-timeline.model           :as model]
@@ -41,6 +41,12 @@
 
 (defn ^js shadow-part [^js el selector]
   (.querySelector (.-shadowRoot el) selector))
+
+;; The timeline learns of its items through slotchange, which runs after the change.
+(defn- after-slotchange
+  "Calls `f` after the slotchange of the changes made so far."
+  [f]
+  (js/setTimeout f 0))
 
 ;; ── Registration ──────────────────────────────────────────────────────────────
 
@@ -226,15 +232,17 @@
       (append! tl)
       ;; item1 is last before adding item2
       (is (.hasAttribute item1 "data-last"))
-      ;; Add third item — its connectedCallback fires x-timeline-item-connected
-      ;; which bubbles to x-timeline, triggering update-items!
       (.appendChild tl item2)
-      (is (= "0" (.getAttribute item0 "data-index")))
-      (is (= "1" (.getAttribute item1 "data-index")))
-      (is (= "2" (.getAttribute item2 "data-index")))
-      (is (not (.hasAttribute item0 "data-last")))
-      (is (not (.hasAttribute item1 "data-last")))
-      (is (.hasAttribute item2 "data-last")))))
+      (async done
+        (after-slotchange
+         (fn []
+           (is (= "0" (.getAttribute item0 "data-index")))
+           (is (= "1" (.getAttribute item1 "data-index")))
+           (is (= "2" (.getAttribute item2 "data-index")))
+           (is (not (.hasAttribute item0 "data-last")))
+           (is (not (.hasAttribute item1 "data-last")))
+           (is (.hasAttribute item2 "data-last"))
+           (done)))))))
 
 ;; ── Dynamic child removal ─────────────────────────────────────────────────────
 
@@ -247,11 +255,13 @@
       (.appendChild tl item1)
       (append! tl)
       (is (.hasAttribute item1 "data-last"))
-      ;; Remove item1 — its disconnectedCallback fires x-timeline-item-disconnected
-      ;; on document, x-timeline's document listener calls update-items!
       (.remove item1)
-      (is (= "0" (.getAttribute item0 "data-index")))
-      (is (.hasAttribute item0 "data-last")))))
+      (async done
+        (after-slotchange
+         (fn []
+           (is (= "0" (.getAttribute item0 "data-index")))
+           (is (.hasAttribute item0 "data-last"))
+           (done)))))))
 
 ;; ── attributeChangedCallback propagation ─────────────────────────────────────
 
@@ -379,7 +389,65 @@
       (.appendChild tl item1)
       (append! tl)
       (.moveBefore tl item1 item0)
-      (is (= "0" (.getAttribute item1 "data-index")))
-      (is (= "1" (.getAttribute item0 "data-index")))
-      (is (not (.hasAttribute item1 "data-last")))
-      (is (.hasAttribute item0 "data-last")))))
+      (async done
+        (after-slotchange
+         (fn []
+           (is (= "0" (.getAttribute item1 "data-index")))
+           (is (= "1" (.getAttribute item0 "data-index")))
+           (is (not (.hasAttribute item1 "data-last")))
+           (is (.hasAttribute item0 "data-last"))
+           (done)))))))
+
+;; ── Child watch ───────────────────────────────────────────────────────────────
+
+(defn- count-index-writes!
+  "An atom that counts the data-index writes inside `tl` from now on."
+  [^js tl]
+  (let [writes (atom 0)]
+    (.observe (js/MutationObserver. (fn count-records [records] (swap! writes + (.-length records))))
+              tl #js {:subtree true :attributeFilter #js ["data-index"]})
+    writes))
+
+(deftest items-added-together-are-indexed-once-test
+  (async done
+    (let [^js tl     (append! (make-timeline))
+          writes     (count-index-writes! tl)]
+      (dotimes [_ 50]
+        (.appendChild tl (make-item)))
+      (after-slotchange
+       (fn []
+         (is (= 50 @writes) "each item gets its index once")
+         (done))))))
+
+(deftest an-item-leaving-another-timeline-leaves-this-one-alone-test
+  (async done
+    (let [^js this-tl  (append! (make-timeline))
+          ^js other-tl (append! (make-timeline))
+          ^js leaving  (make-item)]
+      (.appendChild this-tl (make-item))
+      (.appendChild other-tl (make-item))
+      (.appendChild other-tl leaving)
+      (after-slotchange
+       (fn []
+         (let [writes (count-index-writes! this-tl)]
+           (.remove leaving)
+           (after-slotchange
+            (fn []
+              (is (= 0 @writes))
+              (done)))))))))
+
+(deftest a-nested-timeline-keeps-its-own-items-test
+  (async done
+    (let [^js outer      (append! (make-timeline))
+          ^js outer-item (make-item)
+          ^js inner      (make-timeline)
+          inner-items    [(make-item) (make-item)]]
+      (doseq [^js item inner-items]
+        (.appendChild inner item))
+      (.appendChild outer-item inner)
+      (.appendChild outer outer-item)
+      (after-slotchange
+       (fn []
+         (is (.hasAttribute outer-item "data-last") "the outer timeline has one item")
+         (is (= ["0" "1"] (mapv #(.getAttribute ^js % "data-index") inner-items)))
+         (done))))))

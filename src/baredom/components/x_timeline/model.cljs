@@ -11,10 +11,8 @@
   #js [attr-label attr-position attr-striped])
 
 ;; ── Child component constants (no cross-namespace import) ─────────────────────
-(def child-tag                "x-timeline-item")
-(def child-event-connected    "x-timeline-item-connected")
-(def child-event-disconnected "x-timeline-item-disconnected")
-(def child-event-click        "x-timeline-item-click")
+(def child-tag         "x-timeline-item")
+(def child-event-click "x-timeline-item-click")
 
 ;; ── Event name constants ──────────────────────────────────────────────────────
 (def event-select "x-timeline-select")
