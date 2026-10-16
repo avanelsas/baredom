@@ -190,6 +190,17 @@ The container will automatically:
 
 ---
 
+# Writes on Other Nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| each `x-tab` child | `selected` | the selection or the tabs change |
+| the panel a tab names in `controls` | `hidden` | the selection or the tabs change |
+
+`x-tabs` owns these. A value an author writes there is replaced on the next change.
+
+---
+
 # Styling
 
 `x-tabs` is intentionally lightweight.

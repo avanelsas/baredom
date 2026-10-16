@@ -170,9 +170,9 @@
 (defn- apply-skeleton!
   "Gives `node` the animation of the group, and a delay in phase whenever its animation starts."
   [^js node animation]
-  (when (or (not= animation (du/get-attr node "animation")) (not (phased? node)))
+  (when (or (not= animation (du/get-attr node skeleton-model/attr-animation)) (not (phased? node)))
     (phase! node))
-  (du/set-attr-to! node "animation" animation))
+  (du/set-attr-to! node skeleton-model/attr-animation animation))
 
 (defn- apply-skeletons! [^js el animation]
   (doseq [^js node (slotted-skeletons el)]

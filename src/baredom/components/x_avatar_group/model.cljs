@@ -12,6 +12,10 @@
 (def observed-attributes
   #js [attr-size attr-overlap attr-max attr-direction attr-disabled attr-label])
 
+(def foreign-writes
+  "The attributes x-avatar-group writes on each slotted child."
+  [{:target :any :attributes #{attr-size attr-disabled}}])
+
 ;; ── Valid enum sets & defaults ────────────────────────────────────────────
 (def valid-sizes      #{"xs" "sm" "md" "lg" "xl"})
 (def valid-overlaps   #{"none" "sm" "md" "lg"})

@@ -172,6 +172,35 @@
           (map #(get string-defs % (str %)))
           (parse-def-value text "internal-attributes"))))
 
+(defn- ns->file
+  "The source file of the namespace named `ns-name`."
+  [ns-name]
+  (io/file (str "src/" (-> ns-name (str/replace "." "/") (str/replace "-" "_")) ".cljs")))
+
+(defn- required-string-defs
+  "The string defs of each model namespace that `text` requires, by its alias."
+  [text]
+  (into {}
+        (for [[_ ns-name alias] (re-seq #"\[(baredom\.components\.[\w.\-]+\.model)\s+:as\s+([\w\-]+)\]" text)
+              :let [file (ns->file ns-name)]
+              :when (.exists file)]
+          [alias (extract-string-defs (slurp file))])))
+
+(defn extract-foreign-writes
+  "A model's `foreign-writes`, each name resolved to its text: the attributes the component
+   writes on nodes it does not own. A name may be a def of the model or of a model it requires."
+  [text]
+  (let [own      (extract-string-defs text)
+        required (required-string-defs text)
+        text-of  (fn text-of [x]
+                   (if (and (symbol? x) (namespace x))
+                     (get-in required [(namespace x) (symbol (name x))] x)
+                     (get own x x)))]
+    (mapv (fn resolve-write [{:keys [target attributes]}]
+            {:target     (text-of target)
+             :attributes (into (sorted-set) (map text-of) attributes)})
+          (parse-def-value text "foreign-writes"))))
+
 ;; ── CSS API ─────────────────────────────────────────────────────────────────
 ;; A component's styling surface lives in its implementation, not its model: the
 ;; custom properties are written into the CSS it installs, and the parts are the
@@ -326,6 +355,7 @@
                          :attributes     (extract-observed-attributes text)
                          :internal-attributes
                          (extract-internal-attributes text)
+                         :foreign-writes (extract-foreign-writes text)
                          :slots          (extract-slots text)
                          :css-properties (extract-css-properties tag tags source)
                          :css-parts      (extract-css-parts source)

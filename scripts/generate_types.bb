@@ -139,10 +139,17 @@
                        (when (aria-attribute? attr-name) {:type {:text "string"}}))))
           attributes)))
 
+(defn- cem-foreign-write
+  "A write on nodes the component does not own, as the manifest states it. CEM 1.0.0 has no
+   field for it and allows the addition."
+  [{:keys [target attributes]}]
+  {:target     (if (keyword? target) (name target) target)
+   :attributes (vec attributes)})
+
 (defn generate-cem-module
   "Generate a CEM module entry for a component."
   [{:keys [tag-name properties attributes internal-attributes events methods slots string-defs
-           css-properties css-parts]}]
+           css-properties css-parts foreign-writes]}]
   (let [interface-name (tag->interface-name tag-name)
         sdefs (or string-defs {})
         members (vec (concat
@@ -191,18 +198,20 @@
      ;; array-map, not a literal: ten keys is past the size a map literal keeps
      ;; in insertion order, and a hash-map would reshuffle every declaration in
      ;; the manifest on every run.
-     :declarations [(array-map
-                     :kind          "class"
-                     :name          interface-name
-                     :tagName       tag-name
-                     :superclass    {:name "HTMLElement"}
-                     :members       members
-                     :attributes    (cem-attributes (remove (set internal-attributes) attributes)
-                                                    properties sdefs)
-                     :events        (or cem-events [])
-                     :slots         cem-slots
-                     :cssProperties (or css-properties [])
-                     :cssParts      (or css-parts []))]
+     :declarations [(apply array-map
+                           (cond-> [:kind          "class"
+                                    :name          interface-name
+                                    :tagName       tag-name
+                                    :superclass    {:name "HTMLElement"}
+                                    :members       members
+                                    :attributes    (cem-attributes (remove (set internal-attributes) attributes)
+                                                                   properties sdefs)
+                                    :events        (or cem-events [])
+                                    :slots         cem-slots
+                                    :cssProperties (or css-properties [])
+                                    :cssParts      (or css-parts [])]
+                             (seq foreign-writes)
+                             (conj :foreignWrites (mapv cem-foreign-write foreign-writes))))]
      :exports      [{:kind        "js"
                      :name        "init"
                      :declaration {:name "init"}}

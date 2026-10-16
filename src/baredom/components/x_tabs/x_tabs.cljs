@@ -1,7 +1,9 @@
 (ns baredom.components.x-tabs.x-tabs
-  (:require [baredom.utils.component :as component]
+  (:require [clojure.string :as str]
+            [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [baredom.components.x-tabs.model :as model]))
+            [baredom.components.x-tabs.model :as model]
+            [baredom.components.x-tab.model :as tab-model]))
 
 (def ^:private key-base "__xTabsBase")
 (def ^:private key-init "__xTabsInitialized")
@@ -29,9 +31,11 @@
 (defn- direct-children [^js el]
   (array-seq (.-children el)))
 
+(def ^:private tab-tag-upper (str/upper-case tab-model/tag-name))
+
 (defn- get-tabs [^js el]
   (->> (direct-children el)
-       (filter #(= "X-TAB" (.-tagName %)))
+       (filter #(= tab-tag-upper (.-tagName %)))
        vec))
 
 (defn- enabled-tab? [^js tab]
@@ -63,15 +67,13 @@
 
 (defn- select-tab! [tabs value]
   (doseq [tab tabs]
-    (let [selected? (= (tab-value tab) value)]
-      (du/set-bool-attr-to! tab "selected" selected?)
-      (du/set-attr-to! tab "tabindex" (if (and selected? (enabled-tab? tab)) "0" "-1")))))
+    (du/set-bool-attr-to! tab tab-model/attr-selected (= (tab-value tab) value))))
 
 (defn- hide-panel! [^js tab visible?]
   (let [id (.getAttribute tab "controls")]
     (when (and id (not= id ""))
       (when-let [panel (.getElementById js/document id)]
-        (du/set-bool-attr-to! panel "hidden" (not visible?))))))
+        (du/set-bool-attr-to! panel model/panel-attr-hidden (not visible?))))))
 
 (defn- update-panels! [tabs selected-value]
   (doseq [tab tabs]

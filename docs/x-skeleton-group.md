@@ -66,11 +66,19 @@ Circle avatar (40px) + 2 text lines (70%, 50%) side by side. Horizontal layout.
 ### `profile`
 Circle avatar (48px) + 2 text lines (120px, 80px) side by side. Horizontal layout.
 
+## Writes on other nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| each slotted `x-skeleton` | `animation` | from the group's `animation` |
+
+The group owns it. An `animation` an author writes on one skeleton is replaced.
+
 ## Animation synchronization
 
 When multiple `x-skeleton` elements are placed independently, each starts its CSS animation at a different point in time. Inside an `x-skeleton-group`, all children animate in phase — pulses and waves are visually synchronized.
 
-This works via the inherited CSS custom property `--x-skeleton-delay`, which the group computes to align all children to a common animation phase.
+The group aligns each animation through `--x-skeleton-delay`. Its preset skeletons inherit the delay from the group. A slotted skeleton gets its own delay inline, when it arrives and when the group's `animation` changes.
 
 ## Accessibility
 

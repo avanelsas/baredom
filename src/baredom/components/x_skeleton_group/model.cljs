@@ -1,4 +1,5 @@
-(ns baredom.components.x-skeleton-group.model)
+(ns baredom.components.x-skeleton-group.model
+  (:require [baredom.components.x-skeleton.model :as skeleton-model]))
 
 (def tag-name "x-skeleton-group")
 
@@ -16,6 +17,10 @@
 
 (def observed-attributes
   #js [attr-preset attr-animation attr-count])
+
+(def foreign-writes
+  "The attributes x-skeleton-group writes on each slotted x-skeleton."
+  [{:target skeleton-model/tag-name :attributes #{skeleton-model/attr-animation}}])
 
 (def property-api
   {:preset    {:type 'string  :reflects-attribute attr-preset    :default "" :enum allowed-presets}

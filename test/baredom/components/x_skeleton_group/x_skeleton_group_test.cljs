@@ -228,3 +228,11 @@
            (is (not= before (delay-of skeleton)) "the skeleton gets the delay of its new animation")
            (done)))
        50))))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-skeleton-group-writes-only-what-it-declares-on-other-nodes-test
+  (let [^js el (make-el)]
+    (.appendChild el (.createElement js/document "x-skeleton"))
+    (append! el)
+    (let [written (writes/foreign-writes! el #(.setAttribute el model/attr-animation "wave"))]
+      (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))

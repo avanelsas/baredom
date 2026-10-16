@@ -537,6 +537,10 @@
         "name" : "overflow"
       }, {
         "name" : "part"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "any",
+        "attributes" : [ "disabled", "size" ]
       } ]
     } ],
     "exports" : [ {
@@ -17024,6 +17028,10 @@
         "name" : "container"
       }, {
         "name" : "preset-container"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "x-skeleton",
+        "attributes" : [ "animation" ]
       } ]
     } ],
     "exports" : [ {
@@ -19984,6 +19992,13 @@
       } ],
       "cssParts" : [ {
         "name" : "base"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "x-tab",
+        "attributes" : [ "selected" ]
+      }, {
+        "target" : "any",
+        "attributes" : [ "hidden" ]
       } ]
     } ],
     "exports" : [ {

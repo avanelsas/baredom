@@ -178,3 +178,14 @@
               (done))
             50)))
        50))))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-avatar-group-writes-only-what-it-declares-on-other-nodes-test
+  (let [^js el (make-el)]
+    (.appendChild el (make-avatar))
+    (.appendChild el (make-avatar))
+    (append! el)
+    (let [written (writes/foreign-writes! el (fn change-group []
+                                               (.setAttribute el model/attr-size "lg")
+                                               (.setAttribute el model/attr-disabled "")))]
+      (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))
