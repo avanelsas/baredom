@@ -12,8 +12,9 @@
 (def ^:private k-raf          "__xScrollStoryRAF")
 (def ^:private k-visible      "__xScrollStoryVisible")
 (def ^:private k-active-index "__xScrollStoryActiveIndex")
+(def ^:private k-active-el    "__xScrollStoryActiveEl")
 (def ^:private k-last-prog    "__xScrollStoryLastProg")
-(def ^:private k-step-states       "__xScrollStoryStepStates")
+(def ^:private k-entered           "__xScrollStoryEntered")
 (def ^:private k-autoplay-raf      "__xScrollStoryAutoplayRAF")
 (def ^:private k-autoplay-last     "__xScrollStoryAutoplayLast")
 (def ^:private k-autoplay-paused   "__xScrollStoryAutoplayPaused")
@@ -179,74 +180,48 @@
   (js/setTimeout (fn [] (set! (.-textContent live) "")) 3000))
 
 ;; ── Step activation ─────────────────────────────────────────────────────────
+(defn- step-at [^js children i]
+  (when (< -1 i (.-length children)) (aget children i)))
+
 (defn- update-active-step!
-  "Mark a step child as active (set data-active), remove from previous."
-  [^js el children new-index]
-  (let [old-index (or (du/getv el k-active-index) -1)]
-    (when (not= old-index new-index)
-      ;; Remove data-active from old step
-      (when (and (>= old-index 0) (< old-index (.-length children)))
-        (let [^js old-child (aget children old-index)]
-          (du/remove-attr! old-child model/data-active)))
-      ;; Set data-active on new step
-      (when (and (>= new-index 0) (< new-index (.-length children)))
-        (let [^js new-child (aget children new-index)]
-          (du/set-attr! new-child model/data-active "")))
-      ;; Update host data attribute
-      (if (>= new-index 0)
-        (du/set-attr! el "data-active-index" (str new-index))
-        (du/remove-attr! el "data-active-index"))
-      ;; Cache active index
-      (du/setv! el k-active-index new-index)
-      ;; Dispatch step-change event
-      (let [old-id (when (and (>= old-index 0) (< old-index (.-length children)))
-                     (step-id (aget children old-index)))
-            new-id (when (and (>= new-index 0) (< new-index (.-length children)))
-                     (step-id (aget children new-index)))]
-        (du/dispatch! el model/event-step-change
-                   (clj->js (model/step-change-detail new-index new-id old-index old-id)))
-        ;; Announce to live region
-        (let [{:keys [live]} (du/getv el k-refs)]
-          (announce! el live (str "Step " (inc new-index) " active")))))))
+  "Marks the step at `new-index` active. A step that only moved fires no event."
+  [^js el ^js children new-index]
+  (let [^js old-el (du/getv el k-active-el)
+        ^js new-el (step-at children new-index)]
+    (when (not= new-index (du/getv el k-active-index))
+      (du/set-attr-to! el "data-active-index" (when (>= new-index 0) (str new-index)))
+      (du/setv! el k-active-index new-index))
+    (when-not (identical? old-el new-el)
+      (some-> old-el (du/remove-attr! model/data-active))
+      (some-> new-el (du/set-attr! model/data-active ""))
+      (du/setv! el k-active-el new-el)
+      (du/dispatch! el model/event-step-change
+                    (clj->js (model/step-change-detail new-index (some-> new-el step-id)
+                                                       (.indexOf children old-el)
+                                                       (some-> old-el step-id))))
+      (let [{:keys [live]} (du/getv el k-refs)]
+        (announce! el live (str "Step " (inc new-index) " active"))))))
 
 ;; ── Step enter/leave tracking ───────────────────────────────────────────────
-(defn- ensure-step-states!
-  "Ensure the step states array matches the current child count."
-  [^js el n]
-  (let [states (du/getv el k-step-states)]
-    (if (and states (= (.-length states) n))
-      states
-      (let [new-states (make-array n)]
-        (dotimes [i n]
-          (aset new-states i
-                (if (and states (< i (.-length states)))
-                  (aget states i)
-                  false)))
-        (du/setv! el k-step-states new-states)
-        new-states))))
-
 (defn- update-step-states!
-  "Track which steps are in the trigger zone and fire enter/leave events."
+  "Fires step-enter for each step that came into the trigger zone and step-leave for each that left.
+   A removed step leaves without an event."
   [^js el children step-rects trigger-y]
-  (let [n      (.-length children)
-        states (ensure-step-states! el n)]
-    (dotimes [i n]
-      (when (< i (count step-rects))
-        (let [{:keys [top bottom]} (nth step-rects i)
-              was-in? (aget states i)
-              is-in?  (and (<= top trigger-y) (> bottom trigger-y))
-              ^js child (aget children i)
-              id (step-id child)
-              progress (model/compute-step-progress top (- bottom top) trigger-y)]
-          (cond
-            (and (not was-in?) is-in?)
-            (do (aset states i true)
-                (du/dispatch! el model/event-step-enter
-                           (clj->js (model/step-enter-detail i id progress))))
-            (and was-in? (not is-in?))
-            (do (aset states i false)
-                (du/dispatch! el model/event-step-leave
-                           (clj->js (model/step-leave-detail i id progress))))))))))
+  (let [was-in (or (du/getv el k-entered) #{})
+        steps  (map vector (array-seq children) step-rects (range))
+        now-in (into #{} (keep (fn in-zone [[child rect]]
+                                 (when (model/in-trigger-zone? rect trigger-y) child)))
+                     steps)]
+    (doseq [[child {:keys [top bottom]} i] steps
+            :let [entered? (contains? now-in child)]
+            :when (not= entered? (contains? was-in child))
+            :let [id       (step-id child)
+                  progress (model/compute-step-progress top (- bottom top) trigger-y)]]
+      (if entered?
+        (du/dispatch! el model/event-step-enter (clj->js (model/step-enter-detail i id progress)))
+        (du/dispatch! el model/event-step-leave (clj->js (model/step-leave-detail i id progress)))))
+    (when (not= was-in now-in)
+      (du/setv! el k-entered now-in))))
 
 ;; ── Transform application ───────────────────────────────────────────────────
 (defn- update-scroll!
@@ -336,9 +311,7 @@
     ;; Dispatch pause event
     (let [prog     (or (du/getv el k-last-prog) 0)
           idx      (or (du/getv el k-active-index) -1)
-          children (.-children el)
-          aid      (when (and (>= idx 0) (< idx (.-length children)))
-                     (step-id (aget children idx)))]
+          aid      (some-> (du/getv el k-active-el) step-id)]
       (du/dispatch! el model/event-autoplay-pause
                  (clj->js (model/autoplay-pause-detail prog idx aid))))))
 
@@ -355,9 +328,7 @@
     ;; Dispatch resume event
     (let [prog     (or (du/getv el k-last-prog) 0)
           idx      (or (du/getv el k-active-index) -1)
-          children (.-children el)
-          aid      (when (and (>= idx 0) (< idx (.-length children)))
-                     (step-id (aget children idx)))]
+          aid      (some-> (du/getv el k-active-el) step-id)]
       (du/dispatch! el model/event-autoplay-resume
                  (clj->js (model/autoplay-resume-detail prog idx aid))))))
 
@@ -475,9 +446,6 @@
 
 ;; ── Slot change ─────────────────────────────────────────────────────────────
 (defn- on-slotchange [^js el]
-  ;; Reset step states cache
-  (du/setv! el k-step-states nil)
-  ;; Re-apply if visible
   (when (du/getv el k-visible)
     (update-scroll! el)))
 
@@ -488,7 +456,6 @@
         scroll-h    (fn [_e] (on-scroll el))
         slot-h      (fn [_e] (on-slotchange el))
         resize-h    (fn [_e] (when (du/getv el k-visible)
-                               (du/setv! el k-step-states nil)
                                (update-scroll! el)))]
     (.addEventListener slot "slotchange" slot-h)
     (.addEventListener js/window "resize" resize-h)
@@ -564,7 +531,8 @@
       (do
         (clean-step-attrs! el)
         (du/setv! el k-active-index -1)
-        (du/setv! el k-step-states nil)
+        (du/setv! el k-active-el nil)
+        (du/setv! el k-entered nil)
         (detach-scroll-listener! el)
         (stop-autoplay! el))
       ;; When enabled and visible: re-attach and update
@@ -644,8 +612,9 @@
   (teardown-observer! el)
   (du/setv! el k-visible false)
   (du/setv! el k-active-index -1)
+  (du/setv! el k-active-el nil)
   (du/setv! el k-last-prog nil)
-  (du/setv! el k-step-states nil))
+  (du/setv! el k-entered nil))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)

@@ -371,3 +371,52 @@
          (append! el)
          (done))
        300))))
+
+;; ── A child change ──────────────────────────────────────────────────────────
+(defn- ^js tall-story
+  "A visible story whose first step covers the trigger line."
+  []
+  (let [^js el (make-el)]
+    (add-steps! el ["s1" "s2"])
+    (set! (.. el -firstElementChild -style -height) "3000px")
+    el))
+
+(defn- count-step-enters!
+  "An atom that counts the step-enter events of `el` by step id."
+  [^js el]
+  (let [enters (atom {})]
+    (.addEventListener el model/event-step-enter
+                       (fn count-enter [^js e]
+                         (swap! enters update (.. e -detail -id) (fnil inc 0))))
+    enters))
+
+(deftest an-appended-step-does-not-enter-the-current-step-again-test
+  (async done
+    (let [^js el (tall-story)
+          enters (count-step-enters! el)]
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (is (= {"s1" 1} @enters) "the first step enters once")
+         (add-steps! el ["s3"])
+         (js/setTimeout
+          (fn []
+            (is (= {"s1" 1} @enters))
+            (done))
+          300))
+       300))))
+
+(deftest a-resize-does-not-enter-the-current-step-again-test
+  (async done
+    (let [^js el (tall-story)
+          enters (count-step-enters! el)]
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (.dispatchEvent js/window (js/Event. "resize"))
+         (js/setTimeout
+          (fn []
+            (is (= {"s1" 1} @enters))
+            (done))
+          300))
+       300))))
