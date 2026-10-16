@@ -81,22 +81,57 @@
        :ellipsis-at (count before-idxs)
        :total       total})))
 
+;; ── List items ────────────────────────────────────────────────────────────
+(def ^:private ellipsis-item {:kind :ellipsis :key "ellipsis"})
+
+(defn- crumb-item [k index current?]
+  {:kind :crumb :key (str "crumb " k) :index index :current? current?})
+
+(defn- separator-item [k]
+  {:kind :separator :key (str "separator " k)})
+
+(defn- items-at
+  "The items that show the visible child `index` at `pos`, with what comes before it."
+  [crumb-keys ellipsis-at current-pos pos index]
+  (let [k     (nth crumb-keys index)
+        crumb (crumb-item k index (= pos current-pos))]
+    (cond
+      (= pos ellipsis-at) [ellipsis-item (separator-item k) crumb]
+      (pos? pos)          [(separator-item k) crumb]
+      :else               [crumb])))
+
+(defn list-items
+  "Return the items of the list in order: crumbs, separators and the ellipsis, each with a `:key`.
+   A crumb has the `:index` of its child and `:current?`."
+  [{:keys [visible ellipsis-at]} crumb-keys preserve-aria-current?]
+  (let [current-pos (when-not preserve-aria-current? (dec (count visible)))]
+    (cond-> (vec (mapcat (partial items-at crumb-keys ellipsis-at current-pos) (range) visible))
+      (= ellipsis-at (count visible)) (conj ellipsis-item))))
+
+(defn- items-of
+  "The list items of the parsed model `m` for the children with `crumb-keys`."
+  [{:keys [max-items items-before items-after preserve-aria-current]} crumb-keys]
+  (list-items (build-plan (count crumb-keys) max-items items-before items-after)
+              crumb-keys preserve-aria-current))
+
 ;; ── Normalize ─────────────────────────────────────────────────────────────
 (defn normalize
   [{:keys [separator-raw size-raw variant-raw wrap-raw max-items-raw
            items-before-raw items-after-raw disabled-present?
-           preserve-aria-current-present? aria-label-raw aria-describedby-raw]}]
-  {:separator             (normalize-separator separator-raw)
-   :size                  (parse-size    size-raw)
-   :variant               (parse-variant variant-raw)
-   :wrap                  (mu/parse-bool-attr wrap-raw)
-   :max-items             (parse-pos-int-or-nil max-items-raw)
-   :items-before          (parse-pos-int items-before-raw default-items-before)
-   :items-after           (parse-pos-int items-after-raw  default-items-after)
-   :disabled              (boolean disabled-present?)
-   :preserve-aria-current (boolean preserve-aria-current-present?)
-   :aria-label            aria-label-raw
-   :aria-describedby      aria-describedby-raw})
+           preserve-aria-current-present? aria-label-raw aria-describedby-raw
+           crumb-htmls]}]
+  (let [m {:separator             (normalize-separator separator-raw)
+           :size                  (parse-size    size-raw)
+           :variant               (parse-variant variant-raw)
+           :wrap                  (mu/parse-bool-attr wrap-raw)
+           :max-items             (parse-pos-int-or-nil max-items-raw)
+           :items-before          (parse-pos-int items-before-raw default-items-before)
+           :items-after           (parse-pos-int items-after-raw  default-items-after)
+           :disabled              (boolean disabled-present?)
+           :preserve-aria-current (boolean preserve-aria-current-present?)
+           :aria-label            aria-label-raw
+           :aria-describedby      aria-describedby-raw}]
+    (assoc m :items (items-of m (mu/unique-keys crumb-htmls)))))
 
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api

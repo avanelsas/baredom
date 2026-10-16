@@ -232,3 +232,43 @@
     (.remove el)
     (.appendChild (.-body js/document) el)
     (is (= "lg" (.getAttribute el "data-size")))))
+
+;; ── Keyed crumbs ──────────────────────────────────────────────────────────
+(defn- crumb-nodes [^js el]
+  (vec (array-seq (.querySelectorAll (shadow-part el "[part=list]") ".crumb"))))
+
+(deftest a-crumb-whose-child-stays-keeps-its-node-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (add-crumb! el "Home")
+      (add-crumb! el "Products")
+      (js/setTimeout
+       (fn []
+         (let [[home products] (crumb-nodes el)]
+           (add-crumb! el "Shoes")
+           (js/setTimeout
+            (fn []
+              (let [[^js home-after ^js products-after ^js shoes] (crumb-nodes el)]
+                (is (identical? home home-after))
+                (is (identical? products products-after))
+                (is (= "Shoes" (.-textContent shoes)))
+                (is (.hasAttribute shoes "data-current"))
+                (is (not (.hasAttribute products-after "data-current"))))
+              (done))
+            0)))
+       0))))
+
+(deftest a-separator-change-keeps-the-crumbs-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (add-crumb! el "Home")
+      (add-crumb! el "Products")
+      (js/setTimeout
+       (fn []
+         (let [before (crumb-nodes el)]
+           (.setAttribute el model/attr-separator "›")
+           (is (= before (crumb-nodes el)))
+           (is (= "›" (.-textContent
+                       (.querySelector (shadow-part el "[part=list]") ".separator"))))
+           (done)))
+       0))))
