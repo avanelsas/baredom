@@ -61,7 +61,7 @@ jobs:
           python3 -m http.server 8000 --bind 127.0.0.1 --directory _site >/dev/null 2>&1 &
           sleep 1
           node scripts/prerender.mjs --static "http://127.0.0.1:8000/bare-html/mirror.html?copy" _site/bare-html/mirror.static.html
-          test "$(grep -o 'data-x-key' _site/bare-html/mirror.static.html | wc -l)" -eq 3
+          test "$(grep -oE 'data-x-key="[0-9]+"' _site/bare-html/mirror.static.html | wc -l)" -eq 3
           test "$(grep -o '<script' _site/bare-html/mirror.static.html | wc -l)" -eq 0
         env:
           CHROME_FLAGS: "--no-sandbox"
