@@ -35,6 +35,32 @@
    "[part=label][hidden]{"
    "display:none !important;}"))
 
+;; ── Attribute readers ────────────────────────────────────────────────────────
+(defn- read-model [^js el]
+  (model/normalize
+   {:label-raw    (du/get-attr el model/attr-label)
+    :position-raw (du/get-attr el model/attr-position)
+    :striped?     (du/has-attr? el model/attr-striped)}))
+
+;; ── Child watch ──────────────────────────────────────────────────────────────
+(defn- update-items! [^js el]
+  (let [{:keys [position striped?]} (or (du/getv el k-model) (read-model el))
+        ^js items (.querySelectorAll el (str ":scope > " model/child-tag))
+        len       (.-length items)]
+    (loop [i 0]
+      (when (< i len)
+        (let [^js item (aget items i)
+              last?    (= i (dec len))]
+          (du/set-attr! item "data-index" (str i))
+          (if last?
+            (du/set-attr! item "data-last" "")
+            (du/remove-attr! item "data-last"))
+          (du/set-attr! item "data-position" (model/item-position position i))
+          (if striped?
+            (du/set-attr! item "data-striped" "")
+            (du/remove-attr! item "data-striped")))
+        (recur (inc i))))))
+
 ;; ── DOM initialisation ───────────────────────────────────────────────────────
 (defn- init-dom! [^js el]
   (let [root      (.attachShadow el #js {:mode "open"})
@@ -50,6 +76,8 @@
     (.appendChild root style)
     (.appendChild root label-div)
     (.appendChild root slot-el)
+    ;; The slot lives as long as the shadow tree, so its listener needs no remove path.
+    (.addEventListener slot-el "slotchange" (fn on-slotchange [_] (update-items! el)))
 
     (du/setv! el k-refs {:root      root
                          :label-div label-div
@@ -59,13 +87,6 @@
   (or (du/getv el k-refs)
       (do (init-dom! el)
           (du/getv el k-refs))))
-
-;; ── Attribute readers ────────────────────────────────────────────────────────
-(defn- read-model [^js el]
-  (model/normalize
-   {:label-raw    (du/get-attr el model/attr-label)
-    :position-raw (du/get-attr el model/attr-position)
-    :striped?     (du/has-attr? el model/attr-striped)}))
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [label] :as m}]
@@ -93,38 +114,11 @@
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
-;; ── Child update (core coordinator) ─────────────────────────────────────────
-(defn- update-items! [^js el]
-  (let [{:keys [position striped?]} (or (du/getv el k-model) (read-model el))
-        ^js items (.querySelectorAll el model/child-tag)
-        len       (.-length items)]
-    (loop [i 0]
-      (when (< i len)
-        (let [^js item (aget items i)
-              last?    (= i (dec len))]
-          (du/set-attr! item "data-index" (str i))
-          (if last?
-            (du/set-attr! item "data-last" "")
-            (du/remove-attr! item "data-last"))
-          (du/set-attr! item "data-position" (model/item-position position i))
-          (if striped?
-            (du/set-attr! item "data-striped" "")
-            (du/remove-attr! item "data-striped")))
-        (recur (inc i))))))
-
 ;; ── Event dispatch ────────────────────────────────────────────────────────────
 (defn- dispatch-select! [^js el index status label]
   (du/dispatch! el model/event-select (clj->js (model/select-detail index status label))))
 
 ;; ── Event handlers ────────────────────────────────────────────────────────────
-(defn- on-item-connected [^js el ^js _e]
-  (update-items! el))
-
-(defn- on-item-disconnected [^js el ^js _e]
-  ;; Guard: document listener may fire after x-timeline itself has disconnected.
-  (when (.-isConnected el)
-    (update-items! el)))
-
 (defn- on-item-click [^js el ^js e]
   (.stopPropagation e)
   (let [^js target   (.-target e)
@@ -139,26 +133,13 @@
 
 ;; ── Listener management ───────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
-  (let [conn-h  (fn [e] (on-item-connected el e))
-        click-h (fn [e] (on-item-click el e))
-        doc-h   (fn [e] (on-item-disconnected el e))]
-    (.addEventListener el model/child-event-connected conn-h)
-    (.addEventListener el model/child-event-click     click-h)
-    (.addEventListener js/document model/child-event-disconnected doc-h)
-    (du/setv! el k-handlers
-              #js {"item-connected"        conn-h
-                   "item-click"            click-h
-                   "item-disconnected-doc" doc-h})))
+  (let [click-h (fn [e] (on-item-click el e))]
+    (.addEventListener el model/child-event-click click-h)
+    (du/setv! el k-handlers #js {"item-click" click-h})))
 
 (defn- remove-listeners! [^js el]
-  (let [hs (du/getv el k-handlers)]
-    (when hs
-      (let [conn-h  (gobj/get hs "item-connected")
-            click-h (gobj/get hs "item-click")
-            doc-h   (gobj/get hs "item-disconnected-doc")]
-        (when conn-h  (.removeEventListener el model/child-event-connected conn-h))
-        (when click-h (.removeEventListener el model/child-event-click click-h))
-        (when doc-h   (.removeEventListener js/document model/child-event-disconnected doc-h)))))
+  (when-let [hs (du/getv el k-handlers)]
+    (.removeEventListener el model/child-event-click (gobj/get hs "item-click")))
   (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────────

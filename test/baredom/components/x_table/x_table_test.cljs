@@ -35,6 +35,12 @@
   (.appendChild (.-body js/document) el)
   el)
 
+;; The table learns of its rows through slotchange, which runs after the change.
+(defn- after-slotchange
+  "Calls `f` after the slotchange of the changes made so far."
+  [f]
+  (js/setTimeout f 0))
+
 (defn ^js shadow-part [^js el selector]
   (.querySelector (.-shadowRoot el) selector))
 
@@ -393,9 +399,13 @@
         (.appendChild table r)))
 
     ;; Row 1 (odd) → no stripe, Row 2 (even) → stripe, Row 3 (odd) → no stripe
-    (is (not (.hasAttribute row1 "data-stripe")))
-    (is (= "even" (.getAttribute row2 "data-stripe")))
-    (is (not (.hasAttribute row3 "data-stripe")))))
+    (async done
+      (after-slotchange
+       (fn []
+         (is (not (.hasAttribute row1 "data-stripe")))
+         (is (= "even" (.getAttribute row2 "data-stripe")))
+         (is (not (.hasAttribute row3 "data-stripe")))
+         (done))))))
 
 (deftest striped-not-set-when-striped-absent-test
   (let [^js table (append! (make-table {:columns "2"}))
@@ -482,6 +492,27 @@
       (.appendChild table r))
     (.moveBefore table row3 row1)
     ;; Order is now row3, row1, row2: only the second row is even.
-    (is (not (.hasAttribute row3 "data-stripe")))
-    (is (= "even" (.getAttribute row1 "data-stripe")))
-    (is (not (.hasAttribute row2 "data-stripe")))))
+    (async done
+      (after-slotchange
+       (fn []
+         (is (not (.hasAttribute row3 "data-stripe")))
+         (is (= "even" (.getAttribute row1 "data-stripe")))
+         (is (not (.hasAttribute row2 "data-stripe")))
+         (done))))))
+
+;; ── child watch ──────────────────────────────────────────────────────────────
+
+(deftest removed-row-restripes-the-rows-below-test
+  (async done
+    (let [^js table (append! (make-table {:columns "1" :striped true}))
+          rows      (vec (repeatedly 4 make-row))
+          [_ ^js row2 ^js row3 ^js row4] rows]
+      (doseq [^js r rows]
+        (.appendChild table r))
+      (.remove row2)
+      (after-slotchange
+       (fn []
+         ;; Order is now row1, row3, row4: only the second row is even.
+         (is (= "even" (.getAttribute row3 "data-stripe")))
+         (is (not (.hasAttribute row4 "data-stripe")))
+         (done))))))

@@ -196,7 +196,7 @@ When used inside an `x-table` (or any `display:grid` container with defined colu
 
 ## Parent Coordination Events
 
-`x-table-row` fires `x-table-row-connected` and `x-table-row-disconnected` so that a future `x-table` parent can track the rows it contains without storing state on the row itself. The events bubble and are composed, so `x-table` can listen once on its own element.
+`x-table-row` fires `x-table-row-connected` and `x-table-row-disconnected` for code outside the library. `x-table` does not use them: it learns of its rows through `slotchange`.
 
 `x-table-cell` also fires `x-table-cell-connected` / `x-table-cell-disconnected` events. These bubble through `x-table-row` to `x-table` unchanged — `x-table-row` does not intercept them.
 

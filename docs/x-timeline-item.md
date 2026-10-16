@@ -175,21 +175,6 @@ document.querySelector('x-timeline-item').addEventListener('x-timeline-item-clic
 });
 ```
 
-## Parent-child coordination (for future x-timeline)
+## Parent-child coordination
 
-When building `x-timeline`, listen for `x-timeline-item-connected` (bubbling) to detect children, then:
-
-```js
-// After each connect, re-index all children
-this.addEventListener('x-timeline-item-connected', () => {
-  const items = this.querySelectorAll('x-timeline-item');
-  items.forEach((item, i) => {
-    item.setAttribute('data-index', i);
-    if (i === items.length - 1) {
-      item.setAttribute('data-last', '');
-    } else {
-      item.removeAttribute('data-last');
-    }
-  });
-});
-```
+`x-timeline` learns of its items through `slotchange` and writes their `data-*` attributes. It does not use `x-timeline-item-connected` or `x-timeline-item-disconnected`, which are for code outside the library.

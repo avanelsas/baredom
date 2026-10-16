@@ -120,6 +120,11 @@ Reference by name when discussing architecture:
   - **`[refs-key event handler-fn]`** — handler-fn is a top-level `defn-` of `[^js el ^js event]` that the install path wraps in `(fn [event] (handler el event))`. No handlers map, no remove path. Use only when listeners bind to shadow children whose lifetime is tied to the shadow DOM itself (so they get GC'd with the element). Reference: `x-button` (`listener-spec` + `install-listeners!`).
   - Don't invent a third shape — pick whichever matches the removability requirement.
 - **`form-validity`** — a form-associated control composes `baredom.utils.forms` for its ElementInternals constraint validation rather than hand-writing the `error → customError` / `required+empty → valueMissing` / `else → clear` decision. The decision is a pure function (`forms/validity`) split from its effect (`forms/set-validity!`/`forms/sync!`); the component supplies only its per-control variation (empty predicate, anchor, value, non-default message). The popup-selection controls additionally compose `forms/apply-error-display!` + the pure `forms/error-describedby` for the inline `[part=error]` / `data-invalid` / `aria-invalid` / `aria-describedby` recipe. Golden samples: `x-select` (`forms/sync!` + `forms/apply-error-display!`), `x-form-field` (`forms/set-validity!`; keeps its own labeled-field error display). A form-associated control also installs the instance-level validation API via `forms/install-validity-api!` — see the shared-utilities list below.
+- **`child-watch`**: a parent learns of its children through `slotchange` on its shadow slot,
+  bound once in its shadow builder with no remove path. It runs once for a group of changes,
+  right after them. A parent never relies on an event its children send for this. Use a
+  `MutationObserver` only when the parent needs the attributes or text of its children.
+  Reference: `x-timeline` (`update-items!`).
 - **`keyed-list`**: a list in a component whose items come and go. The model gives each item a
   `:key`. The component hands the keys to `places/sync!` with a function that makes the node of
   a new key, then brings each node to its item with `du/set-attr-to!`. A node that stays is never

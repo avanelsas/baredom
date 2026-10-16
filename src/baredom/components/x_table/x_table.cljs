@@ -17,7 +17,6 @@
 (def ^:private stripe-even   "even")
 (def ^:private hk-sort       "sort")
 (def ^:private hk-row-click  "row-click")
-(def ^:private hk-row-conn   "row-conn")
 (def ^:private attr-data-striped    "data-striped")
 (def ^:private attr-data-bordered   "data-bordered")
 (def ^:private attr-data-full-width "data-full-width")
@@ -36,7 +35,6 @@
 ;; each child's own model, but x-table consumes them as local constants.
 (def ^:private ev-cell-sort       "x-table-cell-sort")
 (def ^:private ev-row-click       "x-table-row-click")
-(def ^:private ev-row-connected   "x-table-row-connected")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -92,31 +90,6 @@
    ;; participate as direct grid items of the host grid.
    "slot{display:contents;}"))
 
-;; ── DOM initialisation ───────────────────────────────────────────────────────
-(defn- init-dom! [^js el]
-  (let [root        (.attachShadow el #js {:mode "open"})
-        style       (.createElement js/document "style")
-        caption-div (.createElement js/document "div")
-        slot-el     (.createElement js/document "slot")]
-
-    (set! (.-textContent style) style-text)
-
-    (du/set-attr! caption-div "part" "caption")
-    (du/set-attr! caption-div "hidden" "")
-
-    (.appendChild root style)
-    (.appendChild root caption-div)
-    (.appendChild root slot-el)
-
-    (du/setv! el k-refs {:root        root
-                         :caption-div caption-div
-                         :slot-el     slot-el})))
-
-(defn- ensure-refs! [^js el]
-  (or (du/getv el k-refs)
-      (do (init-dom! el)
-          (du/getv el k-refs))))
-
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
@@ -133,11 +106,45 @@
 (defn- update-stripe-attrs! [^js el]
   ;; Walk direct x-table-row children, assigning data-stripe="even" on even
   ;; (1-indexed) rows and removing it from odd rows.
-  (let [rows (array-seq (.querySelectorAll el row-tag))]
+  (let [rows (array-seq (.querySelectorAll el (str ":scope > " row-tag)))]
     (doseq [[^js row i] (map vector rows (range))]
       (if (zero? (mod (inc i) 2))
         (du/set-attr! row stripe-attr stripe-even)
         (du/remove-attr! row stripe-attr)))))
+
+;; ── Child watch ──────────────────────────────────────────────────────────────
+(defn- on-rows-changed!
+  "Stripes the rows again after rows come, go or move."
+  [^js el]
+  (when (:striped? (or (du/getv el k-model) (read-model el)))
+    (update-stripe-attrs! el)))
+
+;; ── DOM initialisation ───────────────────────────────────────────────────────
+(defn- init-dom! [^js el]
+  (let [root        (.attachShadow el #js {:mode "open"})
+        style       (.createElement js/document "style")
+        caption-div (.createElement js/document "div")
+        slot-el     (.createElement js/document "slot")]
+
+    (set! (.-textContent style) style-text)
+
+    (du/set-attr! caption-div "part" "caption")
+    (du/set-attr! caption-div "hidden" "")
+
+    (.appendChild root style)
+    (.appendChild root caption-div)
+    (.appendChild root slot-el)
+    ;; The slot lives as long as the shadow tree, so its listener needs no remove path.
+    (.addEventListener slot-el "slotchange" (fn on-slotchange [_] (on-rows-changed! el)))
+
+    (du/setv! el k-refs {:root        root
+                         :caption-div caption-div
+                         :slot-el     slot-el})))
+
+(defn- ensure-refs! [^js el]
+  (or (du/getv el k-refs)
+      (do (init-dom! el)
+          (du/getv el k-refs))))
 
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────────
 (defn- apply-grid-template! [^js el {:keys [columns]}]
@@ -250,34 +257,23 @@
             (= selectable select-single) (handle-single-select! el row)
             (= selectable select-multi)  (handle-multi-select! el row)))))))
 
-(defn- on-row-connected [^js el ^js _e]
-  ;; Re-compute stripe attributes whenever a new row connects.
-  (let [m (or (du/getv el k-model) (read-model el))]
-    (when (:striped? m)
-      (update-stripe-attrs! el))))
-
 ;; ── Listener management ──────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (let [sort-h      (fn handle-cell-sort   [e] (on-cell-sort el e))
         row-click-h (fn handle-row-click   [e] (on-row-click el e))
-        row-conn-h  (fn handle-row-connect [e] (on-row-connected el e))
         handlers    #js {}]
     (.addEventListener el ev-cell-sort      sort-h)
     (.addEventListener el ev-row-click      row-click-h)
-    (.addEventListener el ev-row-connected  row-conn-h)
     (gobj/set handlers hk-sort      sort-h)
     (gobj/set handlers hk-row-click row-click-h)
-    (gobj/set handlers hk-row-conn  row-conn-h)
     (du/setv! el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
   (when-let [hs (du/getv el k-handlers)]
     (let [sort-h      (gobj/get hs hk-sort)
-          row-click-h (gobj/get hs hk-row-click)
-          row-conn-h  (gobj/get hs hk-row-conn)]
+          row-click-h (gobj/get hs hk-row-click)]
       (when sort-h      (.removeEventListener el ev-cell-sort     sort-h))
-      (when row-click-h (.removeEventListener el ev-row-click     row-click-h))
-      (when row-conn-h  (.removeEventListener el ev-row-connected row-conn-h))))
+      (when row-click-h (.removeEventListener el ev-row-click     row-click-h))))
   (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────

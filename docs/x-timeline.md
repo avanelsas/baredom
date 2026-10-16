@@ -85,7 +85,7 @@ Fires when the user clicks or activates an `x-timeline-item` child. The coordina
 
 ## Coordinator contract
 
-`x-timeline` sets the following `data-*` attributes on each direct `x-timeline-item` child whenever the item connects, disconnects, or the parent's attributes change:
+`x-timeline` sets the following `data-*` attributes on each direct `x-timeline-item` child when its children change and when its own attributes change. It learns of its children through `slotchange`, so a group of changes is handled once, right after the change:
 
 | Attribute          | Value                    | Purpose |
 |--------------------|--------------------------|---------|
