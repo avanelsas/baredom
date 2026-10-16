@@ -501,3 +501,69 @@
          (.skip el)
          (done))
        100))))
+
+;; ── A child change ──────────────────────────────────────────────────────────
+(defn- ^js layer-part [selector]
+  (let [^js layer (.-firstElementChild (.getElementById js/document "__xOverlayRoot"))]
+    (.querySelector (.-shadowRoot layer) selector)))
+
+(defn- ^js make-step [target]
+  (let [^js step-el (.createElement js/document step-model/tag-name)]
+    (.setAttribute step-el "target" target)
+    step-el))
+
+(deftest a-new-step-keeps-what-was-typed-in-the-open-step-test
+  (async done
+    (let [^js el (make-tour 2)]
+      (.appendChild (.-firstElementChild el) (.createElement js/document "input"))
+      (append! el)
+      (.start el)
+      (js/setTimeout
+       (fn []
+         (let [^js input (.querySelector (layer-part "[part=body]") "input")]
+           (set! (.-value input) "typed")
+           (.appendChild el (make-step "#target-0"))
+           (js/setTimeout
+            (fn []
+              (let [^js input-after (.querySelector (layer-part "[part=body]") "input")]
+                (is (identical? input input-after))
+                (is (= "typed" (.-value input-after))))
+              (done))
+            50)))
+       100))))
+
+(deftest a-new-step-adds-one-dot-test
+  (async done
+    (let [^js el (make-tour 2)]
+      (.setAttribute el "dots" "")
+      (append! el)
+      (.start el)
+      (js/setTimeout
+       (fn []
+         (let [^js first-dot (.-firstElementChild (layer-part "[part=dots]"))]
+           (.appendChild el (make-step "#target-0"))
+           (js/setTimeout
+            (fn []
+              (let [^js dots (layer-part "[part=dots]")]
+                (is (= 3 (.-childElementCount dots)))
+                (is (identical? first-dot (.-firstElementChild dots)))
+                (is (.hasAttribute first-dot "data-active")))
+              (done))
+            50)))
+       100))))
+
+(deftest the-open-step-shows-its-new-content-on-the-next-render-test
+  (async done
+    (let [^js el (make-tour 2)]
+      (append! el)
+      (.start el)
+      (js/setTimeout
+       (fn []
+         (set! (.-textContent (.. el -firstElementChild -firstElementChild)) "Saved")
+         (.appendChild el (make-step "#target-0"))
+         (js/setTimeout
+          (fn []
+            (is (= "Saved" (.-textContent (layer-part "[part=body]"))))
+            (done))
+          50))
+       100))))

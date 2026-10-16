@@ -416,34 +416,33 @@
     (set! (.. conn-svg -style -display) "none")))
 
 ;; ── Update dots ─────────────────────────────────────────────────────────────
+(defn- make-dot []
+  (let [^js dot (.createElement js/document "span")]
+    (du/set-attr! dot "part" "dot")
+    dot))
+
 (defn- update-dots!
   "Render dot indicators for step progress."
   [^js dots-el step total show-dots?]
   (if show-dots?
     (do
       (set! (.. dots-el -style -display) "flex")
-      ;; Clear existing dots
-      (set! (.-innerHTML dots-el) "")
-      (dotimes [i total]
-        (let [^js dot (.createElement js/document "span")]
-          (du/set-attr! dot "part" "dot")
-          (when (= i step)
-            (du/set-attr! dot "data-active" ""))
-          (.appendChild dots-el dot))))
+      (while (> (.-childElementCount dots-el) total)
+        (.remove (.-lastElementChild dots-el)))
+      (while (< (.-childElementCount dots-el) total)
+        (.appendChild dots-el (make-dot)))
+      (doseq [[i ^js dot] (map-indexed vector (array-seq (.-children dots-el)))]
+        (du/set-attr-to! dot "data-active" (when (= i step) ""))))
     (set! (.. dots-el -style -display) "none")))
 
 ;; ── Inject step content into popover body ───────────────────────────────────
 (defn- inject-step-content!
-  "Clone the step element's slotted content into the popover body."
+  "Copies the content of `step-el` into the popover body, where the body shows other content."
   [^js body-el ^js step-el]
-  (set! (.-innerHTML body-el) "")
-  (let [children (.-childNodes step-el)
-        len      (.-length children)]
-    (loop [i 0]
-      (when (< i len)
-        (let [^js child (aget children i)]
-          (.appendChild body-el (.cloneNode child true)))
-        (recur (inc i))))))
+  (when (not= (.-innerHTML step-el) (.-innerHTML body-el))
+    (.replaceChildren body-el)
+    (doseq [^js child (array-seq (.-childNodes step-el))]
+      (.appendChild body-el (.cloneNode child true)))))
 
 ;; ── Focus trap ──────────────────────────────────────────────────────────────
 (defn- collect-tabbables
@@ -598,7 +597,7 @@
     (update-connector! refs connector target-rect popover-rect final-pl)))
 
 (defn- apply-step-content! [refs ^js step-el step-m]
-  (set! (.-textContent (:title-el refs)) (:title step-m))
+  (du/set-text-to! (:title-el refs) (:title step-m))
   (inject-step-content! (:body-el refs) step-el))
 
 (defn- apply-counter-and-dots! [refs {:keys [counter? dots?]} step-idx total]
