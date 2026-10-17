@@ -14,6 +14,13 @@ All notable changes to BareDOM will be documented in this file.
   a comma-separated list cannot hold, keeps the selection and sends this event. Before, it split
   such a value at the comma or trimmed it.
 
+### Changed
+
+- **The adapters write the value of `x-multi-combobox` through its `value` property.** This is
+  Vue `v-model`, Svelte `bind:value`, the Angular ControlValueAccessor, the React `defaultValue`,
+  and the Solid `value` and `defaultValue`. Before, they wrote `String(value)` to the attribute,
+  which is always comma-separated. Now the array round-trips in both value formats.
+
 ## [4.7.0] - 2026-10-17
 
 BareDOM 4.7 lets a child's own attribute win over its group's, and keeps every skeleton in phase

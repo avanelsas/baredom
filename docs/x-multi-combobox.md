@@ -32,7 +32,7 @@ A multi-select combobox with type-ahead filtering. Selected items display as rem
 | Format | `value` attribute | Notes |
 |--------|-------------------|-------|
 | `csv` (default) | `apple,banana` | Split at each comma. Each value is trimmed, and empty values are dropped |
-| `json` | `["apple","banana"]` | A JSON array of strings. Each string is kept exactly, with its commas and spaces |
+| `json` | `["apple","banana"]` | A JSON array of strings. Each string is kept exactly, with its commas and spaces. Empty strings are dropped |
 
 Use `json` when a value can hold a comma or leading or trailing spaces. In `csv`, the value
 `Liefdadigheid, religieus en non-profit` becomes two values.
@@ -48,7 +48,7 @@ and then set `value`.
 
 | Property      | Type      | Reflected attribute | Notes |
 |---------------|-----------|---------------------|-------|
-| `value`       | string[]  | `value`             | Getter returns a sorted JS array; setter accepts an array or a string in the value format |
+| `value`       | string[]  | `value`             | Getter returns a sorted JS array. Setter accepts an array or a string in the value format |
 | `placeholder` | string    | `placeholder`       | |
 | `name`        | string    | `name`              | |
 | `disabled`    | boolean   | `disabled`          | |
@@ -63,7 +63,8 @@ The `value` setter writes the `value` attribute in the value format:
 
 - In `csv`, an array is joined with commas. If a value holds a comma or leading or trailing
   whitespace, the setter changes nothing and sends `x-multi-combobox-error`.
-- In `json`, an array is written as a JSON array of strings, exactly as given.
+- In `json`, an array is written as a JSON array of strings, exactly as given. Empty values
+  are dropped.
 - A string is written to the attribute as it is. An empty string or an empty array clears the
   selection.
 
@@ -208,7 +209,7 @@ Chip styling is owned by `x-chip`. Use `--x-chip-*` custom properties to theme c
 - Constraint validation is honoured: a `required` combobox with no selection reports `valueMissing` and **blocks submission**; setting the `error` attribute reports a `customError`. This is what `x-form` and native submission gate on.
 - `form.reset()` clears the selection (mirroring `x-form-field`) **and drops the `error` attribute**, so a stale validation message does not survive the reset. `<fieldset disabled>` disables it via `formDisabledCallback`.
 
-The framework adapters expose the array value as a form control: Vue `v-model` (`string[]`), Svelte `bind:value`, Angular `ControlValueAccessor`, and React/Solid controlled `value` / `defaultValue`. The value round-trips through the comma-separated `value` attribute. Most of these bindings write the attribute with `String(value)`, which is `csv`. With `value-format="json"`, set the `value` property instead.
+The framework adapters expose the array value as a form control: Vue `v-model` (`string[]`), Svelte `bind:value`, Angular `ControlValueAccessor`, and React/Solid controlled `value` / `defaultValue`. Each binding sets the `value` property, so the array round-trips in both value formats. In `csv`, an array with a value that a comma-separated list cannot hold changes nothing and sends `x-multi-combobox-error`.
 
 ### Validation API
 
