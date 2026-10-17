@@ -16,6 +16,13 @@
   [tag attrs]
   (element! (.-body js/document) tag attrs))
 
+(defn node-in-body!
+  "Puts `node` in the document, marked for removal. Returns `node`."
+  [^js node]
+  (.setAttribute node mark "")
+  (.appendChild (.-body js/document) node)
+  node)
+
 (defn in-fieldset!
   "A new `tag` element with `attrs` in a new fieldset in the document. Returns both."
   [tag attrs]
