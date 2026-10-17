@@ -944,7 +944,7 @@
                          :values #js [raw]}))))
 
 (defn- report-unrepresentable!
-  "Sends the error event for `values` that a comma-separated value cannot hold."
+  "Sends the error event for `values` that a comma-separated value splits or trims."
   [^js el values]
   (du/dispatch! el model/event-error
                 #js {:error  (model/unrepresentable-message values)
@@ -1009,17 +1009,18 @@
     (du/set-attr!    el model/attr-value s)))
 
 (defn- write-csv-array!
-  "Writes the JS array `arr` as a comma-separated value, unless a value cannot be held."
+  "Writes the JS array `arr` as a comma-separated value. Warns about values that it splits or
+   trims."
   [^js el ^js arr]
   (let [values (js->clj arr)]
-    (if-some [bad (not-empty (model/csv-unrepresentable (mapv str values)))]
-      (report-unrepresentable! el bad)
-      (write-value-attr! el (str/join model/value-separator values)))))
+    (write-value-attr! el (str/join model/value-separator values))
+    (when-some [bad (not-empty (model/csv-unrepresentable (mapv str values)))]
+      (report-unrepresentable! el bad))))
 
 (defn- write-json-array!
   "Writes the JS array `arr` as a JSON array of strings. Empty values are dropped, as in csv."
   [^js el ^js arr]
-  (let [values (remove #(= "" %) (map str (array-seq arr)))]
+  (let [values (remove #{""} (map str (array-seq arr)))]
     (write-value-attr! el (if (empty? values)
                             ""
                             (js/JSON.stringify (to-array values))))))

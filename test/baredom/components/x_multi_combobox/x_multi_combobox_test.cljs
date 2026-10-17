@@ -689,7 +689,7 @@
          (done))
        50))))
 
-(deftest csv-property-refuses-a-value-it-cannot-hold-test
+(deftest csv-property-splits-a-value-it-cannot-hold-and-warns-test
   (async done
     (after-options
      (fn [^js el]
@@ -697,8 +697,10 @@
        (let [errors  (events-of el model/event-error)
              changes (events-of el model/event-change)]
          (set! (.-value el) #js ["cherry" charity " date"])
-         (is (= "apple,banana" (.getAttribute el model/attr-value)) "the attribute is unchanged")
-         (is (= ["apple" "banana"] (chip-values el)) "the selection is unchanged")
+         (is (= (str "cherry," charity ", date") (.getAttribute el model/attr-value))
+             "the attribute is the values joined with commas")
+         (is (= ["Liefdadigheid" "cherry" "date" "religieus en non-profit"] (chip-values el))
+             "the selection is the values split at each comma and trimmed")
          (is (= [] @changes))
          (is (= 1 (count @errors)))
          (is (= [charity " date"] (:values (first @errors))))

@@ -61,8 +61,9 @@ and then set `value`.
 
 The `value` setter writes the `value` attribute in the value format:
 
-- In `csv`, an array is joined with commas. If a value holds a comma or leading or trailing
-  whitespace, the setter changes nothing and sends `x-multi-combobox-error`.
+- In `csv`, an array is joined with commas. A value with a comma is split, and leading and
+  trailing whitespace is trimmed. The setter warns about such a value: it sends
+  `x-multi-combobox-error`.
 - In `json`, an array is written as a JSON array of strings, exactly as given. Empty values
   are dropped.
 - A string is written to the attribute as it is. An empty string or an empty array clears the
@@ -126,11 +127,12 @@ Fired before the panel opens or closes. **Cancelable**.
 
 ### `x-multi-combobox-error`
 
-Fired when the component cannot take a value. It is sent in two cases:
+Fired when the component cannot keep a value intact. It is sent in two cases:
 
 - In `json`, the `value` attribute is not a JSON array of strings. The selection is empty.
 - In `csv`, the `value` setter gets an array with a value that a comma-separated list cannot
-  hold. The selection does not change.
+  hold. The setter warns: it joins the array with commas, so that value is split or trimmed, and
+  it sends this event.
 
 | Property | Value |
 |----------|-------|
@@ -138,7 +140,7 @@ Fired when the component cannot take a value. It is sent in two cases:
 | `composed` | `true` |
 | `cancelable` | `false` |
 | `detail.error` | What went wrong (string). In `csv`, it tells you to set `value-format="json"` |
-| `detail.values` | The values the component could not take (string[]). For an invalid attribute, the attribute text |
+| `detail.values` | The values the component could not keep intact (string[]). For an invalid attribute, the attribute text |
 
 ## Slots
 
@@ -209,9 +211,20 @@ Chip styling is owned by `x-chip`. Use `--x-chip-*` custom properties to theme c
 - Constraint validation is honoured: a `required` combobox with no selection reports `valueMissing` and **blocks submission**; setting the `error` attribute reports a `customError`. This is what `x-form` and native submission gate on.
 - `form.reset()` clears the selection (mirroring `x-form-field`) **and drops the `error` attribute**, so a stale validation message does not survive the reset. `<fieldset disabled>` disables it via `formDisabledCallback`.
 
-The framework adapters expose the array value as a form control: Vue `v-model` (`string[]`), Svelte `bind:value`, Angular `ControlValueAccessor`, and React/Solid controlled `value` / `defaultValue`. Each binding sets the `value` property, so the array round-trips in both value formats. In `csv`, an array with a value that a comma-separated list cannot hold changes nothing and sends `x-multi-combobox-error`.
+The framework adapters expose the array value as a form control: Vue `v-model` (`string[]`), Svelte `bind:value`, Angular `ControlValueAccessor`, and React/Solid controlled `value` / `defaultValue`. Each binding sets the `value` property, so the binding uses the value format. In `json`, the array round-trips. In `csv`, the setter joins the array with commas. For an array with a value that a comma-separated list cannot hold, it also warns with `x-multi-combobox-error`.
 
 The React adapter passes `value` after the other props, so React sets `valueFormat` before `value` on the first render. React attaches `onError` after the first render, so it does not see an error from that render.
+
+Angular sets inputs in template order. Put `[valueFormat]` before `[value]`, so the value is read
+as JSON. The output for `x-multi-combobox-error` is `errorEvent`, because `error` is already an
+input.
+
+```html
+<x-multi-combobox [valueFormat]="'json'" [value]="sectors" (errorEvent)="onValueError($event)">
+  <option value="Liefdadigheid, religieus en non-profit">Liefdadigheid, religieus en non-profit</option>
+  <option value="Onderwijs">Onderwijs</option>
+</x-multi-combobox>
+```
 
 ### Validation API
 

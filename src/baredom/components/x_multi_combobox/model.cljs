@@ -121,8 +121,8 @@
   (and (array? x) (every? string? (array-seq x))))
 
 (defn parse-json-value
-  "Parses a JSON array of strings into a set of the exact strings. Empty strings are dropped, as
-   in csv. nil or empty string yields #{}. Returns nil when `s` is not a JSON array of strings."
+  "Parses a JSON array of strings into a set of its non-empty strings, kept exactly. Returns nil
+   when `s` is not a JSON array of strings, and #{} when `s` is nil or empty."
   [s]
   (if (or (nil? s) (= s ""))
     #{}
@@ -138,8 +138,8 @@
     (js/JSON.stringify (to-array (sort value-set)))))
 
 (defn parse-value-as
-  "Parses a value attribute in `value-format`. Returns `{:value set :invalid? boolean}`.
-   An invalid json value yields the empty set."
+  "Parses a value attribute in `value-format` into `{:value set :invalid? boolean}`. An invalid
+   json value yields the empty set."
   [value-format s]
   (if (= value-format value-format-json)
     (let [parsed (parse-json-value s)]
@@ -153,20 +153,23 @@
     (serialize-json-value value-set)
     (serialize-value value-set)))
 
+(defn- csv-alters?
+  "True when a comma-separated value splits or trims the value `v`."
+  [v]
+  (or (str/includes? v value-separator)
+      (not= v (str/trim v))))
+
 (defn csv-unrepresentable
   "The values that a comma-separated value cannot hold: those with the separator, or with
    leading or trailing whitespace."
   [values]
-  (filterv (fn [v]
-             (or (str/includes? v value-separator)
-                 (not= v (str/trim v))))
-           values))
+  (filterv csv-alters? values))
 
 (defn unrepresentable-message
-  "The error text for `values` that a comma-separated value cannot hold."
+  "The warning text for `values` that a comma-separated value splits or trims."
   [values]
-  (str "Cannot store " (js/JSON.stringify (to-array values))
-       " as a comma-separated value. Set value-format=\"json\"."))
+  (str "Stored " (js/JSON.stringify (to-array values))
+       " as a comma-separated value, which splits or trims it. Set value-format=\"json\"."))
 
 (defn invalid-json-message
   "The error text for a value attribute `s` that is not a JSON array of strings."
