@@ -76,9 +76,7 @@ A skeleton's own `animation` wins over the group's.
 
 ## Animation synchronization
 
-When multiple `x-skeleton` elements are placed independently, each starts its CSS animation at a different point in time. Inside an `x-skeleton-group`, all children animate in phase — pulses and waves are visually synchronized.
-
-The group aligns each animation through `--x-skeleton-delay`. Its preset skeletons inherit the delay from the group. A slotted skeleton gets its own delay inline, when it arrives and when the group's `animation` changes.
+Every `x-skeleton` aligns its own animation to a clock of the page, so the skeletons of a group, preset or slotted, pulse and wave in phase. See [`x-skeleton`](x-skeleton.md).
 
 ## Accessibility
 

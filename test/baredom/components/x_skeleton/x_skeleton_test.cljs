@@ -1,16 +1,15 @@
 (ns baredom.components.x-skeleton.x-skeleton-test
-  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-skeleton.x-skeleton :as x-skeleton]
             [baredom.components.x-skeleton.model :as model]))
 
 (x-skeleton/init!)
 
-(defn cleanup-fixture [f]
-  (f)
+(defn cleanup! []
   (doseq [node (.querySelectorAll js/document model/tag-name)]
     (.remove node)))
 
-(use-fixtures :each cleanup-fixture)
+(use-fixtures :each {:after cleanup!})
 
 (defn make-el [] (.createElement js/document model/tag-name))
 
@@ -166,3 +165,50 @@
     (.remove el)
     (.appendChild (.-body js/document) el)
     (is (= "circle" (.getAttribute (shadow-base el) "data-variant")))))
+
+;; ── Phase ───────────────────────────────────────────────────────────────────
+(defn- delay-of [^js el]
+  (.getPropertyValue (.-style (shadow-base el)) "--_x-skeleton-delay"))
+
+(defn- after-a-moment [f]
+  (js/setTimeout f 20))
+
+(deftest a-skeleton-gets-a-delay-when-it-connects-test
+  (is (not= "" (delay-of (append! (make-el))))))
+
+(deftest a-reinserted-skeleton-gets-a-new-delay-test
+  (async done
+    (let [^js el (append! (make-el))
+          before (delay-of el)]
+      (after-a-moment
+       (fn []
+         (.remove el)
+         (append! el)
+         (is (not= before (delay-of el)))
+         (done))))))
+
+(deftest a-new-animation-gets-a-new-delay-test
+  (async done
+    (let [^js el (append! (make-el))
+          before (delay-of el)]
+      (after-a-moment
+       (fn []
+         (.setAttribute el model/attr-animation "wave")
+         (is (not= before (delay-of el)))
+         (done))))))
+
+(deftest another-change-keeps-the-delay-test
+  (async done
+    (let [^js el (append! (make-el))
+          before (delay-of el)]
+      (after-a-moment
+       (fn []
+         (.setAttribute el model/attr-width "50%")
+         (is (= before (delay-of el)))
+         (done))))))
+
+(deftest the-wave-takes-the-delay-test
+  (let [^js el (make-el)]
+    (.setAttribute el model/attr-animation "wave")
+    (append! el)
+    (is (not= "0s" (.-animationDelay (js/getComputedStyle (shadow-shimmer el)))))))

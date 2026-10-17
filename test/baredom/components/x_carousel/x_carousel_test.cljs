@@ -161,6 +161,48 @@
          (is (= 4 (.-slideCount el)))
          (done))))))
 
+(defn- shown-index
+  "The index of the dot marked current."
+  [^js el]
+  (let [dots (array-seq (.-children (shadow-part el "[part=dots]")))]
+    (first (keep-indexed (fn current-dot [i ^js dot]
+                           (when (= "true" (.getAttribute dot "aria-current")) i))
+                         dots))))
+
+(deftest fewer-slides-show-the-last-and-keep-the-current-attribute-test
+  (async done
+    (let [^js el (make-el)]
+      (add-slides! el 5)
+      (.setAttribute el model/attr-current "4")
+      (append! el)
+      (wait-frame
+       (fn []
+         (.remove (.-lastElementChild el))
+         (.remove (.-lastElementChild el))
+         (wait-frame
+          (fn []
+            (is (= 2 (shown-index el)) "the last slide is shown")
+            (is (= "4" (.getAttribute el model/attr-current)) "the attribute keeps the author's value")
+            (done))))))))
+
+(deftest slides-that-arrive-one-at-a-time-end-on-the-current-attribute-test
+  (async done
+    (let [^js el (make-el)]
+      (.setAttribute el model/attr-current "3")
+      (append! el)
+      (add-slides! el 1)
+      (wait-frame
+       (fn []
+         (add-slides! el 1)
+         (wait-frame
+          (fn []
+            (add-slides! el 3)
+            (wait-frame
+             (fn []
+               (is (= 3 (shown-index el)))
+               (is (= "3" (.getAttribute el model/attr-current)))
+               (done))))))))))
+
 ;; ── Arrow navigation ────────────────────────────────────────────────────────
 (deftest arrow-click-navigates-test
   (async done

@@ -17,7 +17,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Constants
 ;; ---------------------------------------------------------------------------
-(def ^:private sync-duration-ms 1500)
 (def ^:private skeleton-tag-upper (str/upper-case skeleton-model/tag-name))
 
 ;; ---------------------------------------------------------------------------
@@ -141,24 +140,6 @@
   (set! (.-textContent preset-el) ""))
 
 ;; ---------------------------------------------------------------------------
-;; Animation sync
-;; ---------------------------------------------------------------------------
-(def ^:private delay-prop "--x-skeleton-delay")
-
-(defn- phase-delay
-  "The animation delay that puts an animation started now in phase with the others."
-  []
-  (str (- (mod (js/performance.now) sync-duration-ms)) "ms"))
-
-(defn- phase!
-  "Gives `node` the delay that puts an animation started now in phase with the others."
-  [^js node]
-  (.setProperty (.-style node) delay-prop (phase-delay)))
-
-(defn- phased? [^js node]
-  (not= "" (.getPropertyValue (.-style node) delay-prop)))
-
-;; ---------------------------------------------------------------------------
 ;; Animation propagation to slotted children
 ;; ---------------------------------------------------------------------------
 (defn- slotted-skeletons [^js el]
@@ -167,23 +148,11 @@
          array-seq
          (filter (fn skeleton? [^js node] (= skeleton-tag-upper (.-tagName node)))))))
 
-(defn- shown-animation
-  "The animation `node` shows when the group gives it `group-animation`."
-  [^js node group-animation]
-  (skeleton-model/resolve-animation (du/get-attr node skeleton-model/attr-animation) group-animation))
-
-(defn- apply-skeleton!
-  "Gives `node` the animation of the group, and a delay in phase whenever its animation starts."
-  [^js node animation]
-  (when (or (not= (shown-animation node animation)
-                  (shown-animation node (du/get-attr node skeleton-model/group-attr-animation)))
-            (not (phased? node)))
-    (phase! node))
-  (du/set-attr-to! node skeleton-model/group-attr-animation animation))
-
-(defn- apply-skeletons! [^js el animation]
+(defn- apply-skeletons!
+  "Gives each slotted skeleton of `el` the animation of the group."
+  [^js el animation]
   (doseq [^js node (slotted-skeletons el)]
-    (apply-skeleton! node animation)))
+    (du/set-attr-to! node skeleton-model/group-attr-animation animation)))
 
 ;; ---------------------------------------------------------------------------
 ;; Render
@@ -200,7 +169,6 @@
           (if preset
             (build-preset! preset-el preset animation count)
             (clear-preset! preset-el))
-          (phase! el)
 
           ;; Propagate animation to slotted children
           (apply-skeletons! el animation))

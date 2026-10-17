@@ -99,14 +99,6 @@
          (done))
        50))))
 
-;; ── Sync: --x-skeleton-delay set on host ─────────────────────────────────────
-(deftest sync-delay-set-test
-  (let [^js el (append! (make-el))]
-    (.setAttribute el model/attr-preset "card")
-    (let [delay-val (.getPropertyValue (.-style el) "--x-skeleton-delay")]
-      (is (some? delay-val))
-      (is (not= "" delay-val)))))
-
 ;; ── Preset: list-item renders circle + 2 text ────────────────────────────────
 (deftest preset-list-item-renders-test
   (let [^js el (append! (make-el))]
@@ -192,7 +184,7 @@
 
 ;; ── A child change ──────────────────────────────────────────────────────────
 (defn- delay-of [^js node]
-  (.getPropertyValue (.-style node) "--x-skeleton-delay"))
+  (.getPropertyValue (.-style (shadow-part node "[part=base]")) "--_x-skeleton-delay"))
 
 (deftest a-new-skeleton-keeps-the-others-in-phase-test
   (async done
@@ -202,13 +194,13 @@
       (append! el)
       (js/setTimeout
        (fn []
-         (let [host-delay (delay-of el)
-               n          (writes/count-attr-writes! skeleton [skeleton-model/group-attr-animation "style"])
-               ^js added  (.createElement js/document "x-skeleton")]
+         (let [before    (delay-of skeleton)
+               n         (writes/count-attr-writes! skeleton [skeleton-model/group-attr-animation])
+               ^js added (.createElement js/document "x-skeleton")]
            (.appendChild el added)
            (js/setTimeout
             (fn []
-              (is (= host-delay (delay-of el)) "the host delay stays the same")
+              (is (= before (delay-of skeleton)) "the first skeleton keeps its delay")
               (is (= 0 @n) "the first skeleton is not written")
               (is (not= "" (delay-of added)) "the new skeleton gets a delay of its own")
               (done))

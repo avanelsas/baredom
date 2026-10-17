@@ -43,6 +43,15 @@
   [own group]
   (if (contains? allowed-animations own) own (normalize-animation group)))
 
+(def cycle-ms
+  "The length of one cycle at the default `--x-skeleton-duration`."
+  1500)
+
+(defn phase-delay
+  "The animation delay that puts an animation started at `now` in phase with the page clock."
+  [now]
+  (str (- (mod now cycle-ms)) "ms"))
+
 (defn normalize-css-value [v]
   (when (and (string? v) (not= "" v)) v))
 

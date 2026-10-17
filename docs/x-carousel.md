@@ -22,7 +22,7 @@ A themeable, accessible carousel (slideshow) component with swipe/drag navigatio
 | `arrows`      | boolean*  | `true`         | Show prev/next arrow buttons                             |
 | `dots`        | boolean*  | `true`         | Show dot indicators                                      |
 | `disabled`    | boolean   | `false`        | Disable all interaction                                  |
-| `current`     | number    | `0`            | Zero-based current slide index                           |
+| `current`     | number    | `0`            | Zero-based current slide index. With fewer slides, the last one is shown and `current` keeps its value |
 | `transition`  | enum      | `"slide"`      | `"slide"` or `"fade"`                                    |
 | `direction`   | enum      | `"horizontal"` | `"horizontal"` or `"vertical"`                           |
 | `peek`        | CSS length| `"0px"`        | Show edges of adjacent slides (e.g. `"40px"`)            |
