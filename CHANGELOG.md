@@ -2,6 +2,16 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- **`x-date-picker` and `x-calendar` take today from the local date of the user,** not from the
+  UTC date. Before, late in the evening in a time zone behind UTC, today was tomorrow: the
+  calendar opened on the wrong day, and on the last day of a month on the next month. Early in
+  the morning in a time zone ahead of UTC, today was yesterday. This changes the default month,
+  the focused day and the `x-calendar` today marker. Stored ISO dates do not change.
+
 ## [4.17.0] - 2026-10-28
 
 BareDOM 4.17 adds `x-comments` and `x-comment`, a comment thread with one form. All five adapters

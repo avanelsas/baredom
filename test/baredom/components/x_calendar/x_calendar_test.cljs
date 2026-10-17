@@ -301,9 +301,9 @@
   (let [el        (append! (make-el))
         today     (js/Date. (js/Date.now))
         today-pad (fn [n] (if (< n 10) (str "0" n) (str n)))
-        today-iso (str (.getUTCFullYear today)
-                       "-" (today-pad (inc (.getUTCMonth today)))
-                       "-" (today-pad (.getUTCDate today)))
+        today-iso (str (.getFullYear today)
+                       "-" (today-pad (inc (.getMonth today)))
+                       "-" (today-pad (.getDate today)))
         ^js cell  (day-cell el today-iso)]
     (is (some? cell) "today's cell is in the default view")
     (is (= "true" (.getAttribute cell "data-today"))
@@ -364,3 +364,34 @@
     (is (= 0 (count (week-num-texts el))))
     (is (= before (day-nodes el)))))
 
+
+;; ── Today is the local calendar day ─────────────────────────────────────────
+
+(defn- with-now!
+  "Run f while `Date.now` returns the instant of the local date-time; then restore it."
+  [y mo d h mi f]
+  (let [real (.-now js/Date)
+        ms   (.getTime (js/Date. y mo d h mi))]
+    (set! (.-now js/Date) (constantly ms))
+    (try (f) (finally (set! (.-now js/Date) real)))))
+
+(defn- cell-iso
+  "The date of a day cell."
+  [^js cell]
+  (.getAttribute cell "data-iso"))
+
+(defn- empty-calendar-today!
+  "The dates of the cells an empty calendar marks as today, and of its first in-month cell."
+  []
+  (let [el (append! (make-el))]
+    {:today (mapv cell-iso
+                  (array-seq (shadow-all el "[part=day][data-today=true]")))
+     :first (cell-iso (shadow-part el "[part=day][data-outside=false]"))}))
+
+(deftest a-late-evening-marks-the-local-day-test
+  (is (= {:today ["2026-10-31"] :first "2026-10-01"}
+         (with-now! 2026 9 31 23 30 empty-calendar-today!))))
+
+(deftest an-early-morning-marks-the-local-day-test
+  (is (= {:today ["2026-11-01"] :first "2026-11-01"}
+         (with-now! 2026 10 1 0 30 empty-calendar-today!))))
