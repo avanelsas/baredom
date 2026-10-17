@@ -81,6 +81,11 @@
   [value-set]
   (to-array (sort value-set)))
 
+(defn- value-format-of
+  "The value format of `el`."
+  [^js el]
+  (model/normalize-value-format (du/get-attr el model/attr-value-format)))
+
 ;; ---------------------------------------------------------------------------
 ;; Style
 ;; ---------------------------------------------------------------------------
@@ -454,7 +459,8 @@
     :open-present?     (du/has-attr? el model/attr-open)
     :placement-raw     (du/get-attr el model/attr-placement)
     :max-raw           (du/get-attr el model/attr-max)
-    :error-raw         (du/get-attr el model/attr-error)}))
+    :error-raw         (du/get-attr el model/attr-error)
+    :value-format-raw  (du/get-attr el model/attr-value-format)}))
 
 ;; ---------------------------------------------------------------------------
 ;; Chip rendering
@@ -567,10 +573,10 @@
 ;; ---------------------------------------------------------------------------
 ;; Render pipeline (apply-model! + update-from-attrs!)
 ;; ---------------------------------------------------------------------------
-;; Form association — push the selected set (comma-serialized) into the form and
-;; refresh validity via the shared policy. No-op when not form-associated.
-(defn- sync-form-state! [^js el ^js input-el {:keys [value has-error?]}]
-  (forms/sync! (du/getv el k-internals) input-el (model/serialize-value value)
+;; Form association — push the selected set (serialized in its value format) into
+;; the form and refresh validity via the shared policy. No-op when not form-associated.
+(defn- sync-form-state! [^js el ^js input-el {:keys [value value-format has-error?]}]
+  (forms/sync! (du/getv el k-internals) input-el (model/serialize-value-as value-format value)
                {:has-error?      has-error?
                 :error           (du/get-attr el model/attr-error)
                 :required?       (du/has-attr? el model/attr-required)
@@ -648,7 +654,7 @@
   [^js el value-set]
   (if (empty? value-set)
     (du/remove-attr! el model/attr-value)
-    (du/set-attr! el model/attr-value (model/serialize-value value-set)))
+    (du/set-attr! el model/attr-value (model/serialize-value-as (value-format-of el) value-set)))
   (du/dispatch! el model/event-change #js {:value (sorted-value-array value-set)}))
 
 (defn- add-item! [^js el item-value]
@@ -926,6 +932,25 @@
     (.removeEventListener js/document "click" (gobj/get handlers "docClick"))))
 
 ;; ---------------------------------------------------------------------------
+;; Value errors
+;; ---------------------------------------------------------------------------
+(defn- report-invalid-value!
+  "Sends the error event when the value attribute is not valid in its value format."
+  [^js el]
+  (when (:value-invalid? (read-model el))
+    (let [raw (du/get-attr el model/attr-value)]
+      (du/dispatch! el model/event-error
+                    #js {:error  (model/invalid-json-message raw)
+                         :values #js [raw]}))))
+
+(defn- report-unrepresentable!
+  "Sends the error event for `values` that a comma-separated value cannot hold."
+  [^js el values]
+  (du/dispatch! el model/event-error
+                #js {:error  (model/unrepresentable-message values)
+                     :values (to-array values)}))
+
+;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
 ;; ---------------------------------------------------------------------------
 ;; Reset clears the selection — mirroring x-form-field's reset-to-empty.
@@ -940,16 +965,19 @@
 ;; Lifecycle
 ;; ---------------------------------------------------------------------------
 (defn- connected! [^js el]
-  (when-not (du/getv el k-refs)
-    (make-shadow! el)
-    (when (.-attachInternals el)
-      (du/setv! el k-internals (.attachInternals el))))
-  (remove-static-listeners! el)
-  (remove-doc-listeners! el)
-  (du/setv! el k-handlers (make-handlers el))
-  (add-static-listeners! el)
-  (sync-options! el)
-  (update-from-attrs! el))
+  (let [first-connect? (not (du/getv el k-refs))]
+    (when first-connect?
+      (make-shadow! el)
+      (when (.-attachInternals el)
+        (du/setv! el k-internals (.attachInternals el))))
+    (remove-static-listeners! el)
+    (remove-doc-listeners! el)
+    (du/setv! el k-handlers (make-handlers el))
+    (add-static-listeners! el)
+    (sync-options! el)
+    (update-from-attrs! el)
+    (when first-connect?
+      (report-invalid-value! el))))
 
 (defn- disconnected! [^js el]
   (remove-static-listeners! el)
@@ -958,13 +986,56 @@
   ;; contents (option labels) may have changed while disconnected.
   (du/setv! el k-model nil))
 
+(def ^:private value-attrs #{model/attr-value model/attr-value-format})
+
 (defn- attribute-changed! [^js el attr-name _old _new]
   (when (du/getv el k-refs)
     (update-from-attrs! el)
+    (when (contains? value-attrs attr-name)
+      (report-invalid-value! el))
     (when (= attr-name model/attr-open)
       (if (du/has-attr? el model/attr-open)
         (add-doc-listeners! el)
         (remove-doc-listeners! el)))))
+
+;; ---------------------------------------------------------------------------
+;; Value property
+;; ---------------------------------------------------------------------------
+(defn- write-value-attr!
+  "Writes `s` to the value attribute. An empty string removes it."
+  [^js el s]
+  (if (= s "")
+    (du/remove-attr! el model/attr-value)
+    (du/set-attr!    el model/attr-value s)))
+
+(defn- write-csv-array!
+  "Writes the JS array `arr` as a comma-separated value, unless a value cannot be held."
+  [^js el ^js arr]
+  (let [values (js->clj arr)]
+    (if-some [bad (not-empty (model/csv-unrepresentable (mapv str values)))]
+      (report-unrepresentable! el bad)
+      (write-value-attr! el (str/join model/value-separator values)))))
+
+(defn- write-json-array!
+  "Writes the JS array `arr` as a JSON array of strings."
+  [^js el ^js arr]
+  (write-value-attr! el (if (zero? (.-length arr))
+                          ""
+                          (js/JSON.stringify (to-array (map str (array-seq arr)))))))
+
+(defn- set-value!
+  "Writes `v`, an array or a string, to the value attribute in the value format of `el`."
+  [^js el v]
+  (cond
+    (string? v) (write-value-attr! el v)
+    (not (array? v)) (write-value-attr! el "")
+    (= (value-format-of el) model/value-format-json) (write-json-array! el v)
+    :else (write-csv-array! el v)))
+
+(defn- value-array
+  "The values that the value attribute text `s` holds in `value-format`, as a sorted JS array."
+  [value-format s]
+  (sorted-value-array (:value (model/parse-value-as value-format s))))
 
 ;; ---------------------------------------------------------------------------
 ;; Property accessors
@@ -979,21 +1050,15 @@
          :enumerable true
          :get (fn []
                 (this-as ^js this
-                  (sorted-value-array (model/parse-value (du/get-attr this model/attr-value)))))
+                  (value-array (value-format-of this) (du/get-attr this model/attr-value))))
          :set (fn [v]
-                (this-as ^js this
-                  (let [s (cond
-                            (string? v) v
-                            (array? v)  (str/join model/value-separator (js->clj v))
-                            :else       "")]
-                    (if (= s "")
-                      (du/remove-attr! this model/attr-value)
-                      (du/set-attr!    this model/attr-value s)))))})
+                (this-as ^js this (set-value! this v)))})
   ;; Standard reflectors
   (du/define-string-prop! proto "placeholder" model/attr-placeholder)
   (du/define-string-prop! proto "name"        model/attr-name)
   (du/define-string-prop! proto "placement"   model/attr-placement)
   (du/define-string-prop! proto "error"       model/attr-error)
+  (du/define-string-prop! proto "valueFormat" model/attr-value-format)
   (du/define-bool-prop!   proto "disabled"    model/attr-disabled)
   (du/define-bool-prop!   proto "required"    model/attr-required)
   (du/define-bool-prop!   proto "open"        model/attr-open)

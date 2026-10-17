@@ -11,6 +11,7 @@
     name?: string;
     max?: number;
     error?: string;
+    valueFormat?: string;
     placement?: string;
     required?: boolean;
     /** Two-way bindable form value — `bind:value={...}`. */
@@ -19,6 +20,7 @@
     onchange?: (e: CustomEvent<{ value: any }>) => void;
     oninput?: (e: CustomEvent<{ query: string }>) => void;
     ontoggle?: (e: CustomEvent<{ open: boolean; source: string }>) => void;
+    onerror?: (e: CustomEvent<{ error: string; values: any }>) => void;
     el?: XMultiComboboxElement | null;
     children?: import("svelte").Snippet;
     class?: string;
@@ -35,6 +37,7 @@
     name,
     max,
     error,
+    valueFormat,
     placement,
     required,
     value = $bindable(undefined),
@@ -42,6 +45,7 @@
     onchange,
     oninput,
     ontoggle,
+    onerror,
     el = $bindable(null),
     children,
     class: className,
@@ -76,6 +80,9 @@
     const ontoggleHandler = (e: Event) => ontoggle?.(e as CustomEvent<{ open: boolean; source: string }>);
     node.addEventListener("x-multi-combobox-toggle", ontoggleHandler);
     cleanups.push(() => node.removeEventListener("x-multi-combobox-toggle", ontoggleHandler));
+    const onerrorHandler = (e: Event) => onerror?.(e as CustomEvent<{ error: string; values: any }>);
+    node.addEventListener("x-multi-combobox-error", onerrorHandler);
+    cleanups.push(() => node.removeEventListener("x-multi-combobox-error", onerrorHandler));
     return () => cleanups.forEach((fn) => fn());
   });
 </script>
@@ -88,6 +95,7 @@
   {name}
   {max}
   {error}
+  {valueFormat}
   {placement}
   {required}
   class={className}

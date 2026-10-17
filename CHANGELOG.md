@@ -2,6 +2,18 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- **`value-format` on `x-multi-combobox`,** and its property `valueFormat`. With `json`, the
+  `value` attribute is a JSON array of strings, so a value can hold a comma or leading and
+  trailing spaces. `csv` is the default and works as before. An invalid JSON value gives no
+  selection and sends `x-multi-combobox-error`.
+- **`x-multi-combobox-error`.** In `csv`, the `value` setter refuses an array with a value that
+  a comma-separated list cannot hold, keeps the selection and sends this event. Before, it split
+  such a value at the comma or trimmed it.
+
 ## [4.6.0] - 2026-10-17
 
 BareDOM 4.6 keeps the state of a moved component, lets one BareMirror sync bring a whole tree,

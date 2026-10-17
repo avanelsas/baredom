@@ -14,6 +14,7 @@ export interface XMultiComboboxProps {
   value?: string[];
   max?: number;
   error?: string;
+  valueFormat?: string;
   placement?: string;
   required?: boolean;
   defaultValue?: string[];
@@ -21,6 +22,7 @@ export interface XMultiComboboxProps {
   onChange?: (e: CustomEvent<{ value: any }>) => void;
   onInput?: (e: CustomEvent<{ query: string }>) => void;
   onToggle?: (e: CustomEvent<{ open: boolean; source: string }>) => void;
+  onError?: (e: CustomEvent<{ error: string; values: any }>) => void;
   ref?: XMultiComboboxElement | ((el: XMultiComboboxElement) => void);
   children?: JSX.Element;
   class?: string;
@@ -30,7 +32,7 @@ export interface XMultiComboboxProps {
 }
 
 export function XMultiCombobox(props: XMultiComboboxProps): JSX.Element {
-  const [local, others] = splitProps(props, ["value", "defaultValue", "onChangeRequest", "onChange", "onInput", "onToggle", "ref", "children"]);
+  const [local, others] = splitProps(props, ["value", "defaultValue", "onChangeRequest", "onChange", "onInput", "onToggle", "onError", "ref", "children"]);
   let el!: XMultiComboboxElement;
 
   const setRef = (r: XMultiComboboxElement) => {
@@ -74,6 +76,11 @@ export function XMultiCombobox(props: XMultiComboboxProps): JSX.Element {
       const handler = (e: Event) => local.onToggle?.(e as CustomEvent<{ open: boolean; source: string }>);
       el.addEventListener("x-multi-combobox-toggle", handler);
       onCleanup(() => el.removeEventListener("x-multi-combobox-toggle", handler));
+    }
+    {
+      const handler = (e: Event) => local.onError?.(e as CustomEvent<{ error: string; values: any }>);
+      el.addEventListener("x-multi-combobox-error", handler);
+      onCleanup(() => el.removeEventListener("x-multi-combobox-error", handler));
     }
   });
 

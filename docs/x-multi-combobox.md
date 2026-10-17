@@ -12,7 +12,7 @@ A multi-select combobox with type-ahead filtering. Selected items display as rem
 
 | Attribute     | Type    | Default          | Description |
 |---------------|---------|------------------|-------------|
-| `value`       | string  | `""`             | Comma-separated selected values |
+| `value`       | string  | `""`             | Selected values, in the format that `value-format` names |
 | `placeholder` | string  | `""`             | Input placeholder (shown when no chips) |
 | `name`        | string  | `""`             | Form field name |
 | `disabled`    | boolean | `false`          | Disables the component |
@@ -21,16 +21,34 @@ A multi-select combobox with type-ahead filtering. Selected items display as rem
 | `placement`   | enum    | `"bottom-start"` | Panel position relative to input |
 | `max`         | number  | none             | Maximum number of selections |
 | `error`       | string  | `""`             | Inline validation message; shows the `error` part and marks the field invalid |
+| `value-format` | enum   | `"csv"`          | Format of the `value` attribute: `csv` or `json`. An unknown value acts as `csv` |
 
 ### Placement values
 
 `bottom-start` | `bottom-end` | `top-start` | `top-end`
 
+### Value formats
+
+| Format | `value` attribute | Notes |
+|--------|-------------------|-------|
+| `csv` (default) | `apple,banana` | Split at each comma. Each value is trimmed, and empty values are dropped |
+| `json` | `["apple","banana"]` | A JSON array of strings. Each string is kept exactly, with its commas and spaces |
+
+Use `json` when a value can hold a comma or leading or trailing spaces. In `csv`, the value
+`Liefdadigheid, religieus en non-profit` becomes two values.
+
+In `json`, a `value` attribute that is not a JSON array of strings gives no selection and sends
+`x-multi-combobox-error`. An absent or empty `value` is no selection, with no error.
+
+A change of `value-format` reads the current `value` attribute again in the new format. The
+attribute itself does not change. To switch format with a selection, set `value-format` first
+and then set `value`.
+
 ## Properties
 
 | Property      | Type      | Reflected attribute | Notes |
 |---------------|-----------|---------------------|-------|
-| `value`       | string[]  | `value`             | Getter returns JS array; setter accepts array or CSV string |
+| `value`       | string[]  | `value`             | Getter returns a sorted JS array; setter accepts an array or a string in the value format |
 | `placeholder` | string    | `placeholder`       | |
 | `name`        | string    | `name`              | |
 | `disabled`    | boolean   | `disabled`          | |
@@ -39,6 +57,15 @@ A multi-select combobox with type-ahead filtering. Selected items display as rem
 | `placement`   | string    | `placement`         | |
 | `max`         | number    | `max`               | |
 | `error`       | string    | `error`             | Inline validation message |
+| `valueFormat` | string    | `value-format`      | `"csv"` or `"json"` |
+
+The `value` setter writes the `value` attribute in the value format:
+
+- In `csv`, an array is joined with commas. If a value holds a comma or leading or trailing
+  whitespace, the setter changes nothing and sends `x-multi-combobox-error`.
+- In `json`, an array is written as a JSON array of strings, exactly as given.
+- A string is written to the attribute as it is. An empty string or an empty array clears the
+  selection.
 
 ## Public methods
 
@@ -95,6 +122,22 @@ Fired before the panel opens or closes. **Cancelable**.
 | `cancelable` | **`true`** |
 | `detail.open` | Target state (boolean) |
 | `detail.source` | `"focus"` `"pointer"` `"keyboard"` `"input"` `"escape"` `"outside-click"` `"focusout"` `"programmatic"` |
+
+### `x-multi-combobox-error`
+
+Fired when the component cannot take a value. It is sent in two cases:
+
+- In `json`, the `value` attribute is not a JSON array of strings. The selection is empty.
+- In `csv`, the `value` setter gets an array with a value that a comma-separated list cannot
+  hold. The selection does not change.
+
+| Property | Value |
+|----------|-------|
+| `bubbles` | `true` |
+| `composed` | `true` |
+| `cancelable` | `false` |
+| `detail.error` | What went wrong (string). In `csv`, it tells you to set `value-format="json"` |
+| `detail.values` | The values the component could not take (string[]). For an invalid attribute, the attribute text |
 
 ## Slots
 
@@ -161,11 +204,11 @@ Chip styling is owned by `x-chip`. Use `--x-chip-*` custom properties to theme c
 
 `x-multi-combobox` is a form-associated custom element (via `ElementInternals`). In a `<form>`:
 
-- The selected set is submitted under its `name` as a comma-separated string, and appears in `FormData` — no hidden input needed.
+- The selected set is submitted under its `name` as a string in the value format (comma-separated, or a JSON array in `json`), and appears in `FormData` — no hidden input needed.
 - Constraint validation is honoured: a `required` combobox with no selection reports `valueMissing` and **blocks submission**; setting the `error` attribute reports a `customError`. This is what `x-form` and native submission gate on.
 - `form.reset()` clears the selection (mirroring `x-form-field`) **and drops the `error` attribute**, so a stale validation message does not survive the reset. `<fieldset disabled>` disables it via `formDisabledCallback`.
 
-The framework adapters expose the array value as a form control: Vue `v-model` (`string[]`), Svelte `bind:value`, Angular `ControlValueAccessor`, and React/Solid controlled `value` / `defaultValue` — the value round-trips through the comma-separated `value` attribute.
+The framework adapters expose the array value as a form control: Vue `v-model` (`string[]`), Svelte `bind:value`, Angular `ControlValueAccessor`, and React/Solid controlled `value` / `defaultValue` — the value round-trips through the comma-separated `value` attribute. Most of these bindings write the attribute with `String(value)`, which is `csv`. With `value-format="json"`, set the `value` property instead.
 
 ### Validation API
 
@@ -210,3 +253,17 @@ invalid. Inside `x-form`, this is driven for you by `form.setFieldError(name, me
 ```
 
 Clear it by removing the attribute (or `el.error = ''`).
+
+### Values with a comma
+
+```html
+<x-multi-combobox value-format="json" value='["Liefdadigheid, religieus en non-profit"]'>
+  <option value="Liefdadigheid, religieus en non-profit">Liefdadigheid, religieus en non-profit</option>
+  <option value="Onderwijs">Onderwijs</option>
+</x-multi-combobox>
+```
+
+```js
+el.value = ["Liefdadigheid, religieus en non-profit", "Onderwijs"];
+el.value; // ["Liefdadigheid, religieus en non-profit", "Onderwijs"]
+```

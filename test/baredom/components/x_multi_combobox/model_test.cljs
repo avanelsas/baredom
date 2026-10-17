@@ -186,3 +186,81 @@
   (is (= {:items [{:key model/empty-key :text model/empty-message}] :active-id nil}
          (model/shown-panel fruits "zzz" 0 {:value #{} :max nil}))))
 
+
+;; ── value formats ────────────────────────────────────────────────────────
+(def ^:private charity "Liefdadigheid, religieus en non-profit")
+
+(deftest normalize-value-format-test
+  (testing "csv and json pass through"
+    (is (= "csv" (model/normalize-value-format "csv")))
+    (is (= "json" (model/normalize-value-format "json"))))
+  (testing "nil and unknown values yield csv"
+    (is (= "csv" (model/normalize-value-format nil)))
+    (is (= "csv" (model/normalize-value-format "JSON")))
+    (is (= "csv" (model/normalize-value-format "xml")))))
+
+(deftest parse-json-value-test
+  (testing "nil and empty string yield empty set"
+    (is (= #{} (model/parse-json-value nil)))
+    (is (= #{} (model/parse-json-value ""))))
+  (testing "an empty array yields empty set"
+    (is (= #{} (model/parse-json-value "[]"))))
+  (testing "a value with a comma stays one value"
+    (is (= #{charity "news"} (model/parse-json-value (str "[\"" charity "\",\"news\"]")))))
+  (testing "spaces are kept"
+    (is (= #{" padded "} (model/parse-json-value "[\" padded \"]"))))
+  (testing "text that is not a JSON array of strings yields nil"
+    (is (nil? (model/parse-json-value "apple,banana")))
+    (is (nil? (model/parse-json-value "[\"a\",")))
+    (is (nil? (model/parse-json-value "\"apple\"")))
+    (is (nil? (model/parse-json-value "{\"a\":1}")))
+    (is (nil? (model/parse-json-value "[1,2]")))
+    (is (nil? (model/parse-json-value "null")))))
+
+(deftest serialize-json-value-test
+  (testing "empty set yields empty string"
+    (is (= "" (model/serialize-json-value #{}))))
+  (testing "sorted JSON array with exact strings"
+    (is (= (str "[\" padded \",\"" charity "\",\"news\"]")
+           (model/serialize-json-value #{"news" charity " padded "})))))
+
+(deftest json-value-round-trips-test
+  (let [values #{charity " padded " "news"}]
+    (is (= values (model/parse-json-value (model/serialize-json-value values))))))
+
+(deftest parse-value-as-test
+  (testing "csv splits and trims as parse-value does"
+    (is (= {:value #{"a" "b"} :invalid? false} (model/parse-value-as "csv" " a , b "))))
+  (testing "json keeps the exact strings"
+    (is (= {:value #{"a, b"} :invalid? false} (model/parse-value-as "json" "[\"a, b\"]"))))
+  (testing "invalid json yields the empty set and invalid?"
+    (is (= {:value #{} :invalid? true} (model/parse-value-as "json" "a,b")))))
+
+(deftest serialize-value-as-test
+  (is (= "a,b" (model/serialize-value-as "csv" #{"b" "a"})))
+  (is (= "[\"a\",\"b\"]" (model/serialize-value-as "json" #{"b" "a"}))))
+
+(deftest csv-unrepresentable-test
+  (testing "plain values can be held"
+    (is (= [] (model/csv-unrepresentable ["apple" "banana split"]))))
+  (testing "values with the separator or outer whitespace cannot"
+    (is (= [charity " padded" "tail "]
+           (model/csv-unrepresentable ["apple" charity " padded" "tail "]))))
+  (testing "the message names the values and the json format"
+    (let [msg (model/unrepresentable-message [charity])]
+      (is (not= -1 (.indexOf msg charity)))
+      (is (not= -1 (.indexOf msg "value-format=\"json\""))))))
+
+(deftest normalize-value-format-model-test
+  (testing "defaults to csv with a valid value"
+    (let [m (model/normalize {})]
+      (is (= "csv" (:value-format m)))
+      (is (false? (:value-invalid? m)))))
+  (testing "json keeps a value with a comma"
+    (let [m (model/normalize {:value-format-raw "json" :value-raw (str "[\"" charity "\"]")})]
+      (is (= #{charity} (:value m)))
+      (is (false? (:value-invalid? m)))))
+  (testing "invalid json yields the empty set and value-invalid?"
+    (let [m (model/normalize {:value-format-raw "json" :value-raw "apple,banana"})]
+      (is (= #{} (:value m)))
+      (is (true? (:value-invalid? m))))))
