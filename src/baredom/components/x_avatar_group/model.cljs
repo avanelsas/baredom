@@ -1,4 +1,5 @@
-(ns baredom.components.x-avatar-group.model)
+(ns baredom.components.x-avatar-group.model
+  (:require [baredom.components.x-avatar.model :as avatar-model]))
 
 ;; ── Tag & attribute constants ─────────────────────────────────────────────
 (def tag-name       "x-avatar-group")
@@ -14,7 +15,7 @@
 
 (def foreign-writes
   "The attributes x-avatar-group writes on each slotted child."
-  [{:target :any :attributes #{attr-size attr-disabled}}])
+  [{:target :any :attributes #{avatar-model/group-attr-size avatar-model/group-attr-disabled}}])
 
 ;; ── Valid enum sets & defaults ────────────────────────────────────────────
 (def valid-sizes      #{"xs" "sm" "md" "lg" "xl"})

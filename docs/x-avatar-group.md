@@ -16,11 +16,11 @@ A container that stacks `x-avatar` elements with configurable overlap, direction
 
 | Attribute   | Type    | Default | Description                                                |
 |-------------|---------|---------|-----------------------------------------------------------|
-| `size`      | enum    | `"md"`  | Avatar size applied to all children: `xs` `sm` `md` `lg` `xl` |
+| `size`      | enum    | `"md"`  | Size of each avatar that has no `size` of its own: `xs` `sm` `md` `lg` `xl` |
 | `overlap`   | enum    | `"md"`  | Overlap between adjacent avatars: `none` `sm` `md` `lg`   |
 | `max`       | number  | —       | Maximum visible avatars. Overflow shown as "+N".           |
 | `direction` | enum    | `"ltr"` | Stack direction: `ltr` (left-to-right) `rtl` (right-to-left) |
-| `disabled`  | boolean | `false` | Dims the whole group                                       |
+| `disabled`  | boolean | `false` | Dims the whole group and disables each avatar              |
 | `label`     | string  | —       | Accessible label for the group (`aria-label`)              |
 
 ### Overlap → CSS margin mapping
@@ -46,10 +46,10 @@ A container that stacks `x-avatar` elements with configurable overlap, direction
 
 | Node | Attribute | When |
 |------|-----------|------|
-| each shown child | `size` | from the group's `size` |
-| each shown child | `disabled` | from the group's `disabled` |
+| each shown child | `data-group-size` | from the group's `size` |
+| each shown child | `data-group-disabled` | from the group's `disabled` |
 
-The group owns these. A `size` or `disabled` an author writes on one avatar is replaced.
+An avatar's own `size` wins over the group's. An avatar is disabled when it or the group is.
 
 ---
 

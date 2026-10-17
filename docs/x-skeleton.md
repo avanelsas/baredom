@@ -42,11 +42,11 @@ init();
 | Attribute   | Type   | Values                      | Default   | Description                                         |
 |-------------|--------|-----------------------------|-----------|-----------------------------------------------------|
 | `variant`   | string | `rect` \| `text` \| `circle`| `rect`    | Shape of the placeholder.                           |
-| `animation` | string | `pulse` \| `wave` \| `none` | `pulse`   | Animation style. `none` renders a static placeholder. |
+| `animation` | string | `pulse` \| `wave` \| `none` | `pulse`   | Animation style. `none` renders a static placeholder. Without it, the animation of the `x-skeleton-group` around it. |
 | `width`     | string | Any CSS length value        | —         | Explicit width applied as inline style on the base. |
 | `height`    | string | Any CSS length value        | —         | Explicit height applied as inline style on the base. |
 
-Invalid values for `variant` and `animation` silently fall back to the default.
+Invalid values for `variant` and `animation` silently fall back to the default. Inside an `x-skeleton-group`, an invalid `animation` falls back to the group's.
 
 ### Properties
 

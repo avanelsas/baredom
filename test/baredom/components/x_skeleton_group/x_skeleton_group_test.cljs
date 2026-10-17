@@ -2,6 +2,7 @@
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-skeleton-group.x-skeleton-group :as x]
             [baredom.components.x-skeleton-group.model            :as model]
+            [baredom.components.x-skeleton.model                  :as skeleton-model]
             [baredom.test-writes                                  :as writes]))
 
 (x/init!)
@@ -94,7 +95,7 @@
       (append! el)
       (js/setTimeout
        (fn []
-         (is (= "wave" (.getAttribute skel "animation")))
+         (is (= "wave" (.getAttribute skel skeleton-model/group-attr-animation)))
          (done))
        50))))
 
@@ -202,7 +203,7 @@
       (js/setTimeout
        (fn []
          (let [host-delay (delay-of el)
-               n          (writes/count-attr-writes! skeleton ["animation" "style"])
+               n          (writes/count-attr-writes! skeleton [skeleton-model/group-attr-animation "style"])
                ^js added  (.createElement js/document "x-skeleton")]
            (.appendChild el added)
            (js/setTimeout
@@ -224,7 +225,7 @@
        (fn []
          (let [before (delay-of skeleton)]
            (.setAttribute el model/attr-animation "wave")
-           (is (= "wave" (.getAttribute skeleton "animation")))
+           (is (= "wave" (.getAttribute skeleton skeleton-model/group-attr-animation)))
            (is (not= before (delay-of skeleton)) "the skeleton gets the delay of its new animation")
            (done)))
        50))))
@@ -236,3 +237,40 @@
     (append! el)
     (let [written (writes/foreign-writes! el #(.setAttribute el model/attr-animation "wave"))]
       (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))
+
+;; ── The skeleton's own animation ────────────────────────────────────────────
+(deftest a-skeleton-takes-its-own-animation-and-else-the-groups-test
+  (async done
+    (let [^js el    (make-el)
+          ^js own   (.createElement js/document skeleton-model/tag-name)
+          ^js plain (.createElement js/document skeleton-model/tag-name)]
+      (.setAttribute own skeleton-model/attr-animation "none")
+      (.setAttribute el model/attr-animation "wave")
+      (.appendChild el own)
+      (.appendChild el plain)
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (is (= "none" (.getAttribute (shadow-part own "[part=base]") "data-animation"))
+             "the skeleton with an animation keeps it")
+         (is (= "wave" (.getAttribute (shadow-part plain "[part=base]") "data-animation"))
+             "the skeleton without one takes the group's")
+         (is (= "none" (.getAttribute own skeleton-model/attr-animation))
+             "the group leaves the skeleton's animation")
+         (done))
+       50))))
+
+(deftest a-new-group-animation-keeps-the-phase-of-a-skeleton-with-its-own-test
+  (async done
+    (let [^js el  (make-el)
+          ^js own (.createElement js/document skeleton-model/tag-name)]
+      (.setAttribute own skeleton-model/attr-animation "none")
+      (.appendChild el own)
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (let [before (delay-of own)]
+           (.setAttribute el model/attr-animation "wave")
+           (is (= before (delay-of own)))
+           (done)))
+       50))))

@@ -13,8 +13,14 @@
 (def allowed-variants   #{"rect" "text" "circle"})
 (def allowed-animations #{"pulse" "wave" "none"})
 
+(def group-attr-animation "data-group-animation")
+
+(def internal-attributes
+  "The attributes that the parent x-skeleton-group writes. They are not part of the public API."
+  #{group-attr-animation})
+
 (def observed-attributes
-  #js [attr-variant attr-animation attr-width attr-height])
+  #js [attr-variant attr-animation attr-width attr-height group-attr-animation])
 
 (def property-api
   {:variant   {:type 'string :reflects-attribute attr-variant :enum allowed-variants}
@@ -32,12 +38,17 @@
     v
     default-animation))
 
+(defn resolve-animation
+  "The animation from `own`, or else from `group`, or else the default."
+  [own group]
+  (if (contains? allowed-animations own) own (normalize-animation group)))
+
 (defn normalize-css-value [v]
   (when (and (string? v) (not= "" v)) v))
 
-(defn normalize [{:keys [variant animation width height]}]
+(defn normalize [{:keys [variant animation group-animation width height]}]
   {:variant   (normalize-variant variant)
-   :animation (normalize-animation animation)
+   :animation (resolve-animation animation group-animation)
    :width     (normalize-css-value width)
    :height    (normalize-css-value height)})
 

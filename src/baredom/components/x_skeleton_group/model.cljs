@@ -20,7 +20,7 @@
 
 (def foreign-writes
   "The attributes x-skeleton-group writes on each slotted x-skeleton."
-  [{:target skeleton-model/tag-name :attributes #{skeleton-model/attr-animation}}])
+  [{:target skeleton-model/tag-name :attributes #{skeleton-model/group-attr-animation}}])
 
 (def property-api
   {:preset    {:type 'string  :reflects-attribute attr-preset    :default "" :enum allowed-presets}

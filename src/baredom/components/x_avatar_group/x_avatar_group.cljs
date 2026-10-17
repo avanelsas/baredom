@@ -3,7 +3,8 @@
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
    [goog.object :as gobj]
-   [baredom.components.x-avatar-group.model :as model]))
+   [baredom.components.x-avatar-group.model :as model]
+   [baredom.components.x-avatar.model :as avatar-model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
 (def ^:private k-refs     "__xAvatarGroupRefs")
@@ -132,8 +133,8 @@
 
 (defn- show-visible-child! [^js child {:keys [size disabled]} margin idx]
   (du/set-style-to! child "display" "")
-  (du/set-attr-to! child model/attr-size size)
-  (du/set-bool-attr-to! child model/attr-disabled disabled)
+  (du/set-attr-to! child avatar-model/group-attr-size size)
+  (du/set-bool-attr-to! child avatar-model/group-attr-disabled disabled)
   (du/set-style-to! child "margin-inline-start" (if (pos? idx) margin "0px")))
 
 (defn- hide-child! [^js child]
