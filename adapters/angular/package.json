@@ -514,7 +514,7 @@
     "@vanelsas/baredom" : "file:../../"
   },
   "files" : [ "dist", "README.md", "LICENSE" ],
-  "version" : "3.0.0",
+  "version" : "3.1.0",
   "main" : "./dist/index.js",
   "sideEffects" : true
 }

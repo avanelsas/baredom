@@ -2,7 +2,12 @@
 
 All notable changes to BareDOM will be documented in this file.
 
-## [Unreleased]
+## [4.8.0] - 2026-10-17
+
+BareDOM 4.8 lets `x-multi-combobox` take values that hold a comma, and fixes two `x-date-picker`
+input bugs. All five adapters are released with it: `-react` 3.1.0, `-angular` 3.1.0, `-vue`
+0.7.0, `-svelte` 0.7.0 and `-solid` 0.7.0. Each still works with `@vanelsas/baredom` 4.0.0 or
+later. `value-format` needs 4.8.0.
 
 ### Added
 
@@ -25,6 +30,14 @@ All notable changes to BareDOM will be documented in this file.
   which is always comma-separated. Now the array round-trips in both value formats. In `csv`, a
   binding gives the same attribute and chips as before. The React adapter passes `value` after
   the other props, so `valueFormat` is set first.
+
+### Fixed
+
+- **A focused `x-date-picker` text box shows a new `start`, `end` or `value`,** and blur commits
+  only text that the user edited. Before, the text box kept the old text, and blur committed it
+  again.
+- **Enter closes the `x-date-picker` panel when the element has `close-on-select`,** as a pick
+  in the calendar does.
 
 ## [4.7.0] - 2026-10-17
 
