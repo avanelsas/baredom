@@ -8,6 +8,8 @@
 (def ^:private k-base        "__xSkeletonBase")
 (def ^:private k-model       "__xSkeletonModel")
 
+(def ^:private delay-prop "--_x-skeleton-delay")
+
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private style-text
   (str
@@ -71,12 +73,12 @@
 
    "[part=base][data-animation='pulse']{"
    "animation:x-skeleton-pulse var(--x-skeleton-duration,1.5s) ease-in-out infinite;"
-   "animation-delay:var(--x-skeleton-delay,0s);}"
+   "animation-delay:var(--_x-skeleton-delay,0s);}"
 
    "[part=base][data-animation='wave'] [part=shimmer]{"
    "display:block;"
    "animation:x-skeleton-wave var(--x-skeleton-duration,1.5s) linear infinite;"
-   "animation-delay:var(--x-skeleton-delay,0s);}"
+   "animation-delay:var(--_x-skeleton-delay,0s);}"
 
    ;; Reduced motion
    "@media (prefers-reduced-motion:reduce){"
@@ -109,9 +111,18 @@
     :width           (du/get-attr el model/attr-width)
     :height          (du/get-attr el model/attr-height)}))
 
+;; ── Phase ─────────────────────────────────────────────────────────────────
+(defn- phase!
+  "Gives the animation of `el`, started now, the delay that puts it in phase with the page clock."
+  [^js el]
+  (du/set-style-to! (du/getv el k-base) delay-prop (model/phase-delay (js/performance.now))))
+
 ;; ── Apply model (cache-at-tail render-pipeline) ───────────────────────────
 (defn- apply-model! [^js el {:keys [variant animation width height] :as m}]
-  (let [^js base (du/getv el k-base)]
+  (let [^js base (du/getv el k-base)
+        old-m    (du/getv el k-model)]
+    (when (and old-m (not= animation (:animation old-m)))
+      (phase! el))
     (du/set-attr! base "data-variant"   variant)
     (du/set-attr! base "data-animation" animation)
     ;; Size overrides — applied as inline styles on base so they take
@@ -136,7 +147,8 @@
 (defn- connected! [^js el]
   (when-not (du/getv el k-initialized)
     (init-dom! el))
-  (update-from-attrs! el))
+  (update-from-attrs! el)
+  (phase! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
