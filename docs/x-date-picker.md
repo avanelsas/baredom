@@ -83,7 +83,7 @@ A `null` field asks for no attribute, so a request asks for no attribute of the 
 
 ### Clearing by emptying the input
 
-Deleting the text and committing (blur, `Enter`, or `commit()`) clears the committed value, exactly as `clear()` does. It fires a cancelable `x-date-picker-change-request` first, then `x-date-picker-change`, both with empty strings in the value fields — `{ value: "", mode, reason }` in single mode, `{ start: "", end: "", mode, reason }` in range mode. Cancelling the request keeps the committed value and restores the input text.
+Deleting the text and committing (blur, `Enter`, or `commit()`) clears the committed value, exactly as `clear()` does. It fires a cancelable `x-date-picker-change-request` first, then `x-date-picker-change`, both with `null` in `value`, `start` and `end`. Cancelling the request keeps the committed value and restores the input text.
 
 Committing a blank input when nothing is committed yet is a no-op: neither event fires.
 

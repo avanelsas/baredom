@@ -364,7 +364,7 @@
           "input display stays empty after the commit")
       (is (= 1 (count @details)) "one change event")
       (let [^js d (first @details)]
-        (is (= "" (.-value d))    "change detail reports an empty value")
+        (is (nil? (.-value d))    "change detail reports no value")
         (is (= "single" (.-mode d)))
         (is (= "blur" (.-reason d)))))))
 
@@ -381,8 +381,8 @@
     (is (nil? (.getAttribute el model/attr-end))   "end cleared")
     (is (= 1 (count @details)) "one change event")
     (let [^js d (first @details)]
-      (is (= "" (.-start d)))
-      (is (= "" (.-end d)))
+      (is (nil? (.-start d)))
+      (is (nil? (.-end d)))
       (is (= "range" (.-mode d))))))
 
 (deftest blank-input-commit-respects-change-request-cancel-test

@@ -345,11 +345,9 @@
 (declare xdp-clear!)
 
 (defn- clear-detail
+  "The detail of a clear: it asks for no date."
   [mode-s reason]
-  (change-detail (if (= mode-s model/mode-range)
-                   {:start "" :end ""}
-                   {:value ""})
-                 mode-s reason))
+  (change-detail {} mode-s reason))
 
 (defn- commit-display!
   "Commits the text of the input. Returns `:date` or `:cleared` when it commits, else nil."
