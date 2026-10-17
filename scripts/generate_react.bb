@@ -26,12 +26,13 @@
 ;;   :prop-type             ← :value-type
 (def controlled-components
   (into {}
-        (map (fn [[tag {:keys [attr-name change-request-event value-type]}]]
+        (map (fn [[tag {:keys [attr-name change-request-event value-type write-mode]}]]
                (let [camel (kebab->camel attr-name)]
                  [tag {:control-prop         camel
                        :default-prop         (str "default" (str/capitalize camel))
                        :change-request-event change-request-event
-                       :prop-type            value-type}])))
+                       :prop-type            value-type
+                       :write-mode           write-mode}])))
         form-controls))
 
 ;; ── React-specific helpers ──────────────────────────────────────────────────
@@ -62,6 +63,7 @@
         default-prop   (when ctrl (:default-prop ctrl))
         ctrl-event     (when ctrl (:change-request-event ctrl))
         ctrl-type      (when ctrl (:prop-type ctrl))
+        ctrl-property? (= :property (:write-mode ctrl))
         ;; Properties: filter out readonly, build props
         writable-props (when properties
                          (->> properties
@@ -156,9 +158,13 @@
                          "    useEffect(() => {\n"
                          "      const el = innerRef.current;\n"
                          "      if (!el || " ctrl-prop " !== undefined || " default-prop " === undefined) return;\n"
-                         (if (= ctrl-type "boolean")
+                         (cond
+                           ctrl-property?
+                           (str "      " (property-write "el" ctrl-prop default-prop) "\n")
+                           (= ctrl-type "boolean")
                            (str "      if (" default-prop ") el.setAttribute(\"" ctrl-prop "\", \"\");\n"
                                 "      else el.removeAttribute(\"" ctrl-prop "\");\n")
+                           :else
                            (str "      el.setAttribute(\"" ctrl-prop "\", String(" default-prop "));\n"))
                          "    // eslint-disable-next-line react-hooks/exhaustive-deps\n"
                          "    }, []);\n\n"))]

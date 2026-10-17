@@ -46,7 +46,7 @@ export const XMultiCombobox = forwardRef<XMultiComboboxElement, XMultiComboboxPr
     useEffect(() => {
       const el = innerRef.current;
       if (!el || value !== undefined || defaultValue === undefined) return;
-      el.setAttribute("value", String(defaultValue));
+      el.value = defaultValue as any;
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

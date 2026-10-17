@@ -208,9 +208,12 @@
   (when bindable-entry
     (let [var-name  (:var-name bindable-entry)
           attr-name (:attr-name form-ctl-cfg)
-          body      (if (= (:write-mode form-ctl-cfg) :boolean-attr)
+          body      (case (:write-mode form-ctl-cfg)
+                      :boolean-attr
                       (str "    if (" var-name ") node.setAttribute(\"" attr-name "\", \"\");\n"
                            "    else node.removeAttribute(\"" attr-name "\");")
+                      :property
+                      (str "    " (property-write "node" attr-name var-name))
                       (str "    if (" var-name " != null) node.setAttribute(\""
                            attr-name "\", String(" var-name "));\n"
                            "    else node.removeAttribute(\"" attr-name "\");"))]

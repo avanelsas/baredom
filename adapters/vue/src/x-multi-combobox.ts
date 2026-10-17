@@ -42,8 +42,7 @@ export const XMultiCombobox = defineComponent({
     const writeValue = (v: string[] | undefined) => {
       const el = elRef.value;
       if (!el || v === undefined) return;
-      if (v != null) el.setAttribute("value", String(v));
-      else el.removeAttribute("value");
+      el.value = v as any;
     };
 
     onMounted(() => {

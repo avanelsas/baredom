@@ -42,14 +42,14 @@ export function XMultiCombobox(props: XMultiComboboxProps): JSX.Element {
 
   onMount(() => {
     if (!el || local.value !== undefined || local.defaultValue === undefined) return;
-    el.setAttribute("value", String(local.defaultValue));
+    el.value = local.defaultValue as any;
   });
 
   createEffect(() => {
     if (!el) return;
     const v = local.value;
     if (v === undefined) return;
-    el.setAttribute("value", String(v));
+    el.value = v as any;
   });
 
   onMount(() => {

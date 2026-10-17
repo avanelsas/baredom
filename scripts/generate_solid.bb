@@ -20,12 +20,13 @@
 ;; both adapters expose the same controlled-mode prop names.
 (def controlled-components
   (into {}
-        (map (fn [[tag {:keys [attr-name change-request-event value-type]}]]
+        (map (fn [[tag {:keys [attr-name change-request-event value-type write-mode]}]]
                (let [camel (kebab->camel attr-name)]
                  [tag {:control-prop         camel
                        :default-prop         (str "default" (str/capitalize camel))
                        :change-request-event change-request-event
-                       :prop-type            value-type}])))
+                       :prop-type            value-type
+                       :write-mode           write-mode}])))
         form-controls))
 
 ;; ── Solid-specific helpers ──────────────────────────────────────────────────
@@ -58,6 +59,7 @@
         default-prop   (when ctrl (:default-prop ctrl))
         ctrl-event     (when ctrl (:change-request-event ctrl))
         ctrl-type      (when ctrl (:prop-type ctrl))
+        ctrl-property? (= :property (:write-mode ctrl))
         writable-props (when properties
                          (->> properties
                               (remove (fn [[_ m]] (:readonly m)))
@@ -140,9 +142,13 @@
                "    if (!el) return;\n"
                "    const v = local." ctrl-prop ";\n"
                "    if (v === undefined) return;\n"
-               (if (= ctrl-type "boolean")
+               (cond
+                 ctrl-property?
+                 (str "    " (property-write "el" ctrl-prop "v") "\n")
+                 (= ctrl-type "boolean")
                  (str "    if (v) el.setAttribute(\"" ctrl-prop "\", \"\");\n"
                       "    else el.removeAttribute(\"" ctrl-prop "\");\n")
+                 :else
                  (str "    el.setAttribute(\"" ctrl-prop "\", String(v));\n"))
                "  });\n\n"))
         ;; Build the uncontrolled default-init (runs once)
@@ -150,9 +156,13 @@
         (when ctrl
           (str "  onMount(() => {\n"
                "    if (!el || local." ctrl-prop " !== undefined || local." default-prop " === undefined) return;\n"
-               (if (= ctrl-type "boolean")
+               (cond
+                 ctrl-property?
+                 (str "    " (property-write "el" ctrl-prop (str "local." default-prop)) "\n")
+                 (= ctrl-type "boolean")
                  (str "    if (local." default-prop ") el.setAttribute(\"" ctrl-prop "\", \"\");\n"
                       "    else el.removeAttribute(\"" ctrl-prop "\");\n")
+                 :else
                  (str "    el.setAttribute(\"" ctrl-prop "\", String(local." default-prop "));\n"))
                "  });\n\n"))
         ;; Build the event-binding block (onMount with all events)

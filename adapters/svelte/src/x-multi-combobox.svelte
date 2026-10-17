@@ -56,8 +56,7 @@
   $effect(() => {
     const node = el;
     if (!node || value === undefined) return;
-    if (value != null) node.setAttribute("value", String(value));
-    else node.removeAttribute("value");
+    node.value = value as any;
   });
 
   $effect(() => {
