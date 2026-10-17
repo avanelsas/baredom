@@ -23,8 +23,7 @@ All notable changes to BareDOM will be documented in this file.
   Vue `v-model`, Svelte `bind:value`, the Angular ControlValueAccessor, the React `defaultValue`,
   and the Solid `value` and `defaultValue`. Before, they wrote `String(value)` to the attribute,
   which is always comma-separated. Now the array round-trips in both value formats. The React
-  adapter passes `value` after the other props, so `valueFormat` is set first. The adapters
-  change, so the release of this entry must release them too.
+  adapter passes `value` after the other props, so `valueFormat` is set first.
 
 ## [4.7.0] - 2026-10-17
 
