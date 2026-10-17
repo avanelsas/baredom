@@ -471,7 +471,7 @@
     "@vanelsas/baredom" : "file:../../"
   },
   "files" : [ "dist", "README.md", "LICENSE" ],
-  "version" : "0.6.0",
+  "version" : "0.7.0",
   "main" : "./dist/index.js",
   "sideEffects" : [ "./dist/*.svelte", "./dist/*.js" ]
 }
