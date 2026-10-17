@@ -207,6 +207,12 @@ name is the attribute in camel case. `role`, `aria-` attributes and the attribut
 `internal-attributes` need none. Enforced by `bb scripts/check_attribute_api.bb` in CI, see
 [`docs/MODEL-LAYER.md`](docs/MODEL-LAYER.md).
 
+**A write on a node the component does not own is declared.** A component owns its host, its
+shadow root and the nodes it creates. When it writes an attribute on any other node, a child or a
+sibling, it names it in `foreign-writes` in its model, and a test drives the write and checks the
+declaration with `baredom.test-writes/foreign-writes!`. Inline style is not declared. See
+[`docs/MODEL-LAYER.md`](docs/MODEL-LAYER.md).
+
 **Model fns have two callers, not one.** A `model.cljs` function is called both from its component (which supplies fully-shaped input via `read-model`) *and* directly from `model_test.cljs` (which often passes sparse maps like `{}`). The input contract that holds in production does **not** hold in tests. Concretely: if a destructured key like `:label-present?` is documented as `boolean`, tests may still pass `nil` for it, and `(and nil …)` returns `nil` rather than `false`. **Coerce output booleans explicitly** at the return site — e.g. `:labelled? (boolean (and label-present? …))` — instead of relying on inputs to already be booleans. The same rule applies to any output whose downstream consumer (or test assertion) checks a strict predicate like `false?` / `true?` / `nil?`.
 
 ### Additional files per component

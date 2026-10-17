@@ -1,7 +1,8 @@
 (ns baredom.components.x-radio.x-radio-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-radio.x-radio :as x]
-            [baredom.components.x-radio.model :as model]))
+            [baredom.components.x-radio.model :as model]
+            [baredom.test-writes :as writes]))
 
 (x/init!)
 
@@ -463,3 +464,11 @@
     (is (= 0 (tab-index checked)) "the checked radio is the tab stop of its new group")
     (is (= -1 (tab-index first-there)) "the first radio there is no longer the tab stop")
     (is (= -1 (tab-index second-there)))))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-radio-writes-only-what-it-declares-on-other-nodes-test
+  (let [r1 (make-radio "fruit")
+        r2 (make-radio "fruit")]
+    (.setAttribute r1 model/attr-checked "")
+    (let [written (writes/foreign-writes! r2 #(.click (shadow-part r2 "[part=control]")))]
+      (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))

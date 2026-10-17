@@ -15,6 +15,12 @@
 (def observed-attributes
   #js [attr-direction attr-radius attr-max-scale attr-lift attr-gap attr-disabled])
 
+(def item-attr-tabindex "tabindex")
+
+(def foreign-writes
+  "The attributes x-proximity-list writes on each slotted item that has none of its own."
+  [{:target :any :attributes #{item-attr-tabindex}}])
+
 ;; ── CSS custom property names (theming) ─────────────────────────────────────
 (def css-gap        "--x-proximity-list-gap")
 (def css-item-size  "--x-proximity-list-item-size")

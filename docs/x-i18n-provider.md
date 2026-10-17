@@ -106,6 +106,12 @@ Providers can be nested. Each `<x-i18n>` element resolves to its nearest ancesto
 </x-i18n-provider>
 ```
 
+## Writes on other nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| each descendant with a `data-i18n-<name>` attribute | `<name>` | translations load or the locale changes |
+
 ## Accessibility
 
 This component is invisible (display: contents) and has no direct accessibility requirements. The translated text rendered by `<x-i18n>` descendants is accessible as regular text content.

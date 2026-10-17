@@ -66,27 +66,44 @@
   [^js el attr-name]
   (.getAttribute el attr-name))
 
+(def ^{:dynamic true
+       :private true
+       :doc "How many traced attribute writes are running, one inside another. A custom
+             element reacts inside the write that changed it, so its own writes run one
+             level deeper."}
+  *write-depth* 0)
+
+(defn- traced-write!
+  "Runs `write!` and gives the trace hook `h` the `record` with the `:depth` it ran at."
+  [h write! record]
+  (let [depth *write-depth*]
+    (binding [*write-depth* (inc depth)]
+      (write!))
+    (try
+      (h (assoc record :depth depth))
+      (catch :default _ nil))))
+
 (defn set-attr!
   [^js el attr-name value]
-  (.setAttribute el attr-name value)
-  (when-some [h @trace-hook]
-    (try
-      (h {:type      :dom/attribute-set
-          :el        el
-          :attribute attr-name
-          :value     value})
-      (catch :default _ nil)))
+  (if-some [h @trace-hook]
+    (traced-write! h
+                   (fn write [] (.setAttribute el attr-name value))
+                   {:type      :dom/attribute-set
+                    :el        el
+                    :attribute attr-name
+                    :value     value})
+    (.setAttribute el attr-name value))
   nil)
 
 (defn remove-attr!
   [^js el attr-name]
-  (.removeAttribute el attr-name)
-  (when-some [h @trace-hook]
-    (try
-      (h {:type      :dom/attribute-removed
-          :el        el
-          :attribute attr-name})
-      (catch :default _ nil)))
+  (if-some [h @trace-hook]
+    (traced-write! h
+                   (fn write [] (.removeAttribute el attr-name))
+                   {:type      :dom/attribute-removed
+                    :el        el
+                    :attribute attr-name})
+    (.removeAttribute el attr-name))
   nil)
 
 ;; ── Untraced variants — for animation hot paths ─────────────────────────────

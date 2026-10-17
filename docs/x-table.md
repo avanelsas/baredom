@@ -159,6 +159,13 @@ x-table {
 
 ---
 
+## Writes on other nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| each `x-table-row` child | `selected` | a click selects a row |
+| each `x-table-row` child | `data-stripe` | `striped` is on |
+
 ## Accessibility
 
 ### ARIA Attributes

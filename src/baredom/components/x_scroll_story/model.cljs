@@ -32,6 +32,10 @@
 ;; ── Data attribute set on active step child ─────────────────────────────────
 (def data-active "data-active")
 
+(def foreign-writes
+  "The attributes x-scroll-story writes on its steps."
+  [{:target :any :attributes #{data-active}}])
+
 ;; ── Allowed enum values ─────────────────────────────────────────────────────
 (def allowed-layouts #{"left" "right" "top"})
 

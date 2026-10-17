@@ -12,6 +12,11 @@
 ;; ── Observed attributes ─────────────────────────────────────────────────────
 (def observed-attributes #js [attr-src attr-locale attr-fallback-locale])
 
+(def foreign-writes
+  "The attributes x-i18n-provider writes on a descendant, each named by a `data-i18n-<attr>`
+   attribute on that descendant."
+  [{:target :any :attributes :any}])
+
 ;; ── Property API ────────────────────────────────────────────────────────────
 (def property-api
   {:src            {:type 'string :reflects-attribute attr-src}

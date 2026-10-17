@@ -120,6 +120,12 @@ All events bubble and are composed (cross shadow DOM). None are cancelable.
 | `--x-scroll-timeline-curve-amplitude` | `60` | SVG curve horizontal amplitude (pixels, curved mode) |
 | `--x-scroll-timeline-disabled-opacity` | `0.55` | Opacity when disabled |
 
+## Writes on other nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| each slotted entry | `data-active`, `data-side`, `data-index` | the layout, the order or the active entry changes |
+
 ## Accessibility
 
 - The container has `role="feed"` with an `aria-label` from the `label` attribute.

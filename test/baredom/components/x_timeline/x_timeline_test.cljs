@@ -475,3 +475,23 @@
             (fn []
               (is (= 0 @n))
               (done)))))))))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-timeline-writes-only-what-it-declares-on-other-nodes-test
+  (async done
+    (let [^js el (make-timeline)]
+      (dotimes [_ 4] (.appendChild el (make-item)))
+      (append! el)
+      (after-slotchange
+       (fn []
+         (writes/foreign-writes-later!
+          el
+          (fn change-timeline []
+            (.remove (.-firstElementChild el))
+            (.remove (.-lastElementChild el))
+            (.setAttribute el model/attr-striped "")
+            (.setAttribute el model/attr-position "alternating"))
+          50
+          (fn check [written]
+            (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written)))
+            (done))))))))

@@ -1,4 +1,5 @@
-(ns baredom.components.x-tabs.model)
+(ns baredom.components.x-tabs.model
+  (:require [baredom.components.x-tab.model :as tab-model]))
 
 (def tag-name "x-tabs")
 
@@ -14,6 +15,13 @@
        attr-activation
        attr-label
        attr-loop])
+
+(def panel-attr-hidden "hidden")
+
+(def foreign-writes
+  "The attributes x-tabs writes on its tabs, and on the panel each tab names in `controls`."
+  [{:target tab-model/tag-name :attributes #{tab-model/attr-selected}}
+   {:target :any :attributes #{panel-attr-hidden}}])
 
 (def orientation-values #{"horizontal" "vertical"})
 (def activation-values #{"auto" "manual"})

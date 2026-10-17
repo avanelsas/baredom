@@ -42,6 +42,17 @@ A container that stacks `x-avatar` elements with configurable overlap, direction
 
 ---
 
+## Writes on other nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| each shown child | `size` | from the group's `size` |
+| each shown child | `disabled` | from the group's `disabled` |
+
+The group owns these. A `size` or `disabled` an author writes on one avatar is replaced.
+
+---
+
 ## Overflow behaviour
 
 When `max` is set and the number of slotted avatars exceeds it, the first `max` avatars are shown and an additional "+N" avatar is appended, where N is the hidden count.

@@ -1,5 +1,6 @@
 (ns baredom.components.x-drop-zone.model
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [baredom.components.x-drag-panel.model :as panel-model]))
 
 (def tag-name "x-drop-zone")
 
@@ -16,6 +17,10 @@
 (def observed-attributes
   #js [attr-value attr-accepts attr-max attr-label attr-disabled attr-pending
        attr-pending-index attr-animate-moves])
+
+(def foreign-writes
+  "The attributes x-drop-zone writes on the panel that `reserve` names."
+  [{:target panel-model/tag-name :attributes #{panel-model/attr-pending}}])
 
 ;; ── Event name constants ─────────────────────────────────────────────────────
 (def event-enter "x-drop-zone-enter")

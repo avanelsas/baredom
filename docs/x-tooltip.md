@@ -110,6 +110,12 @@ Fired after the tooltip is hidden. Not cancelable.
 | `--x-tooltip-transition-duration` | `var(--x-transition-duration,150ms)`  | Transition duration |
 | `--x-tooltip-transition-easing` | `var(--x-transition-easing,ease)`  | Transition easing |
 
+## Writes on other nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| the first slotted element | `aria-describedby` | it becomes the trigger, and is removed when it stops being one |
+
 ## Accessibility
 
 - Panel has `role="tooltip"` with a unique auto-generated `id`

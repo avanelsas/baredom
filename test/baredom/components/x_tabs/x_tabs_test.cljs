@@ -536,3 +536,12 @@
               (done))
             50)))
        50))))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-tabs-writes-only-what-it-declares-on-other-nodes-test
+  (let [^js el (make-el)]
+    (setup-tabs-with-panels! el)
+    (.setAttribute el model/attr-value "overview")
+    (append! el)
+    (let [written (writes/foreign-writes! el #(.setAttribute el model/attr-value "analytics"))]
+      (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))

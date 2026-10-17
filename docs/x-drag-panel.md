@@ -84,7 +84,7 @@ keyboard-reachable, so a stalled move reads as stuck rather than as a lost card.
 | `grab` | string | `"handle"` | `handle` drags from the handle bar only; `surface` drags from anywhere on the card. Unrecognised values fall back to `handle`. |
 | `auto-scroll` | string | `"auto"` | `auto` scrolls the nearest scrollable ancestors when dragged toward an edge; `none` disables it. |
 | `disabled` | boolean | absent | Not draggable, not focusable. |
-| `pending` | boolean | absent | Renders the footprint and suppresses dragging. Author-set — never set by the component. |
+| `pending` | boolean | absent | Renders the footprint and suppresses dragging. Set by the author, or by `x-drop-zone` in `reserve()`. |
 
 ### State attributes
 

@@ -18,6 +18,11 @@
 (def child-attr-position "data-position")
 (def child-attr-striped  "data-striped")
 
+(def foreign-writes
+  "The attributes x-timeline writes on its items."
+  [{:target     child-tag
+    :attributes #{child-attr-index child-attr-last child-attr-position child-attr-striped}}])
+
 ;; ── Event name constants ──────────────────────────────────────────────────────
 (def event-select "x-timeline-select")
 

@@ -1,4 +1,5 @@
-(ns baredom.components.x-table.model)
+(ns baredom.components.x-table.model
+  (:require [baredom.components.x-table-row.model :as row-model]))
 
 (def tag-name "x-table")
 
@@ -15,6 +16,12 @@
   #js [attr-columns attr-caption attr-selectable
        attr-striped attr-bordered attr-full-width
        attr-compact attr-row-count])
+
+(def row-attr-stripe "data-stripe")
+
+(def foreign-writes
+  "The attributes x-table writes on its rows."
+  [{:target row-model/tag-name :attributes #{row-model/attr-selected row-attr-stripe}}])
 
 ;; ── Event names ──────────────────────────────────────────────────────────────
 

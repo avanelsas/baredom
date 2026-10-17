@@ -351,8 +351,8 @@
 
 ;; ── Slot change ─────────────────────────────────────────────────────────────
 (defn- ensure-tabindex! [^js item]
-  (when (nil? (.getAttribute item "tabindex"))
-    (du/set-attr! item "tabindex" "0")))
+  (when (nil? (.getAttribute item model/item-attr-tabindex))
+    (du/set-attr! item model/item-attr-tabindex "0")))
 
 (defn- on-slotchange [^js el ^js _e]
   (when-let [^js items (assigned-elements el)]

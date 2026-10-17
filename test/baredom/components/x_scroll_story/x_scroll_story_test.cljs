@@ -2,7 +2,8 @@
   (:require
    [cljs.test :refer [deftest is use-fixtures async]]
    [baredom.components.x-scroll-story.x-scroll-story :as x]
-   [baredom.components.x-scroll-story.model :as model]))
+   [baredom.components.x-scroll-story.model :as model]
+   [baredom.test-writes :as writes]))
 
 (x/init!)
 
@@ -419,4 +420,19 @@
             (is (= {"s1" 1} @enters))
             (done))
           300))
+       300))))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-scroll-story-writes-only-what-it-declares-on-other-nodes-test
+  (async done
+    (let [^js el (append! (tall-story))]
+      (js/setTimeout
+       (fn []
+         (writes/foreign-writes-later!
+          el
+          #(.remove (.-firstElementChild el))
+          300
+          (fn check [written]
+            (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written)))
+            (done))))
        300))))
