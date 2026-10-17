@@ -35,6 +35,21 @@
     (.dispatchEvent inp (js/Event. "blur"))
     inp))
 
+(defn ^js focus-input!
+  "Fire the focus event of the input."
+  [^js el]
+  (let [^js inp (shadow-part el "[part=input]")]
+    (.dispatchEvent inp (js/Event. "focus"))
+    inp))
+
+(defn ^js enter-with!
+  "Set the input to s and fire an Enter keydown on it."
+  [^js el s]
+  (let [^js inp (shadow-part el "[part=input]")]
+    (set! (.-value inp) s)
+    (.dispatchEvent inp (js/KeyboardEvent. "keydown" #js {:key "Enter"}))
+    inp))
+
 ;; ---------------------------------------------------------------------------
 
 (deftest registration-test
@@ -406,6 +421,80 @@
       (.click day))
     (is (some? (.getAttribute el model/attr-start)) "click after clear sets start")
     (is (nil? (.getAttribute el model/attr-end))    "click after clear leaves end unset")))
+
+;; ---------------------------------------------------------------------------
+;; Focused input
+;; ---------------------------------------------------------------------------
+
+(deftest focused-input-shows-a-new-range-test
+  (let [el (append! (make-el))]
+    (.setAttribute el "mode" "range")
+    (.setAttribute el model/attr-start "2026-07-01")
+    (.setAttribute el model/attr-end "2026-07-31")
+    (let [^js inp (focus-input! el)]
+      (.setAttribute el model/attr-start "2026-04-01")
+      (.setAttribute el model/attr-end "2026-06-30")
+      (is (= "2026-04-01 - 2026-06-30" (.-value inp))))))
+
+(deftest blur-without-an-edit-keeps-a-new-range-test
+  (let [el      (append! (make-el))
+        changes (atom 0)]
+    (.setAttribute el "mode" "range")
+    (.setAttribute el model/attr-start "2026-07-01")
+    (.setAttribute el model/attr-end "2026-07-31")
+    (let [^js inp (focus-input! el)]
+      (.setAttribute el model/attr-start "2026-04-01")
+      (.setAttribute el model/attr-end "2026-06-30")
+      (.addEventListener el model/event-change (fn [_] (swap! changes inc)))
+      (.dispatchEvent inp (js/Event. "blur"))
+      (is (= 0 @changes) "blur sends no change")
+      (is (= "2026-04-01" (.getAttribute el model/attr-start)))
+      (is (= "2026-06-30" (.getAttribute el model/attr-end))))))
+
+(deftest focused-input-keeps-typed-text-when-error-changes-test
+  (let [el      (append! (make-el))
+        ^js inp (focus-input! el)]
+    (set! (.-value inp) "2024-06")
+    (.setAttribute el model/attr-error "Pick a date")
+    (is (= "2024-06" (.-value inp)))))
+
+(deftest enter-closes-the-panel-with-close-on-select-test
+  (testing "single mode"
+    (let [el (append! (make-el))]
+      (.setAttribute el model/attr-close-on-select "")
+      (.setAttribute el "open" "")
+      (enter-with! el "2024-06-15")
+      (is (= "2024-06-15" (.getAttribute el model/attr-value)))
+      (is (not (.hasAttribute el "open")))))
+  (testing "range mode"
+    (let [el (append! (make-el))]
+      (.setAttribute el "mode" "range")
+      (.setAttribute el model/attr-close-on-select "")
+      (.setAttribute el "open" "")
+      (enter-with! el "2024-06-15 - 2024-06-20")
+      (is (= "2024-06-20" (.getAttribute el model/attr-end)))
+      (is (not (.hasAttribute el "open"))))))
+
+(deftest enter-keeps-the-panel-open-without-close-on-select-test
+  (let [el (append! (make-el))]
+    (.setAttribute el "open" "")
+    (enter-with! el "2024-06-15")
+    (is (= "2024-06-15" (.getAttribute el model/attr-value)))
+    (is (.hasAttribute el "open"))))
+
+(deftest blur-keeps-the-panel-open-with-close-on-select-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-close-on-select "")
+    (.setAttribute el "open" "")
+    (blur-with! el "2024-06-15")
+    (is (= "2024-06-15" (.getAttribute el model/attr-value)))
+    (is (.hasAttribute el "open"))))
+
+(deftest commit-returns-undefined-test
+  (let [el (append! (make-el))]
+    (set! (.-value (shadow-part el "[part=input]")) "2024-06-15")
+    (is (undefined? (.commit el)))
+    (is (= "2024-06-15" (.getAttribute el model/attr-value)))))
 
 ;; ---------------------------------------------------------------------------
 ;; ARIA tests
