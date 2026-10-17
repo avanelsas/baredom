@@ -14,12 +14,14 @@
 (def attr-placement   "placement")
 (def attr-max         "max")
 (def attr-error       "error")
+(def attr-value-format "value-format")
 
 ;; ── Event name constants ─────────────────────────────────────────────────
 (def event-change-request "x-multi-combobox-change-request")
 (def event-change         "x-multi-combobox-change")
 (def event-input          "x-multi-combobox-input")
 (def event-toggle         "x-multi-combobox-toggle")
+(def event-error          "x-multi-combobox-error")
 
 ;; ── Placement constants ──────────────────────────────────────────────────
 (def allowed-placements #{"bottom-start" "bottom-end" "top-start" "top-end"})
@@ -34,9 +36,16 @@
 ;; ── Value list separator ────────────────────────────────────────────────
 (def value-separator ",")
 
+;; ── Value formats ───────────────────────────────────────────────────────
+(def value-format-csv  "csv")
+(def value-format-json "json")
+(def allowed-value-formats #{value-format-csv value-format-json})
+(def default-value-format value-format-csv)
+
 (def observed-attributes
   #js [attr-value attr-placeholder attr-name attr-disabled
-       attr-required attr-open attr-placement attr-max attr-error])
+       attr-required attr-open attr-placement attr-max attr-error
+       attr-value-format])
 
 ;; ── Property API metadata ────────────────────────────────────────────────
 (def property-api
@@ -51,6 +60,7 @@
    ;; `error` reflects the attribute so x-form's setFieldError can drive the
    ;; inline validation message, mirroring x-form-field.
    :error       {:type 'string  :reflects-attribute attr-error}
+   :valueFormat {:type 'string  :reflects-attribute attr-value-format :enum allowed-value-formats}
    :validity          {:type 'ValidityState   :readonly true}
    :validationMessage {:type 'string          :readonly true}
    :willValidate      {:type 'boolean         :readonly true}
@@ -68,7 +78,9 @@
                          :detail     {:query 'string}}
    event-toggle         {:cancelable true
                          :requests   {attr-open :open}
-                         :detail     {:open 'boolean :source 'string}}})
+                         :detail     {:open 'boolean :source 'string}}
+   event-error          {:cancelable false
+                         :detail     {:error 'string :values 'array}}})
 
 ;; ── Method API ───────────────────────────────────────────────────────────
 (def method-api
@@ -97,6 +109,73 @@
     ""
     (str/join value-separator (sort value-set))))
 
+;; ── Value formats ────────────────────────────────────────────────────────
+(defn normalize-value-format
+  "Normalizes raw value-format string. Falls back to default-value-format if invalid."
+  [s]
+  (if (contains? allowed-value-formats s) s default-value-format))
+
+(defn- string-array?
+  "True when `x` is a JS array of strings."
+  [x]
+  (and (array? x) (every? string? (array-seq x))))
+
+(defn parse-json-value
+  "Parses a JSON array of strings into a set of its non-empty strings, kept exactly. Returns nil
+   when `s` is not a JSON array of strings, and #{} when `s` is nil or empty."
+  [s]
+  (if (or (nil? s) (= s ""))
+    #{}
+    (let [parsed (try (js/JSON.parse s) (catch :default _ nil))]
+      (when (string-array? parsed)
+        (disj (set (array-seq parsed)) "")))))
+
+(defn serialize-json-value
+  "Serializes a set of values into a sorted JSON array. Empty set yields empty string."
+  [value-set]
+  (if (empty? value-set)
+    ""
+    (js/JSON.stringify (to-array (sort value-set)))))
+
+(defn parse-value-as
+  "Parses a value attribute in `value-format` into `{:value set :invalid? boolean}`. An invalid
+   json value yields the empty set."
+  [value-format s]
+  (if (= value-format value-format-json)
+    (let [parsed (parse-json-value s)]
+      {:value (or parsed #{}) :invalid? (nil? parsed)})
+    {:value (parse-value s) :invalid? false}))
+
+(defn serialize-value-as
+  "Serializes a set of values in `value-format`."
+  [value-format value-set]
+  (if (= value-format value-format-json)
+    (serialize-json-value value-set)
+    (serialize-value value-set)))
+
+(defn- csv-alters?
+  "True when a comma-separated value splits or trims the value `v`."
+  [v]
+  (or (str/includes? v value-separator)
+      (not= v (str/trim v))))
+
+(defn csv-unrepresentable
+  "The values that a comma-separated value cannot hold: those with the separator, or with
+   leading or trailing whitespace."
+  [values]
+  (filterv csv-alters? values))
+
+(defn unrepresentable-message
+  "The warning text for `values` that a comma-separated value splits or trims."
+  [values]
+  (str "Stored " (js/JSON.stringify (to-array values))
+       " as a comma-separated value, which splits or trims it. Set value-format=\"json\"."))
+
+(defn invalid-json-message
+  "The error text for a value attribute `s` that is not a JSON array of strings."
+  [s]
+  (str "The value " (js/JSON.stringify s) " is not a JSON array of strings."))
+
 ;; ── Attribute parsing ────────────────────────────────────────────────────
 (defn parse-max
   "Parses max attribute to a positive integer, or nil if absent/invalid."
@@ -116,17 +195,21 @@
   "Derives a complete view-model from raw attribute presence/values."
   [{:keys [value-raw placeholder-raw name-raw
            disabled-present? required-present? open-present?
-           placement-raw max-raw error-raw]}]
-  {:value       (parse-value value-raw)
-   :placeholder (or placeholder-raw "")
-   :name        (or name-raw "")
-   :disabled?   (boolean disabled-present?)
-   :required?   (boolean required-present?)
-   :open?       (boolean open-present?)
-   :placement   (normalize-placement placement-raw)
-   :max         (parse-max max-raw)
-   :error       (or error-raw "")
-   :has-error?  (and (string? error-raw) (not= error-raw ""))})
+           placement-raw max-raw error-raw value-format-raw]}]
+  (let [value-format             (normalize-value-format value-format-raw)
+        {:keys [value invalid?]} (parse-value-as value-format value-raw)]
+    {:value          value
+     :value-format   value-format
+     :value-invalid? (boolean invalid?)
+     :placeholder    (or placeholder-raw "")
+     :name           (or name-raw "")
+     :disabled?      (boolean disabled-present?)
+     :required?      (boolean required-present?)
+     :open?          (boolean open-present?)
+     :placement      (normalize-placement placement-raw)
+     :max            (parse-max max-raw)
+     :error          (or error-raw "")
+     :has-error?     (and (string? error-raw) (not= error-raw ""))}))
 
 ;; ── Max enforcement ──────────────────────────────────────────────────────
 (defn max-reached?

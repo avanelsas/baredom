@@ -15,6 +15,7 @@ export interface XMultiComboboxProps {
   value?: string[];
   max?: number;
   error?: string;
+  valueFormat?: string;
   placement?: string;
   required?: boolean;
   defaultValue?: string[];
@@ -22,6 +23,7 @@ export interface XMultiComboboxProps {
   onChange?: (e: CustomEvent<{ value: any }>) => void;
   onInput?: (e: CustomEvent<{ query: string }>) => void;
   onToggle?: (e: CustomEvent<{ open: boolean; source: string }>) => void;
+  onError?: (e: CustomEvent<{ error: string; values: any }>) => void;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -31,7 +33,7 @@ export interface XMultiComboboxProps {
 
 export const XMultiCombobox = forwardRef<XMultiComboboxElement, XMultiComboboxProps>(
   function XMultiCombobox(props, forwardedRef) {
-    const { value, defaultValue, onChangeRequest, onChange, onInput, onToggle, children, ...rest } = props;
+    const { value, defaultValue, onChangeRequest, onChange, onInput, onToggle, onError, children, ...rest } = props;
     const innerRef = useRef<XMultiComboboxElement>(null);
 
     const setRef = (el: XMultiComboboxElement | null) => {
@@ -44,7 +46,7 @@ export const XMultiCombobox = forwardRef<XMultiComboboxElement, XMultiComboboxPr
     useEffect(() => {
       const el = innerRef.current;
       if (!el || value !== undefined || defaultValue === undefined) return;
-      el.setAttribute("value", String(defaultValue));
+      el.value = defaultValue as any;
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -74,10 +76,14 @@ export const XMultiCombobox = forwardRef<XMultiComboboxElement, XMultiComboboxPr
         el.addEventListener("x-multi-combobox-toggle", onToggle as EventListener);
         cleanup.push(() => el.removeEventListener("x-multi-combobox-toggle", onToggle as EventListener));
       }
+      if (onError) {
+        el.addEventListener("x-multi-combobox-error", onError as EventListener);
+        cleanup.push(() => el.removeEventListener("x-multi-combobox-error", onError as EventListener));
+      }
 
       return () => cleanup.forEach(fn => fn());
-    }, [value, onChangeRequest, onChange, onInput, onToggle]);
+    }, [value, onChangeRequest, onChange, onInput, onToggle, onError]);
 
-    return <x-multi-combobox ref={setRef} value={value} {...rest}>{children}</x-multi-combobox>;
+    return <x-multi-combobox ref={setRef} {...rest} value={value}>{children}</x-multi-combobox>;
   }
 );

@@ -204,9 +204,12 @@
         selector (str tag-name "[formControlName]," tag-name "[formControl]," tag-name "[ngModel]")
 
         write-value-body
-        (if (= write-mode :boolean-attr)
+        (case write-mode
+          :boolean-attr
           (str "    if (v) this.el.setAttribute('" attr-name "', '');\n"
                "    else this.el.removeAttribute('" attr-name "');")
+          :property
+          (str "    " (property-write "this.el" attr-name "v"))
           (str "    if (v != null) this.el.setAttribute('" attr-name "', String(v));\n"
                "    else this.el.removeAttribute('" attr-name "');"))]
 

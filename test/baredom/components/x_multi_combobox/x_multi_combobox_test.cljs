@@ -533,3 +533,240 @@
          (done))
        50))))
 
+
+;; ── Value format ─────────────────────────────────────────────────────────────
+(def ^:private charity "Liefdadigheid, religieus en non-profit")
+(def ^:private padded " padded ")
+
+(defn ^js make-json-el
+  "Creates an x-multi-combobox in json format with options whose values hold a comma or spaces."
+  []
+  (let [^js el (.createElement js/document model/tag-name)]
+    (.setAttribute el model/attr-value-format "json")
+    (doseq [[v l] [[charity "Charity"] [padded "Padded"] ["news" "News"]]]
+      (let [^js opt (.createElement js/document "option")]
+        (.setAttribute opt "value" v)
+        (set! (.-textContent opt) l)
+        (.appendChild el opt)))
+    el))
+
+(defn- after-json-options
+  "Calls `f` with a mounted json element once its options are read."
+  [f]
+  (let [^js el (append! (make-json-el))]
+    (js/setTimeout (fn [] (f el)) 50)))
+
+(defn- events-of
+  "Collects the detail of each `event-name` event on `el` into an atom, as CLJS data."
+  [^js el event-name]
+  (let [events (atom [])]
+    (.addEventListener el event-name
+                       (fn [^js evt]
+                         (swap! events conj (js->clj (.-detail evt) :keywordize-keys true))))
+    events))
+
+(defn- json-attr [values]
+  (js/JSON.stringify (to-array values)))
+
+(defn- click-option! [^js el value]
+  (.setAttribute el model/attr-open "")
+  (.click (.querySelector (shadow-part el "[part=panel]")
+                          (str "[data-value=\"" value "\"]"))))
+
+(deftest value-format-property-reflects-the-attribute-test
+  (let [^js el (append! (make-el))]
+    (is (nil? (.-valueFormat el)))
+    (set! (.-valueFormat el) "json")
+    (is (= "json" (.getAttribute el model/attr-value-format)))
+    (is (= "json" (.-valueFormat el)))))
+
+(deftest json-attribute-keeps-a-value-with-a-comma-test
+  (async done
+    (after-json-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value (json-attr [charity "news"]))
+       (is (= [charity "news"] (chip-values el)))
+       (is (= [charity "news"] (vec (.-value el))))
+       (is (= "Charity" (.getAttribute (chip el charity) "label")))
+       (done)))))
+
+(deftest json-property-keeps-a-comma-and-spaces-test
+  (let [^js el (append! (make-json-el))]
+    (set! (.-value el) #js [charity padded])
+    (is (= (json-attr [charity padded]) (.getAttribute el model/attr-value)))
+    (is (= [padded charity] (vec (.-value el))) "the getter returns the exact strings, sorted")))
+
+(deftest json-property-accepts-a-json-string-test
+  (let [^js el (append! (make-json-el))]
+    (set! (.-value el) (json-attr [charity]))
+    (is (= [charity] (vec (.-value el))))))
+
+(deftest json-property-clears-with-an-empty-array-test
+  (let [^js el (append! (make-json-el))]
+    (set! (.-value el) #js [charity])
+    (set! (.-value el) #js [])
+    (is (not (.hasAttribute el model/attr-value)))
+    (is (= [] (vec (.-value el))))))
+
+(deftest json-property-drops-empty-values-test
+  (let [^js el (append! (make-json-el))]
+    (set! (.-value el) #js ["news" nil "" js/undefined])
+    (is (= (json-attr ["news"]) (.getAttribute el model/attr-value)))
+    (set! (.-value el) #js [nil ""])
+    (is (not (.hasAttribute el model/attr-value)) "only empty values clear the selection")))
+
+(deftest json-attribute-drops-an-empty-value-test
+  (async done
+    (after-json-options
+     (fn [^js el]
+       (let [errors (events-of el model/event-error)]
+         (.setAttribute el model/attr-value (json-attr ["news" ""]))
+         (is (= ["news"] (chip-values el)))
+         (is (= ["news"] (vec (.-value el))))
+         (is (empty? @errors))
+         (done))))))
+
+(deftest json-option-click-keeps-a-value-with-a-comma-test
+  (async done
+    (after-json-options
+     (fn [^js el]
+       (let [requests (events-of el model/event-change-request)
+             changes  (events-of el model/event-change)]
+         (click-option! el charity)
+         (is (= (json-attr [charity]) (.getAttribute el model/attr-value)))
+         (is (= [{:value [charity] :action "add" :item charity}] @requests))
+         (is (= [{:value [charity]}] @changes))
+         (is (= [charity] (chip-values el))))
+       (done)))))
+
+(deftest json-option-click-keeps-spaces-test
+  (async done
+    (after-json-options
+     (fn [^js el]
+       (let [changes (events-of el model/event-change)]
+         (click-option! el padded)
+         (is (= (json-attr [padded]) (.getAttribute el model/attr-value)))
+         (is (= [{:value [padded]}] @changes))
+         (is (= [padded] (vec (.-value el)))))
+       (done)))))
+
+(deftest json-chip-removal-reports-the-exact-values-test
+  (async done
+    (after-json-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value (json-attr [charity padded "news"]))
+       (let [changes (events-of el model/event-change)]
+         (press-remove! (chip el "news"))
+         (is (= (json-attr [padded charity]) (.getAttribute el model/attr-value)))
+         (is (= [{:value [padded charity]}] @changes)))
+       (done)))))
+
+(deftest json-invalid-attribute-yields-no-selection-and-an-error-test
+  (async done
+    (after-json-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value (json-attr ["news"]))
+       (let [errors (events-of el model/event-error)]
+         (.setAttribute el model/attr-value "news,sport")
+         (is (= [] (chip-values el)))
+         (is (= [] (vec (.-value el))))
+         (is (= 1 (count @errors)))
+         (is (= ["news,sport"] (:values (first @errors))))
+         (is (string? (:error (first @errors)))))
+       (done)))))
+
+(deftest json-invalid-attribute-at-connect-sends-one-error-test
+  (async done
+    (let [^js el (make-json-el)
+          errors (events-of el model/event-error)]
+      (.setAttribute el model/attr-value "not json")
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (is (= 1 (count @errors)) "one error, also after the options are read")
+         (is (= ["not json"] (:values (first @errors))))
+         (is (= [] (chip-values el)))
+         (done))
+       50))))
+
+(deftest csv-property-splits-a-value-it-cannot-hold-and-warns-test
+  (async done
+    (after-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value "apple,banana")
+       (let [errors  (events-of el model/event-error)
+             changes (events-of el model/event-change)]
+         (set! (.-value el) #js ["cherry" charity " date"])
+         (is (= (str "cherry," charity ", date") (.getAttribute el model/attr-value))
+             "the attribute is the values joined with commas")
+         (is (= ["Liefdadigheid" "cherry" "date" "religieus en non-profit"] (chip-values el))
+             "the selection is the values split at each comma and trimmed")
+         (is (= [] @changes))
+         (is (= 1 (count @errors)))
+         (is (= [charity " date"] (:values (first @errors))))
+         (is (not= -1 (.indexOf (:error (first @errors)) "value-format=\"json\""))))
+       (done)))))
+
+(deftest csv-property-sends-no-error-for-plain-values-test
+  (let [^js el (append! (make-el))
+        errors (events-of el model/event-error)]
+    (set! (.-value el) #js ["date" "cherry"])
+    (is (= "date,cherry" (.getAttribute el model/attr-value)) "csv keeps the order it is given")
+    (is (= [] @errors))))
+
+(deftest switching-to-json-reads-the-attribute-as-json-test
+  (async done
+    (after-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value (json-attr ["apple" "banana"]))
+       (is (= ["\"banana\"]" "[\"apple\""] (vec (.-value el))) "csv splits the JSON text")
+       (let [errors (events-of el model/event-error)]
+         (.setAttribute el model/attr-value-format "json")
+         (is (= ["apple" "banana"] (chip-values el)))
+         (is (= ["apple" "banana"] (vec (.-value el))))
+         (is (= [] @errors)))
+       (done)))))
+
+(deftest switching-to-json-with-a-csv-attribute-sends-an-error-test
+  (async done
+    (after-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value "apple,banana")
+       (let [errors (events-of el model/event-error)]
+         (.setAttribute el model/attr-value-format "json")
+         (is (= [] (chip-values el)))
+         (is (= 1 (count @errors)))
+         (is (= ["apple,banana"] (:values (first @errors))))
+         (.removeAttribute el model/attr-value-format)
+         (is (= ["apple" "banana"] (chip-values el)) "csv reads the attribute again")
+         (is (= 1 (count @errors))))
+       (done)))))
+
+(deftest switching-to-csv-splits-a-json-value-test
+  (async done
+    (after-json-options
+     (fn [^js el]
+       (.setAttribute el model/attr-value (json-attr [charity]))
+       (.setAttribute el model/attr-value-format "csv")
+       (is (= ["[\"Liefdadigheid" "religieus en non-profit\"]"] (vec (.-value el)))
+           "csv splits the value at the comma")
+       (done)))))
+
+(deftest unknown-value-format-acts-as-csv-test
+  (let [^js el (append! (make-el))]
+    (.setAttribute el model/attr-value-format "xml")
+    (.setAttribute el model/attr-value "banana,apple")
+    (is (= ["apple" "banana"] (vec (.-value el))))))
+
+(deftest json-form-value-is-the-json-array-test
+  (let [^js form (.createElement js/document "form")
+        ^js el   (make-json-el)]
+    (.setAttribute form "data-test-form" "")
+    (.setAttribute el "name" "tags")
+    (.appendChild form el)
+    (.appendChild (.-body js/document) form)
+    (try
+      (set! (.-value el) #js [charity "news"])
+      (is (= (json-attr [charity "news"]) (.get (js/FormData. form) "tags")))
+      (finally
+        (.remove form)))))

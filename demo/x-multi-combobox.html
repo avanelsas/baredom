@@ -124,6 +124,21 @@
     </div>
   </section>
 
+  <!-- ── Values with a comma ─────────────────────────────────────────── -->
+  <section>
+    <h2>Values with a comma (value-format="json")</h2>
+    <p>The value attribute is a JSON array of strings, so a value can hold a comma.</p>
+    <div class="row">
+      <x-multi-combobox value-format="json"
+                        value='["Liefdadigheid, religieus en non-profit"]'
+                        placeholder="Select sectors">
+        <option value="Liefdadigheid, religieus en non-profit">Liefdadigheid, religieus en non-profit</option>
+        <option value="Onderwijs, cultuur en sport">Onderwijs, cultuur en sport</option>
+        <option value="Zorg">Zorg</option>
+      </x-multi-combobox>
+    </div>
+  </section>
+
   <!-- ── With max ────────────────────────────────────────────────────── -->
   <section>
     <h2>Max 3 selections</h2>
@@ -202,7 +217,14 @@
     <h2>Interactive controls</h2>
     <div class="controls">
       <label>
-        Value (CSV)
+        Value format
+        <select id="ctrl-value-format">
+          <option value="csv" selected>csv</option>
+          <option value="json">json</option>
+        </select>
+      </label>
+      <label>
+        <span id="ctrl-value-label">Value (CSV)</span>
         <input type="text" id="ctrl-value" placeholder="e.g. apple,banana" />
       </label>
       <label>
@@ -287,8 +309,24 @@
     // Interactive controls
     const cb = document.getElementById('demo-cb');
 
+    // In csv the text is split at each comma. In json it is a JSON array,
+    // which the value setter reads. Text that is not JSON yet is skipped.
     document.getElementById('ctrl-value').addEventListener('input', e => {
-      cb.value = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+      const text = e.target.value;
+      if (cb.valueFormat === 'json') {
+        try { JSON.parse(text); } catch { return; }
+        cb.value = text;
+      } else {
+        cb.value = text.split(',').map(s => s.trim()).filter(Boolean);
+      }
+    });
+    document.getElementById('ctrl-value-format').addEventListener('change', e => {
+      const json = e.target.value === 'json';
+      cb.valueFormat = e.target.value;
+      document.getElementById('ctrl-value-label').textContent =
+        json ? 'Value (JSON array)' : 'Value (CSV)';
+      document.getElementById('ctrl-value').placeholder =
+        json ? 'e.g. ["apple","banana, ripe"]' : 'e.g. apple,banana';
     });
     document.getElementById('ctrl-max').addEventListener('input', e => {
       const v = parseInt(e.target.value, 10);
@@ -324,6 +362,8 @@
       logEvent('input', e.detail));
     document.addEventListener('x-multi-combobox-toggle', e =>
       logEvent('toggle', e.detail));
+    document.addEventListener('x-multi-combobox-error', e =>
+      logEvent('error', e.detail));
   </script>
 </body>
 </html>

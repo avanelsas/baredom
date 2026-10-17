@@ -39,6 +39,14 @@
       "object"  "Record<string, any>"
       "any")))
 
+;; ── Form value write → TypeScript ───────────────────────────────────────────
+
+(defn property-write
+  "A statement that assigns `value-expr` to the property of `target` that
+   `attr-name` names. The cast lets a string[] value pass a property typed string."
+  [target attr-name value-expr]
+  (str target "." (kebab->camel attr-name) " = " value-expr " as any;"))
+
 ;; ── CustomEvent detail → TypeScript object type ─────────────────────────────
 
 (def event-detail->ts

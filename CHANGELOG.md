@@ -2,6 +2,30 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- **`value-format` on `x-multi-combobox`,** and its property `valueFormat`. With `json`, the
+  `value` attribute is a JSON array of strings, so a value can hold a comma or leading and
+  trailing spaces. `csv` is the default. An invalid JSON value gives no selection and sends
+  `x-multi-combobox-error`.
+- **`x-multi-combobox-error`.** `x-multi-combobox` sends it when a `json` value is not a JSON
+  array of strings, and when the `csv` setter warns about an array.
+- **In `csv`, the `value` setter of `x-multi-combobox` warns about a value that a
+  comma-separated list cannot hold:** a value with a comma, or with leading or trailing
+  whitespace. It writes the array as before, so it splits such a value at the comma or trims it,
+  and it sends `x-multi-combobox-error`.
+
+### Changed
+
+- **The adapters write the value of `x-multi-combobox` through its `value` property.** This is
+  Vue `v-model`, Svelte `bind:value`, the Angular ControlValueAccessor, the React `defaultValue`,
+  and the Solid `value` and `defaultValue`. Before, they wrote `String(value)` to the attribute,
+  which is always comma-separated. Now the array round-trips in both value formats. In `csv`, a
+  binding gives the same attribute and chips as before. The React adapter passes `value` after
+  the other props, so `valueFormat` is set first.
+
 ## [4.7.0] - 2026-10-17
 
 BareDOM 4.7 lets a child's own attribute win over its group's, and keeps every skeleton in phase

@@ -182,9 +182,12 @@
 (defn build-write-value-body
   "writeValue helper body for v-model components."
   [v-model-cfg]
-  (if (= (:write-mode v-model-cfg) :boolean-attr)
+  (case (:write-mode v-model-cfg)
+    :boolean-attr
     (str "      if (v) el.setAttribute(\"" (:attr-name v-model-cfg) "\", \"\");\n"
          "      else el.removeAttribute(\"" (:attr-name v-model-cfg) "\");\n")
+    :property
+    (str "      " (property-write "el" (:attr-name v-model-cfg) "v") "\n")
     (str "      if (v != null) el.setAttribute(\"" (:attr-name v-model-cfg) "\", String(v));\n"
          "      else el.removeAttribute(\"" (:attr-name v-model-cfg) "\");\n")))
 

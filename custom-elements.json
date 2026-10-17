@@ -11223,6 +11223,12 @@
         "readonly" : true
       }, {
         "kind" : "field",
+        "name" : "valueFormat",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "placement",
         "type" : {
           "text" : "string"
@@ -11327,6 +11333,12 @@
         "type" : {
           "text" : "string"
         }
+      }, {
+        "name" : "value-format",
+        "fieldName" : "valueFormat",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "x-multi-combobox-change-request",
@@ -11372,6 +11384,16 @@
         "detail" : {
           "open" : "boolean",
           "source" : "string"
+        }
+      }, {
+        "name" : "x-multi-combobox-error",
+        "type" : {
+          "text" : "CustomEvent<{ error: string; values: any }>"
+        },
+        "cancelable" : false,
+        "detail" : {
+          "error" : "string",
+          "values" : "any"
         }
       } ],
       "slots" : [ {

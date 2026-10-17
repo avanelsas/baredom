@@ -24,6 +24,7 @@ export class BaredomMultiCombobox implements OnInit, OnDestroy {
   @Input() set value(v: string) { this.el.value = v as any; }
   @Input() set max(v: number) { this.el.max = v as any; }
   @Input() set error(v: string) { this.el.error = v as any; }
+  @Input() set valueFormat(v: string) { this.el.valueFormat = v as any; }
   @Input() set placement(v: string) { this.el.placement = v as any; }
   @Input() set required(v: boolean) { this.el.required = v as any; }
 
@@ -31,12 +32,14 @@ export class BaredomMultiCombobox implements OnInit, OnDestroy {
   @Output() change = new EventEmitter<CustomEvent<{ value: any }>>();
   @Output() input = new EventEmitter<CustomEvent<{ query: string }>>();
   @Output() toggle = new EventEmitter<CustomEvent<{ open: boolean; source: string }>>();
+  @Output() errorEvent = new EventEmitter<CustomEvent<{ error: string; values: any }>>();
 
   ngOnInit(): void {
     this.listen('x-multi-combobox-change-request', this.changeRequest);
     this.listen('x-multi-combobox-change', this.change);
     this.listen('x-multi-combobox-input', this.input);
     this.listen('x-multi-combobox-toggle', this.toggle);
+    this.listen('x-multi-combobox-error', this.errorEvent);
   }
 
   ngOnDestroy(): void {

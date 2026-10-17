@@ -22,6 +22,7 @@ export const XMultiCombobox = defineComponent({
     value: { type: String as PropType<string | undefined>, default: undefined },
     max: { type: Number as PropType<number | undefined>, default: undefined },
     error: { type: String as PropType<string | undefined>, default: undefined },
+    valueFormat: { type: String as PropType<string | undefined>, default: undefined },
     placement: { type: String as PropType<string | undefined>, default: undefined },
     required: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     modelValue: { type: Array as PropType<string[] | undefined>, default: undefined },
@@ -32,6 +33,7 @@ export const XMultiCombobox = defineComponent({
     "change": (_e: CustomEvent<{ value: any }>) => true,
     "input": (_e: CustomEvent<{ query: string }>) => true,
     "toggle": (_e: CustomEvent<{ open: boolean; source: string }>) => true,
+    "error": (_e: CustomEvent<{ error: string; values: any }>) => true,
   },
   setup(props, { emit, attrs, slots, expose }) {
     const elRef = ref<XMultiComboboxElement | null>(null);
@@ -40,8 +42,7 @@ export const XMultiCombobox = defineComponent({
     const writeValue = (v: string[] | undefined) => {
       const el = elRef.value;
       if (!el || v === undefined) return;
-      if (v != null) el.setAttribute("value", String(v));
-      else el.removeAttribute("value");
+      el.value = v as any;
     };
 
     onMounted(() => {
@@ -72,6 +73,11 @@ export const XMultiCombobox = defineComponent({
         const handler = (e: Event) => emit("toggle", e as CustomEvent);
         el.addEventListener("x-multi-combobox-toggle", handler);
         cleanup.push(() => el.removeEventListener("x-multi-combobox-toggle", handler));
+      }
+      {
+        const handler = (e: Event) => emit("error", e as CustomEvent);
+        el.addEventListener("x-multi-combobox-error", handler);
+        cleanup.push(() => el.removeEventListener("x-multi-combobox-error", handler));
       }
     });
 

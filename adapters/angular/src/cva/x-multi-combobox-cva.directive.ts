@@ -47,8 +47,7 @@ export class BaredomMultiComboboxCva implements ControlValueAccessor, OnInit, On
   }
 
   writeValue(v: string[]): void {
-    if (v != null) this.el.setAttribute('value', String(v));
-    else this.el.removeAttribute('value');
+    this.el.value = v as any;
   }
 
   registerOnChange(fn: (v: string[]) => void): void {
