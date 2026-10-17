@@ -8,18 +8,23 @@ All notable changes to BareDOM will be documented in this file.
 
 - **`value-format` on `x-multi-combobox`,** and its property `valueFormat`. With `json`, the
   `value` attribute is a JSON array of strings, so a value can hold a comma or leading and
-  trailing spaces. `csv` is the default and works as before. An invalid JSON value gives no
-  selection and sends `x-multi-combobox-error`.
-- **`x-multi-combobox-error`.** In `csv`, the `value` setter refuses an array with a value that
-  a comma-separated list cannot hold, keeps the selection and sends this event. Before, it split
-  such a value at the comma or trimmed it.
+  trailing spaces. `csv` is the default. An invalid JSON value gives no selection and sends
+  `x-multi-combobox-error`.
+- **`x-multi-combobox-error`.** `x-multi-combobox` sends it when a `json` value is not a JSON
+  array of strings, and when the `csv` setter refuses an array.
 
 ### Changed
 
+- **In `csv`, the `value` setter of `x-multi-combobox` refuses an array with a value that a
+  comma-separated list cannot hold:** a value with a comma, or with leading or trailing
+  whitespace. It keeps the selection and sends `x-multi-combobox-error`. Before, it split such a
+  value at the comma or trimmed it.
 - **The adapters write the value of `x-multi-combobox` through its `value` property.** This is
   Vue `v-model`, Svelte `bind:value`, the Angular ControlValueAccessor, the React `defaultValue`,
   and the Solid `value` and `defaultValue`. Before, they wrote `String(value)` to the attribute,
-  which is always comma-separated. Now the array round-trips in both value formats.
+  which is always comma-separated. Now the array round-trips in both value formats. The React
+  adapter passes `value` after the other props, so `valueFormat` is set first. The adapters
+  change, so the release of this entry must release them too.
 
 ## [4.7.0] - 2026-10-17
 

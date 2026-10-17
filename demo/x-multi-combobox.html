@@ -224,7 +224,7 @@
         </select>
       </label>
       <label>
-        Value (CSV)
+        <span id="ctrl-value-label">Value (CSV)</span>
         <input type="text" id="ctrl-value" placeholder="e.g. apple,banana" />
       </label>
       <label>
@@ -309,11 +309,24 @@
     // Interactive controls
     const cb = document.getElementById('demo-cb');
 
+    // In csv the text is split at each comma. In json it is a JSON array,
+    // which the value setter reads. Text that is not JSON yet is skipped.
     document.getElementById('ctrl-value').addEventListener('input', e => {
-      cb.value = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+      const text = e.target.value;
+      if (cb.valueFormat === 'json') {
+        try { JSON.parse(text); } catch { return; }
+        cb.value = text;
+      } else {
+        cb.value = text.split(',').map(s => s.trim()).filter(Boolean);
+      }
     });
     document.getElementById('ctrl-value-format').addEventListener('change', e => {
+      const json = e.target.value === 'json';
       cb.valueFormat = e.target.value;
+      document.getElementById('ctrl-value-label').textContent =
+        json ? 'Value (JSON array)' : 'Value (CSV)';
+      document.getElementById('ctrl-value').placeholder =
+        json ? 'e.g. ["apple","banana, ripe"]' : 'e.g. apple,banana';
     });
     document.getElementById('ctrl-max').addEventListener('input', e => {
       const v = parseInt(e.target.value, 10);
