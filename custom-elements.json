@@ -16994,9 +16994,6 @@
         "name" : "--x-skeleton-color",
         "default" : "var(--x-color-border,rgba(0,0,0,0.08))"
       }, {
-        "name" : "--x-skeleton-delay",
-        "default" : "0s"
-      }, {
         "name" : "--x-skeleton-duration",
         "default" : "1.5s"
       }, {

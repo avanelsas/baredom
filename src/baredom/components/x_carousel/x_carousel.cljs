@@ -630,13 +630,9 @@
     (start-autoplay! el)))
 
 (defn- on-slide-count-change!
-  "Keeps `current` within `cnt` slides, renders, and starts autoplay again."
+  "Stores `cnt` slides, renders, and starts autoplay again."
   [^js el cnt]
   (du/setv! el k-slide-count cnt)
-  (let [m       (read-model el)
-        clamped (model/clamp-index (:current m) cnt)]
-    (when (not= clamped (:current m))
-      (du/set-attr! el model/attr-current (str clamped))))
   (update-from-attrs! el)
   (start-autoplay! el))
 

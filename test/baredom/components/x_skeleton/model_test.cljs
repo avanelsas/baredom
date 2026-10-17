@@ -67,3 +67,8 @@
   (is (= "wave" (model/resolve-animation nil "wave")) "the group's animation applies without one")
   (is (= "wave" (model/resolve-animation "spin" "wave")) "an invalid own animation gives the group's")
   (is (= "pulse" (model/resolve-animation nil nil)) "the default applies without either"))
+
+;; ── phase-delay ─────────────────────────────────────────────────────────────
+(deftest phase-delay-test
+  (is (= "0ms" (model/phase-delay 0)) "an animation started on a cycle needs no delay")
+  (is (= "-500ms" (model/phase-delay 2000)) "a later start goes back to the cycle"))

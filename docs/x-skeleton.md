@@ -106,6 +106,11 @@ A bright gradient sweeps left-to-right across the base via the `[part=shimmer]` 
 ### `none`
 No animation. The placeholder is fully static.
 
+### In phase
+Every skeleton on a page pulses and waves in phase, whenever it was added. A skeleton aligns its
+animation to a clock of the page when it connects and when its animation changes. The clock
+assumes the default `--x-skeleton-duration` of `1.5s`.
+
 ## Accessibility
 
 `aria-hidden="true"` is set automatically on the host element. Skeleton placeholders carry no semantic meaning; screen readers should rely on the surrounding UI context (e.g., `aria-busy="true"` on a container) to communicate loading state.

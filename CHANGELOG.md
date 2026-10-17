@@ -14,6 +14,34 @@ All notable changes to BareDOM will be documented in this file.
   a comma-separated list cannot hold, keeps the selection and sends this event. Before, it split
   such a value at the comma or trimmed it.
 
+## [4.7.0] - 2026-10-17
+
+BareDOM 4.7 lets a child's own attribute win over its group's, and keeps every skeleton in phase
+on its own. The adapters are not released again.
+
+### Changed
+
+- **An avatar's own `size` wins over the `size` of its `x-avatar-group`,** and an avatar is
+  disabled when it or the group is. The group no longer writes `size` and `disabled` on its
+  avatars. It writes `data-group-size` and `data-group-disabled`, which are not public API.
+- **A skeleton's own `animation` wins over the `animation` of its `x-skeleton-group`.** The
+  group no longer writes `animation` on its skeletons. It writes `data-group-animation`, which
+  is not public API.
+- **`x-tabs` takes its first selection from a tab marked `selected`** when it has no `value`.
+  Before, the mark was removed and the first enabled tab was selected. An enabled tab with no
+  `value` is skipped.
+- **Every `x-skeleton` on a page pulses in phase,** also outside a group. A skeleton aligns its
+  animation to a clock of the page when it connects and when its animation changes.
+- **`--x-skeleton-delay` is no longer a custom property of `x-skeleton`.** It was not
+  documented, and a value set on the host no longer takes effect.
+
+### Fixed
+
+- **A skeleton that is removed and inserted again stays in phase,** and so do the skeletons of a
+  group that is moved.
+- **The `x-carousel` doc states that `current` keeps its value** when there are fewer slides.
+  The last slide is shown.
+
 ## [4.6.0] - 2026-10-17
 
 BareDOM 4.6 keeps the state of a moved component, lets one BareMirror sync bring a whole tree,
