@@ -2,6 +2,55 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.6.0] - 2026-10-17
+
+BareDOM 4.6 keeps the state of a moved component, lets one BareMirror sync bring a whole tree,
+and makes a parent do only what a change of its children requires. The adapters are not
+released again.
+
+### Added
+
+- **`@vanelsas/baredom/all`** registers every component with one `init()`.
+- **A moved component keeps its state.** Every component has `connectedMoveCallback`. A move
+  with `moveBefore` calls neither `connected-fn` nor `disconnected-fn`, and calls the optional
+  `:moved-fn`. Seven components give one: `x-i18n` shows the text of its new provider, `x-radio`
+  syncs the tab order of its new group, `x-liquid-fill` finds its scroll target again, and
+  `x-table-row`, `x-table-cell`, `x-timeline-item` and `x-welcome-tour-step` still reach their
+  parent.
+- **One `sync!` brings a whole tree.** A container can name its parent by a key and a part, or
+  name a part alone for the node of every key. A node that moves to another branch keeps its
+  node and its focus. `bare-html/tree.html` shows it. See [`docs/baremirror.md`](docs/baremirror.md).
+- **`foreignWrites` in `custom-elements.json`** names the attributes a component writes on
+  nodes it does not own, such as its children. Fourteen components state it, and each doc has a
+  section "Writes on other nodes".
+
+### Changed
+
+- **`perform!` places nodes before it removes others,** and places a container after the
+  containers that hold it. It refuses a key placed inside its own node.
+- **`x-table` and `x-timeline` follow their children through `slotchange`.** The stripes and the
+  `data-*` attributes of timeline items are written in the microtask after a change, not during
+  it. This is before paint. The rows, cells and items still send their events.
+- **`x-tabs` no longer writes `tabindex` on its tabs.** Each `x-tab` sets its own.
+- **`docs/PRERENDER.md` and `docs/baremirror.md` state Firefox 157 and Safari 26.5.** Safari
+  has no `moveBefore`, so a moved row loses its focus there.
+
+### Fixed
+
+- **A choice in `x-select` survives a new or changed option.** It was reset to the marked option.
+- **The `x-carousel` autoplay keeps running** when a slide is added or removed.
+- **`x-scroll-story` and `x-scroll-timeline` no longer fire enter again on a resize,** and an
+  entry that only moved fires no change event.
+- **`x-welcome-tour` keeps the text typed in the open step** when its steps change.
+- **A striped `x-table` restripes after a row is removed.** The rows below it kept their old
+  stripes.
+- **Fifty items appended to an `x-timeline` cost 50 writes, not 1275,** and a nested timeline
+  keeps its own items.
+- **Four components work again after a remove and an insert:** `x-chart` and
+  `x-particle-button` follow a resize again, `x-kinetic-typography` draws its animation again,
+  and `x-i18n-provider` fetches again when a disconnect cut its fetch short. A removed open
+  `x-combobox` no longer leaks its document click listener.
+
 ## [4.5.0] - 2026-10-14
 
 BareDOM 4.5 makes the prerender script open several pages at once. No component changes, and
