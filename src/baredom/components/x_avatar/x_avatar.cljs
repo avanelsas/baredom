@@ -20,9 +20,10 @@
 (def ^:private attr-aria-label   "aria-label")
 (def ^:private attr-aria-hidden  "aria-hidden")
 (def ^:private attr-aria-disabled "aria-disabled")
-(def ^:private attr-data-size    "data-size")
-(def ^:private attr-data-shape   "data-shape")
-(def ^:private attr-data-variant "data-variant")
+(def ^:private attr-data-size     "data-size")
+(def ^:private attr-data-shape    "data-shape")
+(def ^:private attr-data-variant  "data-variant")
+(def ^:private attr-data-disabled "data-disabled")
 
 (def ^:private part-root     "root")
 (def ^:private part-image    "image")
@@ -132,7 +133,7 @@
    ":host([data-shape='square']) [part=root]{border-radius:0;}"
    ":host([data-shape='rounded']) [part=root]{border-radius:var(--x-avatar-radius);}"
 
-   ":host([disabled]){opacity:var(--x-avatar-disabled-opacity);}"
+   ":host([data-disabled]){opacity:var(--x-avatar-disabled-opacity);}"
 
    "[part=image]{width:100%;height:100%;object-fit:cover;display:none;}"
 
@@ -213,15 +214,17 @@
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:src-raw           (du/get-attr el model/attr-src)
-    :alt-raw           (du/get-attr el model/attr-alt)
-    :name-raw          (du/get-attr el model/attr-name)
-    :initials-raw      (du/get-attr el model/attr-initials)
-    :size-raw          (du/get-attr el model/attr-size)
-    :shape-raw         (du/get-attr el model/attr-shape)
-    :variant-raw       (du/get-attr el model/attr-variant)
-    :status-raw        (du/get-attr el model/attr-status)
-    :disabled-present? (du/has-attr? el model/attr-disabled)}))
+   {:src-raw                 (du/get-attr el model/attr-src)
+    :alt-raw                 (du/get-attr el model/attr-alt)
+    :name-raw                (du/get-attr el model/attr-name)
+    :initials-raw            (du/get-attr el model/attr-initials)
+    :size-raw                (du/get-attr el model/attr-size)
+    :group-size-raw          (du/get-attr el model/group-attr-size)
+    :shape-raw               (du/get-attr el model/attr-shape)
+    :variant-raw             (du/get-attr el model/attr-variant)
+    :status-raw              (du/get-attr el model/attr-status)
+    :disabled-present?       (du/has-attr? el model/attr-disabled)
+    :group-disabled-present? (du/has-attr? el model/group-attr-disabled)}))
 
 ;; ── Slot probing ──────────────────────────────────────────────────────────
 (defn- slot-has-content? [^js slot-el]
@@ -232,10 +235,11 @@
   (set! (.. node -style -display) v))
 
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ───────
-(defn- apply-host-data! [^js el {:keys [size shape variant]}]
+(defn- apply-host-data! [^js el {:keys [size shape variant disabled]}]
   (du/set-attr! el attr-data-size    size)
   (du/set-attr! el attr-data-shape   shape)
-  (du/set-attr! el attr-data-variant variant))
+  (du/set-attr! el attr-data-variant variant)
+  (du/set-bool-attr-to! el attr-data-disabled disabled))
 
 (defn- apply-host-aria! [^js el m]
   (let [lbl (model/label m)]

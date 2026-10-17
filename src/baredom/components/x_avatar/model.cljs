@@ -13,9 +13,17 @@
 (def attr-status     "status")
 (def attr-disabled   "disabled")
 
+(def group-attr-size     "data-group-size")
+(def group-attr-disabled "data-group-disabled")
+
+(def internal-attributes
+  "The attributes that the parent x-avatar-group writes. They are not part of the public API."
+  #{group-attr-size group-attr-disabled})
+
 (def observed-attributes
   #js [attr-src attr-alt attr-name attr-initials
-       attr-size attr-shape attr-variant attr-status attr-disabled])
+       attr-size attr-shape attr-variant attr-status attr-disabled
+       group-attr-size group-attr-disabled])
 
 ;; ── Valid enum sets & defaults ────────────────────────────────────────────
 (def valid-sizes    #{"xs" "sm" "md" "lg" "xl"})
@@ -35,6 +43,11 @@
 (defn parse-size    [s] (parse-enum valid-sizes    default-size    s))
 (defn parse-shape   [s] (parse-enum valid-shapes   default-shape   s))
 (defn parse-variant [s] (parse-enum valid-variants default-variant s))
+
+(defn resolve-size
+  "The size from `own`, or else from `group`, or else the default."
+  [own group]
+  (parse-enum valid-sizes (parse-size group) own))
 
 (defn parse-status [s]
   (let [v (when (string? s) (.toLowerCase (.trim s)))]
@@ -62,7 +75,7 @@
 ;; ── Normalize ─────────────────────────────────────────────────────────────
 (defn normalize [{:keys [src-raw alt-raw name-raw initials-raw
                          size-raw shape-raw variant-raw status-raw
-                         disabled-present?]}]
+                         group-size-raw disabled-present? group-disabled-present?]}]
   (let [src      (when-let [s (normalize-text src-raw)]
                    (let [safe (utils/sanitize-url s)]
                      (when (not= safe "") safe)))
@@ -75,11 +88,11 @@
      :name     nm
      :initials initials
      :derived  derived
-     :size     (parse-size size-raw)
+     :size     (resolve-size size-raw group-size-raw)
      :shape    (parse-shape shape-raw)
      :variant  (parse-variant variant-raw)
      :status   (parse-status status-raw)
-     :disabled (boolean disabled-present?)}))
+     :disabled (boolean (or disabled-present? group-disabled-present?))}))
 
 ;; ── View-model helpers ────────────────────────────────────────────────────
 (defn display-text

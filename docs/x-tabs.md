@@ -42,7 +42,7 @@ init();
 
 `x-tabs` will automatically:
 
-* select the first enabled tab
+* select the first enabled tab marked `selected`, or else the first enabled tab
 * manage keyboard navigation
 * show the associated panel
 
@@ -197,7 +197,7 @@ The container will automatically:
 | each `x-tab` child | `selected` | the selection or the tabs change |
 | the panel a tab names in `controls` | `hidden` | the selection or the tabs change |
 
-`x-tabs` owns these. A value an author writes there is replaced on the next change.
+`x-tabs` owns these. A tab's `selected` gives the selection only while `x-tabs` has no `value`. After that a value an author writes there is replaced on the next change.
 
 ---
 

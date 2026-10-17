@@ -13,7 +13,7 @@ A container component that wraps `x-skeleton` children to provide synchronized a
 | Attribute   | Type   | Default  | Description |
 |-------------|--------|----------|-------------|
 | `preset`    | enum   | (none)   | Layout preset to generate |
-| `animation` | enum   | `"pulse"` | Animation propagated to all children: pulse, wave, none |
+| `animation` | enum   | `"pulse"` | Animation of each skeleton that has no `animation` of its own: pulse, wave, none |
 | `count`     | number | `1`      | Number of preset repetitions (1-20) |
 
 ### Preset values
@@ -70,9 +70,9 @@ Circle avatar (48px) + 2 text lines (120px, 80px) side by side. Horizontal layou
 
 | Node | Attribute | When |
 |------|-----------|------|
-| each slotted `x-skeleton` | `animation` | from the group's `animation` |
+| each slotted `x-skeleton` | `data-group-animation` | from the group's `animation` |
 
-The group owns it. An `animation` an author writes on one skeleton is replaced.
+A skeleton's own `animation` wins over the group's.
 
 ## Animation synchronization
 

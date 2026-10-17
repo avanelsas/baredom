@@ -60,3 +60,10 @@
   (let [s (model/normalize {:width "" :height ""})]
     (is (nil? (:width s)))
     (is (nil? (:height s)))))
+
+;; ── The group's animation ───────────────────────────────────────────────────
+(deftest resolve-animation-test
+  (is (= "none" (model/resolve-animation "none" "wave")) "the skeleton's own animation wins")
+  (is (= "wave" (model/resolve-animation nil "wave")) "the group's animation applies without one")
+  (is (= "wave" (model/resolve-animation "spin" "wave")) "an invalid own animation gives the group's")
+  (is (= "pulse" (model/resolve-animation nil nil)) "the default applies without either"))

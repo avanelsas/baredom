@@ -540,7 +540,7 @@
       } ],
       "foreignWrites" : [ {
         "target" : "any",
-        "attributes" : [ "disabled", "size" ]
+        "attributes" : [ "data-group-disabled", "data-group-size" ]
       } ]
     } ],
     "exports" : [ {
@@ -17063,7 +17063,7 @@
       } ],
       "foreignWrites" : [ {
         "target" : "x-skeleton",
-        "attributes" : [ "animation" ]
+        "attributes" : [ "data-group-animation" ]
       } ]
     } ],
     "exports" : [ {

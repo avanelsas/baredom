@@ -103,10 +103,11 @@
 ;; ── Read model ────────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:variant   (du/get-attr el model/attr-variant)
-    :animation (du/get-attr el model/attr-animation)
-    :width     (du/get-attr el model/attr-width)
-    :height    (du/get-attr el model/attr-height)}))
+   {:variant         (du/get-attr el model/attr-variant)
+    :animation       (du/get-attr el model/attr-animation)
+    :group-animation (du/get-attr el model/group-attr-animation)
+    :width           (du/get-attr el model/attr-width)
+    :height          (du/get-attr el model/attr-height)}))
 
 ;; ── Apply model (cache-at-tail render-pipeline) ───────────────────────────
 (defn- apply-model! [^js el {:keys [variant animation width height] :as m}]

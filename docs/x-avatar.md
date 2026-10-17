@@ -20,11 +20,11 @@ A themeable, accessible avatar component. Displays a user photo, derived or expl
 | `alt`       | string           | —          | Image alt text; also used as `aria-label` on the host   |
 | `name`      | string           | —          | Person's name; used for initials derivation and `aria-label` when `alt` is absent |
 | `initials`  | string           | —          | Explicit initials (1–3 chars). Overrides name-derived initials |
-| `size`      | enum             | `"md"`     | Avatar dimension: `xs` `sm` `md` `lg` `xl`             |
+| `size`      | enum             | `"md"`     | Avatar dimension: `xs` `sm` `md` `lg` `xl`. Without it, the size of the `x-avatar-group` around it |
 | `shape`     | enum             | `"circle"` | Border shape: `circle` `square` `rounded`               |
 | `variant`   | enum             | `"neutral"`| Colour variant: `neutral` `brand` `subtle`              |
 | `status`    | enum             | —          | Status indicator: `online` `offline` `busy` `away`. Absent = no dot |
-| `disabled`  | boolean          | `false`    | Dims the avatar; sets `aria-disabled="true"`            |
+| `disabled`  | boolean          | `false`    | Dims the avatar and sets `aria-disabled="true"`. A disabled `x-avatar-group` does the same |
 
 ---
 

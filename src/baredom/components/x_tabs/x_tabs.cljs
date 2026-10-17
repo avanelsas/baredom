@@ -44,16 +44,6 @@
 (defn- tab-value [^js tab]
   (.getAttribute tab "value"))
 
-(defn- first-enabled-tab [tabs]
-  (some (fn [tab]
-          (when (enabled-tab? tab)
-            tab))
-        tabs))
-
-(defn- derive-initial-selection [tabs]
-  (when-let [tab (first-enabled-tab tabs)]
-    (tab-value tab)))
-
 (defn- set-host-value-if-needed! [^js el value]
   (let [current (du/get-attr el model/attr-value)]
     (cond
@@ -79,11 +69,20 @@
   (doseq [tab tabs]
     (hide-panel! tab (= (tab-value tab) selected-value))))
 
+(defn- first-enabled-value
+  "The value of the first enabled tab for which `pred` holds."
+  [pred tabs]
+  (some (fn enabled-value [^js tab]
+          (when (and (enabled-tab? tab) (pred tab)) (tab-value tab)))
+        tabs))
+
+(defn- marked? [^js tab]
+  (.hasAttribute tab tab-model/attr-selected))
+
 (defn- effective-selected-value [tabs host-value]
-  (let [values (set (keep tab-value tabs))]
-    (cond
-      (and host-value (contains? values host-value)) host-value
-      :else (derive-initial-selection tabs))))
+  (or (some #{host-value} (keep tab-value tabs))
+      (first-enabled-value marked? tabs)
+      (first-enabled-value any? tabs)))
 
 (defn- dispatch-value-change! [^js el value]
   (du/dispatch! el model/event-value-change #js {:value (or value "")}))

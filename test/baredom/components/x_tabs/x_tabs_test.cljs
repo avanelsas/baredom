@@ -150,6 +150,28 @@
     (is (= ["analytics"]
            (vec (values-of-selected-tabs [first-tab second-tab third-tab]))))))
 
+(deftest initial-selection-takes-the-tab-marked-selected-test
+  (let [el         (make-el)
+        first-tab  (make-tab "overview" "Overview")
+        second-tab (make-tab "analytics" "Analytics")]
+    (.setAttribute second-tab "selected" "")
+    (.appendChild el first-tab)
+    (.appendChild el second-tab)
+    (append! el)
+    (is (= "analytics" (.getAttribute el model/attr-value)))
+    (is (= ["analytics"] (vec (values-of-selected-tabs [first-tab second-tab]))))))
+
+(deftest the-value-of-the-tabs-wins-over-a-tab-marked-selected-test
+  (let [el         (make-el)
+        first-tab  (make-tab "overview" "Overview")
+        second-tab (make-tab "analytics" "Analytics")]
+    (.setAttribute el model/attr-value "overview")
+    (.setAttribute second-tab "selected" "")
+    (.appendChild el first-tab)
+    (.appendChild el second-tab)
+    (append! el)
+    (is (= ["overview"] (vec (values-of-selected-tabs [first-tab second-tab]))))))
+
 (deftest controlled-value-reflection-selects-matching-tab-test
   (let [el (make-el)
         {:keys [tab-a tab-b tab-c]} (setup-basic-tabs! el)]

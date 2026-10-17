@@ -131,3 +131,15 @@
   (is (= "photo" (model/label {:alt "photo" :name "Alice"})))  ; alt wins
   (is (= "Alice" (model/label {:alt nil     :name "Alice"})))  ; fallback to name
   (is (nil?      (model/label {:alt nil     :name nil}))))     ; decorative
+
+;; ── The group's values ──────────────────────────────────────────────────────
+(deftest resolve-size-test
+  (is (= "lg" (model/resolve-size "lg" "sm")) "the avatar's own size wins")
+  (is (= "sm" (model/resolve-size nil "sm")) "the group's size applies without one")
+  (is (= "sm" (model/resolve-size "huge" "sm")) "an invalid own size gives the group's")
+  (is (= "md" (model/resolve-size nil nil)) "the default applies without either"))
+
+(deftest normalize-disabled-from-the-group-test
+  (is (true? (:disabled (model/normalize {:group-disabled-present? true}))))
+  (is (true? (:disabled (model/normalize {:disabled-present? true}))))
+  (is (false? (:disabled (model/normalize {})))))

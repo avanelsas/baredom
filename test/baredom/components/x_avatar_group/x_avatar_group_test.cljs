@@ -2,9 +2,12 @@
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-avatar-group.x-avatar-group :as x]
             [baredom.components.x-avatar-group.model          :as model]
+            [baredom.components.x-avatar.x-avatar             :as avatar]
+            [baredom.components.x-avatar.model                :as avatar-model]
             [baredom.test-writes                              :as writes]))
 
 (x/init!)
+(avatar/init!)
 
 (defn cleanup-dom! []
   (doseq [node (.querySelectorAll js/document model/tag-name)]
@@ -168,7 +171,9 @@
       (append! el)
       (js/setTimeout
        (fn []
-         (let [n (writes/count-attr-writes! avatar ["size" "disabled" "style"])
+         (let [n (writes/count-attr-writes! avatar [avatar-model/group-attr-size
+                                                  avatar-model/group-attr-disabled
+                                                  "style"])
                h (writes/count-attr-writes! el ["data-size" "role" "aria-label"])]
            (.appendChild el (make-avatar))
            (js/setTimeout
@@ -189,3 +194,28 @@
                                                (.setAttribute el model/attr-size "lg")
                                                (.setAttribute el model/attr-disabled "")))]
       (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))
+
+;; ── The avatar's own values ─────────────────────────────────────────────────
+(deftest an-avatar-takes-its-own-size-and-else-the-groups-test
+  (let [^js el    (make-el)
+        ^js own   (make-avatar)
+        ^js plain (make-avatar)]
+    (.setAttribute own avatar-model/attr-size "lg")
+    (.setAttribute el model/attr-size "sm")
+    (.appendChild el own)
+    (.appendChild el plain)
+    (append! el)
+    (is (= "lg" (.getAttribute own "data-size")) "the avatar with a size keeps it")
+    (is (= "sm" (.getAttribute plain "data-size")) "the avatar without one takes the group's")
+    (is (= "lg" (.getAttribute own avatar-model/attr-size)) "the group leaves the avatar's size")))
+
+(deftest a-disabled-group-disables-each-avatar-test
+  (let [^js el (make-el)
+        ^js av (make-avatar)]
+    (.appendChild el av)
+    (append! el)
+    (.setAttribute el model/attr-disabled "")
+    (is (= "true" (.getAttribute av "aria-disabled")))
+    (is (not (.hasAttribute av avatar-model/attr-disabled)) "the group leaves the avatar's disabled")
+    (.removeAttribute el model/attr-disabled)
+    (is (nil? (.getAttribute av "aria-disabled")))))
