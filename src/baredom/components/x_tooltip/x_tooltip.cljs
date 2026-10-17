@@ -320,13 +320,13 @@
     (let [^js trigger (first (.assignedElements (gobj/get refs "triggerSlot")))
           ^js old     (du/getv el k-trigger-el)]
       (when-not (identical? trigger old)
-        (some-> old (du/remove-attr! "aria-describedby"))
-        (some-> trigger (du/set-attr! "aria-describedby" (du/getv el k-tooltip-id)))
+        (some-> old (du/remove-attr! model/trigger-attr-describedby))
+        (some-> trigger (du/set-attr! model/trigger-attr-describedby (du/getv el k-tooltip-id)))
         (du/setv! el k-trigger-el trigger)))))
 
 (defn- cleanup-trigger-a11y! [^js el]
   (when-let [^js old-trigger (du/getv el k-trigger-el)]
-    (du/remove-attr! old-trigger "aria-describedby")
+    (du/remove-attr! old-trigger model/trigger-attr-describedby)
     (du/setv! el k-trigger-el nil)))
 
 ;; ---------------------------------------------------------------------------

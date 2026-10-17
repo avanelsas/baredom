@@ -3,7 +3,8 @@
             [baredom.components.x-drop-zone.x-drop-zone :as zone]
             [baredom.components.x-drop-zone.model       :as model]
             [baredom.components.x-drag-panel.x-drag-panel :as panel]
-            [baredom.components.x-drag-panel.model        :as panel-model]))
+            [baredom.components.x-drag-panel.model        :as panel-model]
+            [baredom.test-writes                          :as writes]))
 
 (zone/init!)
 (panel/init!)
@@ -337,3 +338,10 @@
     (is (= 2 (.-length (.-children z))))
     (is (identical? a (aget (.-children z) 0)))
     (is (identical? b (aget (.-children z) 1)))))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-drop-zone-writes-only-what-it-declares-on-other-nodes-test
+  (let [^js p (make-panel "task" "t-1")
+        ^js z (make-zone :value "doing" :panels [p])
+        written (writes/foreign-writes! z #(.reserve z p 0))]
+    (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written)))))

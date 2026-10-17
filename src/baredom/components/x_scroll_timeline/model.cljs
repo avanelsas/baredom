@@ -40,6 +40,10 @@
 (def data-date   "data-date")
 (def data-index  "data-index")
 
+(def foreign-writes
+  "The attributes x-scroll-timeline writes on its entries."
+  [{:target :any :attributes #{data-active data-side data-index}}])
+
 ;; ── Event name constants ────────────────────────────────────────────────────
 (def event-entry-change "x-scroll-timeline-entry-change")
 (def event-entry-enter  "x-scroll-timeline-entry-enter")

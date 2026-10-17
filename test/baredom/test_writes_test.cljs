@@ -16,6 +16,9 @@
   (testing "each declared attribute that no write shows is unexercised"
     (is (= #{["x-tab" "tabindex"] [:any "hidden"]}
            (:unexercised (writes/audit declared #{["x-tab" "selected"]})))))
+  (testing "an entry for any attribute covers every attribute and asks for none"
+    (is (= {:undeclared #{} :unexercised #{}}
+           (writes/audit [{:target :any :attributes :any}] #{["p" "label"]}))))
   (testing "a write on another tag does not exercise a tag entry"
     (is (= #{["x-tab" "selected"] ["x-tab" "tabindex"]}
            (:unexercised (writes/audit declared #{["div" "selected"] ["div" "hidden"]}))))))

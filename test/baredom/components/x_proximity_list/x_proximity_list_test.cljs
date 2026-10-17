@@ -1,7 +1,8 @@
 (ns baredom.components.x-proximity-list.x-proximity-list-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-proximity-list.x-proximity-list :as x]
-            [baredom.components.x-proximity-list.model            :as model]))
+            [baredom.components.x-proximity-list.model            :as model]
+            [baredom.test-writes                                  :as writes]))
 
 (x/init!)
 
@@ -277,3 +278,15 @@
     (.remove el)
     (.appendChild (.-body js/document) el)
     (is (some? (.-shadowRoot el)))))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-proximity-list-writes-only-what-it-declares-on-other-nodes-test
+  (async done
+    (let [^js el (append! (make-list-with-items 2))]
+      (writes/foreign-writes-later!
+       el
+       #(.appendChild el (.createElement js/document "button"))
+       50
+       (fn check [written]
+         (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written)))
+         (done))))))

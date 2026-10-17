@@ -198,7 +198,9 @@
                      (get own x x)))]
     (mapv (fn resolve-write [{:keys [target attributes]}]
             {:target     (text-of target)
-             :attributes (into (sorted-set) (map text-of) attributes)})
+             :attributes (if (keyword? attributes)
+                           attributes
+                           (into (sorted-set) (map text-of) attributes))})
           (parse-def-value text "foreign-writes"))))
 
 ;; ── CSS API ─────────────────────────────────────────────────────────────────

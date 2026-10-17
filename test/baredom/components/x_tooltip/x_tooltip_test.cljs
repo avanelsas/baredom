@@ -296,3 +296,17 @@
               (done))
             50)))
        50))))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-tooltip-writes-only-what-it-declares-on-other-nodes-test
+  (async done
+    (let [^js el (make-el)]
+      (.appendChild el (.createElement js/document "button"))
+      (append! el)
+      (writes/foreign-writes-later!
+       el
+       #(.prepend el (.createElement js/document "span"))
+       50
+       (fn check [written]
+         (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written)))
+         (done))))))

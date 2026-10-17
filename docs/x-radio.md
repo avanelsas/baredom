@@ -94,6 +94,12 @@ Animations are suppressed when `@media (prefers-reduced-motion: reduce)` is acti
 | `control` | `<button>` | The circular radio control |
 | `dot` | `<span>` | The inner filled dot shown when checked |
 
+## Writes on other nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| the other `x-radio` elements of its group | `checked` | removed when this radio is chosen |
+
 ## Accessibility
 
 - `role="radio"` is set explicitly on `[part=control]`.

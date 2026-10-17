@@ -17,6 +17,10 @@
 (def event-change-request "x-radio-change-request")
 (def event-change         "x-radio-change")
 
+(def foreign-writes
+  "The attributes x-radio writes on the other radios of its group."
+  [{:target tag-name :attributes #{attr-checked}}])
+
 (def observed-attributes
   #js [attr-checked
        attr-disabled

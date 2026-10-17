@@ -417,8 +417,6 @@
 ;; ── Active slide ─────────────────────────────────────────────────────────
 ;; In fade mode, CSS shows the slotted child with `data-active`.
 
-(def ^:private attr-data-active "data-active")
-
 (defn- slides
   "The slotted slides of `el`."
   [^js el]
@@ -429,7 +427,7 @@
   "Gives `data-active` to the current slide in fade mode, and to no slide otherwise."
   [^js el {:keys [transition current]}]
   (doseq [[i ^js slide] (map-indexed vector (slides el))]
-    (du/set-attr-to! slide attr-data-active
+    (du/set-attr-to! slide model/slide-attr-active
                      (when (and (not= transition val-slide) (= i current)) ""))))
 
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ───────

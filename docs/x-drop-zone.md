@@ -230,6 +230,12 @@ The animation runs through the Web Animations API, so the component never writes
 to the `style` attribute of your elements. It is disabled entirely under
 `prefers-reduced-motion: reduce`.
 
+## Writes on other nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| the `x-drag-panel` given to `reserve()` | `pending` | `reserve()` sets it, `release()` removes it |
+
 ## Accessibility
 
 - The host is `role="group"` with `aria-label` from `label`. Not `role="list"` —

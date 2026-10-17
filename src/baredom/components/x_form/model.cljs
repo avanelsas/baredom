@@ -7,6 +7,12 @@
 (def attr-novalidate   "novalidate")
 (def attr-autocomplete "autocomplete")
 
+(def field-attr-error "error")
+
+(def foreign-writes
+  "The attributes x-form writes on its named fields, through `setFieldError` and `clearErrors`."
+  [{:target :any :attributes #{field-attr-error}}])
+
 ;; Event name constants
 (def event-submit "x-form-submit")
 (def event-reset  "x-form-reset")

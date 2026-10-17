@@ -546,3 +546,15 @@
             (fn []
               (is (= 0 @n))
               (done)))))))))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-table-writes-only-what-it-declares-on-other-nodes-test
+  (let [^js el (append! (make-table {:selectable "single"}))
+        rows   (vec (repeatedly 3 make-row))]
+    (doseq [^js row rows]
+      (.setAttribute row row-model/attr-interactive "")
+      (.appendChild el row))
+    (let [written (writes/foreign-writes! el (fn change-table []
+                                               (.setAttribute el model/attr-striped "")
+                                               (click-row! (second rows))))]
+      (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))

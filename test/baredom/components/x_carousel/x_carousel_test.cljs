@@ -706,3 +706,11 @@
               (is (= 4 @n) "two dots flip, each with two attributes")
               (done))
             0)))))))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-carousel-writes-only-what-it-declares-on-other-nodes-test
+  (let [^js el (make-el)]
+    (add-slides! el 3)
+    (append! el)
+    (let [written (writes/foreign-writes! el #(.setAttribute el model/attr-transition "fade"))]
+      (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))

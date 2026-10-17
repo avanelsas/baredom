@@ -78,9 +78,11 @@ Args entries: `{:name "param" :type 'number}`. This metadata drives automatic Ty
 
 - **`internal-attributes`**: a set of observed attributes that are not public API, such as the ones a parent component writes onto its children. The manifest leaves them out.
 - **`foreign-writes`**: the attributes the component writes on nodes it does not own, as a
-  vector of `{:target tag :attributes #{name ...}}`. `:target` is a tag name, or `:any` for any
-  element. Every name is a def of the model or of a model it requires. The manifest states it
-  as `foreignWrites`. A test checks it with `baredom.test-writes/foreign-writes!` and `audit`.
+  vector of `{:target tag :attributes #{name ...}}`. A component owns its host, its shadow root
+  and the nodes it creates. `:target` is a tag name, or `:any` for any element. `:attributes` is
+  `:any` when the author names the attributes. Every name is a def of the model or of a model it
+  requires. The manifest states it as `foreignWrites`. A test checks it with
+  `baredom.test-writes/foreign-writes!` and `audit`.
 - **Slot names** — string constants for named slots
 - **CSS custom property names** — `--x-<component>-<property>` constants
 - **Enum values** — sets or vectors of allowed values for constrained attributes

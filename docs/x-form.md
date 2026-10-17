@@ -116,6 +116,12 @@ The shadow `<form>` always has the `novalidate` HTML attribute so the browser do
 
 ---
 
+## Writes on other nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| each descendant whose `name` matches | `error` | `setFieldError()` sets it, `clearErrors()` removes it |
+
 ## Accessibility
 
 - `aria-busy="true"` is set on the shadow `<form>` while `loading` is active.

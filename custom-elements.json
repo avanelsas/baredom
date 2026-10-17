@@ -2412,6 +2412,10 @@
         "name" : "track"
       }, {
         "name" : "viewport"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "any",
+        "attributes" : [ "data-active" ]
       } ]
     } ],
     "exports" : [ {
@@ -6796,6 +6800,10 @@
         "name" : "part"
       }, {
         "name" : "zone"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "x-drag-panel",
+        "attributes" : [ "pending" ]
       } ]
     } ],
     "exports" : [ {
@@ -7924,6 +7932,10 @@
         "name" : "part"
       }, {
         "name" : "root"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "any",
+        "attributes" : [ "error" ]
       } ]
     } ],
     "exports" : [ {
@@ -8701,7 +8713,11 @@
         "name" : ""
       } ],
       "cssProperties" : [ ],
-      "cssParts" : [ ]
+      "cssParts" : [ ],
+      "foreignWrites" : [ {
+        "target" : "any",
+        "attributes" : "any"
+      } ]
     } ],
     "exports" : [ {
       "kind" : "js",
@@ -14032,6 +14048,10 @@
       } ],
       "cssParts" : [ {
         "name" : "track"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "any",
+        "attributes" : [ "tabindex" ]
       } ]
     } ],
     "exports" : [ {
@@ -14257,6 +14277,10 @@
         "name" : "control"
       }, {
         "name" : "dot"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "x-radio",
+        "attributes" : [ "checked" ]
       } ]
     } ],
     "exports" : [ {
@@ -15845,6 +15869,10 @@
         "name" : "media"
       }, {
         "name" : "steps"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "any",
+        "attributes" : [ "data-active" ]
       } ]
     } ],
     "exports" : [ {
@@ -16174,6 +16202,10 @@
         "name" : "track-path"
       }, {
         "name" : "track-svg"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "any",
+        "attributes" : [ "data-active", "data-index", "data-side" ]
       } ]
     } ],
     "exports" : [ {
@@ -19103,6 +19135,10 @@
       } ],
       "cssParts" : [ {
         "name" : "caption"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "x-table-row",
+        "attributes" : [ "data-stripe", "selected" ]
       } ]
     } ],
     "exports" : [ {
@@ -20777,6 +20813,10 @@
       } ],
       "cssParts" : [ {
         "name" : "label"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "x-timeline-item",
+        "attributes" : [ "data-index", "data-last", "data-position", "data-striped" ]
       } ]
     } ],
     "exports" : [ {
@@ -21755,6 +21795,10 @@
         "name" : "text"
       }, {
         "name" : "trigger"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "any",
+        "attributes" : [ "aria-describedby" ]
       } ]
     } ],
     "exports" : [ {

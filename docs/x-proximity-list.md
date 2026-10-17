@@ -87,6 +87,12 @@ Example — style your item to glow proportionally to influence:
 }
 ```
 
+## Writes on other nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| each slotted item without a `tabindex` | `tabindex` | the item arrives |
+
 ## Accessibility
 
 - The host element gets `role="list"` automatically if no `role` was set.

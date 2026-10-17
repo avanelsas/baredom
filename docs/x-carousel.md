@@ -113,6 +113,12 @@ Calling `preventDefault()` on the event prevents the slide change.
 
 ---
 
+## Writes on other nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| each slotted slide | `data-active` | the current slide, in fade mode |
+
 ## Accessibility
 
 - Host has `role="region"` and `aria-roledescription="carousel"`

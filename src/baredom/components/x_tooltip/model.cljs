@@ -22,6 +22,12 @@
 (def observed-attributes
   #js [attr-text attr-placement attr-delay attr-disabled attr-open])
 
+(def trigger-attr-describedby "aria-describedby")
+
+(def foreign-writes
+  "The attributes x-tooltip writes on its trigger, the first slotted element."
+  [{:target :any :attributes #{trigger-attr-describedby}}])
+
 (def property-api
   {:text      {:type 'string  :reflects-attribute attr-text}
    :placement {:type 'string  :reflects-attribute attr-placement :enum allowed-placements}

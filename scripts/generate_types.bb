@@ -144,7 +144,7 @@
    field for it and allows the addition."
   [{:keys [target attributes]}]
   {:target     (if (keyword? target) (name target) target)
-   :attributes (vec attributes)})
+   :attributes (if (keyword? attributes) (name attributes) (vec attributes))})
 
 (defn generate-cem-module
   "Generate a CEM module entry for a component."

@@ -22,7 +22,6 @@
 (def ^:private attr-autocomplete "autocomplete")
 (def ^:private attr-aria-busy    "aria-busy")
 (def ^:private attr-data-loading "data-loading")
-(def ^:private attr-error        "error")
 
 (def ^:private part-root "root")
 
@@ -35,7 +34,7 @@
 ;; Selectors — extracted because they're constructed once and referenced twice.
 (def ^:private sel-named-enabled "[name]:not(:disabled)")
 (def ^:private sel-named         "[name]")
-(def ^:private sel-error         "[error]")
+(def ^:private sel-error         (str "[" model/field-attr-error "]"))
 (def ^:private sel-button
   ;; Native form-control buttons + the library's own x-button. The latter
   ;; is included per CLAUDE.md dogfooding rule: when a project surface
@@ -244,13 +243,13 @@
       (let [^js field (aget fields i)]
         (when (= (name-of field) field-name)
           (if clear?
-            (du/remove-attr! field attr-error)
-            (du/set-attr! field attr-error msg)))))))
+            (du/remove-attr! field model/field-attr-error)
+            (du/set-attr! field model/field-attr-error msg)))))))
 
 (defn- clear-errors! [^js this]
   (let [fields (.querySelectorAll this sel-error)]
     (dotimes [i (.-length fields)]
-      (du/remove-attr! (aget fields i) attr-error))))
+      (du/remove-attr! (aget fields i) model/field-attr-error))))
 
 (defn- install-methods! [^js proto]
   ;; .defineProperty with a :value descriptor — same Tier-2 idiom adopted

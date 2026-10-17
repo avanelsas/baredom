@@ -21,6 +21,12 @@
        attr-disabled attr-current attr-transition attr-direction
        attr-peek])
 
+(def slide-attr-active "data-active")
+
+(def foreign-writes
+  "The attributes x-carousel writes on its slides."
+  [{:target :any :attributes #{slide-attr-active}}])
+
 ;; ── Event constants ─────────────────────────────────────────────────────────
 (def event-change "x-carousel-change")
 

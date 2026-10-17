@@ -1,7 +1,8 @@
 (ns baredom.components.x-i18n-provider.x-i18n-provider-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-i18n-provider.x-i18n-provider :as x]
-            [baredom.components.x-i18n-provider.model :as model]))
+            [baredom.components.x-i18n-provider.model :as model]
+            [baredom.test-writes :as writes]))
 
 (x/init!)
 
@@ -224,3 +225,15 @@
                            (done))
                          #js {:once true})
       (append! el))))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-i18n-provider-writes-only-what-it-declares-on-other-nodes-test
+  (let [^js prov (make-el)
+        ^js div  (.createElement js/document "div")]
+    (.setAttribute div "data-i18n-title" "nav.home")
+    (.appendChild prov div)
+    (append! prov)
+    (set-translations! prov #js {"nav" #js {"home" "Home"}} nil)
+    (let [written (writes/foreign-writes! prov #(x/translate-subtree! prov))]
+      (is (= #{["div" "title"]} written))
+      (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))

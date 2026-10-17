@@ -2,7 +2,8 @@
   (:require
    [cljs.test :refer [deftest testing is use-fixtures async]]
    [baredom.components.x-scroll-timeline.x-scroll-timeline :as tl]
-   [baredom.components.x-scroll-timeline.model :as model]))
+   [baredom.components.x-scroll-timeline.model :as model]
+   [baredom.test-writes :as writes]))
 
 ;; ── Fixture: clean up after each test ───────────────────────────────────────
 (use-fixtures :each
@@ -489,4 +490,21 @@
                       (is (.hasAttribute ^js second-marker "data-active")))
                     (is (= "1" (.getAttribute el "data-active-index")))
                     (done)))))
+       300))))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-scroll-timeline-writes-only-what-it-declares-on-other-nodes-test
+  (async done
+    (let [^js el (tall-timeline)]
+      (js/setTimeout
+       (fn []
+         (writes/foreign-writes-later!
+          el
+          (fn change-timeline []
+            (.setAttribute el model/attr-layout "alternating")
+            (.remove (.-firstElementChild el)))
+          300
+          (fn check [written]
+            (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written)))
+            (done))))
        300))))

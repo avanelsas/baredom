@@ -2,7 +2,8 @@
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
             [goog.object :as gobj]
-            [baredom.components.x-table.model :as model]))
+            [baredom.components.x-table.model :as model]
+            [baredom.components.x-table-row.model :as row-model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs     "__xTableRefs")
@@ -10,10 +11,9 @@
 (def ^:private k-handlers "__xTableHandlers")
 
 ;; ── String-literal constants ────────────────────────────────────────────────
-(def ^:private row-tag       "x-table-row")
 (def ^:private cell-tag      "x-table-cell")
-(def ^:private selected-attr "selected")
-(def ^:private stripe-attr   "data-stripe")
+(def ^:private sel-rows      (str ":scope > " row-model/tag-name))
+(def ^:private sel-selected  (str row-model/tag-name "[" row-model/attr-selected "]"))
 (def ^:private hk-sort       "sort")
 (def ^:private hk-row-click  "row-click")
 (def ^:private attr-data-striped    "data-striped")
@@ -105,9 +105,9 @@
 (defn- update-stripe-attrs!
   "Writes the stripe of each direct row where it differs."
   [^js el]
-  (let [rows (array-seq (.querySelectorAll el (str ":scope > " row-tag)))]
+  (let [rows (array-seq (.querySelectorAll el sel-rows))]
     (doseq [[i ^js row] (map-indexed vector rows)]
-      (du/set-attr-to! row stripe-attr (model/row-stripe i)))))
+      (du/set-attr-to! row model/row-attr-stripe (model/row-stripe i)))))
 
 ;; ── Child watch ──────────────────────────────────────────────────────────────
 (defn- on-rows-changed!
@@ -218,18 +218,18 @@
 (defn- handle-single-select! [^js el ^js target-row]
   ;; Deselect all currently-selected rows. If the target was not already
   ;; selected, select it (toggle behavior: clicking the same row deselects).
-  (let [was-selected? (.hasAttribute target-row selected-attr)
-        selected-rows (array-seq (.querySelectorAll el (str row-tag "[" selected-attr "]")))]
+  (let [was-selected? (.hasAttribute target-row row-model/attr-selected)
+        selected-rows (array-seq (.querySelectorAll el sel-selected))]
     (doseq [^js row selected-rows]
-      (du/remove-attr! row selected-attr))
+      (du/remove-attr! row row-model/attr-selected))
     (when-not was-selected?
-      (du/set-attr! target-row selected-attr ""))))
+      (du/set-attr! target-row row-model/attr-selected ""))))
 
 (defn- handle-multi-select! [^js _el ^js target-row]
   ;; Toggle the target row's selected state.
-  (if (.hasAttribute target-row selected-attr)
-    (du/remove-attr! target-row selected-attr)
-    (du/set-attr! target-row selected-attr "")))
+  (if (.hasAttribute target-row row-model/attr-selected)
+    (du/remove-attr! target-row row-model/attr-selected)
+    (du/set-attr! target-row row-model/attr-selected "")))
 
 ;; ── Event handlers ───────────────────────────────────────────────────────────
 (defn- on-cell-sort [^js el ^js e]
@@ -251,7 +251,7 @@
     (when (not= selectable select-none)
       (let [^js row      (.-target e)
             row-index    (gobj/get (.-detail e) detail-row-index)
-            currently?   (.hasAttribute row selected-attr)
+            currently?   (.hasAttribute row row-model/attr-selected)
             will-select? (not currently?)]
         (when (dispatch-row-select! el row-index will-select? selectable)
           (cond

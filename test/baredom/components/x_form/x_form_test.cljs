@@ -1,7 +1,8 @@
 (ns baredom.components.x-form.x-form-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-form.x-form :as x]
-            [baredom.components.x-form.model :as model]))
+            [baredom.components.x-form.model :as model]
+            [baredom.test-writes :as writes]))
 
 (x/init!)
 
@@ -324,3 +325,14 @@
   (let [el (prerendered!)]
     (is (nil? (in-root el "#server")) "the server's content is gone")
     (is (some? (in-root el "form")) "the form of the component is there")))
+
+;; ── Writes on other nodes ───────────────────────────────────────────────────
+(deftest x-form-writes-only-what-it-declares-on-other-nodes-test
+  (let [^js el    (append! (make-el))
+        ^js input (.createElement js/document "input")]
+    (.setAttribute input "name" "email")
+    (.appendChild el input)
+    (let [written (writes/foreign-writes! el (fn set-and-clear []
+                                               (.setFieldError el "email" "Invalid email")
+                                               (.clearErrors el)))]
+      (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))

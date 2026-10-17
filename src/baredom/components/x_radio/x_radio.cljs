@@ -240,8 +240,7 @@
     (.forEach radios
               (fn [^js r]
                 (when (and (not= r el) (du/has-attr? r model/attr-checked))
-                  (du/remove-attr! r model/attr-checked)
-                  (render! r))))))
+                  (du/remove-attr! r model/attr-checked))))))
 
 (defn- dispatch-change! [^js el value]
   (du/dispatch! el model/event-change

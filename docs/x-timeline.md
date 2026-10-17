@@ -77,6 +77,12 @@ Fires when the user clicks or activates an `x-timeline-item` child. The coordina
 |---------|-------------|
 | `label` | The caption element above the items |
 
+## Writes on other nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| each `x-timeline-item` child | `data-index`, `data-last`, `data-position`, `data-striped` | its place, and the timeline's `position` and `striped` |
+
 ## Accessibility
 
 - The host element always has `role="list"`.

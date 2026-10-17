@@ -133,6 +133,12 @@ Set `autoplay-indicator` to display a subtle pause icon centered on the media pa
 
 Setting `disabled` stops auto-scrolling. Removing `disabled` restarts it if `autoplay` is still present.
 
+## Writes on other nodes
+
+| Node | Attribute | When |
+|------|-----------|------|
+| each slotted step | `data-active` | the active step changes |
+
 ## Accessibility
 
 - Container has `role="region"` with `aria-label` from the `label` attribute.
