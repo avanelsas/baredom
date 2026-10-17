@@ -121,6 +121,9 @@
     :watch "[part=input]" :gesture (type-into "[part=input]" "99") :other {"value" "50"}}
    {:event "x-date-picker-change-request" :html "<x-date-picker open value=\"2026-03-10\"></x-date-picker>"
     :gesture click-day :other {"value" "2026-03-20" "start" nil "end" nil}}
+   {:event "x-date-picker-change-request" :name "x-date-picker-change-request, in range mode"
+    :html "<x-date-picker open mode=\"range\" start=\"2026-03-10\"></x-date-picker>"
+    :gesture click-day :other {"value" nil "start" "2026-03-01" "end" "2026-03-05"}}
    {:event "x-dropdown-toggle" :html "<x-dropdown></x-dropdown>" :gesture (call "toggle")}
    {:event "x-floating-panel-dismiss-request" :html "<x-floating-panel closable></x-floating-panel>"
     :prepare (call "show") :gesture (click-part "[part=close]")}

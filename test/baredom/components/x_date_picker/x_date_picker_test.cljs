@@ -422,6 +422,30 @@
     (is (some? (.getAttribute el model/attr-start)) "click after clear sets start")
     (is (nil? (.getAttribute el model/attr-end))    "click after clear leaves end unset")))
 
+(defn- range-from-march-10!
+  "A range picker with only a start on 2026-03-10, open, in the document. `extra` is more
+   attribute text."
+  [extra]
+  (let [holder (.createElement js/document "template")]
+    (set! (.-innerHTML holder)
+          (str "<x-date-picker mode=\"range\" start=\"2026-03-10\" open " extra "></x-date-picker>"))
+    (append! (.. holder -content -firstElementChild))))
+
+(defn- click-iso! [^js el iso]
+  (.click (.querySelector (shadow-part el "[part=grid]") (str "[part=day][data-iso=\"" iso "\"]"))))
+
+(deftest a-click-after-a-given-start-ends-the-range-test
+  (let [el (range-from-march-10! "")]
+    (click-iso! el "2026-03-12")
+    (is (= "2026-03-10" (.getAttribute el model/attr-start)))
+    (is (= "2026-03-12" (.getAttribute el model/attr-end)))))
+
+(deftest a-click-before-a-given-start-swaps-with-auto-swap-test
+  (let [el (range-from-march-10! model/attr-auto-swap)]
+    (click-iso! el "2026-03-08")
+    (is (= "2026-03-08" (.getAttribute el model/attr-start)))
+    (is (= "2026-03-10" (.getAttribute el model/attr-end)))))
+
 ;; ---------------------------------------------------------------------------
 ;; Focused input
 ;; ---------------------------------------------------------------------------

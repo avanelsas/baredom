@@ -152,3 +152,29 @@
   (is (not-any? (comp #{"0"} :tabindex) (days-of {} "2024-09-01"))
       "no cell when the focus is in another month"))
 
+
+(defn- pick [attrs day]
+  (model/range-pick (model/canonicalize (assoc attrs :mode "range")) (dates/iso->date day)))
+
+(deftest range-pick-test
+  (testing "a click with no range starts one"
+    (is (= {:start "2024-06-12" :end nil} (pick {} "2024-06-12"))))
+  (testing "a click after the start ends the range"
+    (is (= {:start "2024-06-10" :end "2024-06-12"} (pick {:start "2024-06-10"} "2024-06-12"))))
+  (testing "a click before the start starts a new range"
+    (is (= {:start "2024-06-08" :end nil} (pick {:start "2024-06-10"} "2024-06-08"))))
+  (testing "a click on the start ends the range only when the same day is allowed"
+    (is (= {:start "2024-06-10" :end nil} (pick {:start "2024-06-10"} "2024-06-10")))
+    (is (= {:start "2024-06-10" :end "2024-06-10"}
+           (pick {:start "2024-06-10" :range-allow-same-day? true} "2024-06-10"))))
+  (testing "a click before the start ends the range at the start with auto-swap"
+    (is (= {:start "2024-06-08" :end "2024-06-10"}
+           (pick {:start "2024-06-10" :auto-swap? true} "2024-06-08"))))
+  (testing "a click on a complete range starts a new one"
+    (is (= {:start "2024-06-20" :end nil}
+           (pick {:start "2024-06-10" :end "2024-06-12"} "2024-06-20")))))
+
+(deftest mode-name-test
+  (is (= "range" (model/mode-name {:mode :range})))
+  (is (= "single" (model/mode-name {:mode :single})))
+  (is (= "single" (model/mode-name nil))))
