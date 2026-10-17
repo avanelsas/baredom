@@ -2,6 +2,15 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- **The `x-date-picker` trigger button shows an SVG calendar icon** in place of the 📅 emoji.
+  The emoji rendered as a colour picture on each platform (on macOS a page that shows "JUL 17")
+  and ignored the theme colours. The icon is drawn in `currentColor`, scales with
+  `--x-font-size-sm`, and is `aria-hidden`. The button label stays "Open calendar".
+
 ## [4.17.0] - 2026-10-28
 
 BareDOM 4.17 adds `x-comments` and `x-comment`, a comment thread with one form. All five adapters

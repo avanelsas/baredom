@@ -817,3 +817,31 @@
     (click-iso! el "2026-03-08")
     (is (= "2026-03-08" (.getAttribute el model/attr-start)))
     (is (= "2026-03-10" (.getAttribute el model/attr-end)))))
+
+;; ---------------------------------------------------------------------------
+;; The trigger button shows an SVG icon, not an emoji
+;; ---------------------------------------------------------------------------
+
+(defn- child-summary
+  "The namespace and tag of a child node."
+  [^js node]
+  [(.-namespaceURI node) (.-localName node)])
+
+(defn- trigger-button-summary
+  "The children, text, label and icon attributes of the trigger button of a new picker."
+  []
+  (let [^js btn (shadow-part (append! (make-el)) "[part=btn]")
+        ^js svg (.-firstElementChild btn)]
+    {:children    (mapv child-summary (array-seq (.-childNodes btn)))
+     :text        (.-textContent btn)
+     :label       (.getAttribute btn "aria-label")
+     :aria-hidden (some-> svg (.getAttribute "aria-hidden"))
+     :stroke      (some-> svg (.getAttribute "stroke"))}))
+
+(deftest the-trigger-button-shows-an-svg-icon-test
+  (is (= {:children    [["http://www.w3.org/2000/svg" "svg"]]
+          :text        ""
+          :label       "Open calendar"
+          :aria-hidden "true"
+          :stroke      "currentColor"}
+         (trigger-button-summary))))

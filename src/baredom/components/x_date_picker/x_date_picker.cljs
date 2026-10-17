@@ -490,8 +490,9 @@
    "border-radius:var(--x-date-picker-radius);"
    "background:var(--x-date-picker-btn-bg,#f8fafc);"
    "color:var(--x-date-picker-text,inherit);"
-   "box-sizing:border-box;"
+   "box-sizing:border-box;font-size:var(--x-font-size-sm,0.9375rem);"
    "}"
+   "[part=btn] svg{width:1.25em;height:1.25em;display:block;}"
    "[part=btn]:hover{background:var(--x-date-picker-btn-hover,#f1f5f9);}"
    "[part=btn]:focus-visible{outline:2px solid var(--x-date-picker-focus,#60a5fa);}"
    "[part=popover]{"
@@ -588,6 +589,40 @@
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
 
+(def ^:private svg-ns "http://www.w3.org/2000/svg")
+
+(def ^:private calendar-icon-attrs
+  "The attributes of the calendar icon: a 16-unit stroke drawing in `currentColor`."
+  {"viewBox" "0 0 16 16" "fill" "none" "stroke" "currentColor" "stroke-width" "1.5"
+   "stroke-linecap" "round" "stroke-linejoin" "round"
+   "aria-hidden" "true" "focusable" "false"})
+
+(def ^:private calendar-icon-shapes
+  "The shapes of the calendar icon: the page, the line under its header and two rings."
+  [["rect" {"x" "2.5" "y" "3.5" "width" "11" "height" "10" "rx" "1.5"}]
+   ["path" {"d" "M2.5 7h11"}]
+   ["path" {"d" "M5.5 2v3"}]
+   ["path" {"d" "M10.5 2v3"}]])
+
+(defn- set-attrs!
+  "Set each attribute of the map attrs on node, and return node."
+  [^js node attrs]
+  (doseq [[k v] attrs] (du/set-attr! node k v))
+  node)
+
+(defn- svg-shape
+  "A new SVG element of the [tag attrs] pair."
+  [[tag attrs]]
+  (set-attrs! (.createElementNS js/document svg-ns tag) attrs))
+
+(defn- calendar-icon
+  "A new calendar icon, an SVG element with no text."
+  []
+  (let [^js svg (svg-shape ["svg" calendar-icon-attrs])]
+    (doseq [^js shape (map svg-shape calendar-icon-shapes)]
+      (.appendChild svg shape))
+    svg))
+
 (defn- make-shadow!
   [^js el]
   (let [^js root      (.attachShadow el #js {:mode "open"})
@@ -628,7 +663,7 @@
     (du/set-attr! btn "part" "btn")
     (du/set-attr! btn "type" "button")
     (du/set-attr! btn "aria-label" "Open calendar")
-    (set! (.-textContent btn) "\uD83D\uDCC5")
+    (.appendChild btn (calendar-icon))
 
     (du/set-attr! popover "part" "popover")
     (du/set-attr! popover "role" "dialog")
