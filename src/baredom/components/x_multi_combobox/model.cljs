@@ -121,14 +121,14 @@
   (and (array? x) (every? string? (array-seq x))))
 
 (defn parse-json-value
-  "Parses a JSON array of strings into a set of the exact strings. nil or empty string yields #{}.
-   Returns nil when `s` is not a JSON array of strings."
+  "Parses a JSON array of strings into a set of the exact strings. Empty strings are dropped, as
+   in csv. nil or empty string yields #{}. Returns nil when `s` is not a JSON array of strings."
   [s]
   (if (or (nil? s) (= s ""))
     #{}
     (let [parsed (try (js/JSON.parse s) (catch :default _ nil))]
       (when (string-array? parsed)
-        (set (array-seq parsed))))))
+        (disj (set (array-seq parsed)) "")))))
 
 (defn serialize-json-value
   "Serializes a set of values into a sorted JSON array. Empty set yields empty string."

@@ -209,6 +209,9 @@
     (is (= #{charity "news"} (model/parse-json-value (str "[\"" charity "\",\"news\"]")))))
   (testing "spaces are kept"
     (is (= #{" padded "} (model/parse-json-value "[\" padded \"]"))))
+  (testing "an empty string is dropped, as in csv"
+    (is (= #{"a"} (model/parse-json-value "[\"a\",\"\"]")))
+    (is (= #{} (model/parse-json-value "[\"\"]"))))
   (testing "text that is not a JSON array of strings yields nil"
     (is (nil? (model/parse-json-value "apple,banana")))
     (is (nil? (model/parse-json-value "[\"a\",")))

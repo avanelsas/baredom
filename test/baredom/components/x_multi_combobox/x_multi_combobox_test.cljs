@@ -608,6 +608,24 @@
     (is (not (.hasAttribute el model/attr-value)))
     (is (= [] (vec (.-value el))))))
 
+(deftest json-property-drops-empty-values-test
+  (let [^js el (append! (make-json-el))]
+    (set! (.-value el) #js ["news" nil "" js/undefined])
+    (is (= (json-attr ["news"]) (.getAttribute el model/attr-value)))
+    (set! (.-value el) #js [nil ""])
+    (is (not (.hasAttribute el model/attr-value)) "only empty values clear the selection")))
+
+(deftest json-attribute-drops-an-empty-value-test
+  (async done
+    (after-json-options
+     (fn [^js el]
+       (let [errors (events-of el model/event-error)]
+         (.setAttribute el model/attr-value (json-attr ["news" ""]))
+         (is (= ["news"] (chip-values el)))
+         (is (= ["news"] (vec (.-value el))))
+         (is (empty? @errors))
+         (done))))))
+
 (deftest json-option-click-keeps-a-value-with-a-comma-test
   (async done
     (after-json-options

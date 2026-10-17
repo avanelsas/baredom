@@ -937,7 +937,7 @@
 (defn- report-invalid-value!
   "Sends the error event when the value attribute is not valid in its value format."
   [^js el]
-  (when (:value-invalid? (read-model el))
+  (when (:value-invalid? (du/getv el k-model))
     (let [raw (du/get-attr el model/attr-value)]
       (du/dispatch! el model/event-error
                     #js {:error  (model/invalid-json-message raw)
@@ -1017,11 +1017,12 @@
       (write-value-attr! el (str/join model/value-separator values)))))
 
 (defn- write-json-array!
-  "Writes the JS array `arr` as a JSON array of strings."
+  "Writes the JS array `arr` as a JSON array of strings. Empty values are dropped, as in csv."
   [^js el ^js arr]
-  (write-value-attr! el (if (zero? (.-length arr))
-                          ""
-                          (js/JSON.stringify (to-array (map str (array-seq arr)))))))
+  (let [values (remove #(= "" %) (map str (array-seq arr)))]
+    (write-value-attr! el (if (empty? values)
+                            ""
+                            (js/JSON.stringify (to-array values))))))
 
 (defn- set-value!
   "Writes `v`, an array or a string, to the value attribute in the value format of `el`."
