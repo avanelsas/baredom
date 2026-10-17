@@ -56,6 +56,16 @@
     (let [c (model/canonicalize {:mode "range" :start "2024-03-01"})]
       (is (= false (:complete? c))))))
 
+(deftest write-display?-test
+  (testing "an input with no focus is written"
+    (is (= true (model/write-display? false "2024-06-15" "2024-06-15")))
+    (is (= true (model/write-display? nil "" nil))))
+  (testing "a focused input is written when the text differs from the text last written"
+    (is (= true (model/write-display? true "2024-06-15" "2024-05-01")))
+    (is (= true (model/write-display? true "" nil))))
+  (testing "a focused input is not written when the text is the text last written"
+    (is (= false (model/write-display? true "2024-06-15" "2024-06-15")))))
+
 (deftest committed-value?-test
   (testing "single mode"
     (is (= false (model/committed-value? (model/canonicalize {}))))

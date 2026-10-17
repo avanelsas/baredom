@@ -16,7 +16,7 @@
 (def ^:private k-state    "__xDatePickerState")
 (def ^:private k-model    "__xDatePickerModel")
 (def ^:private k-focused  "__xDatePickerFocused")
-(def ^:private k-display  "__xDatePickerDisplay")
+(def ^:private k-written  "__xDatePickerWritten")
 (def ^:private k-wd-done  "__xDatePickerWeekdaysDone")
 (def ^:private k-handlers "__xDatePickerHandlers")
 (def ^:private k-range-step "__xDatePickerRangeStep")
@@ -170,14 +170,23 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- sync-input-display!
+  "Writes the shown text into the input when `model/write-display?` allows. Typed text
+  survives a render that does not change the shown text."
   [^js el]
   (let [refs    (du/getv el k-refs)
         ^js inp (when refs (gobj/get refs "input"))
         state   (du/getv el k-state)
-        disp    (when state (gobj/get state "disp"))
-        focused (du/getv el k-focused)]
-    (when (and inp (not focused))
-      (set! (.-value inp) (or disp "")))))
+        text    (or (when state (gobj/get state "disp")) "")]
+    (when (and inp (model/write-display? (du/getv el k-focused) text (du/getv el k-written)))
+      (set! (.-value inp) text)
+      (du/setv! el k-written text))))
+
+(defn- input-edited?
+  "True when the input holds text other than the text last written."
+  [^js el]
+  (let [refs    (du/getv el k-refs)
+        ^js inp (when refs (gobj/get refs "input"))]
+    (boolean (and inp (not= (.-value inp) (du/getv el k-written))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Full render
@@ -289,6 +298,12 @@
     (du/set-attr! el model/attr-value (dates/date->iso d))
     (du/remove-attr! el model/attr-value)))
 
+(defn- close-on-select!
+  "Removes `open` when the element has `close-on-select`."
+  [^js el]
+  (when (du/has-attr? el model/attr-close-on-select)
+    (du/remove-attr! el "open")))
+
 (defn- do-select-date!
   "Apply date selection. For single: set value. For range: smart first/second click."
   [^js el ^js d reason]
@@ -310,10 +325,7 @@
             (render! el)
             (du/dispatch! el model/event-change
                           (change-detail {:value iso} mode-s reason))
-            ;; Auto-close if close-on-select
-            (when (du/has-attr? el model/attr-close-on-select)
-              (du/remove-attr! el "open")
-              (render! el)))
+            (close-on-select! el))
           ;; Range mode
           (let [step (or (du/getv el k-range-step) 0)
                 cur-start (:start-d canon)]
@@ -341,9 +353,8 @@
                     (du/set-attr! el model/attr-start (dates/date->iso final-start))
                     (du/set-attr! el model/attr-end (dates/date->iso final-end))
                     (du/setv! el k-range-step 0)
-                    (when (and (du/has-attr? el model/attr-close-on-select)
-                               (some? final-start) (some? final-end))
-                      (du/remove-attr! el "open")))
+                    (when (and (some? final-start) (some? final-end))
+                      (close-on-select! el)))
                   ;; Restart: treat as new start
                   (do
                     (du/set-attr! el model/attr-start (dates/date->iso d))
@@ -379,6 +390,7 @@
                  mode-s reason))
 
 (defn- commit-display!
+  "Commits the text of the input. Returns `:date` or `:cleared` when it commits, else nil."
   [^js el reason]
   (let [refs    (du/getv el k-refs)
         ^js inp (when refs (gobj/get refs "input"))
@@ -400,7 +412,8 @@
         (when (du/dispatch-cancelable! el model/event-change-request detail)
           (du/setv! el k-range-step 0)
           (xdp-clear! el)
-          (du/dispatch! el model/event-change detail)))
+          (du/dispatch! el model/event-change detail)
+          :cleared))
 
       (= mode :single)
       (let [{:keys [ok? date]} (model/parse-display->single val)]
@@ -416,7 +429,8 @@
               (read-state! el)
               (render! el)
               (du/dispatch! el model/event-change
-                          (change-detail {:value iso} mode-s reason))))))
+                          (change-detail {:value iso} mode-s reason))
+              :date))))
 
       :else
       (let [{:keys [ok? start end]} (model/parse-display->range val {:separator (:separator canon)})]
@@ -432,7 +446,8 @@
               (read-state! el)
               (render! el)
               (du/dispatch! el model/event-change
-                          (change-detail {:start s-iso :end e-iso} mode-s reason)))))))))
+                          (change-detail {:start s-iso :end e-iso} mode-s reason))
+              :date)))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Month navigation
@@ -737,7 +752,6 @@
         state   (du/getv el k-state)
         canon   (when state (gobj/get state "canon"))
         mode-s  (if (= (:mode canon) :range) "range" "single")]
-    (du/setv! el k-display (when inp (.-value inp)))
     ;; The listener only fires from the input it is attached to, so `inp` is
     ;; there; the fallback is so every site honours the declared `string` rather
     ;; than one of them resting on that being true.
@@ -751,7 +765,8 @@
       (cond
         (= key "Enter")
         (do (.preventDefault e)
-            (commit-display! el "keyboard"))
+            (when (= :date (commit-display! el "keyboard"))
+              (close-on-select! el)))
 
         (= key "Escape")
         (close-popover! el)))))
@@ -763,7 +778,7 @@
 (defn- on-input-blur!
   [^js el ^js _e]
   (du/setv! el k-focused false)
-  (when-not (forms/disabled? el)
+  (when (and (not (forms/disabled? el)) (input-edited? el))
     (commit-display! el "blur"))
   (sync-input-display! el))
 
@@ -1015,7 +1030,8 @@
   (.defineProperty js/Object proto "commit"
                    #js {:value (fn xdp-commit []
                                  (this-as ^js this
-                                   (commit-display! this "programmatic")))
+                                   (commit-display! this "programmatic")
+                                   js/undefined))
                         :writable true :configurable true})
   (.defineProperty js/Object proto "clear"
                    #js {:value (fn xdp-clear [] (this-as ^js this (xdp-clear! this)))
