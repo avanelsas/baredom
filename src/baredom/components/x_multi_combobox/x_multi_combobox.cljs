@@ -573,7 +573,7 @@
 ;; ---------------------------------------------------------------------------
 ;; Render pipeline (apply-model! + update-from-attrs!)
 ;; ---------------------------------------------------------------------------
-;; Form association — push the selected set (serialized in its value format) into
+;; Form association: push the selected set (serialized in its value format) into
 ;; the form and refresh validity via the shared policy. No-op when not form-associated.
 (defn- sync-form-state! [^js el ^js input-el {:keys [value value-format has-error?]}]
   (forms/sync! (du/getv el k-internals) input-el (model/serialize-value-as value-format value)
