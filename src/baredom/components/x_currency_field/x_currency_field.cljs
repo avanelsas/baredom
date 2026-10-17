@@ -365,26 +365,33 @@
   (apply-model! el (read-model el) true))
 
 ;; ── Event handlers ────────────────────────────────────────────────────────
+(defn- value-attr
+  "The value attribute of `el`, or empty text."
+  [^js el]
+  (or (du/get-attr el model/attr-value) ""))
+
+(defn- sync-form-value!
+  "Gives the form the value attribute of `el`."
+  [^js el]
+  (when-let [^js internals (du/getv el k-internals)]
+    (.setFormValue internals (value-attr el))))
+
 (defn- on-input-focus [^js el ^js _evt]
   (when-let [refs (du/getv el k-refs)]
-    (let [^js input-el (gobj/get refs rk-input)
-          raw-val      (or (du/get-attr el model/attr-value) "")]
-      (set! (.-value input-el) raw-val))))
+    (let [^js input-el (gobj/get refs rk-input)]
+      (set! (.-value input-el) (value-attr el)))))
 
 (defn- on-input-input [^js el ^js _evt]
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)
           value        (.-value input-el)
-          prev-value   (or (du/get-attr el model/attr-value) "")
           name         (or (du/get-attr el model/attr-name) "")]
       (if (du/dispatch-cancelable! el model/event-change-request
-                                   #js {:name name :value value :previousValue prev-value})
+                                   #js {:name name :value value :previousValue (value-attr el)})
         (do
           (du/set-attr! el model/attr-value value)
-          (when-let [^js internals (du/getv el k-internals)]
-            (.setFormValue internals value))
           (du/dispatch! el model/event-input #js {:name name :value value}))
-        (set! (.-value input-el) prev-value)))))
+        (set! (.-value input-el) (value-attr el))))))
 
 (defn- on-input-change [^js el ^js _evt]
   (when-let [refs (du/getv el k-refs)]
@@ -392,17 +399,14 @@
           raw          (.-value input-el)
           num          (js/parseFloat raw)
           canonical    (if (js/isNaN num) raw (str num))
-          prev-value   (or (du/get-attr el model/attr-value) "")
           name         (or (du/get-attr el model/attr-name) "")]
       (if (du/dispatch-cancelable! el model/event-change-request
-                                   #js {:name name :value canonical :previousValue prev-value})
+                                   #js {:name name :value canonical :previousValue (value-attr el)})
         (do
           (du/set-attr! el model/attr-value canonical)
           (render-committed! el)
-          (when-let [^js internals (du/getv el k-internals)]
-            (.setFormValue internals canonical))
           (du/dispatch! el model/event-change #js {:name name :value canonical}))
-        (set! (.-value input-el) prev-value)))))
+        (set! (.-value input-el) (value-attr el))))))
 
 (defn- on-input-blur [^js el ^js _evt]
   (render-committed! el))
@@ -442,8 +446,6 @@
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)]
       (set! (.-value input-el) "")))
-  (when-let [^js internals (du/getv el k-internals)]
-    (.setFormValue internals ""))
   (update-from-attrs! el))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -462,8 +464,7 @@
           locale       (or (du/get-attr el model/attr-locale) "")]
       (when val-attr
         (set! (.-value input-el) (format-display val-attr currency locale)))))
-  (when-let [^js internals (du/getv el k-internals)]
-    (.setFormValue internals (or (du/get-attr el model/attr-value) "")))
+  (sync-form-value! el)
   (add-listeners! el)
   (update-from-attrs! el))
 
@@ -484,7 +485,8 @@
               (set! (.-value input-el)
                     (if (or (nil? new-val) (= new-val ""))
                       ""
-                      (format-display new-val currency locale))))))))
+                      (format-display new-val currency locale)))))))
+      (sync-form-value! el))
     (update-from-attrs! el)))
 
 ;; ── Property accessors ────────────────────────────────────────────────────

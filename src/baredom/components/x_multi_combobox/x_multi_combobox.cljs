@@ -657,6 +657,14 @@
     (du/set-attr! el model/attr-value (model/serialize-value-as (value-format-of el) value-set)))
   (du/dispatch! el model/event-change #js {:value (sorted-value-array value-set)}))
 
+(defn- clear-query!
+  "Empties the query, its input and the active option."
+  [^js el]
+  (du/setv! el k-query "")
+  (du/setv! el k-active-idx 0)
+  (when-let [refs (du/getv el k-refs)]
+    (set! (.-value (gobj/get refs "input")) "")))
+
 (defn- add-item! [^js el item-value]
   (let [m         (read-model el)
         value-set (:value m)
@@ -669,13 +677,13 @@
                       el model/event-change-request
                       #js {:value new-arr :action "add" :item item-value})]
         (when allowed?
-          ;; Reset internal state before setAttribute so the synchronous
-          ;; attribute-changed! → apply-model! sees the cleared query.
-          (du/setv! el k-query "")
-          (du/setv! el k-active-idx 0)
-          (when-let [refs (du/getv el k-refs)]
-            (set! (.-value (gobj/get refs "input")) ""))
-          (commit-values! el new-set))))))
+          (let [{written :value :keys [open?]} (read-model el)]
+            ;; The query is cleared before the write, so the synchronous
+            ;; attribute-changed! → apply-model! renders the panel without it.
+            (clear-query! el)
+            (commit-values! el new-set)
+            (when (and open? (= new-set written))
+              (render-panel! el))))))))
 
 (defn- selected? [^js el item-value]
   (contains? (:value (read-model el)) item-value))
@@ -690,10 +698,11 @@
       remaining)))
 
 (defn- let-chip-leave!
-  "Gives `chip` up and writes the values that remain. The chip stays in the page to fade."
+  "Gives `chip` up, if there is one, and writes the values that remain."
   [^js el ^js chip remaining]
-  (keep-focus! el chip)
-  (places/release! chip)
+  (when (some? chip)
+    (keep-focus! el chip)
+    (places/release! chip))
   (commit-values! el remaining))
 
 (defn- remove-item!
@@ -703,7 +712,7 @@
     (when-some [remaining (request-removal! el item-value)]
       (let [chip (chip-of el item-value)]
         (let-chip-leave! el chip remaining)
-        (x-chip/exit! chip)))))
+        (some-> chip x-chip/exit!)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Keyboard navigation
@@ -848,7 +857,7 @@
           chip-value (gobj/get detail "value")]
       (when (and chip-value (selected? el chip-value))
         (if-some [remaining (request-removal! el chip-value)]
-          (let-chip-leave! el (.-target evt) remaining)
+          (let-chip-leave! el (chip-of el chip-value) remaining)
           (.preventDefault evt))))))
 
 (defn- on-focusout [^js el]

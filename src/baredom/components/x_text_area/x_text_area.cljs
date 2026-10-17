@@ -294,31 +294,46 @@
 ;; ---------------------------------------------------------------------------
 ;; Event handlers
 ;; ---------------------------------------------------------------------------
+(defn- value-attr
+  "The value attribute of `el`, or empty text."
+  [^js el]
+  (or (du/get-attr el model/attr-value) ""))
+
+(defn- sync-form-value!
+  "Gives the form the text of `textarea-el`."
+  [^js el ^js textarea-el]
+  (when-let [^js internals (du/getv el k-internals)]
+    (.setFormValue internals (.-value textarea-el))))
+
+(defn- sync-form!
+  "Gives the form the text of `textarea-el` and its validity."
+  [^js el ^js textarea-el]
+  (sync-form-value! el textarea-el)
+  (apply-validity! el textarea-el))
+
 (defn- on-input [^js el ^js _evt]
   (when-let [refs (du/getv el k-refs)]
     (let [^js textarea-el (gobj/get refs "textarea")
-          value            (.-value textarea-el)
-          prev-value       (or (du/get-attr el model/attr-value) "")
           name             (or (du/get-attr el model/attr-name) "")
           allowed?         (du/dispatch-cancelable!
                             el model/event-change-request
-                            #js {:name name :value value :previousValue prev-value})]
+                            #js {:name          name
+                                 :value         (.-value textarea-el)
+                                 :previousValue (value-attr el)})]
       (if allowed?
         (do
-          (when-let [^js internals (du/getv el k-internals)]
-            (.setFormValue internals value)
-            (sync-validity! el internals textarea-el))
-          (du/dispatch! el model/event-input #js {:name name :value value}))
-        (set! (.-value textarea-el) prev-value)))))
+          (sync-form! el textarea-el)
+          (du/dispatch! el model/event-input #js {:name name :value (.-value textarea-el)}))
+        (do
+          (set! (.-value textarea-el) (value-attr el))
+          (sync-form! el textarea-el))))))
 
 (defn- on-change [^js el ^js _evt]
   (when-let [refs (du/getv el k-refs)]
     (let [^js textarea-el (gobj/get refs "textarea")
           value            (.-value textarea-el)
           name             (or (du/get-attr el model/attr-name) "")]
-      (when-let [^js internals (du/getv el k-internals)]
-        (.setFormValue internals value)
-        (sync-validity! el internals textarea-el))
+      (sync-form! el textarea-el)
       (du/dispatch! el model/event-change #js {:name name :value value}))))
 
 ;; ---------------------------------------------------------------------------
@@ -368,10 +383,8 @@
     (let [^js textarea-el (gobj/get refs "textarea")
           val-attr         (du/get-attr el model/attr-value)]
       (when val-attr
-        (set! (.-value textarea-el) val-attr))))
-  ;; Set initial form value
-  (when-let [^js internals (du/getv el k-internals)]
-    (.setFormValue internals (or (du/get-attr el model/attr-value) "")))
+        (set! (.-value textarea-el) val-attr))
+      (sync-form-value! el textarea-el)))
   (add-listeners! el)
   (render! el))
 
@@ -385,7 +398,8 @@
       (when-let [refs (du/getv el k-refs)]
         (let [^js textarea-el (gobj/get refs "textarea")]
           (when (not= (.-value textarea-el) new-val)
-            (set! (.-value textarea-el) (or new-val ""))))))
+            (set! (.-value textarea-el) (or new-val "")))
+          (sync-form-value! el textarea-el))))
     (update-from-attrs! el)))
 
 ;; ---------------------------------------------------------------------------

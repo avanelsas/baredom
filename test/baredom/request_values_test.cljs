@@ -6,12 +6,9 @@
             [cljs.test :refer-macros [async deftest is testing use-fixtures]]))
 
 (def ^:private known-misses
-  "What each request event shows today when its request is handled one way, by event and way.
-   A pair that is not named shows what it should."
-  {["x-form-field-change-request" :other]      #{:shown}
-   ["x-multi-combobox-change-request" :accept] #{:throws}
-   ["x-select-change-request" :other]          #{:shown}
-   ["x-text-area-change-request" :other]       #{:shown}})
+  "What each request event shows today when its request is handled one way, by the row's
+   `:name` or event, and the way. A pair that is not named shows what it should."
+  {})
 
 (def ^:private mount-ms "The wait after a mount and after `:prepare`." 30)
 (def ^:private settle-ms "The wait after a gesture, unless a row gives `:settle`." 100)
@@ -61,6 +58,10 @@
   (.click (.querySelector (.item (.querySelectorAll (.-shadowRoot el) "[part=step]") 2)
                           "[part=step-indicator]")))
 
+(defn- click-chip-remove [value]
+  (fn [^js el]
+    (.click (part-of (part-of el (str "x-chip[data-x-key=\"" value "\"]")) "[part=remove]"))))
+
 (defn- click-child [selector]
   (fn [^js el] (.click (.querySelector el selector))))
 
@@ -91,7 +92,7 @@
   "Each request event: the markup of its component, the gesture that sends the request, and
    values other than the asked ones. `:prepare` runs before the gesture, `:settle` is how long
    the component takes to come to rest. `:watch` names the one part that is compared, and
-   `:none` compares no part."
+   `:none` compares no part. `:name` tells two rows of one event apart."
   [{:event "x-cancel-dialogue-cancel-request" :html "<x-cancel-dialogue open></x-cancel-dialogue>"
     :gesture (click-part "[part=cancel-btn]")}
    {:event "x-cancel-dialogue-confirm-request" :html "<x-cancel-dialogue open></x-cancel-dialogue>"
@@ -127,6 +128,13 @@
    {:event "x-multi-combobox-change-request" :watch "[part=chip-area]"
     :html (str "<x-multi-combobox value=\"apple,banana\">" fruits "</x-multi-combobox>")
     :gesture (key-on-part "[part=input]" "Backspace") :other {"value" "cherry"}}
+   {:event "x-multi-combobox-change-request" :name "x-multi-combobox-change-request, a chip clicked"
+    :watch "[part=chip-area]"
+    :html (str "<x-multi-combobox value=\"apple,banana\">" fruits "</x-multi-combobox>")
+    :gesture (click-chip-remove "banana") :other {"value" "cherry"}}
+   {:event "x-multi-combobox-change-request" :name "x-multi-combobox-change-request, an option added"
+    :html (str "<x-multi-combobox value=\"apple\">" fruits "</x-multi-combobox>")
+    :prepare (call "show") :gesture (click-in-panel "[data-value=cherry]") :other {"value" "banana"}}
    {:event "x-multi-combobox-toggle" :html (str "<x-multi-combobox>" fruits "</x-multi-combobox>")
     :gesture (call "show")}
    {:event "page-change-request" :html "<x-pagination page=\"1\" total-pages=\"5\"></x-pagination>"
@@ -142,6 +150,10 @@
     :watch "[part=input]" :gesture (type-into "[part=input]" "typed") :other {"value" "other"}}
    {:event "x-select-change-request" :html (str "<x-select value=\"a\">" letters "</x-select>")
     :watch "[part=select]" :gesture (choose-in-select "[part=select]" "b") :other {"value" "c"}}
+   {:event "x-select-change-request" :name "x-select-change-request, after a pick"
+    :html (str "<x-select value=\"a\">" letters "</x-select>")
+    :watch "[part=select]" :prepare (choose-in-select "[part=select]" "b")
+    :gesture (choose-in-select "[part=select]" "c") :other {"value" "a"}}
    {:event "x-slider-change-request" :html "<x-slider value=\"0\"></x-slider>"
     :watch "[part=input]" :gesture (type-into "[part=input]" "75") :other {"value" "30"}}
    {:event "x-stepper-change" :html "<x-stepper steps=\"3\" current=\"0\"></x-stepper>"
@@ -283,10 +295,30 @@
   [{:keys [gesture]} ^js el]
   (try (gesture el) false (catch :default _ true)))
 
+(def ^:private field-name "field")
+
+(defn- form-associated? [^js el]
+  (some-> (.get js/customElements (.-localName el)) .-formAssociated))
+
+(defn- in-form!
+  "Puts `el` in a new form in the document, named when it takes part in forms. Returns `el`."
+  [^js el]
+  (let [form (.createElement js/document "form")]
+    (when (and (form-associated? el) (not (.hasAttribute el "name")))
+      (.setAttribute el "name" field-name))
+    (.append form el)
+    (elements/node-in-body! form)
+    el))
+
+(defn- form-data
+  "The entries that the form of `in-form!` around `el` submits, in order."
+  [^js el]
+  (mapv vec (es6-iterator-seq (.entries (js/FormData. (.-parentNode el))))))
+
 (defn- start!
-  "Puts the component of `row` in the document and runs `:prepare`."
+  "Puts the component of `row` in a form in the document and runs `:prepare`."
   [{:keys [html prepare]}]
-  (let [el (elements/node-in-body! (parsed html))]
+  (let [el (in-form! (parsed html))]
     (-> (wait mount-ms)
         (.then (fn [] (when prepare (prepare el)) (wait mount-ms)))
         (.then (fn [] {:el el :before (all-attrs el)})))))
@@ -311,17 +343,17 @@
                         :answered @answered
                         :attrs    (attrs-of el (keys by-attr))
                         :final    (all-attrs el)
-                        :shown    (watched-shape row el)))))))
+                        :shown    [(watched-shape row el) (form-data el)]))))))
 
 (defn- fresh!
-  "Removes the component, and adds what a new one with its final attributes shows."
+  "Removes the component, and adds what a new one with its final attributes shows and submits."
   [{:keys [html settle] :or {settle settle-ms} :as row} {:keys [^js el final] :as run}]
-  (.remove el)
-  (let [fresh (elements/node-in-body! (replace-attrs! (parsed html) final))]
+  (.remove (.-parentNode el))
+  (let [fresh (in-form! (replace-attrs! (parsed html) final))]
     (-> (wait (+ settle blur-ms))
         (.then (fn []
-                 (let [fresh-shape (watched-shape row fresh)]
-                   (.remove fresh)
+                 (let [fresh-shape [(watched-shape row fresh) (form-data fresh)]]
+                   (.remove (.-parentNode fresh))
                    (assoc run :fresh fresh-shape)))))))
 
 (defn- expected
@@ -359,14 +391,14 @@
         :when                   (or (not= :other way) other)]
     [row way]))
 
-(defn- report! [event way found]
-  (testing (str event ", answered " (name way) ", shows the answer")
-    (is (= (get known-misses [event way] #{}) found))))
+(defn- report! [case-name way found]
+  (testing (str case-name ", answered " (name way) ", shows the answer")
+    (is (= (get known-misses [case-name way] #{}) found))))
 
 (defn- check-case! [by-event p [{:keys [event] :as row} way]]
   (.then p (fn []
              (.then (run-case! (by-event event) row way)
-                    (partial report! event way)))))
+                    (partial report! (or (:name row) event) way)))))
 
 (defn- check-all!
   "Checks every case of `way` in turn, and calls `done` after the last."

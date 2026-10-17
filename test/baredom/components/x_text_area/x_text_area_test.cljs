@@ -436,3 +436,15 @@
              "textarea value should revert when change-request is cancelled")
          (done))
        0))))
+
+(deftest written-value-sets-the-form-value-test
+  (let [^js form (.createElement js/document "form")
+        ^js el   (.createElement js/document model/tag-name)]
+    (.setAttribute el model/attr-name "note")
+    (.appendChild form el)
+    (.appendChild js/document.body form)
+    (try
+      (set! (.-value el) "new")
+      (is (= "new" (.get (js/FormData. form) "note")))
+      (finally
+        (.remove form)))))

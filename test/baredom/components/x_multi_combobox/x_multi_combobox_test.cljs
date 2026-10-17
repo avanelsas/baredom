@@ -501,6 +501,11 @@
     (set! (.-value input) text)
     (.dispatchEvent input (js/Event. "input" #js {:bubbles true}))))
 
+(defn- click-option! [^js el value]
+  (.setAttribute el model/attr-open "")
+  (.click (.querySelector (shadow-part el "[part=panel]")
+                          (str "[data-value=\"" value "\"]"))))
+
 (deftest an-option-that-still-matches-keeps-its-node-test
   (async done
     (let [^js el (append! (make-el))]
@@ -532,6 +537,20 @@
            (is (= (subvec before 1) (option-nodes el)) "the four that stay are the same nodes"))
          (done))
        50))))
+
+(defn- write-requested-value! [^js el ^js e]
+  (.setAttribute el model/attr-value (.join (.. e -detail -value) ",")))
+
+(deftest an-add-written-during-its-request-shows-every-option-left-test
+  (async done
+    (after-options
+     (fn [^js el]
+       (.setAttribute el model/attr-open "")
+       (type! el "ch")
+       (.addEventListener el model/event-change-request (partial write-requested-value! el))
+       (click-option! el "cherry")
+       (is (= ["apple" "banana" "date" "elderberry"] (option-values el)))
+       (done)))))
 
 
 ;; ── Value format ─────────────────────────────────────────────────────────────
@@ -567,11 +586,6 @@
 
 (defn- json-attr [values]
   (js/JSON.stringify (to-array values)))
-
-(defn- click-option! [^js el value]
-  (.setAttribute el model/attr-open "")
-  (.click (.querySelector (shadow-part el "[part=panel]")
-                          (str "[data-value=\"" value "\"]"))))
 
 (deftest value-format-property-reflects-the-attribute-test
   (let [^js el (append! (make-el))]
