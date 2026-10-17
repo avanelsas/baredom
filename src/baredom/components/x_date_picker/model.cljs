@@ -207,6 +207,12 @@
     (or (some? (:start-d canon)) (some? (:end-d canon)))
     (some? (:value-d canon))))
 
+(defn write-display?
+  "True when the input gets `text`: it has no focus, or `text` differs from `written`,
+  the text last written."
+  [focused? text written]
+  (or (not focused?) (not= text written)))
+
 ;; ---------------------------------------------------------------------------
 ;; Display value helper
 ;; ---------------------------------------------------------------------------

@@ -27,7 +27,7 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 | `separator`            | string  | `" - "`    | String placed between start and end in range display                 |
 | `auto-swap`            | boolean | `false`    | Automatically swap start/end when end is selected before start       |
 | `range-allow-same-day` | boolean | `false`    | Allow start and end to be the same date in range mode                |
-| `close-on-select`      | boolean | `false`    | Close the calendar after a date is selected (or range is complete)   |
+| `close-on-select`      | boolean | `false`    | Close the calendar after a date is picked, a range is complete, or typed text is committed with `Enter` |
 | `placeholder`          | string  | —          | Input placeholder text                                               |
 | `disabled`             | boolean | `false`    | Disables the input and calendar                                       |
 | `readonly`             | boolean | `false`    | Input is read-only; calendar can still open but not select           |
