@@ -84,6 +84,6 @@ export const XMultiCombobox = forwardRef<XMultiComboboxElement, XMultiComboboxPr
       return () => cleanup.forEach(fn => fn());
     }, [value, onChangeRequest, onChange, onInput, onToggle, onError]);
 
-    return <x-multi-combobox ref={setRef} value={value} {...rest}>{children}</x-multi-combobox>;
+    return <x-multi-combobox ref={setRef} {...rest} value={value}>{children}</x-multi-combobox>;
   }
 );

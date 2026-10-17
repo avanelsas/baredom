@@ -211,6 +211,8 @@ Chip styling is owned by `x-chip`. Use `--x-chip-*` custom properties to theme c
 
 The framework adapters expose the array value as a form control: Vue `v-model` (`string[]`), Svelte `bind:value`, Angular `ControlValueAccessor`, and React/Solid controlled `value` / `defaultValue`. Each binding sets the `value` property, so the array round-trips in both value formats. In `csv`, an array with a value that a comma-separated list cannot hold changes nothing and sends `x-multi-combobox-error`.
 
+The React adapter passes `value` after the other props, so React sets `valueFormat` before `value` on the first render. React attaches `onError` after the first render, so it does not see an error from that render.
+
 ### Validation API
 
 Like a native form control, `x-multi-combobox` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.

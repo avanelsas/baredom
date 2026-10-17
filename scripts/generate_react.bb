@@ -198,9 +198,16 @@
                 "      return () => cleanup.forEach(fn => fn());\n"
                 "    }, " effect-deps ");\n\n")
            "")
-         ;; For controlled components, pass the control prop explicitly since it's destructured out of rest
-         (if ctrl
+         ;; For controlled components, pass the control prop explicitly since it's destructured out of rest.
+         ;; React sets the props of a custom element in key order. With
+         ;; :property the control prop goes last, so its setter runs after the
+         ;; other props (such as valueFormat) on the first render.
+         (cond
+           ctrl-property?
+           (str "    return <" tag-name " ref={setRef} {...rest} " ctrl-prop "={" ctrl-prop "}>{children}</" tag-name ">;\n")
+           ctrl
            (str "    return <" tag-name " ref={setRef} " ctrl-prop "={" ctrl-prop "} {...rest}>{children}</" tag-name ">;\n")
+           :else
            (str "    return <" tag-name " ref={setRef} {...rest}>{children}</" tag-name ">;\n"))
          "  }\n"
          ");\n")))
