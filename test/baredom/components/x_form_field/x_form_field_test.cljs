@@ -474,6 +474,11 @@
     (enter-text! el "new")
     (is (= "new" (form-value el)))))
 
+(deftest a-written-value-sets-the-form-value
+  (let [el (field-in-form! {model/attr-value "old"})]
+    (set! (.-value el) "new")
+    (is (= "new" (form-value el)))))
+
 (defn- write-capitals! [^js e]
   (.setAttribute (.-currentTarget e) model/attr-value "NEW"))
 

@@ -266,21 +266,34 @@
         (apply-model! el new-m)))))
 
 ;; ── Event handlers ────────────────────────────────────────────────────────
-(defn- sync-form! [^js el ^js input-el]
+(defn- sync-form-value!
+  "Gives the form the text of `input-el`."
+  [^js el ^js input-el]
   (when-let [^js internals (du/getv el k-internals)]
-    (.setFormValue internals (.-value input-el))
-    (sync-validity! el internals input-el)))
+    (.setFormValue internals (.-value input-el))))
+
+(defn- sync-form!
+  "Gives the form the text of `input-el` and its validity."
+  [^js el ^js input-el]
+  (sync-form-value! el input-el)
+  (apply-validity! el input-el))
+
+(defn- value-attr
+  "The value attribute of `el`, or empty text."
+  [^js el]
+  (or (du/get-attr el model/attr-value) ""))
 
 (defn- on-input-input [^js el ^js _evt]
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)
-          previous     (or (du/get-attr el model/attr-value) "")
           name         (or (du/get-attr el model/attr-name) "")]
       (if (du/dispatch-cancelable! el model/event-change-request
-                                   #js {:name name :value (.-value input-el) :previousValue previous})
+                                   #js {:name          name
+                                        :value         (.-value input-el)
+                                        :previousValue (value-attr el)})
         (do (sync-form! el input-el)
             (du/dispatch! el model/event-input #js {:name name :value (.-value input-el)}))
-        (do (set! (.-value input-el) previous)
+        (do (set! (.-value input-el) (value-attr el))
             (sync-form! el input-el))))))
 
 (defn- on-input-change [^js el ^js _evt]
@@ -335,9 +348,8 @@
     (let [^js input-el (gobj/get refs rk-input)
           val-attr     (du/get-attr el model/attr-value)]
       (when val-attr
-        (set! (.-value input-el) val-attr))))
-  (when-let [^js internals (du/getv el k-internals)]
-    (.setFormValue internals (or (du/get-attr el model/attr-value) "")))
+        (set! (.-value input-el) val-attr))
+      (sync-form-value! el input-el)))
   (add-listeners! el)
   (update-from-attrs! el))
 
@@ -351,7 +363,8 @@
     (when-let [refs (du/getv el k-refs)]
       (let [^js input-el (gobj/get refs rk-input)]
         (when (not= (.-value input-el) new-val)
-          (set! (.-value input-el) (or new-val ""))))))
+          (set! (.-value input-el) (or new-val "")))
+        (sync-form-value! el input-el))))
   (update-from-attrs! el))
 
 ;; ── Property accessors ────────────────────────────────────────────────────

@@ -383,12 +383,17 @@
 ;; ---------------------------------------------------------------------------
 ;; Change handler — dispatches change-request then select-change
 ;; ---------------------------------------------------------------------------
+(defn- value-attr
+  "The value attribute of `el`, or empty text."
+  [^js el]
+  (or (du/get-attr el model/attr-value) ""))
+
 (defn- make-change-handler [^js el]
   (fn [^js _]
     (when-let [refs (du/getv el k-refs)]
       (let [^js sel    (gobj/get refs "select")
             value      (.-value sel)
-            prev-value (or (du/get-attr el model/attr-value) "")
+            prev-value (value-attr el)
             label      (if (> (alength (.-selectedOptions sel)) 0)
                          (.-text (aget (.-selectedOptions sel) 0))
                          "")
@@ -401,10 +406,10 @@
             ;; attribute), so push the live value into the form here.
             (sync-form-state! el sel)
             (du/dispatch! el model/event-select-change #js {:value value :label label}))
-          ;; Revert native select to previous value. <select>.value is
-          ;; property-only — no attribute counterpart — so this stays as a
-          ;; property write rather than going through du/.
-          (set! (.-value sel) prev-value))))))
+          ;; <select>.value is a property with no attribute, so this write does not go
+          ;; through du/.
+          (do (set! (.-value sel) (value-attr el))
+              (sync-form-state! el sel)))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Listener management
