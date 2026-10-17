@@ -290,22 +290,34 @@
               :when (:tagName d)]
           [(:tagName d) (:events d)])))
 
+(defn- written-defs
+  "The value of each def in `baredom.requests`, by its name."
+  []
+  (into {}
+        (map (juxt second last))
+        (edamame/parse-string-all (slurp "src/baredom/requests.cljs") parse-opts)))
+
+(defn- differences
+  "Where the def named `sym` in `written` differs from `declared`."
+  [written sym declared]
+  (let [w-map (get written sym)]
+    (for [event (sort (set/union (set (keys declared)) (set (keys w-map))))
+          :let  [d (get declared event) w (get w-map event)]
+          :when (not= d w)]
+      (str "baredom.requests/" sym " has " event " as " (pr-str w)
+           " and its model declares " (pr-str d)))))
+
 (defn- requests-ns-problems
-  "Where the `requests` of `baredom.requests` differs from what the models declare."
+  "Where `baredom.requests` differs from what the models declare."
   [models]
-  (let [declared (into {}
+  (let [written  (written-defs)
+        declared (into {}
                        (for [{:keys [events string-defs]} models
                              [event {:keys [requests]}] events
                              :when requests]
-                         [(resolve-sym event string-defs)
-                          (mapv #(resolve-sym % string-defs) (keys requests))]))
-        written  (->> (edamame/parse-string-all (slurp "src/baredom/requests.cljs") parse-opts)
-                      (some (fn [form] (when (= 'requests (second form)) (last form)))))]
-    (for [event (sort (set/union (set (keys declared)) (set (keys written))))
-          :let  [d (get declared event) w (get written event)]
-          :when (not= d w)]
-      (str "baredom.requests has " event " as " (pr-str w)
-           " and its model declares " (pr-str d)))))
+                         [(resolve-sym event string-defs) (event-requests requests string-defs)]))]
+    (concat (differences written 'requests (update-vals declared (comp vec keys)))
+            (differences written 'requested-values declared))))
 
 (let [models  (filter (comp seq :events) (discover-models))
       manifest (manifest-events)

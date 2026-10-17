@@ -12,11 +12,11 @@
   [k (unchecked-get o k)])
 
 (defn- object-map
-  "The entries of the JavaScript object `o` as a map with string keys.
+  "The own entries of the JavaScript object `o` as a map with string keys.
    The values stay as they are."
   [^js o]
   (if (some? o)
-    (into {} (map (partial own-entry o)) (js-keys o))
+    (into {} (map (partial own-entry o)) (js/Object.keys o))
     {}))
 
 (defn- frozen
@@ -298,12 +298,13 @@
 
 (defn listen
   "Adds the listeners of `options` to `root`: `dispatch`, a function of a message, `events`,
-   pairs of an event type with a part name and a meaning, and `requests`, an object from an event
-   type to the attributes it asks to change."
+   pairs of an event type with a part name and a meaning, and `requestedValues`, an object from
+   a request event to what it asks of each attribute."
   [root ^js options]
-  (mirror-events/listen! root {:dispatch! (->message-handler (.-dispatch options))
-                        :events    (->events (.-events options))
-                        :requests  (update-vals (object-map (.-requests options)) vec)}))
+  (mirror-events/listen! root {:dispatch!        (->message-handler (.-dispatch options))
+                               :events           (->events (.-events options))
+                               :requested-values (update-vals (object-map (.-requestedValues options))
+                                                              object-map)}))
 
 (defn- holder
   "A state holder over the `value` property of the object `store`."

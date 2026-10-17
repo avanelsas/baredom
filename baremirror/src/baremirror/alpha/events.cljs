@@ -67,22 +67,33 @@
         arg              (arg-of origin e)]
     (cond-> [meaning] (some? arg) (conj arg))))
 
+(defn- asked-value
+  "The value that `source` asks of an attribute for the DOM event `e`: the detail field that a
+   text names, or `source` itself. A missing detail or field asks for no attribute."
+  [^js e source]
+  (if (string? source) (some-> (.-detail e) (unchecked-get source)) source))
+
+(defn- asked-text
+  "The text that `asked` asks of each of its attributes for the DOM event `e`, in order."
+  [asked e]
+  (mapv (comp parts/attr-text (partial asked-value e)) (vals asked)))
+
 (defn- dispatch-request!
-  "Dispatches `message`, and cancels `e` when `node` shows the same of `attrs` after as before."
-  [dispatch! ^js node attrs ^js e message]
-  (let [before (shown node attrs)]
+  "Dispatches `message`, and cancels `e` when `node` then does not show what `asked` asks for."
+  [dispatch! ^js node asked ^js e message]
+  (let [wanted (asked-text asked e)]
     (dispatch! message)
-    (when (= before (shown node attrs))
+    (when (not= wanted (shown node (keys asked)))
       (.preventDefault e))))
 
 (defn- handle!
   "Dispatches the message of the DOM event `e`, when its part has an entry in `events`."
-  [{:keys [dispatch! events requests]} ^js e]
+  [{:keys [dispatch! events requested-values]} ^js e]
   (let [{:keys [part node] :as origin} (read-origin e)]
     (when-some [entry (get events [(.-type e) part])]
       (let [message (message-of entry origin e)]
-        (if-some [attrs (get requests (.-type e))]
-          (dispatch-request! dispatch! node attrs e message)
+        (if-some [asked (get requested-values (.-type e))]
+          (dispatch-request! dispatch! node asked e message)
           (dispatch! message))))))
 
 (defn- add-listener! [^js root options event-type]
@@ -90,8 +101,8 @@
 
 (defn listen!
   "Adds one listener to `root` for each event type in `:events`, which maps an event type and a
-   part name to the meaning of a message for `:dispatch!`. `:requests` maps an event type to the
-   attributes it asks to change: such an event is cancelled when its part shows the same of
-   them after the dispatch as before."
+   part name to the meaning of a message for `:dispatch!`. `:requested-values` maps a request
+   event to what it asks of each attribute, and `listen!` cancels it when its part does not show
+   that after the dispatch."
   [^js root {:keys [events] :as options}]
   (run! (partial add-listener! root options) (into #{} (map first) (keys events))))

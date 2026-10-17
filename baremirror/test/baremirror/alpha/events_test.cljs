@@ -198,33 +198,55 @@
     (mirror-parts/set-attrs! (find-one root (str "[data-x-part=" part-name "]")) attrs)))
 
 (defn- cancelled?
-  "True when `listen!` cancels a `toggle` from the check of a page whose dispatch is `answer!`."
-  [requests answer!]
-  (let [root (staged! task-page)]
-    (mirror-events/listen! root {:dispatch! (answer! root)
-                          :requests  requests
-                          :events    {["toggle" "check"] :toggle}})
-    (.-defaultPrevented (send! (find-one root "[data-x-part=check]") "toggle" nil))))
+  "True when `listen!` with `options` cancels a `toggle` with `detail` from the check of a page
+   whose dispatch is `answer!`. The detail asks for `next` \"true\" unless given."
+  ([options answer!]
+   (cancelled? options answer! #js {:next "true"}))
+  ([options answer! detail]
+   (let [root (staged! task-page)]
+     (mirror-events/listen! root (merge {:dispatch! (answer! root)
+                                         :events    {["toggle" "check"] :toggle}}
+                                        options))
+     (.-defaultPrevented (send! (find-one root "[data-x-part=check]") "toggle" detail)))))
 
 (defn- leave-as-it-is [_root]
   (constantly nil))
 
-(def ^:private toggle-request
-  {"toggle" ["aria-checked"]})
+(def ^:private toggle-asks-next
+  {:requested-values {"toggle" {"aria-checked" "next"}}})
 
-(deftest listen-cancels-a-request-that-did-not-change-the-attributes-it-asks-for
+(deftest listen-cancels-a-request-whose-part-does-not-show-the-asked-value
   (testing "the dispatch changes nothing"
-    (is (true? (cancelled? toggle-request leave-as-it-is))))
+    (is (true? (cancelled? toggle-asks-next leave-as-it-is))))
   (testing "the dispatch changes another part"
-    (is (true? (cancelled? toggle-request
+    (is (true? (cancelled? toggle-asks-next
                            (fn [root] (answer-with! root "note" {:data-error "refused"}))))))
   (testing "the dispatch changes another attribute of the same part"
-    (is (true? (cancelled? toggle-request
-                           (fn [root] (answer-with! root "check" {:data-error "refused"})))))))
+    (is (true? (cancelled? toggle-asks-next
+                           (fn [root] (answer-with! root "check" {:data-error "refused"}))))))
+  (testing "the dispatch writes another value"
+    (is (true? (cancelled? toggle-asks-next
+                           (fn [root] (answer-with! root "check" {:aria-checked "mixed"})))))))
 
-(deftest listen-does-not-cancel-a-request-that-changed-an-attribute-it-asks-for
-  (is (false? (cancelled? toggle-request
+(deftest listen-does-not-cancel-a-request-whose-part-shows-the-asked-value
+  (is (false? (cancelled? toggle-asks-next
                           (fn [root] (answer-with! root "check" {:aria-checked "true"}))))))
 
 (deftest listen-does-not-cancel-an-event-that-is-not-named-as-a-request
-  (is (false? (cancelled? {} leave-as-it-is))))
+  (is (false? (cancelled? {:requested-values {}} leave-as-it-is))))
+
+(deftest listen-takes-a-missing-detail-as-asking-for-no-attribute
+  (testing "the part shows no attribute"
+    (is (false? (cancelled? toggle-asks-next
+                            (fn [root] (answer-with! root "check" {:aria-checked nil}))
+                            nil))))
+  (testing "the part keeps the attribute"
+    (is (true? (cancelled? toggle-asks-next leave-as-it-is nil)))))
+
+(deftest listen-compares-a-fixed-value-as-set-attrs-writes-it
+  (let [asks-false {:requested-values {"toggle" {"aria-checked" false}}}]
+    (testing "false asks for no attribute"
+      (is (false? (cancelled? asks-false
+                              (fn [root] (answer-with! root "check" {:aria-checked false}))))))
+    (testing "the text false is not the value false"
+      (is (true? (cancelled? asks-false leave-as-it-is))))))

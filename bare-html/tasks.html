@@ -54,7 +54,7 @@
     import { init as initSwitch }    from '../dist/x-switch.js';
     import { splitTemplate, nodeMaker, readParts, syncPlaces, writeParts, writeItem, listen, dispatcher }
       from '../dist/baremirror-alpha.js';
-    import { requests } from '../dist/requests.js';
+    import { requestedValues } from '../dist/requests.js';
 
     [initButton, initCheckbox, initFormField, initSelect, initSwitch].forEach(init => init());
 
@@ -161,7 +161,7 @@
 
     listen(page, {
       dispatch,
-      requests,
+      requestedValues,
       events: [
         ...row.events,
         [['x-form-field-input', 'draft'],         ['draft', detailValue]],

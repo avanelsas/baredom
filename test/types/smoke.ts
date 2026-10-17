@@ -15,7 +15,7 @@ import type {
   TraceSession,
   BareDOMNamespace,
 } from "@vanelsas/baredom/x-trace-history";
-import { requests } from "@vanelsas/baredom/requests";
+import { requests, requestedValues } from "@vanelsas/baredom/requests";
 
 // Declaration-merging smoke test: a hypothetical future dev tool
 // should be able to add its own slot to BareDOMNamespace without
@@ -147,7 +147,8 @@ void [_ft, _th];
 
 // ── The requests map ────────────────────────────────────────────────────────
 const _asked: readonly string[] = requests["x-checkbox-change-request"];
-void _asked;
+const _source: string | boolean = requestedValues["x-checkbox-change-request"]["checked"];
+void [_asked, _source];
 
 // ── Suppress unused warnings ────────────────────────────────────────────────
 void [_disabled, _loading, _alertText, _alertType, _total, _b, _target];

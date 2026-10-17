@@ -38,10 +38,10 @@
   (let [page     (page!)
         checkbox (.-firstElementChild page)
         state    (atom {:checked? false})]
-    (events/listen! page {:dispatch! (events/dispatcher state step identity
-                                                        (partial render-check! checkbox))
-                          :requests  requests/requests
-                          :events    {[checkbox-model/event-change-request "check"] :toggle}})
+    (events/listen! page {:dispatch!        (events/dispatcher state step identity
+                                                               (partial render-check! checkbox))
+                          :requested-values requests/requested-values
+                          :events           {[checkbox-model/event-change-request "check"] :toggle}})
     (.click (.querySelector (.-shadowRoot checkbox) "[part=control]"))
     {:checked? (.hasAttribute checkbox checkbox-model/attr-checked)
      :marked?  (.hasAttribute checkbox "data-refused")}))
