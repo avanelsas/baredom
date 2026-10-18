@@ -209,6 +209,7 @@ and a part name is a string.
 | `places/sync!` | `syncPlaces` | The three above in one call. Returns the node of each key. |
 | `places/release!` | `release` | Gives a node up. It keeps its place and loses its key. |
 | `template/split` | `splitTemplate` | The fixed template, the holes and the events of a template. |
+| `template/shared-holes` | `sharedHoles` | The holes of a split template that a component may also write. |
 | `template/writes` | the `writes` of a split template | The writes of one item, by part name. Pure. |
 | `parts/make-node!` | `makeNode` | One detached element from a fixed template. |
 | `parts/node-maker` | `nodeMaker` | A function that makes one detached element from a fixed template each time, whatever it is called with. It copies one node, so use it for a template that makes many nodes. It can be the function that `sync!` makes a node with. |
@@ -243,6 +244,18 @@ attributes of its mode.
 A component can show a value that your state does not hold when `listen` has no
 `requestedValues`, or when your application has no entry for the event. `write-parts!` brings
 such a row back at the next render, and `write-item!` does not.
+
+## Attributes a component writes
+
+Some components write attributes on nodes they do not own: `x-tabs` writes `selected` on each
+`x-tab`. A hole on such an attribute has two writers, and the last write wins. So do not put a
+hole there. `sharedHoles(row, foreignWrites)` names each such hole, with `foreignWrites` from
+`@vanelsas/baredom/foreign-writes`. It only reports, and it does not look at where the writer
+is on the page.
+
+A target of `"any"` says that the writer may write the attribute: `x-form` writes `error` on
+the fields it holds, whatever their tag. `x-i18n-provider` may write any attribute. When it is
+not on your page, pass a copy of `foreignWrites` without it.
 
 ## Things to know
 

@@ -16,6 +16,7 @@ import type {
   BareDOMNamespace,
 } from "@vanelsas/baredom/x-trace-history";
 import { requests, requestedValues } from "@vanelsas/baredom/requests";
+import { foreignWrites } from "@vanelsas/baredom/foreign-writes";
 
 // Declaration-merging smoke test: a hypothetical future dev tool
 // should be able to add its own slot to BareDOMNamespace without
@@ -149,6 +150,10 @@ void [_ft, _th];
 const _asked: readonly string[] = requests["x-checkbox-change-request"];
 const _source: string | boolean = requestedValues["x-checkbox-change-request"]["checked"];
 void [_asked, _source];
+
+// ── The foreign writes ──────────────────────────────────────────────────────
+const _writeTarget: string = foreignWrites["x-tabs"][0].target;
+void _writeTarget;
 
 // ── Suppress unused warnings ────────────────────────────────────────────────
 void [_disabled, _loading, _alertText, _alertType, _total, _b, _target];

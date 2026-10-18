@@ -1,6 +1,7 @@
 (ns baremirror.alpha.template
   "The pure functions on templates. A template is a vector of a tag, an optional map of
-   attributes, and children that are templates or text.")
+   attributes, and children that are templates or text."
+  (:require [clojure.string :as string]))
 
 (def attr-part "data-x-part")
 
@@ -154,3 +155,61 @@
   "The writes of `item` for the holes of `split-template`, by part name."
   [split-template item]
   (into {} (map (partial hole-writes item)) (:holes split-template)))
+
+(defn- child-templates [template]
+  (filter vector? (nth (pieces template) 2)))
+
+(defn- part-and-tag
+  "The part name and the tag of the element of `template`, or nil when it is not a part."
+  [template]
+  (let [[tag attrs] (pieces template)]
+    (when-some [part (given-part attrs)]
+      [part (string/lower-case (name tag))])))
+
+(defn- part-tags
+  "The tag of each part of the fixed template `fixed`, by part name."
+  [fixed]
+  (into {} (keep part-and-tag) (tree-seq vector? child-templates fixed)))
+
+(defn- any-name?
+  "True when `x` is \"any\" or `:any`."
+  [x]
+  (and (or (string? x) (keyword? x)) (= "any" (name x))))
+
+(defn- writes-attr?
+  "True when the foreign write `w` may write the attribute `attr` of an element with the tag
+   `tag`. A target or attributes of \"any\" or `:any` match every tag or attribute."
+  [tag attr {:keys [target attributes]}]
+  (and (or (any-name? target) (= (name target) tag))
+       (or (any-name? attributes) (contains? (into #{} (map name) attributes) attr))))
+
+(defn- specificity
+  "0 for a foreign write with a named target, 1 for one with any target."
+  [{:keys [target]}]
+  (if (any-name? target) 1 0))
+
+(defn- writer-entry
+  "The entry for `writer`, when one of its `declared` writes may write the attribute `attr` of the
+   part `part` with the tag `tag`. A named target comes before any target."
+  [part tag attr [writer declared]]
+  (when-some [w (first (sort-by specificity (filter (partial writes-attr? tag attr) declared)))]
+    {:part part :tag tag :attr attr :writer writer :target (name (:target w))}))
+
+(defn- hole-attrs
+  "The names of the attribute holes of `attrs`, in lower case and in order."
+  [attrs]
+  (sort (map (comp string/lower-case name) (keys attrs))))
+
+(defn shared-holes
+  "The attribute holes of `split-template` that a component in `foreign-writes` may also write:
+   an entry for each hole and writer. It does not look at where the writer is on the page."
+  [split-template foreign-writes]
+  (let [tags    (part-tags (:fixed split-template))
+        writers (sort-by key foreign-writes)]
+    (into []
+          (for [{:keys [part attrs]} (:holes split-template)
+                attr                 (hole-attrs attrs)
+                writer               writers
+                :let                 [entry (writer-entry part (tags part) attr writer)]
+                :when                entry]
+            entry))))

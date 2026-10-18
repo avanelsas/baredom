@@ -148,3 +148,54 @@
     (let [split-given (template/split :u given)]
       (= (set (map :part (:holes split-given)))
          (set (keys (template/writes split-given {:a 1 :b 2 :c 3})))))))
+
+(def ^:private tab-row
+  [:li
+   [:x-tab {:data-x-part "tab" :selected :on? :value :id}]
+   [:x-field {:data-x-part "field" :error :problem :label :name}]
+   [:span {:data-x-part "note" :hidden :quiet?} :text]])
+
+(def ^:private writes
+  {"x-tabs" [{:target "x-tab" :attributes ["selected"]} {:target "any" :attributes ["hidden"]}]
+   "x-form" [{:target "any" :attributes ["error"]}]})
+
+(deftest shared-holes-names-each-hole-a-writer-may-write
+  (is (= [{:part "tab" :tag "x-tab" :attr "selected" :writer "x-tabs" :target "x-tab"}
+          {:part "field" :tag "x-field" :attr "error" :writer "x-form" :target "any"}
+          {:part "note" :tag "span" :attr "hidden" :writer "x-tabs" :target "any"}]
+         (template/shared-holes (template/split :row tab-row) writes))))
+
+(deftest shared-holes-skips-another-tag-another-attribute-and-text
+  (is (= [] (template/shared-holes (template/split :row tab-row)
+                                   {"x-radio" [{:target "x-radio" :attributes ["checked" "value"]}]
+                                    "x-table" [{:target "any" :attributes ["text" "title"]}]}))))
+
+(deftest shared-holes-takes-any-attributes-as-every-attribute
+  (is (= #{["tab" "selected"] ["tab" "value"] ["field" "error"] ["field" "label"] ["note" "hidden"]}
+         (into #{} (map (juxt :part :attr))
+               (template/shared-holes (template/split :row tab-row)
+                                      {"x-i18n-provider" [{:target "any" :attributes "any"}]})))))
+
+(deftest shared-holes-gives-an-entry-for-each-writer-in-writer-order
+  (is (= ["x-form" "x-other"]
+         (map :writer (template/shared-holes
+                       (template/split :row [:x-field {:error :problem}])
+                       {"x-other" [{:target "x-field" :attributes ["error"]}]
+                        "x-form"  [{:target "any" :attributes ["error"]}]})))))
+
+(deftest shared-holes-gives-one-entry-for-a-writer-with-the-named-target-first
+  (is (= [{:part "tab" :tag "x-tab" :attr "hidden" :writer "x-tabs" :target "x-tab"}]
+         (template/shared-holes (template/split :row [:x-tab {:data-x-part "tab" :hidden :off?}])
+                                {"x-tabs" [{:target "any" :attributes ["hidden"]}
+                                           {:target "x-tab" :attributes ["hidden"]}]}))))
+
+(deftest shared-holes-takes-the-keyword-any-as-the-text-any
+  (is (= [{:part "f" :tag "x-field" :attr "error" :writer "x-form" :target "any"}]
+         (template/shared-holes (template/split :row [:x-field {:data-x-part "f" :error :problem}])
+                                {"x-form" [{:target :any :attributes :any}]}))))
+
+(deftest shared-holes-compares-tags-and-attributes-in-lower-case
+  (is (= [["x-tab" "selected"]]
+         (map (juxt :tag :attr)
+              (template/shared-holes (template/split :row ["X-TAB" {"data-x-part" "t" "Selected" :on?}])
+                                     {"x-tabs" [{:target "x-tab" :attributes ["selected"]}]})))))

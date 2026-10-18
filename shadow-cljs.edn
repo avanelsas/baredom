@@ -606,6 +606,7 @@
       setText       baremirror.alpha.js/set-text
       withOneRender baremirror.alpha.js/with-one-render
       splitTemplate baremirror.alpha.js/split-template
+      sharedHoles   baremirror.alpha.js/shared-holes
       readOrigin    baremirror.alpha.js/read-origin
       listen        baremirror.alpha.js/listen
       dispatcher    baremirror.alpha.js/dispatcher

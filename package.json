@@ -566,6 +566,11 @@
       "import": "./dist/requests.js",
       "default": "./dist/requests.js"
     },
+    "./foreign-writes": {
+      "types": "./dist/foreign-writes.d.ts",
+      "import": "./dist/foreign-writes.js",
+      "default": "./dist/foreign-writes.js"
+    },
     "./all": {
       "types": "./dist/all.d.ts",
       "import": "./dist/all.js",
