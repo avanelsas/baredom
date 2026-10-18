@@ -1,6 +1,6 @@
 import { splitTemplate, nodeMaker, readParts, readPlaces, plan, perform, writeItem, listen }
   from '../../dist/baremirror-alpha.js';
-import { requests } from '../../dist/requests.js';
+import { requestedValues } from '../../dist/requests.js';
 
 const row = splitTemplate('row',
   ['li',
@@ -20,7 +20,7 @@ function made(task) {
 }
 
 export function mount(root, dispatch) {
-  listen(root, { dispatch, requests, events: row.events });
+  listen(root, { dispatch, requestedValues, events: row.events });
   return vm => {
     const { tasks, done } = readParts(root);
     const reading = readPlaces({ tasks: { parent: tasks }, done: { parent: done } });

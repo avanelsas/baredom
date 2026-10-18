@@ -61,7 +61,7 @@ Every event states `:cancelable`. An event is one of three kinds:
                        :detail     {:reason 'string}}})
 ```
 
-`bb scripts/generate_types.bb` writes `:cancelable` and `:requests` into `custom-elements.json`. It also writes the requests of every component as one map, to `dist/requests.js` and to `src/baredom/requests.cljs`. `bb scripts/check_event_api.bb` checks each entry against the component and against the generated files.
+`bb scripts/generate_types.bb` writes `:cancelable` and `:requests` into `custom-elements.json`. It also writes the requests of every component to `dist/requests.js` and to `src/baredom/requests.cljs`, twice: `requests` names the attributes of each event, and `requestedValues` (`requested-values`) gives what it asks of each. `bb scripts/check_event_api.bb` checks each entry against the component and against the generated files.
 
 ### `method-api`
 Map of method name to descriptor. **Always include this def**, even as `(def method-api nil)` when the component has no public methods.

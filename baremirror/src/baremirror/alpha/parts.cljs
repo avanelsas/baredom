@@ -15,7 +15,7 @@
     (f el))
   nil)
 
-(defn- attr-text
+(defn attr-text
   "The text of an attribute for `v`, or nil when `v` asks for no attribute."
   [v]
   (cond

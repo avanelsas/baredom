@@ -77,11 +77,13 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 
 `reason` is one of `"click"`, `"keyboard"`, `"blur"`, or `"programmatic"`.
 
-Every key is always present and `null` where the current mode has nothing to say, so a handler null-checks rather than testing for a missing key. In single mode `value` holds the ISO date string. In range mode `start` and `end` hold them, and either is `null` while the range is incomplete. `date` appears on a range click and is the day being asked for, before the component has decided whether it becomes the start, the end, or the start of a fresh range; it is `null` otherwise.
+Every key is always present and `null` where the current mode has nothing to say, so a handler null-checks rather than testing for a missing key. In single mode `value` holds the ISO date string. In range mode `start` and `end` hold them, and `end` is `null` while the range is open. On a range click they hold the range that the click asks for, and `date` holds the day clicked. `date` is `null` otherwise. After an accepted request, `x-date-picker-change` carries what the request asked.
+
+A `null` field asks for no attribute, so a request asks for no attribute of the other mode. Give a picker only the attributes of its mode.
 
 ### Clearing by emptying the input
 
-Deleting the text and committing (blur, `Enter`, or `commit()`) clears the committed value, exactly as `clear()` does. It fires a cancelable `x-date-picker-change-request` first, then `x-date-picker-change`, both with empty strings in the value fields — `{ value: "", mode, reason }` in single mode, `{ start: "", end: "", mode, reason }` in range mode. Cancelling the request keeps the committed value and restores the input text.
+Deleting the text and committing (blur, `Enter`, or `commit()`) clears the committed value, exactly as `clear()` does. It fires a cancelable `x-date-picker-change-request` first, then `x-date-picker-change`, both with `null` in `value`, `start` and `end`. Cancelling the request keeps the committed value and restores the input text.
 
 Committing a blank input when nothing is committed yet is a no-op: neither event fires.
 

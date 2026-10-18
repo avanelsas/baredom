@@ -68,7 +68,7 @@ A list of tasks with a counter. The page holds two parts:
 import { init as initCheckbox } from '@vanelsas/baredom/x-checkbox';
 import { splitTemplate, nodeMaker, readParts, syncPlaces, writeParts, writeItem, listen,
          dispatcher } from '@vanelsas/baredom/baremirror-alpha';
-import { requests } from '@vanelsas/baredom/requests';
+import { requestedValues } from '@vanelsas/baredom/requests';
 
 initCheckbox();
 
@@ -116,7 +116,7 @@ function render(vm) {
 }
 
 const store = { value: initial };
-listen(page, { dispatch: dispatcher(store, step, view, render), requests, events: row.events });
+listen(page, { dispatch: dispatcher(store, step, view, render), requestedValues, events: row.events });
 render(view(store.value));
 ```
 
@@ -193,9 +193,9 @@ and a part name is a string.
     (run! (partial write-row! nodes rows) order)))
 
 (defn start! [page state step]
-  (events/listen! page {:dispatch! (events/dispatcher state step view (partial render! page))
-                        :requests  requests/requests
-                        :events    (:events row)})
+  (events/listen! page {:dispatch!        (events/dispatcher state step view (partial render! page))
+                        :requested-values requests/requested-values
+                        :events           (:events row)})
   (render! page (view @state)))
 ```
 
@@ -229,14 +229,20 @@ Their docstrings say what they do.
 ## Requests
 
 A BareDOM component asks before it changes: `x-checkbox-change-request` is cancelable. Pass
-`requests` to `listen`. It then cancels such an event when the part shows the same attributes
-after the dispatch as before. So your `step` decides. When it leaves the state as it was, the
-checkbox stays as it was.
+`requestedValues` to `listen`. It then cancels such an event when the part does not show the
+asked value after the dispatch. So your `step` decides. When it leaves the state as it was, the
+checkbox stays as it was. When it accepts another value, the component shows that value.
 
-In three cases a component can show a value that your state does not hold: your `step` accepts
-another value than the one asked for, `listen` has no `requests`, or your application has no
-entry for the event. `write-parts!` brings such a row back at the next render, and `write-item!`
-does not.
+`requestedValues` maps each request event to what it asks of each attribute. A text names a
+field of the detail, and a fixed value is a boolean. `listen` compares as `setAttrs` writes:
+`true` is an empty attribute, and `false` and `null` are no attribute. A field that is `null`
+asks for no attribute. So `x-date-picker-change-request` asks for no attribute of the other
+mode: no `value` in range mode, and no `start` or `end` in single mode. Give a picker only the
+attributes of its mode.
+
+A component can show a value that your state does not hold when `listen` has no
+`requestedValues`, or when your application has no entry for the event. `write-parts!` brings
+such a row back at the next render, and `write-item!` does not.
 
 ## Things to know
 

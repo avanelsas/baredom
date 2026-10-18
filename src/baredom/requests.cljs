@@ -34,3 +34,38 @@
    "x-switch-change-request" ["checked"]
    "x-text-area-change-request" ["value"]
    "x-welcome-tour-step-change" ["step"]})
+
+(def requested-values
+  "A map from each request event to what it asks of each attribute: the name of a detail
+   field, or a fixed value. A fixed value is a boolean."
+  {"page-change-request" {"page" "page"}
+   "value-change-request" {"value" "value"}
+   "x-cancel-dialogue-cancel-request" {"open" false}
+   "x-cancel-dialogue-confirm-request" {"open" false}
+   "x-carousel-change" {"current" "index"}
+   "x-checkbox-change-request" {"checked" "nextChecked"}
+   "x-collapse-toggle" {"open" "open"}
+   "x-combobox-change-request" {"value" "value"}
+   "x-combobox-toggle" {"open" "open"}
+   "x-command-palette-close-request" {"open" false}
+   "x-command-palette-open-request" {"open" true}
+   "x-context-menu-close-request" {"open" false}
+   "x-context-menu-open-request" {"open" true}
+   "x-currency-field-change-request" {"value" "value"}
+   "x-date-picker-change-request" {"value" "value", "start" "start", "end" "end"}
+   "x-dropdown-toggle" {"open" "open"}
+   "x-floating-panel-dismiss-request" {"open" false}
+   "x-form-field-change-request" {"value" "value"}
+   "x-multi-combobox-change-request" {"value" "value"}
+   "x-multi-combobox-toggle" {"open" "open"}
+   "x-popover-toggle" {"open" "open"}
+   "x-radio-change-request" {"checked" "nextChecked"}
+   "x-range-slider-change-request" {"start" "start", "end" "end"}
+   "x-rating-change-request" {"value" "value"}
+   "x-search-field-change-request" {"value" "value"}
+   "x-select-change-request" {"value" "value"}
+   "x-slider-change-request" {"value" "value"}
+   "x-stepper-change" {"current" "to"}
+   "x-switch-change-request" {"checked" "nextChecked"}
+   "x-text-area-change-request" {"value" "value"}
+   "x-welcome-tour-step-change" {"step" "step"}})

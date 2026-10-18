@@ -85,10 +85,18 @@
   [s]
   (if (= s "localized") :localized :iso))
 
+(def mode-single "single")
+(def mode-range "range")
+
 (defn parse-mode
   "Returns :single or :range.  Default is :single."
   [s]
-  (if (= s "range") :range :single))
+  (if (= s mode-range) :range :single))
+
+(defn mode-name
+  "The name of the mode of `canon`."
+  [canon]
+  (if (= (:mode canon) :range) mode-range mode-single))
 
 (defn parse-int
   "Parse integer string, returning default-v on failure."
@@ -206,6 +214,24 @@
   (if (= (:mode canon) :range)
     (or (some? (:start-d canon)) (some? (:end-d canon)))
     (some? (:value-d canon))))
+
+(defn- open-range-cmp
+  "How day `d` compares with the start of the open range of `canon`, or nil when no range is open."
+  [{:keys [start-d end-d]} d]
+  (when (and (some? start-d) (nil? end-d))
+    (dates/compare-date d start-d)))
+
+(defn range-pick
+  "The range that a click on day `d` asks for, as ISO text in `:start` and `:end`.
+   `:end` is nil when the click starts a range."
+  [{:keys [start-d auto-swap? allow-same-day?] :as canon} d]
+  (let [cmp       (open-range-cmp canon d)
+        [from to] (cond
+                    (nil? cmp)                                        [d nil]
+                    (or (pos? cmp) (and allow-same-day? (zero? cmp))) [start-d d]
+                    (and auto-swap? (neg? cmp))                       [d start-d]
+                    :else                                             [d nil])]
+    {:start (dates/date->iso from) :end (dates/date->iso to)}))
 
 (defn write-display?
   "True when the input gets `text`: it has no focus, or `text` differs from `written`,

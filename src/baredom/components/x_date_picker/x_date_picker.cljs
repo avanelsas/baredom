@@ -19,7 +19,6 @@
 (def ^:private k-written  "__xDatePickerWritten")
 (def ^:private k-wd-done  "__xDatePickerWeekdaysDone")
 (def ^:private k-handlers "__xDatePickerHandlers")
-(def ^:private k-range-step "__xDatePickerRangeStep")
 (def ^:private k-grid-focus "__xDatePickerGridFocus")
 (def ^:private k-internals  "__xDatePickerInternals")
 
@@ -274,16 +273,8 @@
 
 (defn- change-detail
   "The detail a change or change-request carries.
-
-   Every key is present in every mode, null where the current mode has nothing to
-   say, so a caller reads one shape without branching on `mode` first. They used
-   to be omitted instead, which made the declaration untrue and left a caller
-   testing a field that was never there. `date` is the day a range click is
-   asking for, reported before the component has decided whether it becomes the
-   start, the end, or the start of a fresh range — which is why it is its own
-   field and not one of the other two.
-
-   See https://github.com/avanelsas/baredom/issues/370."
+   Every key is present, null where the current mode has nothing to say. `date` is the day of a
+   range click."
   [{:keys [value date start end]} mode-s reason]
   #js {:value  value
        :date   date
@@ -304,77 +295,48 @@
   (when (du/has-attr? el model/attr-close-on-select)
     (du/remove-attr! el "open")))
 
+(defn- set-range!
+  "Writes `start` and `end` on `el`, and removes `end` when it is nil."
+  [^js el {:keys [start end]}]
+  (du/set-attr! el model/attr-start start)
+  (if end
+    (du/set-attr! el model/attr-end end)
+    (du/remove-attr! el model/attr-end)))
+
+(defn- select-single-date!
+  "Asks to set the value to day `d`, and sets it when the request is not refused."
+  [^js el ^js d reason]
+  (let [detail (change-detail {:value (dates/date->iso d)} model/mode-single reason)]
+    (when (du/dispatch-cancelable! el model/event-change-request detail)
+      (set-single-value! el d)
+      (read-state! el)
+      (render! el)
+      (du/dispatch! el model/event-change detail)
+      (close-on-select! el))))
+
+(defn- select-range-date!
+  "Asks for the range that a click on day `d` gives, and sets it when the request is not refused."
+  [^js el canon ^js d reason]
+  (let [picked (model/range-pick canon d)]
+    (when (du/dispatch-cancelable! el model/event-change-request
+                                   (change-detail (assoc picked :date (dates/date->iso d))
+                                                  model/mode-range reason))
+      (set-range! el picked)
+      (read-state! el)
+      (render! el)
+      (du/dispatch! el model/event-change (change-detail picked model/mode-range reason))
+      (when (:end picked)
+        (close-on-select! el)))))
+
 (defn- do-select-date!
-  "Apply date selection. For single: set value. For range: smart first/second click."
+  "Selects day `d`: sets the value, or starts or ends the range."
   [^js el ^js d reason]
   (when-not (du/has-attr? el model/attr-readonly)
     (let [state  (du/getv el k-state)
-          canon  (when state (gobj/get state "canon"))
-          mode   (when canon (:mode canon))
-          mode-s (if (= mode :range) "range" "single")
-          req-detail (change-detail (if (= mode :single)
-                                      {:value (dates/date->iso d)}
-                                      {:date  (dates/date->iso d)})
-                                    mode-s reason)
-          allowed? (du/dispatch-cancelable! el model/event-change-request req-detail)]
-      (when allowed?
-        (if (= mode :single)
-          (let [iso (dates/date->iso d)]
-            (set-single-value! el d)
-            (read-state! el)
-            (render! el)
-            (du/dispatch! el model/event-change
-                          (change-detail {:value iso} mode-s reason))
-            (close-on-select! el))
-          ;; Range mode
-          (let [step (or (du/getv el k-range-step) 0)
-                cur-start (:start-d canon)]
-            (cond
-              ;; Step 0: no selection yet — set start
-              (= step 0)
-              (do
-                (du/set-attr! el model/attr-start (dates/date->iso d))
-                (du/remove-attr! el model/attr-end)
-                (du/setv! el k-range-step 1))
-
-              ;; Step 1: start selected, pick end
-              (= step 1)
-              (let [allow-same? (:allow-same-day? canon)
-                    cmp         (dates/compare-date d cur-start)
-                    valid?      (or (pos? cmp)
-                                    (and allow-same? (zero? cmp)))]
-                (if valid?
-                  (let [final-start (if (:auto-swap? canon)
-                                     (dates/min-date cur-start d)
-                                     cur-start)
-                        final-end   (if (:auto-swap? canon)
-                                     (dates/max-date cur-start d)
-                                     d)]
-                    (du/set-attr! el model/attr-start (dates/date->iso final-start))
-                    (du/set-attr! el model/attr-end (dates/date->iso final-end))
-                    (du/setv! el k-range-step 0)
-                    (when (and (some? final-start) (some? final-end))
-                      (close-on-select! el)))
-                  ;; Restart: treat as new start
-                  (do
-                    (du/set-attr! el model/attr-start (dates/date->iso d))
-                    (du/remove-attr! el model/attr-end)
-                    (du/setv! el k-range-step 1))))
-
-              ;; Step 2+: reset and start fresh
-              :else
-              (do
-                (du/set-attr! el model/attr-start (dates/date->iso d))
-                (du/remove-attr! el model/attr-end)
-                (du/setv! el k-range-step 1)))
-            (read-state! el)
-            (render! el)
-            (let [new-state (du/getv el k-state)
-                  new-canon (when new-state (gobj/get new-state "canon"))
-                  s-iso     (when (:start-d new-canon) (dates/date->iso (:start-d new-canon)))
-                  e-iso     (when (:end-d new-canon) (dates/date->iso (:end-d new-canon)))
-                  chg-detail (change-detail {:start s-iso :end e-iso} mode-s reason)]
-              (du/dispatch! el model/event-change chg-detail))))))))
+          canon  (when state (gobj/get state "canon"))]
+      (if (= (:mode canon) :range)
+        (select-range-date! el canon d reason)
+        (select-single-date! el d reason)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Input commit
@@ -383,11 +345,9 @@
 (declare xdp-clear!)
 
 (defn- clear-detail
+  "The detail of a clear: it asks for no date."
   [mode-s reason]
-  (change-detail (if (= mode-s "range")
-                   {:start "" :end ""}
-                   {:value ""})
-                 mode-s reason))
+  (change-detail {} mode-s reason))
 
 (defn- commit-display!
   "Commits the text of the input. Returns `:date` or `:cleared` when it commits, else nil."
@@ -402,7 +362,7 @@
         state   (du/getv el k-state)
         canon   (when state (gobj/get state "canon"))
         mode    (:mode canon)
-        mode-s  (if (= mode :range) "range" "single")]
+        mode-s  (model/mode-name canon)]
     (du/dispatch! el model/event-input #js {:value val :mode mode-s})
     (cond
       ;; A blank input should clear
@@ -410,7 +370,6 @@
            (model/committed-value? canon))
       (let [detail (clear-detail mode-s reason)]
         (when (du/dispatch-cancelable! el model/event-change-request detail)
-          (du/setv! el k-range-step 0)
           (xdp-clear! el)
           (du/dispatch! el model/event-change detail)
           :cleared))
@@ -442,7 +401,6 @@
                                                           mode-s reason))
               (du/set-attr! el model/attr-start s-iso)
               (du/set-attr! el model/attr-end   e-iso)
-              (du/setv! el k-range-step 0)
               (read-state! el)
               (render! el)
               (du/dispatch! el model/event-change
@@ -751,7 +709,7 @@
         ^js inp (when refs (gobj/get refs "input"))
         state   (du/getv el k-state)
         canon   (when state (gobj/get state "canon"))
-        mode-s  (if (= (:mode canon) :range) "range" "single")]
+        mode-s  (model/mode-name canon)]
     ;; The listener only fires from the input it is attached to, so `inp` is
     ;; there; the fallback is so every site honours the declared `string` rather
     ;; than one of them resting on that being true.
@@ -1016,7 +974,6 @@
 ;; Reset clears the committed value(s) — mirroring x-form-field, which resets to
 ;; empty. render! then re-syncs the (now empty) form value + validity.
 (defn- form-reset! [^js el]
-  (du/setv! el k-range-step 0)
   (du/remove-attr! el model/attr-error)
   (xdp-clear! el))
 

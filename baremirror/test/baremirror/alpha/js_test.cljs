@@ -381,24 +381,33 @@
     (is (= [["untag" 0]] (mapv data @messages)))))
 
 (defn- cancelled?
-  "True when a `toggle` from the check of a page is cancelled, with `answer` as the dispatch."
-  [answer]
+  "True when a `toggle` from the check of a page is cancelled, with `answer` as the dispatch and
+   `requested` as the requested values."
+  [requested answer]
   (let [page  (page!)
         check (.querySelector page "span")]
-    (mjs/listen page #js {:dispatch (partial answer check)
-                          :events   #js [#js [#js ["toggle" "check"] "toggle"]]
-                          :requests #js {:toggle #js ["aria-checked"]}})
+    (mjs/listen page #js {:dispatch        (partial answer check)
+                          :events          #js [#js [#js ["toggle" "check"] "toggle"]]
+                          :requestedValues requested})
     (.-defaultPrevented (send! check "toggle"))))
-
-(defn- refuse-with-a-mark [^js check _message]
-  (mjs/set-attrs check #js {:data-error "refused"}))
 
 (defn- accept [^js check _message]
   (mjs/set-attrs check #js {:aria-checked "true"}))
 
-(deftest listen-cancels-a-request-that-did-not-change-the-attributes-it-asks-for
-  (is (true? (cancelled? refuse-with-a-mark)))
-  (is (false? (cancelled? accept))))
+(defn- mark-checked [^js check _message]
+  (mjs/set-attrs check #js {:aria-checked true}))
+
+(def ^:private toggle-asks-true
+  #js {:toggle #js {:aria-checked true}})
+
+(deftest listen-cancels-a-request-only-when-its-part-does-not-show-the-requested-value
+  (testing "the part shows the asked value"
+    (is (false? (cancelled? toggle-asks-true mark-checked))))
+  (testing "the text true is another value than true"
+    (is (true? (cancelled? toggle-asks-true accept)))))
+
+(deftest listen-reads-only-the-own-fields-of-the-requested-values
+  (is (false? (cancelled? (js/Object.create toggle-asks-true) accept))))
 
 (defn- count-step [^js state message]
   #js {:count (+ (.-count state) (aget message 1))})

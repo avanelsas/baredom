@@ -358,11 +358,13 @@ data, and it holds no logic.
 **In a template, a fixed value is text, a number or a boolean.** A keyword is always a hole.
 `make-node!` refuses a template that is not fixed.
 
-**The requests map is generated.** An application passes `baredom.requests/requests`, or
-`requests` from `@vanelsas/baredom/requests`, as the `:requests` of `events/listen!`. It comes
-from the `:requests` key of each model's `event-schema`, see [`docs/MODEL-LAYER.md`](docs/MODEL-LAYER.md).
-Never edit `src/baredom/requests.cljs`. The map holds attribute requests only. A cancelable
-event with no `:requests` is an action, and `listen!` cannot refuse it.
+**The requests maps are generated.** An application passes `baredom.requests/requested-values`,
+or `requestedValues` from `@vanelsas/baredom/requests`, as the `:requested-values` of
+`events/listen!`. It maps each request event to what it asks of each attribute. `requests` names
+the attributes only. Both come from the `:requests` key of each model's `event-schema`, see
+[`docs/MODEL-LAYER.md`](docs/MODEL-LAYER.md). Never edit `src/baredom/requests.cljs`. The maps
+hold attribute requests only. A cancelable event with no `:requests` is an action, and `listen!`
+cannot refuse it.
 
 **A component keeps its own writer.** A BareDOM component uses `places/sync!` for places and
 `du/set-attr-to!` for attributes, so its writes reach the trace recorder. It does not call

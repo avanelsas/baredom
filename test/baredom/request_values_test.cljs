@@ -2,6 +2,7 @@
   (:require [baredom.components-table :as table]
             [baredom.requests :as requests]
             [baredom.test-elements :as elements]
+            [baremirror.alpha.events :as events]
             [baremirror.alpha.parts :as parts]
             [cljs.test :refer-macros [async deftest is testing use-fixtures]]))
 
@@ -120,6 +121,15 @@
     :watch "[part=input]" :gesture (type-into "[part=input]" "99") :other {"value" "50"}}
    {:event "x-date-picker-change-request" :html "<x-date-picker open value=\"2026-03-10\"></x-date-picker>"
     :gesture click-day :other {"value" "2026-03-20" "start" nil "end" nil}}
+   {:event "x-date-picker-change-request" :name "x-date-picker-change-request, a clear"
+    :html "<x-date-picker value=\"2026-03-10\"></x-date-picker>"
+    :watch "[part=input]" :gesture (type-into "[part=input]" "") :other {"value" "2026-03-20" "start" nil "end" nil}}
+   {:event "x-date-picker-change-request" :name "x-date-picker-change-request, a clear in range mode"
+    :html "<x-date-picker mode=\"range\" start=\"2026-03-10\" end=\"2026-03-12\"></x-date-picker>"
+    :watch "[part=input]" :gesture (type-into "[part=input]" "") :other {"value" nil "start" "2026-03-01" "end" "2026-03-05"}}
+   {:event "x-date-picker-change-request" :name "x-date-picker-change-request, in range mode"
+    :html "<x-date-picker open mode=\"range\" start=\"2026-03-10\"></x-date-picker>"
+    :gesture click-day :other {"value" nil "start" "2026-03-01" "end" "2026-03-05"}}
    {:event "x-dropdown-toggle" :html "<x-dropdown></x-dropdown>" :gesture (call "toggle")}
    {:event "x-floating-panel-dismiss-request" :html "<x-floating-panel closable></x-floating-panel>"
     :prepare (call "show") :gesture (click-part "[part=close]")}
@@ -266,16 +276,32 @@
     :refuse nil
     :other  other))
 
+(def ^:private part-name "field")
+
+(defn- the-event [_origin ^js e]
+  e)
+
 (defn- answering
-  "A listener that answers each request the way `way` and adds its writes to the atom
-   `answered`."
+  "A dispatch function for `events/listen!` that answers each request the way `way` and adds its
+   writes to the atom `answered`."
   [way by-attr other ^js el answered]
-  (fn [^js e]
+  (fn [[_ e]]
     (let [writes (answer way by-attr other e)]
       (swap! answered conj writes)
-      (parts/set-attrs! el writes)
-      (when (not= :accept way)
-        (.preventDefault e)))))
+      (parts/set-attrs! el writes))))
+
+(defn- record-cancel! [cancelled ^js e]
+  (swap! cancelled conj (.-defaultPrevented e)))
+
+(defn- listen-to!
+  "Lets `events/listen!` on the form around `el` answer `event` the way `way`, and adds to the
+   atom `cancelled` whether it cancels each request."
+  [by-attr {:keys [event other]} way ^js el answered cancelled]
+  (let [form (.-parentNode el)]
+    (events/listen! form {:dispatch!        (answering way by-attr other el answered)
+                          :events           {[event part-name] [:answer the-event]}
+                          :requested-values requests/requested-values})
+    (.addEventListener form event (partial record-cancel! cancelled))))
 
 (defn- errors-while!
   "Calls `f`, which gives a promise, and resolves to `[value errors]`: what the promise gives,
@@ -318,7 +344,7 @@
 (defn- start!
   "Puts the component of `row` in a form in the document and runs `:prepare`."
   [{:keys [html prepare]}]
-  (let [el (in-form! (parsed html))]
+  (let [el (in-form! (doto (parsed html) (.setAttribute "data-x-part" part-name)))]
     (-> (wait mount-ms)
         (.then (fn [] (when prepare (prepare el)) (wait mount-ms)))
         (.then (fn [] {:el el :before (all-attrs el)})))))
@@ -326,10 +352,10 @@
 (defn- request!
   "Answers the request of `row` the way `way` while its gesture runs, and adds what the page
    then shows."
-  [by-attr {:keys [event other settle] :or {settle settle-ms} :as row} way
-   {:keys [^js el] :as run}]
-  (let [answered (atom [])]
-    (.addEventListener el event (answering way by-attr other el answered))
+  [by-attr {:keys [settle] :or {settle settle-ms} :as row} way {:keys [^js el] :as run}]
+  (let [answered  (atom [])
+        cancelled (atom [])]
+    (listen-to! by-attr row way el answered cancelled)
     (-> (errors-while!
          (fn []
            (let [threw? (gesture! row el)]
@@ -338,12 +364,13 @@
                  (.then (constantly threw?))))))
         (.then (fn [[threw? errors]]
                  (assoc run
-                        :threw?   threw?
-                        :errors   errors
-                        :answered @answered
-                        :attrs    (attrs-of el (keys by-attr))
-                        :final    (all-attrs el)
-                        :shown    [(watched-shape row el) (form-data el)]))))))
+                        :threw?    threw?
+                        :errors    errors
+                        :answered  @answered
+                        :cancelled @cancelled
+                        :attrs     (attrs-of el (keys by-attr))
+                        :final     (all-attrs el)
+                        :shown     [(watched-shape row el) (form-data el)]))))))
 
 (defn- fresh!
   "Removes the component, and adds what a new one with its final attributes shows and submits."
@@ -366,10 +393,12 @@
            (written (select-keys (apply merge answered) names)))))
 
 (defn- misses
-  "The misses of a run: a gesture or listener that throws, no request, other attributes than the
-   answers leave, or a component that shows other than a new one with the same attributes."
-  [by-attr {:keys [threw? errors answered attrs shown fresh] :as run}]
+  "The misses of a run: a gesture or listener that throws, no request, a request that `listen!`
+   cancels when it was accepted or keeps when it was not, other attributes than the answers
+   leave, or a component that shows other than a new one with the same attributes."
+  [by-attr way {:keys [threw? errors answered cancelled attrs shown fresh] :as run}]
   (cond-> #{}
+    (not-every? (partial = (not= :accept way)) cancelled)    (conj :cancel)
     threw?                                                   (conj :gesture-throws)
     (pos? errors)                                            (conj :throws)
     (empty? answered)                                        (conj :not-sent)
@@ -382,7 +411,7 @@
   (-> (start! row)
       (.then (partial request! by-attr row way))
       (.then (partial fresh! row))
-      (.then (partial misses by-attr))))
+      (.then (partial misses by-attr way))))
 
 (defn- cases
   "The rows that can be answered the way `way`, each with `way`."
