@@ -42,7 +42,7 @@ init();
 
 `x-tabs` will automatically:
 
-* select the first enabled tab marked `selected`, or else the first enabled tab
+* show the tab that `value` names, or else the first enabled tab marked `selected`, or else the first enabled tab
 * manage keyboard navigation
 * show the associated panel
 
@@ -52,7 +52,7 @@ init();
 
 | Attribute     | Type                  | Default    | Description                      |
 | ------------- | --------------------- | ---------- | -------------------------------- |
-| `value`       | string                | —          | Controlled selected tab          |
+| `value`       | string                | —          | The selected tab. `x-tabs` writes it only after an accepted `value-change-request` |
 | `orientation` | horizontal | vertical | horizontal | Keyboard navigation direction    |
 | `activation`  | auto | manual         | auto       | Activation strategy              |
 | `label`       | string                | —          | Accessible label                 |
@@ -64,7 +64,7 @@ init();
 
 | Property | Type   | Description                |
 | -------- | ------ | -------------------------- |
-| `value`  | string | Current selected tab value |
+| `value`  | string | Reflects `value`. `null` until the page sets it or a request is accepted |
 | `orientation` | string | Reflects `orientation`, default `"horizontal"` |
 | `activation` | string | Reflects `activation`, default `"auto"` |
 | `label`  | string | Reflects `label`, default `""` |
@@ -103,7 +103,7 @@ Event detail:
 
 ## value-change
 
-Fired when the selected tab changes.
+Fired after an accepted `value-change-request`. A move of the shown tab without `value` (a tab removed or disabled) sends none.
 
 ```javascript
 tabs.addEventListener("value-change", event => {
@@ -197,7 +197,7 @@ The container will automatically:
 | each `x-tab` child | `selected` | the selection or the tabs change |
 | the panel a tab names in `controls` | `hidden` | the selection or the tabs change |
 
-`x-tabs` owns these. A tab's `selected` gives the selection only while `x-tabs` has no `value`. After that a value an author writes there is replaced on the next change.
+`x-tabs` owns these. With a `value`, it marks the tab that `value` names and replaces any other mark. Without a `value`, the marks hold the selection: `x-tabs` keeps one enabled tab marked, the first marked one or else the first one. So the selection moves when that tab is removed or disabled, and stays where it moved. Set `value` to pin it.
 
 ---
 

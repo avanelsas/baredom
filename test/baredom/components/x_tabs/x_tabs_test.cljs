@@ -143,7 +143,7 @@
     (.appendChild el third-tab)
     (append! el)
 
-    (is (= "analytics" (.getAttribute el model/attr-value)))
+    (is (not (.hasAttribute el model/attr-value)))
     (is (not (.hasAttribute first-tab "selected")))
     (is (.hasAttribute second-tab "selected"))
     (is (not (.hasAttribute third-tab "selected")))
@@ -158,7 +158,7 @@
     (.appendChild el first-tab)
     (.appendChild el second-tab)
     (append! el)
-    (is (= "analytics" (.getAttribute el model/attr-value)))
+    (is (not (.hasAttribute el model/attr-value)))
     (is (= ["analytics"] (vec (values-of-selected-tabs [first-tab second-tab]))))))
 
 (deftest the-value-of-the-tabs-wins-over-a-tab-marked-selected-test
@@ -188,7 +188,7 @@
         {:keys [tab-a tab-b tab-c]} (setup-basic-tabs! el)]
     (append! el)
 
-    (is (= "overview" (get-js-prop el "value")))
+    (is (nil? (get-js-prop el "value")))
 
     (set-js-prop! el "value" "analytics")
     (is (= "analytics" (get-js-prop el "value")))
@@ -278,7 +278,7 @@
     (.appendChild el tab-c)
     (append! el)
 
-    (is (= "reports" (.getAttribute el model/attr-value)))
+    (is (not (.hasAttribute el model/attr-value)))
     (is (not (.hasAttribute tab-a "selected")))
     (is (not (.hasAttribute tab-b "selected")))
     (is (.hasAttribute tab-c "selected"))))
@@ -341,13 +341,15 @@
                                                 :bubbles true
                                                 :cancelable true})]
     (.setAttribute el model/attr-loop "")
+    (.setAttribute el model/attr-value "reports")
     (append! el)
 
     (.focus tab-c)
     (.dispatchEvent el event)
 
     (is (= tab-a (.-activeElement js/document)))
-    (is (= "overview" (.getAttribute el model/attr-value)))))
+    (is (= "overview" (.getAttribute el model/attr-value)))
+    (is (.hasAttribute tab-a "selected"))))
 
 (deftest loop-navigation-clamps-when-disabled-test
   (let [el (make-el)
@@ -398,7 +400,7 @@
     (.dispatchEvent el arrow-event)
 
     (is (= tab-b (.-activeElement js/document)))
-    (is (= "overview" (.getAttribute el model/attr-value)))
+    (is (not (.hasAttribute el model/attr-value)))
     (is (.hasAttribute tab-a "selected"))
     (is (not (.hasAttribute tab-b "selected")))
     (is (not (.hasAttribute tab-c "selected")))))
@@ -430,7 +432,7 @@
     (.click tab-a)
 
     (is (= 0 @calls))
-    (is (= "overview" (.getAttribute el model/attr-value)))))
+    (is (not (.hasAttribute el model/attr-value)))))
 
 (deftest label-maps-to-aria-label-on-tablist-test
   (let [el (make-el)
@@ -444,31 +446,82 @@
       (.removeAttribute el "label")
       (is (not (.hasAttribute base "aria-label"))))))
 
-(deftest dynamic-child-addition-recoordinates-test
-  (let [el (make-el)
-        {:keys [tab-a]} (setup-basic-tabs! el)]
-    (append! el)
+(defn- after-mutations
+  "Calls `f` after the mutation observer callbacks of the changes made so far."
+  [f]
+  (js/setTimeout f 0))
 
-    (is (= "overview" (.getAttribute el model/attr-value)))
-    (is (.hasAttribute tab-a "selected"))
-
-    (let [tab-d (make-tab "settings" "Settings")]
+(deftest an-added-tab-leaves-the-shown-tab-test
+  (async done
+    (let [el (make-el)
+          {:keys [tab-a]} (setup-basic-tabs! el)
+          tab-d (make-tab "settings" "Settings")]
+      (append! el)
       (.appendChild el tab-d)
-      (is (not (.hasAttribute tab-d "selected"))))))
+      (after-mutations
+       (fn []
+         (is (.hasAttribute tab-a "selected"))
+         (is (not (.hasAttribute tab-d "selected")))
+         (done))))))
 
-(deftest dynamic-child-removal-recoordinates-test
+(deftest without-value-a-marked-tab-inserted-first-takes-the-selection-test
+  (async done
+    (let [el (make-el)
+          {:keys [tab-a]} (setup-basic-tabs! el)
+          tab-d (make-tab "settings" "Settings")]
+      (append! el)
+      (.setAttribute tab-d "selected" "")
+      (.insertBefore el tab-d tab-a)
+      (after-mutations
+       (fn []
+         (is (.hasAttribute tab-d "selected"))
+         (is (not (.hasAttribute tab-a "selected")))
+         (is (not (.hasAttribute el model/attr-value)))
+         (done))))))
+
+(deftest removing-the-shown-tab-shows-the-next-and-hides-its-panel-test
+  (async done
+    (let [el (make-el)
+          {:keys [tab-a tab-b panel-a panel-b]} (setup-tabs-with-panels! el)]
+      (append! el)
+      (is (not (.hasAttribute panel-a "hidden")))
+      (.removeChild el tab-a)
+      (after-mutations
+       (fn []
+         (is (.hasAttribute tab-b "selected"))
+         (is (.hasAttribute panel-a "hidden"))
+         (is (not (.hasAttribute panel-b "hidden")))
+         (is (not (.hasAttribute el model/attr-value)))
+         (done))))))
+
+(deftest without-value-disabling-the-shown-tab-moves-the-selection-for-good-test
+  (async done
+    (let [el (make-el)
+          {:keys [tab-a tab-b]} (setup-basic-tabs! el)]
+      (append! el)
+      (.setAttribute tab-a "disabled" "")
+      (after-mutations
+       (fn []
+         (is (.hasAttribute tab-b "selected"))
+         (.removeAttribute tab-a "disabled")
+         (after-mutations
+          (fn []
+            (is (.hasAttribute tab-b "selected"))
+            (is (not (.hasAttribute tab-a "selected")))
+            (done))))))))
+
+(deftest a-tab-without-value-sends-no-request-test
   (let [el (make-el)
-        {:keys [tab-a]} (setup-basic-tabs! el)]
+        {:keys [tab-a]} (setup-basic-tabs! el)
+        bare (.createElement js/document "x-tab")
+        requests (atom 0)]
+    (.appendChild el bare)
+    (.addEventListener el model/event-change-request (fn [_] (swap! requests inc)))
     (append! el)
-
-    (.click tab-a)
-    (is (= "overview" (.getAttribute el model/attr-value)))
-
-    (.removeChild el tab-a)
-    ;; After removing the selected tab, x-tabs should re-coordinate
-    ;; The MutationObserver fires asynchronously, so the value may still be "overview"
-    ;; but the next render cycle will pick up the change
-    ))
+    (.click bare)
+    (is (= 0 @requests))
+    (is (not (.hasAttribute el model/attr-value)))
+    (is (.hasAttribute tab-a "selected"))))
 
 (deftest external-disabled-toggle-recoordinates-test
   (let [el (make-el)
@@ -567,3 +620,24 @@
     (append! el)
     (let [written (writes/foreign-writes! el #(.setAttribute el model/attr-value "analytics"))]
       (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))
+
+(deftest x-tabs-shows-a-tab-without-writing-value-test
+  (let [el (make-el)
+        {:keys [tab-a]} (setup-basic-tabs! el)]
+    (.setAttribute el model/attr-value "missing")
+    (append! el)
+    (is (= "missing" (.getAttribute el model/attr-value)))
+    (is (.hasAttribute tab-a "selected"))))
+
+(deftest a-click-on-the-shown-fallback-tab-sends-no-request-test
+  (let [el (make-el)
+        {:keys [tab-a tab-b]} (setup-basic-tabs! el)
+        requests (atom [])]
+    (.addEventListener el model/event-change-request
+                       (fn [^js e] (swap! requests conj (.. e -detail -previousValue))))
+    (append! el)
+    (.click tab-a)
+    (is (= [] @requests))
+    (.click tab-b)
+    (is (= ["overview"] @requests))
+    (is (= "analytics" (.getAttribute el model/attr-value)))))

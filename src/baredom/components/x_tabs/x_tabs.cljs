@@ -11,6 +11,7 @@
 (def ^:private key-on-tab-select "__xTabsOnTabSelect")
 (def ^:private key-on-keydown "__xTabsOnKeydown")
 (def ^:private key-observer "__xTabsObserver")
+(def ^:private key-shown-panel "__xTabsShownPanel")
 
 (def ^:private style-text
   (str
@@ -44,30 +45,37 @@
 (defn- tab-value [^js tab]
   (.getAttribute tab "value"))
 
-(defn- set-host-value-if-needed! [^js el value]
-  (let [current (du/get-attr el model/attr-value)]
-    (cond
-      (and value (not= current value))
-      (du/set-attr! el model/attr-value value)
-
-      (and (or (nil? value) (= value "")) current)
-      (du/remove-attr! el model/attr-value)
-
-      :else nil)))
-
 (defn- select-tab! [tabs value]
   (doseq [tab tabs]
     (du/set-bool-attr-to! tab tab-model/attr-selected (= (tab-value tab) value))))
 
-(defn- hide-panel! [^js tab visible?]
+(defn- panel-of
+  "The panel that `tab` names in `controls`, or nil."
+  [^js tab]
   (let [id (.getAttribute tab "controls")]
     (when (and id (not= id ""))
-      (when-let [panel (.getElementById js/document id)]
-        (du/set-bool-attr-to! panel model/panel-attr-hidden (not visible?))))))
+      (.getElementById js/document id))))
 
-(defn- update-panels! [tabs selected-value]
+(defn- hide-panel! [^js tab visible?]
+  (when-let [panel (panel-of tab)]
+    (du/set-bool-attr-to! panel model/panel-attr-hidden (not visible?))))
+
+(defn- hide-stale-panel!
+  "Hides the panel shown before when it is not `panel`, which happens when its tab is removed,
+   and remembers `panel` as the one shown."
+  [^js el panel]
+  (let [^js shown (du/getv el key-shown-panel)]
+    (when (and shown (not (identical? shown panel)))
+      (du/set-bool-attr-to! shown model/panel-attr-hidden true))
+    (du/setv! el key-shown-panel panel)))
+
+(defn- tab-with-value [tabs value]
+  (first (filter (comp #{value} tab-value) tabs)))
+
+(defn- update-panels! [^js el tabs selected-value]
   (doseq [tab tabs]
-    (hide-panel! tab (= (tab-value tab) selected-value))))
+    (hide-panel! tab (= (tab-value tab) selected-value)))
+  (hide-stale-panel! el (some-> (tab-with-value tabs selected-value) panel-of)))
 
 (defn- first-enabled-value
   "The value of the first enabled tab for which `pred` holds."
@@ -79,32 +87,40 @@
 (defn- marked? [^js tab]
   (.hasAttribute tab tab-model/attr-selected))
 
-(defn- effective-selected-value [tabs host-value]
+(defn- effective-selected-value
+  "The value of the tab that shows as selected: the one `value` names, else the first enabled tab
+   marked selected, else the first enabled tab."
+  [tabs host-value]
   (or (some #{host-value} (keep tab-value tabs))
       (first-enabled-value marked? tabs)
       (first-enabled-value any? tabs)))
 
+(defn- shown-value
+  "The value of the tab of `el` that shows as selected."
+  [^js el]
+  (effective-selected-value (get-tabs el) (du/get-attr el model/attr-value)))
+
 (defn- dispatch-value-change! [^js el value]
   (du/dispatch! el model/event-value-change #js {:value (or value "")}))
 
-(defn- coordinate-tabs! [^js el]
-  (let [tabs (get-tabs el)
-        host-value (du/get-attr el model/attr-value)
-        selected-value (effective-selected-value tabs host-value)]
-    (when selected-value
+(defn- coordinate-tabs!
+  "Marks the shown tab selected and shows its panel. It never writes `value`."
+  [^js el]
+  (let [tabs (get-tabs el)]
+    (when-some [selected-value (effective-selected-value tabs (du/get-attr el model/attr-value))]
       (select-tab! tabs selected-value)
-      (update-panels! tabs selected-value)
-      (set-host-value-if-needed! el selected-value))
-    selected-value))
+      (update-panels! el tabs selected-value))))
 
-(defn- activate-tab-by-value! [^js el value]
-  (let [current (du/get-attr el model/attr-value)]
-    (when (and value (not= current value))
+(defn- activate-tab-by-value!
+  "Asks to show the tab with `value`, and writes `value` when the request is not refused."
+  [^js el value]
+  (let [current (shown-value el)]
+    (when (and (seq value) (not= current value))
       (let [allowed? (du/dispatch-cancelable!
                       el model/event-change-request
                       #js {:value value :previousValue (or current "")})]
         (when allowed?
-          (set-host-value-if-needed! el value)
+          (du/set-attr! el model/attr-value value)
           (coordinate-tabs! el)
           (dispatch-value-change! el value))))))
 
