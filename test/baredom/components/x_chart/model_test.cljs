@@ -278,3 +278,22 @@
     (is (true? (:axes? on)))
     (is (false? (:grid? off)))
     (is (false? (:axes? off)))))
+
+(deftest data-value-reads-the-two-shapes-the-chart-reads-test
+  (is (= 1 (alength (model/data-value "[{\"name\":\"a\"}]"))))
+  (is (array? (.-data (model/data-value "{\"data\":[]}"))))
+  (is (nil? (model/data-value nil)))
+  (is (nil? (model/data-value "not json")))
+  (is (nil? (model/data-value "{\"name\":\"a\"}"))))
+
+(deftest chart-data-test
+  (is (false? (model/chart-data? nil)))
+  (is (false? (model/chart-data? #js {})))
+  (is (true? (model/chart-data? #js [])))
+  (is (true? (model/chart-data? #js {:data #js []}))))
+
+(deftest chart-data-of-takes-a-value-or-json-text-test
+  (is (array? (model/chart-data-of #js [])))
+  (is (array? (model/chart-data-of "[]")))
+  (is (nil? (model/chart-data-of "{}")))
+  (is (nil? (model/chart-data-of 3))))

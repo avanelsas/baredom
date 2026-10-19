@@ -59,8 +59,8 @@
    'number  [3 5]})
 
 (def ^:private left-out
-  "The types this test does not write. An array does not compare by value."
-  #{'array})
+  "The types this test does not write. An array or an object does not compare by value."
+  #{'array 'any})
 
 (def ^:private mark "data-properties-test")
 
