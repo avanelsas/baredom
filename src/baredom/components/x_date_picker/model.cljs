@@ -208,6 +208,20 @@
          :end-str    (or (normalize-str end) "")
          :complete?  complete?}))))
 
+(defn anchor
+  "The date that `canon` names: the value in single mode, the start in range mode."
+  [canon]
+  (or (:value-d canon) (:start-d canon)))
+
+(defn shown-month
+  "The first day of the month the calendar shows: the month of the date of `canon` when that
+   date changes from `old-canon`, else `month`, else the month of that date or of `today`."
+  [old-canon canon month today]
+  (let [date (anchor canon)]
+    (if (or (nil? month) (and (some? date) (not= date (anchor old-canon))))
+      (dates/start-of-month (or date today))
+      month)))
+
 (defn committed-value?
   "True when the canonicalized model holds at least one committed date."
   [canon]
@@ -331,9 +345,25 @@
      :range-edge (str edge?)
      :tabindex   (if (= iso focus-iso) "0" "-1")}))
 
+(defn- iso-of [{:keys [date]}]
+  (dates/date->iso date))
+
+(defn- selected-cell? [canon {:keys [date in-month?]}]
+  (boolean (and in-month? (:selected? (day-flags date canon)))))
+
+(defn- tab-iso
+  "The iso date of the one cell Tab reaches: `focus-iso` when the grid has it, else the selected
+   day of the month, else its first day."
+  [cells canon focus-iso]
+  (if (contains? (into #{} (map iso-of) cells) focus-iso)
+    focus-iso
+    (iso-of (or (first (filter (partial selected-cell? canon) cells))
+                (first (filter :in-month? cells))))))
+
 (defn shown-days
   "What each of the 42 cells of the day grid shows for the month of the Date `month`, or none
-   with no month. Only the cell of `focus-iso` can be reached by Tab."
+   with no month. Only one cell can be reached by Tab, see `tab-iso`."
   [^js month canon focus-iso]
-  (into [] (map (partial shown-day canon focus-iso)) (dates/month-grid month)))
+  (let [cells (dates/month-grid month)]
+    (into [] (map (partial shown-day canon (tab-iso cells canon focus-iso))) cells)))
 

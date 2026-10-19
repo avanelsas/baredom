@@ -87,6 +87,10 @@ Deleting the text and committing (blur, `Enter`, or `commit()`) clears the commi
 
 Committing a blank input when nothing is committed yet is a no-op: neither event fires.
 
+### The month shown
+
+The calendar shows the month of `value`, or of `start` in range mode. When that date changes, also when a page writes it, the calendar moves to its month. Otherwise it keeps the month the user browsed to. So in range mode, picking the end in a later month keeps that month. Opening the calendar shows the month of the date again.
+
 ---
 
 ## Slots
