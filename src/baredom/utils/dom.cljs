@@ -63,8 +63,11 @@
   (.hasAttribute el attr-name))
 
 (defn get-attr
-  [^js el attr-name]
-  (.getAttribute el attr-name))
+  "The text of the attribute `attr-name` of `el`, or `default` when it is absent."
+  ([^js el attr-name]
+   (.getAttribute el attr-name))
+  ([^js el attr-name default]
+   (or (.getAttribute el attr-name) default)))
 
 (def ^{:dynamic true
        :private true

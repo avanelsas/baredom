@@ -33,7 +33,6 @@
     (let [m (model/normalize {})]
       (is (= ""         (:label m)))
       (is (= ""         (:name m)))
-      (is (= ""         (:value m)))
       (is (= ""         (:placeholder m)))
       (is (= ""         (:hint m)))
       (is (= ""         (:error m)))
@@ -70,7 +69,6 @@
   (testing "all attributes set"
     (let [m (model/normalize {:label-raw         "Bio"
                                :name-raw          "bio"
-                               :value-raw         "Hello world"
                                :placeholder-raw   "Tell us about yourself"
                                :hint-raw          "Keep it brief"
                                :error-raw         ""
@@ -84,7 +82,6 @@
                                :resize-raw        "both"})]
       (is (= "Bio"                    (:label m)))
       (is (= "bio"                    (:name m)))
-      (is (= "Hello world"            (:value m)))
       (is (= "Tell us about yourself" (:placeholder m)))
       (is (= "Keep it brief"          (:hint m)))
       (is (false?                     (:disabled? m)))

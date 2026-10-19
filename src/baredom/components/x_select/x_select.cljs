@@ -315,8 +315,9 @@
   ;; <select>.value is property-only (no `value` attribute on <select>), so
   ;; this stays a property write. some? guard: writing "" on every render
   ;; would deselect the slotted <option selected> the user provided in
-  ;; markup and fall back to the hidden placeholder.
-  (when (some? value)
+  ;; markup and fall back to the hidden placeholder. A select that already shows the value keeps
+  ;; its option, which matters for an empty or a repeated value.
+  (when (and (some? value) (not= value (.-value select-el)))
     (set! (.-value select-el) value)))
 
 (defn- apply-wrapper-state! [^js wrapper-el size disabled?]
@@ -335,13 +336,33 @@
 ;; ---------------------------------------------------------------------------
 ;; Push the live selection into the form and refresh validity via the shared
 ;; policy. No-op when the element is not form-associated (older browsers).
+(defn- option-value-present?
+  "True when the inner <select> currently has an <option> with this exact value."
+  [^js select-el value]
+  (let [opts (.-options select-el)
+        n    (.-length opts)]
+    (loop [i 0]
+      (cond
+        (>= i n)                          false
+        (= value (.-value (aget opts i))) true
+        :else                             (recur (inc i))))))
+
+(defn- selected-value
+  "The value `el` holds: its value attribute while no option has it yet, else the live selection."
+  [^js el ^js select-el]
+  (let [attr (du/get-attr el model/attr-value "")]
+    (if (and (not= attr "") (not (option-value-present? select-el attr)))
+      attr
+      (.-value select-el))))
+
 (defn- sync-form-state! [^js el ^js select-el]
-  (forms/sync! (du/getv el k-internals) select-el (.-value select-el)
-               {:has-error?      (du/has-attr? el model/attr-error)
-                :error           (du/get-attr el model/attr-error)
-                :required?       (du/has-attr? el model/attr-required)
-                :empty?          (= (.-value select-el) "")
-                :missing-message msg-value-missing}))
+  (let [value (selected-value el select-el)]
+    (forms/sync! (du/getv el k-internals) select-el value
+                 {:has-error?      (du/has-attr? el model/attr-error)
+                  :error           (du/get-attr el model/attr-error)
+                  :required?       (du/has-attr? el model/attr-required)
+                  :empty?          (= value "")
+                  :missing-message msg-value-missing})))
 
 (defn- apply-model! [^js el m]
   (when-let [refs (du/getv el k-refs)]
@@ -383,17 +404,25 @@
 ;; ---------------------------------------------------------------------------
 ;; Change handler — dispatches change-request then select-change
 ;; ---------------------------------------------------------------------------
-(defn- value-attr
-  "The value attribute of `el`, or empty text."
-  [^js el]
-  (or (du/get-attr el model/attr-value) ""))
+(defn- default-value
+  "The value of the first option of `sel` that the markup marks selected, or empty text."
+  [^js sel]
+  (or (some (fn default-selected [^js o] (when (.-defaultSelected o) (.-value o)))
+            (array-seq (.-options sel)))
+      ""))
+
+(defn- shown-before
+  "The value `el` showed before a change: its value attribute, else the option the markup marks
+   selected."
+  [^js el ^js sel]
+  (or (du/get-attr el model/attr-value) (default-value sel)))
 
 (defn- make-change-handler [^js el]
   (fn [^js _]
     (when-let [refs (du/getv el k-refs)]
       (let [^js sel    (gobj/get refs "select")
             value      (.-value sel)
-            prev-value (value-attr el)
+            prev-value (shown-before el sel)
             label      (if (> (alength (.-selectedOptions sel)) 0)
                          (.-text (aget (.-selectedOptions sel) 0))
                          "")
@@ -402,13 +431,12 @@
                         #js {:value value :label label :previousValue prev-value})]
         (if allowed?
           (do
-            ;; A user selection updates only the inner <select> (never the value
-            ;; attribute), so push the live value into the form here.
+            (du/set-attr! el model/attr-value value)
             (sync-form-state! el sel)
             (du/dispatch! el model/event-select-change #js {:value value :label label}))
           ;; <select>.value is a property with no attribute, so this write does not go
           ;; through du/.
-          (do (set! (.-value sel) (value-attr el))
+          (do (set! (.-value sel) (shown-before el sel))
               (sync-form-state! el sel)))))))
 
 ;; ---------------------------------------------------------------------------
@@ -478,26 +506,13 @@
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
 
-(defn- option-value-present?
-  "True when the inner <select> currently has an <option> with this exact value."
-  [^js select-el value]
-  (let [opts (.-options select-el)
-        n    (.-length opts)]
-    (loop [i 0]
-      (cond
-        (>= i n)                          false
-        (= value (.-value (aget opts i))) true
-        :else                             (recur (inc i))))))
-
 ;; `value` must reflect the CURRENT selection — that is the native <select> contract and
 ;; what every other BareDOM form control honours (x-form's collect-values and direct
 ;; `el.value` readers depend on it). The reflecting accessor install-properties! would give
-;; reads the `value` ATTRIBUTE, which a user selection never updates, so override `value`
-;; with a getter that reads the live inner <select>. The one wrinkle: a non-empty value set
-;; BEFORE its <option> exists (async-loaded options) can't be held by the inner <select> —
-;; surface that as pending via the attribute until the option arrives and apply-model!
-;; selects it. (`value-attr-not-auto-set-on-change-test` still holds: a user change updates
-;; only the inner <select>, never the attribute.)
+;; reads the `value` ATTRIBUTE, which is absent while only the markup selects an option, so
+;; override `value` with a getter that reads `selected-value`. A value whose option has not
+;; arrived stays pending in the attribute until apply-model! selects the option. The form
+;; gets the same value.
 (defn- define-value-prop! [^js proto]
   (.defineProperty
    js/Object proto "value"
@@ -506,12 +521,8 @@
         :get (fn xs-get-value []
                (this-as ^js this
                  (if-let [refs (du/getv this k-refs)]
-                   (let [^js select-el (gobj/get refs part-select)
-                         attr          (or (du/get-attr this model/attr-value) "")]
-                     (if (and (not= attr "") (not (option-value-present? select-el attr)))
-                       attr                       ; pending: option not loaded yet
-                       (.-value select-el)))      ; live selection (incl. a deliberate empty pick)
-                   (or (du/get-attr this model/attr-value) ""))))
+                   (selected-value this (gobj/get refs part-select))
+                   (du/get-attr this model/attr-value ""))))
         :set (fn xs-set-value [v]
                ;; Set the attribute (the controlled/pending value); apply-model! selects the
                ;; matching <option> on the inner select. Same as the reflecting setter it replaces.

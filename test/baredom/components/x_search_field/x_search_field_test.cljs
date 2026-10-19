@@ -408,28 +408,27 @@
     (enter-text! el "new")
     (is (empty? @inputs))))
 
-(deftest a-refused-change-request-puts-the-input-and-the-form-value-back-to-the-attribute
+(deftest a-refused-change-request-keeps-the-input-and-the-form-value-of-the-accepted-change
   (let [el (field-in-form! {model/attr-value "old"})]
     (enter-text! el "accepted")
+    (is (= "accepted" (.getAttribute el model/attr-value)))
     (.addEventListener el model/event-change-request refuse!)
     (enter-text! el "refused")
-    (is (= ["old" "old"] (shown-and-submitted el)))))
+    (is (= ["accepted" "accepted"] (shown-and-submitted el)))))
 
 (deftest a-refused-change-request-makes-a-required-field-with-no-value-invalid
   (let [el (field-in-form! {model/attr-required ""})]
-    (enter-text! el "accepted")
     (.addEventListener el model/event-change-request refuse!)
     (enter-text! el "refused")
     (is (.-valueMissing (.-validity el)))))
 
 (deftest a-refused-change-request-hides-the-clear-button-of-a-field-with-no-value
   (let [el (field-in-form! {})]
-    (enter-text! el "accepted")
     (.addEventListener el model/event-change-request refuse!)
     (enter-text! el "refused")
     (is (.contains (.-classList (shadow-part el "[part=clear]")) "clear-hidden"))))
 
-(deftest a-pending-input-event-after-a-refused-change-request-carries-the-attribute
+(deftest a-pending-input-event-after-a-refused-change-request-carries-the-accepted-value
   (async done
     (let [el     (field-in-form! {model/attr-value "old" model/attr-debounce "20"})
           inputs (heard! el model/event-input)]
@@ -438,7 +437,7 @@
       (enter-text! el "refused")
       (js/setTimeout
        (fn []
-         (is (= [{"name" "q" "value" "old"}] @inputs))
+         (is (= [{"name" "q" "value" "accepted"}] @inputs))
          (done))
        80))))
 
@@ -516,3 +515,9 @@
       (set! (.-value input) "abc")
       (.dispatchEvent input (js/Event. "input" #js {:bubbles true})))
     (is (= ["abc"] @values) "the component sends its input event")))
+
+(deftest an-accepted-clear-writes-an-empty-value
+  (let [el (field-in-form! {model/attr-value "old"})]
+    (.click (shadow-part el "[part=clear]"))
+    (is (= "" (.getAttribute el model/attr-value)))
+    (is (= ["" ""] (shown-and-submitted el)))))

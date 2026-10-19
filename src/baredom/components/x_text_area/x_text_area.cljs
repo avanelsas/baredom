@@ -189,7 +189,6 @@
   (model/normalize
    {:label-raw         (du/get-attr el model/attr-label)
     :name-raw          (du/get-attr el model/attr-name)
-    :value-raw         (du/get-attr el model/attr-value)
     :placeholder-raw   (du/get-attr el model/attr-placeholder)
     :hint-raw          (du/get-attr el model/attr-hint)
     :error-raw         (du/get-attr el model/attr-error)
@@ -294,11 +293,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Event handlers
 ;; ---------------------------------------------------------------------------
-(defn- value-attr
-  "The value attribute of `el`, or empty text."
-  [^js el]
-  (or (du/get-attr el model/attr-value) ""))
-
 (defn- sync-form-value!
   "Gives the form the text of `textarea-el`."
   [^js el ^js textarea-el]
@@ -319,13 +313,13 @@
                             el model/event-change-request
                             #js {:name          name
                                  :value         (.-value textarea-el)
-                                 :previousValue (value-attr el)})]
+                                 :previousValue (du/get-attr el model/attr-value "")})]
       (if allowed?
         (do
-          (sync-form! el textarea-el)
+          (du/set-attr! el model/attr-value (.-value textarea-el))
           (du/dispatch! el model/event-input #js {:name name :value (.-value textarea-el)}))
         (do
-          (set! (.-value textarea-el) (value-attr el))
+          (set! (.-value textarea-el) (du/get-attr el model/attr-value ""))
           (sync-form! el textarea-el))))))
 
 (defn- on-change [^js el ^js _evt]
@@ -399,7 +393,7 @@
         (let [^js textarea-el (gobj/get refs "textarea")]
           (when (not= (.-value textarea-el) new-val)
             (set! (.-value textarea-el) (or new-val "")))
-          (sync-form-value! el textarea-el))))
+          (sync-form! el textarea-el))))
     (update-from-attrs! el)))
 
 ;; ---------------------------------------------------------------------------

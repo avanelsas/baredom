@@ -8,7 +8,6 @@
       (is (= ""    (:label m)))
       (is (= "text" (:type m)))
       (is (= ""    (:name m)))
-      (is (= ""    (:value m)))
       (is (= ""    (:placeholder m)))
       (is (= ""    (:hint m)))
       (is (= ""    (:error m)))
@@ -82,9 +81,6 @@
 (deftest normalize-passthrough-test
   (testing "name passes through"
     (is (= "email" (:name (model/normalize {:name-raw "email"})))))
-
-  (testing "value passes through"
-    (is (= "hello" (:value (model/normalize {:value-raw "hello"})))))
 
   (testing "placeholder passes through"
     (is (= "Enter email" (:placeholder (model/normalize {:placeholder-raw "Enter email"})))))

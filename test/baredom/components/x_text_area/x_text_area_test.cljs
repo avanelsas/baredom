@@ -448,3 +448,21 @@
       (is (= "new" (.get (js/FormData. form) "note")))
       (finally
         (.remove form)))))
+
+(defn- type-into! [^js el text]
+  (let [^js ta (get-textarea el)]
+    (set! (.-value ta) text)
+    (.dispatchEvent ta (js/Event. "input" #js {:bubbles true}))))
+
+(deftest a-refused-change-keeps-the-accepted-change-test
+  (let [^js el   (mount! {"value" "old"})
+        previous (atom [])]
+    (.addEventListener el model/event-change-request
+                       (fn [^js e]
+                         (swap! previous conj (.. e -detail -previousValue))
+                         (when (= "refused" (.. e -detail -value)) (.preventDefault e))))
+    (type-into! el "accepted")
+    (is (= "accepted" (.getAttribute el "value")))
+    (type-into! el "refused")
+    (is (= "accepted" (.-value (get-textarea el))))
+    (is (= ["old" "accepted"] @previous))))

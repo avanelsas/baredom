@@ -68,7 +68,7 @@
 
 (defn normalize
   "Derives a complete view-model map from raw attribute values."
-  [{:keys [label-raw type-raw name-raw value-raw placeholder-raw
+  [{:keys [label-raw type-raw name-raw placeholder-raw
            hint-raw error-raw disabled-present? readonly-present?
            required-present? autocomplete-raw]}]
   (let [error        (or error-raw "")
@@ -77,7 +77,6 @@
     {:label        label
      :type         (normalize-type type-raw)
      :name         (or name-raw "")
-     :value        (or value-raw "")
      :placeholder  (or placeholder-raw "")
      :hint         hint
      :error        error
