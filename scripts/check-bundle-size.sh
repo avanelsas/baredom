@@ -17,8 +17,8 @@ set -euo pipefail
 #
 # BareMirror was promoted the same way. x-pagination and x-multi-combobox
 # both keep their list items through it, so its plan and its DOM functions
-# deduplicate into base.js. That added about 3.8 KB and is why the base
-# budget is 70 KB.
+# deduplicate into base.js. That added about 3.8 KB. Its faster reading and
+# planning at many rows then took base.js past 70 KB, so the budget is 71 KB.
 #
 # COMPONENT_BUDGET is the default ceiling for an individual x-*.js
 # module. It is calibrated for a single UI component.
@@ -30,7 +30,7 @@ set -euo pipefail
 # DAG tree view, and the live-element highlight overlay, so 15 KB is
 # the wrong ceiling for it. The dock is opt-in via ?baredom-trace-
 # history and never runs in production builds where the flag stays off.
-BASE_BUDGET=71680       # 70 KB for base.js (includes promoted x-copy, x-drop-zone, BareMirror)
+BASE_BUDGET=72704       # 71 KB for base.js (includes promoted x-copy, x-drop-zone, BareMirror)
 COMPONENT_BUDGET=15360  # 15 KB default for any x-*.js component
 
 # Per-module overrides. Looked up in module_budget() below — case

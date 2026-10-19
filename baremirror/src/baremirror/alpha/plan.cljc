@@ -87,7 +87,7 @@
 (defn- ranks
   "The position in `current` of each key of `wanted`, as an array, or nil for a key it lacks."
   [current wanted]
-  (object-array (eduction (map (positions current)) wanted)))
+  (object-array (mapv (positions current) wanted)))
 
 #?(:cljs
    (defn- note-key! [^js found k]
