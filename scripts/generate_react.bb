@@ -11,6 +11,9 @@
 ;; Load shared form-control metadata (single source of truth across all adapters)
 (load-file "scripts/form-control-metadata.bb")
 
+(def ^:private discovered-models (discover-models))
+(def ^:private form-controls (form-controls-of discovered-models))
+
 ;; ── Configuration ───────────────────────────────────────────────────────────
 (def react-src-dir "adapters/react/src")
 (def react-pkg    "adapters/react/package.json")
@@ -22,7 +25,7 @@
 ;; Mapping from form-controls schema to React's controlled shape:
 ;;   :control-prop          ← kebab->camel(:attr-name)
 ;;   :default-prop          ← "default" + capitalize(kebab->camel(:attr-name))
-;;   :change-request-event  ← :change-request-event   (verbatim — names don't follow a derivable convention)
+;;   :change-request-event  ← :change-request-event   (derived from the model)
 ;;   :prop-type             ← :value-type
 (def controlled-components
   (into {}
@@ -272,7 +275,7 @@
 
   (.mkdirs (io/file react-src-dir))
 
-  (let [all-models     (discover-models)
+  (let [all-models     discovered-models
         exported-names (load-package-exports)
         exported-models (filter #(contains? exported-names (:tag-name %)) all-models)]
 

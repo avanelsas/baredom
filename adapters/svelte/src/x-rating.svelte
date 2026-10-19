@@ -8,13 +8,14 @@
     allowClear?: boolean;
     disabled?: boolean;
     name?: string;
-    value?: string;
     precision?: string;
     size?: string;
     readOnly?: boolean;
     max?: string;
     label?: string;
     shape?: string;
+    /** Two-way bindable form value — `bind:value={...}`. */
+    value?: number;
     onchangerequest?: (e: CustomEvent<{ value: number; previousValue: number; max: number }>) => void;
     onchange?: (e: CustomEvent<{ value: number; max: number }>) => void;
     onhover?: (e: CustomEvent<{ value: number; max: number }>) => void;
@@ -31,13 +32,13 @@
     allowClear,
     disabled,
     name,
-    value,
     precision,
     size,
     readOnly,
     max,
     label,
     shape,
+    value = $bindable(undefined),
     onchangerequest,
     onchange,
     onhover,
@@ -50,12 +51,23 @@
 
   $effect(() => {
     const node = el;
+    if (!node || value === undefined) return;
+    if (value != null) node.setAttribute("value", String(value));
+    else node.removeAttribute("value");
+  });
+
+  $effect(() => {
+    const node = el;
     if (!node) return;
     const cleanups: Array<() => void> = [];
     const onchangerequestHandler = (e: Event) => onchangerequest?.(e as CustomEvent<{ value: number; previousValue: number; max: number }>);
     node.addEventListener("x-rating-change-request", onchangerequestHandler);
     cleanups.push(() => node.removeEventListener("x-rating-change-request", onchangerequestHandler));
-    const onchangeHandler = (e: Event) => onchange?.(e as CustomEvent<{ value: number; max: number }>);
+    const onchangeHandler = (e: Event) => {
+      const detail = (e as CustomEvent<{ value: number; max: number }>).detail;
+      if (detail.value != null) value = Number(detail.value);
+      onchange?.(e as CustomEvent<{ value: number; max: number }>);
+    };
     node.addEventListener("x-rating-change", onchangeHandler);
     cleanups.push(() => node.removeEventListener("x-rating-change", onchangeHandler));
     const onhoverHandler = (e: Event) => onhover?.(e as CustomEvent<{ value: number; max: number }>);
@@ -70,7 +82,6 @@
   {allowClear}
   {disabled}
   {name}
-  {value}
   {precision}
   {size}
   {readOnly}

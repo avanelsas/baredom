@@ -42,7 +42,7 @@ function App() {
 
 ## Controlled inputs with signals
 
-Form-control components (`XCheckbox`, `XSlider`, `XSelect`, `XSwitch`, `XRadio`, `XTextArea`, `XCombobox`, `XCurrencyField`, `XTabs`, `XPagination`) support a controlled mode driven by Solid signals. Supply the control prop (`checked` / `value` / `page`) plus a handler that updates it; the wrapper intercepts the cancelable change-request event and prevents the default DOM commit, so the signal is the single source of truth.
+Form-control components (`XCheckbox`, `XSwitch`, `XRadio`, `XSlider`, `XTextArea`, `XFormField`, `XSearchField`, `XSelect`, `XCombobox`, `XMultiCombobox`, `XDatePicker`, `XCurrencyField`, `XRating`, `XTabs`, `XPagination`) support a controlled mode driven by Solid signals. Supply the control prop (`checked` / `value` / `page`) plus a handler that updates it; the wrapper intercepts the cancelable change-request event and prevents the default DOM commit, so the signal is the single source of truth.
 
 ```tsx
 import { createSignal } from "solid-js";

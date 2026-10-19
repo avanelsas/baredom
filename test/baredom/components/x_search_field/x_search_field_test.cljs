@@ -530,3 +530,9 @@
     (.dispatchEvent inp (js/KeyboardEvent. "keydown" #js {:key "Enter" :bubbles true}))
     (is (some? @heard))
     (is (false? (some-> ^js @heard .-cancelable)))))
+
+(deftest an-accepted-clear-sends-a-change-with-an-empty-value
+  (let [el      (field-in-form! {model/attr-value "old"})
+        changes (heard! el model/event-change)]
+    (.click (shadow-part el "[part=clear]"))
+    (is (= [{"name" "q" "value" ""}] @changes))))

@@ -78,7 +78,7 @@ When an output name collides with an input name, the output is suffixed with `Ev
 
 ## Angular forms integration
 
-10 form components include `ControlValueAccessor` directives that work with both reactive forms and template-driven forms.
+15 form components include `ControlValueAccessor` directives that work with both reactive forms and template-driven forms: checkbox, switch, radio, slider, text-area, form-field, search-field, select, combobox, multi-combobox, date-picker, currency-field, rating, tabs and pagination. A binding follows the committed change event, so a text field updates its value on commit (blur or Enter), not while typing.
 
 ```typescript
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';

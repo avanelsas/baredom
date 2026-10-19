@@ -336,6 +336,7 @@
         (when (change-allowed! el name "")
           (du/set-attr! el model/attr-value "")
           (clear-pending-debounce! el)
+          (du/dispatch! el model/event-change #js {:name name :value ""})
           (du/dispatch! el model/event-clear #js {:name name})
           (.focus input-el))))))
 

@@ -9,10 +9,11 @@
     disabled?: boolean;
     debounce?: number;
     name?: string;
-    value?: string;
     label?: string;
     autocomplete?: string;
     required?: boolean;
+    /** Two-way bindable form value — `bind:value={...}`. */
+    value?: string;
     onchangerequest?: (e: CustomEvent<{ name: string; value: string; previousValue: string }>) => void;
     oninput?: (e: CustomEvent<{ name: string; value: string }>) => void;
     onchange?: (e: CustomEvent<{ name: string; value: string }>) => void;
@@ -32,10 +33,10 @@
     disabled,
     debounce,
     name,
-    value,
     label,
     autocomplete,
     required,
+    value = $bindable(undefined),
     onchangerequest,
     oninput,
     onchange,
@@ -50,6 +51,13 @@
 
   $effect(() => {
     const node = el;
+    if (!node || value === undefined) return;
+    if (value != null) node.setAttribute("value", String(value));
+    else node.removeAttribute("value");
+  });
+
+  $effect(() => {
+    const node = el;
     if (!node) return;
     const cleanups: Array<() => void> = [];
     const onchangerequestHandler = (e: Event) => onchangerequest?.(e as CustomEvent<{ name: string; value: string; previousValue: string }>);
@@ -58,7 +66,11 @@
     const oninputHandler = (e: Event) => oninput?.(e as CustomEvent<{ name: string; value: string }>);
     node.addEventListener("x-search-field-input", oninputHandler);
     cleanups.push(() => node.removeEventListener("x-search-field-input", oninputHandler));
-    const onchangeHandler = (e: Event) => onchange?.(e as CustomEvent<{ name: string; value: string }>);
+    const onchangeHandler = (e: Event) => {
+      const detail = (e as CustomEvent<{ name: string; value: string }>).detail;
+      if (detail.value != null) value = String(detail.value);
+      onchange?.(e as CustomEvent<{ name: string; value: string }>);
+    };
     node.addEventListener("x-search-field-change", onchangeHandler);
     cleanups.push(() => node.removeEventListener("x-search-field-change", onchangeHandler));
     const onsearchHandler = (e: Event) => onsearch?.(e as CustomEvent<{ name: string; value: string }>);
@@ -77,7 +89,6 @@
   {disabled}
   {debounce}
   {name}
-  {value}
   {label}
   {autocomplete}
   {required}
