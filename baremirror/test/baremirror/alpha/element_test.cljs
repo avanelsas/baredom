@@ -55,6 +55,14 @@
   (let [el (element-with! "bm-task-count" {"count" "3"})]
     (is (= "3" (.-textContent (in-shadow el "b"))))))
 
+(deftest define-element-does-not-show-an-element-again-after-a-move
+  (let [el    (task-count! {"count" "3"})
+        stage (doto (.-parentElement el) (.append (element! "p")))]
+    (when (.-moveBefore stage)
+      (set! (.-textContent (in-shadow el "b")) "changed from outside")
+      (.moveBefore stage el nil)
+      (is (= "changed from outside" (.-textContent (in-shadow el "b")))))))
+
 (deftest define-element-refuses-a-template-with-an-on-entry
   (is (thrown? ExceptionInfo
                (mirror-element/define-element! "bm-refused"
