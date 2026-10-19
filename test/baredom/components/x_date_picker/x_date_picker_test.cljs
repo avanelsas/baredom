@@ -592,7 +592,8 @@
          (let [^js grid (shadow-part el "[part=grid]")
                ;; Find the cell with tabindex=0 (focused by open-popover!)
                ^js day  (.querySelector grid "[tabindex=\"0\"]")]
-           (if day
+           (is (some? day) "one cell can be reached by Tab")
+           (when day
              (let [iso (.getAttribute day "data-iso")]
                (.dispatchEvent day (js/KeyboardEvent. "keydown"
                                    #js {:key "Enter" :bubbles true}))
@@ -602,8 +603,8 @@
                       "Enter selects the focused date")
                   (is (some? @fired) "change event fired on Enter")
                   (done))
-                0))
-             (done))))
+                0)))
+           (when-not day (done))))
        0))))
 
 (deftest event-detail-single-mode-test
@@ -742,3 +743,70 @@
                  (filter (fn [^js day] (= "true" (.getAttribute day "data-selected")))
                          (day-nodes el)))))))
 
+
+(defn- day-shown? [^js el iso]
+  (some? (.querySelector (shadow-part el "[part=grid]") (str "[part=day][data-iso=\"" iso "\"]"))))
+
+(deftest a-value-written-after-connect-moves-the-month-test
+  (let [el (append! (make-el))]
+    (.setAttribute el "open" "")
+    (.setAttribute el model/attr-value "2027-03-10")
+    (is (day-shown? el "2027-03-10"))
+    (.setAttribute el model/attr-value "2027-07-04")
+    (is (day-shown? el "2027-07-04"))))
+
+(defn- next-month! [^js el]
+  (.click (.querySelector (.-shadowRoot el) "[data-nav=next]")))
+
+(deftest a-browsed-month-stays-when-the-date-does-not-change-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-value "2026-03-10")
+    (.setAttribute el "open" "")
+    (next-month! el)
+    (is (day-shown? el "2026-04-15"))
+    (.setAttribute el model/attr-placeholder "Pick a day")
+    (is (day-shown? el "2026-04-15"))))
+
+(deftest a-range-end-picked-in-a-browsed-month-keeps-that-month-test
+  (let [el (range-from-march-10! "")]
+    (next-month! el)
+    (click-iso! el "2026-04-12")
+    (is (= "2026-04-12" (.getAttribute el model/attr-end)))
+    (is (day-shown? el "2026-04-20"))))
+
+(deftest a-clear-keeps-the-month-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-value "2026-03-10")
+    (.setAttribute el "open" "")
+    (.removeAttribute el model/attr-value)
+    (is (day-shown? el "2026-03-20"))))
+
+(deftest a-switch-to-range-mode-moves-to-the-start-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-value "2026-03-10")
+    (.setAttribute el "open" "")
+    (.setAttribute el model/attr-mode "range")
+    (.setAttribute el model/attr-start "2026-08-03")
+    (is (day-shown? el "2026-08-20"))))
+
+(deftest opening-again-shows-and-focuses-the-month-of-the-date-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-value "2026-03-10")
+    (.click (shadow-part el "[part=btn]"))
+    (next-month! el)
+    (.removeAttribute el "open")
+    (.click (shadow-part el "[part=btn]"))
+    (is (day-shown? el "2026-03-20"))
+    (is (= "0" (.getAttribute (.querySelector (shadow-part el "[part=grid]")
+                                              "[part=day][data-iso=\"2026-03-10\"]")
+                              "tabindex")))))
+
+(deftest a-value-written-while-the-grid-has-focus-leaves-one-cell-for-tab-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-value "2026-03-10")
+    (.click (shadow-part el "[part=btn]"))
+    (.setAttribute el model/attr-value "2026-07-04")
+    (is (= ["2026-07-04"]
+           (mapv (fn iso [^js b] (.getAttribute b "data-iso"))
+                 (array-seq (.querySelectorAll (shadow-part el "[part=grid]")
+                                               "[part=day][tabindex=\"0\"]")))))))

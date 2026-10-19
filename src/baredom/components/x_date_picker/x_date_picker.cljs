@@ -20,6 +20,7 @@
 (def ^:private k-wd-done  "__xDatePickerWeekdaysDone")
 (def ^:private k-handlers "__xDatePickerHandlers")
 (def ^:private k-grid-focus "__xDatePickerGridFocus")
+(def ^:private k-month      "__xDatePickerMonth")
 (def ^:private k-internals  "__xDatePickerInternals")
 
 (def ^:private msg-value-missing "Please enter a date.")
@@ -49,16 +50,16 @@
                      (du/get-attr el model/attr-range-allow-same))})
         cfg       {:format (:format canon) :locale (:locale canon)}
         disp      (model/display-value canon cfg)
-        ;; stored month: default to value-d / start-d / today
         existing  (du/getv el k-state)
-        cur-month (when existing (gobj/get existing "month"))
-        anchor    (or (:value-d canon) (:start-d canon)
-                      (js/Date. (js/Date.now)))
-        month     (or cur-month (dates/start-of-month anchor))
+        month     (model/shown-month (when existing (gobj/get existing "canon"))
+                                     canon
+                                     (du/getv el k-month)
+                                     (js/Date.))
         state     #js {:canon  canon
                        :cfg    cfg
-                       :disp   disp
-                       :month  month}]
+                       :disp   disp}]
+    (when (not= month (du/getv el k-month))
+      (du/setv! el k-month month))
     (du/setv! el k-state state)
     state))
 
@@ -100,8 +101,7 @@
 (defn- render-grid!
   "Brings the day grid to the month shown. A day that stays in view keeps its node."
   [^js el ^js grid canon]
-  (let [state     (du/getv el k-state)
-        ^js month (when state (gobj/get state "month"))
+  (let [^js month (du/getv el k-month)
         days      (model/shown-days month canon (du/getv el k-grid-focus))
         nodes     (places/sync! {:days {:parent grid}} {:days (mapv :key days)} make-day-cell!)]
     (run! (partial apply-day-cell! nodes) days)))
@@ -155,7 +155,7 @@
             ^js weekdays-el (gobj/get refs "weekdays")
             state           (du/getv el k-state)
             canon           (when state (gobj/get state "canon"))
-            ^js month       (when state (gobj/get state "month"))
+            ^js month       (du/getv el k-month)
             cfg             (when state (gobj/get state "cfg"))
             locale          (when cfg (:locale cfg))]
         (when month-label
@@ -413,31 +413,28 @@
 
 (defn- navigate-month!
   [^js el direction]
-  (let [state   (du/getv el k-state)
-        ^js cur (when state (gobj/get state "month"))]
-    (when cur
-      (let [y    (.getUTCFullYear cur)
-            mo   (.getUTCMonth cur)
-            next-mo (if (= direction :next)
-                      (js/Date. (js/Date.UTC y (inc mo) 1))
-                      (js/Date. (js/Date.UTC y (dec mo) 1)))]
-        (gobj/set state "month" next-mo)
-        (render-calendar! el)))))
+  (when-let [^js cur (du/getv el k-month)]
+    (let [y       (.getUTCFullYear cur)
+          mo      (.getUTCMonth cur)
+          next-mo (if (= direction :next)
+                    (js/Date. (js/Date.UTC y (inc mo) 1))
+                    (js/Date. (js/Date.UTC y (dec mo) 1)))]
+      (du/setv! el k-month next-mo)
+      (render-calendar! el))))
 
 ;; ---------------------------------------------------------------------------
 ;; Popover open/close
 ;; ---------------------------------------------------------------------------
 
 (defn- open-popover!
+  "Opens the calendar on the month of the selected date, or of today, and focuses that day."
   [^js el]
   (when-not (du/has-attr? el "open")
-    (du/set-attr! el "open" "")
-    ;; attributeChangedCallback already triggers render; set grid focus
     (let [state  (du/getv el k-state)
-          canon  (when state (gobj/get state "canon"))
-          anchor (or (:value-d canon) (:start-d canon) (js/Date. (js/Date.now)))
-          iso    (dates/date->iso anchor)]
-      (focus-grid-date! el iso))))
+          anchor (or (model/anchor (when state (gobj/get state "canon"))) (js/Date.))]
+      (du/setv! el k-month (dates/start-of-month anchor))
+      (du/set-attr! el "open" "")
+      (focus-grid-date! el (dates/date->iso anchor)))))
 
 (defn- close-popover!
   [^js el]
@@ -768,15 +765,20 @@
               ^js d (dates/iso->date iso)]
           (when d (do-select-date! el d "click")))))))
 
+(defn- event-day-iso
+  "The iso date of the day cell that `e` happened on, or nil."
+  [^js e]
+  (some-> ^js (.closest (.-target e) "button[data-iso]") (.getAttribute "data-iso")))
+
 (defn- on-grid-keydown!
   [^js el ^js e]
   (when-not (forms/disabled? el)
     (let [key     (.-key e)
-          cur-iso (du/getv el k-grid-focus)
+          cur-iso (or (event-day-iso e) (du/getv el k-grid-focus))
           ^js cur (when cur-iso (dates/iso->date cur-iso))
           state   (du/getv el k-state)
           canon   (when state (gobj/get state "canon"))
-          ^js month (when state (gobj/get state "month"))
+          ^js month (du/getv el k-month)
           nav-date
           (when cur
             (case key
@@ -798,7 +800,7 @@
                 nav-iso (dates/date->iso clamped)]
             ;; If navigated outside current month, shift month view
             (when (and month (not= (.getUTCMonth clamped) (.getUTCMonth month)))
-              (gobj/set state "month" (dates/start-of-month clamped))
+              (du/setv! el k-month (dates/start-of-month clamped))
               (render-calendar! el))
             (focus-grid-date! el nav-iso)))
 

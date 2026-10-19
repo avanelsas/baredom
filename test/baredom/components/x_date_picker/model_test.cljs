@@ -149,8 +149,11 @@
 (deftest shown-days-lets-tab-reach-only-the-focus-cell-test
   (is (= ["2024-06-15"]
          (into [] (comp (filter (comp #{"0"} :tabindex)) (map :iso)) (days-of {} "2024-06-15"))))
-  (is (not-any? (comp #{"0"} :tabindex) (days-of {} "2024-09-01"))
-      "no cell when the focus is in another month"))
+  (testing "a focus outside the grid gives Tab the selected day of the month, else its first day"
+    (is (= ["2024-06-20"] (into [] (comp (filter (comp #{"0"} :tabindex)) (map :iso))
+                                (days-of {:value "2024-06-20"} "2024-09-01"))))
+    (is (= ["2024-06-01"] (into [] (comp (filter (comp #{"0"} :tabindex)) (map :iso))
+                                (days-of {} "2024-09-01"))))))
 
 
 (defn- pick [attrs day]
@@ -178,3 +181,28 @@
   (is (= "range" (model/mode-name {:mode :range})))
   (is (= "single" (model/mode-name {:mode :single})))
   (is (= "single" (model/mode-name nil))))
+
+(defn- month-iso
+  "The iso date of the month that `shown-month` gives for these arguments, with today in October."
+  [old-raw raw month-iso]
+  (dates/date->iso (model/shown-month (some-> old-raw model/canonicalize)
+                                      (model/canonicalize raw)
+                                      (some-> month-iso dates/iso->date)
+                                      (dates/iso->date "2026-10-19"))))
+
+(deftest shown-month-test
+  (testing "with no month it is the month of the date, or of today"
+    (is (= "2026-03-01" (month-iso nil {:value "2026-03-10"} nil)))
+    (is (= "2026-10-01" (month-iso nil {} nil))))
+  (testing "a changed date moves the month"
+    (is (= "2026-07-01" (month-iso {:value "2026-03-10"} {:value "2026-07-04"} "2026-03-01"))))
+  (testing "an unchanged date keeps a browsed month"
+    (is (= "2026-07-01" (month-iso {:value "2026-03-10"} {:value "2026-03-10"} "2026-07-01"))))
+  (testing "a removed date keeps the month"
+    (is (= "2026-03-01" (month-iso {:value "2026-03-10"} {} "2026-03-01"))))
+  (testing "in range mode the start moves the month and the end does not"
+    (is (= "2026-07-01" (month-iso {:mode "range" :start "2026-03-10"}
+                                   {:mode "range" :start "2026-07-04"} "2026-03-01")))
+    (is (= "2026-04-01" (month-iso {:mode "range" :start "2026-03-10"}
+                                   {:mode "range" :start "2026-03-10" :end "2026-04-12"}
+                                   "2026-04-01")))))
