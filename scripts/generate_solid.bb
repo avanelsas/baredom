@@ -11,6 +11,9 @@
 ;; Load shared form-control metadata (single source of truth across all adapters)
 (load-file "scripts/form-control-metadata.bb")
 
+(def ^:private discovered-models (discover-models))
+(def ^:private form-controls (form-controls-of discovered-models))
+
 ;; ── Configuration ───────────────────────────────────────────────────────────
 (def solid-src-dir "adapters/solid/src")
 (def solid-pkg     "adapters/solid/package.json")
@@ -269,7 +272,7 @@
 
   (.mkdirs (io/file solid-src-dir))
 
-  (let [all-models      (discover-models)
+  (let [all-models      discovered-models
         exported-names  (load-package-exports)
         exported-models (filter #(contains? exported-names (:tag-name %)) all-models)]
 

@@ -11,6 +11,9 @@
 ;; Load shared form-control metadata (Vue v-model / Angular CVA / Svelte $bindable)
 (load-file "scripts/form-control-metadata.bb")
 
+(def ^:private discovered-models (discover-models))
+(def ^:private form-controls (form-controls-of discovered-models))
+
 ;; ── Configuration ───────────────────────────────────────────────────────────
 (def angular-src-dir      "adapters/angular/src")
 (def angular-directives-dir "adapters/angular/src/directives")
@@ -328,7 +331,7 @@
   (.mkdirs (io/file angular-directives-dir))
   (.mkdirs (io/file angular-cva-dir))
 
-  (let [all-models      (discover-models)
+  (let [all-models      discovered-models
         exported-names  (load-package-exports)
         exported-models (filter #(contains? exported-names (:tag-name %)) all-models)]
 

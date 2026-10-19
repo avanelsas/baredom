@@ -16,6 +16,7 @@ export interface XSearchFieldProps {
   label?: string;
   autocomplete?: string;
   required?: boolean;
+  defaultValue?: string;
   onChangeRequest?: (e: CustomEvent<{ name: string; value: string; previousValue: string }>) => void;
   onInput?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onChange?: (e: CustomEvent<{ name: string; value: string }>) => void;
@@ -30,7 +31,7 @@ export interface XSearchFieldProps {
 
 export const XSearchField = forwardRef<XSearchFieldElement, XSearchFieldProps>(
   function XSearchField(props, forwardedRef) {
-    const { onChangeRequest, onInput, onChange, onSearch, onClear, children, ...rest } = props;
+    const { value, defaultValue, onChangeRequest, onInput, onChange, onSearch, onClear, children, ...rest } = props;
     const innerRef = useRef<XSearchFieldElement>(null);
 
     const setRef = (el: XSearchFieldElement | null) => {
@@ -39,14 +40,27 @@ export const XSearchField = forwardRef<XSearchFieldElement, XSearchFieldProps>(
       else if (forwardedRef) forwardedRef.current = el;
     };
 
+    // Set initial value from defaultValue (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value !== undefined || defaultValue === undefined) return;
+      el.setAttribute("value", String(defaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
       const el = innerRef.current;
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onChangeRequest) {
-        el.addEventListener("x-search-field-change-request", onChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("x-search-field-change-request", onChangeRequest as EventListener));
+      {
+        const controlled = value !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onChangeRequest) (onChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("x-search-field-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("x-search-field-change-request", wrappedHandler));
       }
       if (onInput) {
         el.addEventListener("x-search-field-input", onInput as EventListener);
@@ -66,8 +80,8 @@ export const XSearchField = forwardRef<XSearchFieldElement, XSearchFieldProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onChangeRequest, onInput, onChange, onSearch, onClear]);
+    }, [value, onChangeRequest, onInput, onChange, onSearch, onClear]);
 
-    return <x-search-field ref={setRef} {...rest}>{children}</x-search-field>;
+    return <x-search-field ref={setRef} value={value} {...rest}>{children}</x-search-field>;
   }
 );

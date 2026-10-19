@@ -97,7 +97,7 @@ function Form() {
 }
 ```
 
-**Controlled components:** XCheckbox, XSwitch, XRadio (`checked`), XSlider, XTextArea, XSelect, XCombobox, XCurrencyField, XTabs (`value`), XPagination (`page`).
+**Controlled components:** XCheckbox, XSwitch, XRadio (`checked`), XSlider, XTextArea, XFormField, XSearchField, XSelect, XCombobox, XMultiCombobox, XDatePicker, XCurrencyField, XRating, XTabs (`value`), XPagination (`page`).
 
 | Mode | Prop | Behavior |
 |------|------|----------|

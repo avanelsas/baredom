@@ -11,13 +11,14 @@ export interface XRatingProps {
   allowClear?: boolean;
   disabled?: boolean;
   name?: string;
-  value?: string;
+  value?: number;
   precision?: string;
   size?: string;
   readOnly?: boolean;
   max?: string;
   label?: string;
   shape?: string;
+  defaultValue?: number;
   onChangeRequest?: (e: CustomEvent<{ value: number; previousValue: number; max: number }>) => void;
   onChange?: (e: CustomEvent<{ value: number; max: number }>) => void;
   onHover?: (e: CustomEvent<{ value: number; max: number }>) => void;
@@ -30,7 +31,7 @@ export interface XRatingProps {
 
 export const XRating = forwardRef<XRatingElement, XRatingProps>(
   function XRating(props, forwardedRef) {
-    const { onChangeRequest, onChange, onHover, children, ...rest } = props;
+    const { value, defaultValue, onChangeRequest, onChange, onHover, children, ...rest } = props;
     const innerRef = useRef<XRatingElement>(null);
 
     const setRef = (el: XRatingElement | null) => {
@@ -39,14 +40,27 @@ export const XRating = forwardRef<XRatingElement, XRatingProps>(
       else if (forwardedRef) forwardedRef.current = el;
     };
 
+    // Set initial value from defaultValue (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value !== undefined || defaultValue === undefined) return;
+      el.setAttribute("value", String(defaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
       const el = innerRef.current;
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onChangeRequest) {
-        el.addEventListener("x-rating-change-request", onChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("x-rating-change-request", onChangeRequest as EventListener));
+      {
+        const controlled = value !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onChangeRequest) (onChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("x-rating-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("x-rating-change-request", wrappedHandler));
       }
       if (onChange) {
         el.addEventListener("x-rating-change", onChange as EventListener);
@@ -58,8 +72,8 @@ export const XRating = forwardRef<XRatingElement, XRatingProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onChangeRequest, onChange, onHover]);
+    }, [value, onChangeRequest, onChange, onHover]);
 
-    return <x-rating ref={setRef} {...rest}>{children}</x-rating>;
+    return <x-rating ref={setRef} value={value} {...rest}>{children}</x-rating>;
   }
 );

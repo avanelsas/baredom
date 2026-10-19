@@ -39,7 +39,7 @@ import { XTheme } from "@vanelsas/baredom-vue/x-theme";
 
 - **Typed props** — all component properties are typed via Vue's `props: { ... }` runtime declarations.
 - **Typed emits** — `CustomEvent<...>` payloads inferred from the underlying element's event schema.
-- **`v-model` bridging** — form-aware components (checkbox, switch, radio, slider, select, combobox, currency-field, text-area, tabs, pagination) accept `v-model` directly.
+- **`v-model` bridging**: form-aware components (checkbox, switch, radio, slider, text-area, form-field, search-field, select, combobox, multi-combobox, date-picker, currency-field, rating, tabs, pagination) accept `v-model` directly. A binding follows the committed change event, so a text field updates its value on commit (blur or Enter), not while typing.
 - **Ref forwarding** — each wrapper `expose()`s an `el` ref to the underlying custom element instance.
 - **Tree-shakable** — import individual components to keep bundle size small.
 

@@ -37,7 +37,7 @@ npm install @vanelsas/baredom-svelte @vanelsas/baredom svelte
 
 - **Typed props** — every component property is typed via a generated `XFooProps` interface.
 - **Typed event callbacks** — handlers as `on<event>` props with `CustomEvent<DetailType>` narrowing.
-- **`$bindable` two-way binding** — form-aware components support `bind:checked`/`bind:value`/`bind:page`.
+- **`$bindable` two-way binding**: form-aware components support `bind:checked`/`bind:value`/`bind:page`. A binding follows the committed change event, so a text field updates its value on commit (blur or Enter), not while typing.
 - **`bind:el` ref forwarding** — direct access to the underlying custom element instance for imperative method calls.
 - **Tree-shakable** — per-component subpath imports keep your bundle minimal.
 
