@@ -326,7 +326,7 @@
           (if (and (du/has-attr? el model/attr-required) (= value ""))
             (when-let [^js internals (du/getv el k-internals)]
               (.reportValidity internals))
-            (du/dispatch-cancelable! el model/event-search #js {:name name :value value})))))))
+            (du/dispatch! el model/event-search #js {:name name :value value})))))))
 
 (defn- make-click-handler [^js el]
   (fn [^js _evt]

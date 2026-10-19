@@ -172,6 +172,8 @@
     :gesture (click-part "[part=control]")}
    {:event "value-change-request" :html (str "<x-tabs value=\"a\">" tabs "</x-tabs>")
     :gesture (click-child "x-tab[value=b]") :other {"value" "c"}}
+   {:event "x-table-cell-sort" :html "<x-table-cell type=\"header\" sortable></x-table-cell>"
+    :gesture (click-part "[part=sort-btn]") :other {"sort-direction" "desc"}}
    {:event "x-table-row-select"
     :html  (str "<x-table selectable=\"multi\" value=\"a\">"
                 "<x-table-row interactive value=\"a\"></x-table-row>"

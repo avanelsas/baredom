@@ -3731,7 +3731,7 @@
         "type" : {
           "text" : "CustomEvent<{ value: string; h: number; s: number; l: number; a: number }>"
         },
-        "cancelable" : true,
+        "cancelable" : false,
         "detail" : {
           "value" : "string",
           "h" : "number",
@@ -7907,7 +7907,7 @@
         "type" : {
           "text" : "CustomEvent<{ values: Record<string, any> }>"
         },
-        "cancelable" : true,
+        "cancelable" : false,
         "detail" : {
           "values" : "Record<string, any>"
         }
@@ -9882,7 +9882,7 @@
         "type" : {
           "text" : "CustomEvent<{ index: number; item: any; source: string }>"
         },
-        "cancelable" : true,
+        "cancelable" : false,
         "detail" : {
           "index" : "number",
           "item" : "any",
@@ -14053,7 +14053,7 @@
         "type" : {
           "text" : "CustomEvent<{ index: number; item: any; source: string }>"
         },
-        "cancelable" : true,
+        "cancelable" : false,
         "detail" : {
           "index" : "number",
           "item" : "any",
@@ -16441,7 +16441,7 @@
         "type" : {
           "text" : "CustomEvent<{ name: string; value: string }>"
         },
-        "cancelable" : true,
+        "cancelable" : false,
         "detail" : {
           "name" : "string",
           "value" : "string"
@@ -19351,6 +19351,9 @@
           "text" : "CustomEvent<{ direction: string; previousDirection: string }>"
         },
         "cancelable" : true,
+        "requests" : {
+          "sort-direction" : "direction"
+        },
         "detail" : {
           "direction" : "string",
           "previousDirection" : "string"
@@ -19748,6 +19751,9 @@
           "text" : "CustomEvent<{ direction: string; previousDirection: string }>"
         },
         "cancelable" : true,
+        "requests" : {
+          "sort-direction" : "direction"
+        },
         "detail" : {
           "direction" : "string",
           "previousDirection" : "string"
@@ -21026,7 +21032,7 @@
         "type" : {
           "text" : "CustomEvent<{ status: string; label: string }>"
         },
-        "cancelable" : true,
+        "cancelable" : false,
         "detail" : {
           "status" : "string",
           "label" : "string"
@@ -21219,7 +21225,7 @@
         "type" : {
           "text" : "CustomEvent<{ status: string; label: string }>"
         },
-        "cancelable" : true,
+        "cancelable" : false,
         "detail" : {
           "status" : "string",
           "label" : "string"

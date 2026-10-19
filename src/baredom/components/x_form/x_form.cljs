@@ -157,7 +157,7 @@
       (let [valid? (or (:novalidate? m) (report-fields-validity! el))]
         (when valid?
           (let [values (collect-values el)]
-            (du/dispatch-cancelable! el model/event-submit #js {:values values})))))))
+            (du/dispatch! el model/event-submit #js {:values values})))))))
 
 (defn- on-reset [^js el ^js _e]
   (let [fields (.querySelectorAll el sel-named)]

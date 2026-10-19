@@ -51,7 +51,7 @@ A viscous, floating navigation dock that uses SVG filters to create organic gooe
 
 | Event | Bubbles | Composed | Cancelable | Detail |
 |---|---|---|---|---|
-| `x-liquid-dock-select` | yes | yes | yes | `{ index: number, item: Element, source: "pointer" \| "keyboard" }` |
+| `x-liquid-dock-select` | yes | yes | no | `{ index: number, item: Element, source: "pointer" \| "keyboard" }` |
 
 ## Slots
 

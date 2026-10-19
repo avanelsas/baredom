@@ -45,7 +45,7 @@ No methods.
 
 | Event                      | Bubbles | Composed | Cancelable | Detail                                                       |
 |----------------------------|---------|----------|------------|--------------------------------------------------------------|
-| `x-proximity-list-select`  | yes     | yes      | yes        | `{ index: number, item: Element, source: "pointer" \| "keyboard" }` |
+| `x-proximity-list-select`  | yes     | yes      | no         | `{ index: number, item: Element, source: "pointer" \| "keyboard" }` |
 
 Dispatched on click and on `Enter` / `Space` once an item is focused via arrow keys. Same shape as `x-liquid-dock-select`.
 

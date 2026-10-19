@@ -570,7 +570,7 @@
 (defn- dispatch-select! [^js el index ^js item source]
   ;; Trigger ripple burst
   (du/setv! el k-ripple-burst (.now js/Date))
-  (du/dispatch-cancelable! el model/event-select
+  (du/dispatch! el model/event-select
     (clj->js (model/select-detail index item source))))
 
 ;; ── Event handlers ──────────────────────────────────────────────────────────

@@ -47,7 +47,7 @@ Boolean attributes follow standard HTML conventions: presence means true, absenc
 
 | Event | Cancelable | Detail | When |
 |-------|-----------|--------|------|
-| `x-form-submit` | yes | `{values: Object}` | After validation passes (or `novalidate`), and not while `loading` is set |
+| `x-form-submit` | no | `{values: Object}` | After validation passes (or `novalidate`), and not while `loading` is set |
 | `x-form-reset` | no | `{}` | After the shadow `form.reset()` completes |
 
 ### `x-form-submit` detail
@@ -111,7 +111,7 @@ The shadow `<form>` always has the `novalidate` HTML attribute so the browser do
    - Returns `false` → bail (browser/ElementInternals surfaces validation UI).
    - Returns `true` → continue.
 6. Collect values from light DOM.
-7. Dispatch cancelable `x-form-submit` with `{values}`.
+7. Dispatch `x-form-submit` with `{values}`.
 8. Consumer handles submission, sets `loading`, then clears it and optionally calls `setFieldError`.
 
 ---
@@ -152,7 +152,6 @@ The shadow `<form>` always has the `novalidate` HTML attribute so the browser do
 
 ```js
 form.addEventListener('x-form-submit', async e => {
-  e.preventDefault();
   form.setAttribute('loading', '');
   try {
     await api.login(e.detail.values);

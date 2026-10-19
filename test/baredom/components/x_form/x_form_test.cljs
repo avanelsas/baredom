@@ -184,14 +184,13 @@
     (is (nil? @received)
         "x-form-submit should NOT fire when loading is set")))
 
-(deftest submit-event-is-cancelable-test
+(deftest submit-event-is-not-cancelable-test
   (let [el       (append! (make-el))
         received (atom nil)]
     (.addEventListener el model/event-submit (fn [^js e] (reset! received e)))
     (.submit el)
-    (when @received
-      (is (.-cancelable @received)
-          "x-form-submit should be cancelable"))))
+    (is (some? @received))
+    (is (false? (some-> ^js @received .-cancelable)))))
 
 (deftest x-button-submit-click-fires-submit-test
   ;; Regression: sel-button matches <x-button type=submit>, but x-button exposes

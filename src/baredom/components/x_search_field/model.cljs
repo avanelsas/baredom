@@ -66,7 +66,7 @@
                          :detail     {:name 'string :value 'string :previousValue 'string}}
    event-input          {:cancelable false :detail {:name 'string :value 'string}}
    event-change         {:cancelable false :detail {:name 'string :value 'string}}
-   event-search         {:cancelable true  :detail {:name 'string :value 'string}}
+   event-search         {:cancelable false :detail {:name 'string :value 'string}}
    event-clear          {:cancelable false :detail {:name 'string}}})
 
 (defn normalize

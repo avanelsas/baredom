@@ -372,7 +372,7 @@
 ;; ── Event dispatch ────────────────────────────────────────────────────────────
 (defn- dispatch-click! [^js el]
   (let [m (or (du/getv el k-model) (read-model el))]
-    (du/dispatch-cancelable! el model/event-click (clj->js (model/click-detail m)))))
+    (du/dispatch! el model/event-click (clj->js (model/click-detail m)))))
 
 (defn- dispatch-connected! [^js el m]
   (du/dispatch! el model/event-connected (clj->js (model/connected-detail m))))
