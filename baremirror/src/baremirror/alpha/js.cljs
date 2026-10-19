@@ -142,14 +142,42 @@
              (and (== (alength ks) (alength (js/Object.keys b)))
                   (same-in-each? a b ks))))))
 
+(defn- taken-split
+  "The split template that the JavaScript split template `split` stands for.
+   Throws an error that names `fn-name` when `split` is not a split template."
+  [fn-name ^js split]
+  (or (some-> split (unchecked-get split-of))
+      (throw (ex-info (str fn-name ": not a split template.") {:given split}))))
+
 (defn write-item
   "Brings `node` to `item` through the split template `split`. Writes nothing when `item` has the
    same fields as the item it last wrote to `node`."
-  [node ^js split item]
-  (let [taken (some-> split (unchecked-get split-of))]
-    (when (nil? taken)
-      (throw (ex-info "writeItem: not a split template." {:given split})))
-    (mirror-parts/write-item! same-fields? node taken item)))
+  [node split item]
+  (mirror-parts/write-item! same-fields? node (taken-split "writeItem" split) item))
+
+(defn- foreign-write? [^js w]
+  (and (some? w)
+       (string? (.-target w))
+       (or (= "any" (.-attributes w)) (array? (.-attributes w)))))
+
+(defn- ->foreign-write
+  "The foreign write `w` as a map. Throws when it has no target text, or attributes that are
+   neither \"any\" nor an array."
+  [^js w]
+  (when-not (foreign-write? w)
+    (throw (ex-info "sharedHoles: a foreign write has a target and attributes." {:given w})))
+  {:target     (.-target w)
+   :attributes (if (array? (.-attributes w)) (vec (.-attributes w)) (.-attributes w))})
+
+(defn- ->foreign-writes [foreign-writes]
+  (update-vals (object-map foreign-writes) (partial mapv ->foreign-write)))
+
+(defn shared-holes
+  "The attribute holes of the split template `split` that a component in `foreignWrites` may
+   also write: an array of objects with `part`, `tag`, `attr`, `writer` and `target`."
+  [split foreign-writes]
+  (clj->js (template/shared-holes (taken-split "sharedHoles" split)
+                                  (->foreign-writes foreign-writes))))
 
 (defn set-text
   "Makes `text` the whole content of `el`, and writes only where it differs."

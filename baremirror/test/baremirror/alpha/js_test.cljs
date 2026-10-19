@@ -194,6 +194,28 @@
       (is (= [] (keys-in parent)))
       (is (= ["a"] (keys-in other))))))
 
+(def ^:private checkbox-writes
+  #js {"x-group" #js [#js {:target "span" :attributes #js ["aria-checked"]}]
+       "x-i18n"  #js [#js {:target "any" :attributes "any"}]})
+
+(deftest shared-holes-returns-an-array-of-objects
+  (is (= [{"part" "row.0" "tag" "span" "attr" "aria-checked" "writer" "x-group" "target" "span"}
+          {"part" "row.0" "tag" "span" "attr" "aria-checked" "writer" "x-i18n" "target" "any"}]
+         (data (mjs/shared-holes (mjs/split-template "row" (row-template)) checkbox-writes)))))
+
+(deftest shared-holes-refuses-what-is-not-a-split-template
+  (is (thrown-with-msg? ExceptionInfo #"sharedHoles: not a split template"
+                        (mjs/shared-holes #js {:fixed #js [] :holes #js []} checkbox-writes))))
+
+(deftest shared-holes-refuses-a-foreign-write-without-a-target-and-attributes
+  (let [row (mjs/split-template "row" (row-template))]
+    (testing "no attributes"
+      (is (thrown-with-msg? ExceptionInfo #"has a target and attributes"
+                            (mjs/shared-holes row #js {"x-group" #js [#js {:target "span"}]}))))
+    (testing "no target"
+      (is (thrown-with-msg? ExceptionInfo #"has a target and attributes"
+                            (mjs/shared-holes row #js {"x-group" #js [#js {:attributes "any"}]}))))))
+
 (deftest write-item-refuses-a-copy-of-a-split-template
   (let [split (mjs/split-template "row" (row-template))
         node  (staged! (.-fixed split))]

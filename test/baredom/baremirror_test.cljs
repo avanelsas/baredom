@@ -1,9 +1,11 @@
 (ns baredom.baremirror-test
   (:require [baredom.components.x-checkbox.model :as checkbox-model]
             [baredom.components.x-checkbox.x-checkbox :as x-checkbox]
+            [baredom.foreign-writes :as foreign-writes]
             [baredom.requests :as requests]
             [baremirror.alpha.events :as events]
             [baremirror.alpha.parts :as parts]
+            [baremirror.alpha.template :as template]
             [cljs.test :refer-macros [deftest is testing use-fixtures]]))
 
 (x-checkbox/init!)
@@ -51,3 +53,8 @@
     (is (= {:checked? true :marked? false} (after-a-click toggle))))
   (testing "a request that the application refuses and marks leaves the checkbox unchecked"
     (is (= {:checked? false :marked? true} (after-a-click refuse)))))
+
+(deftest shared-holes-names-the-selected-of-a-tab-that-x-tabs-writes
+  (is (= [{:part "tab" :tag "x-tab" :attr "selected" :writer "x-tabs" :target "x-tab"}]
+         (template/shared-holes (template/split :row [:x-tab {:data-x-part "tab" :selected :on?}])
+                                (select-keys foreign-writes/foreign-writes ["x-tabs"])))))

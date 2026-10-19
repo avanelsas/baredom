@@ -82,7 +82,9 @@ Args entries: `{:name "param" :type 'number}`. This metadata drives automatic Ty
   and the nodes it creates. `:target` is a tag name, or `:any` for any element. `:attributes` is
   `:any` when the author names the attributes. Every name is a def of the model or of a model it
   requires. The manifest states it as `foreignWrites`. A test checks it with
-  `baredom.test-writes/foreign-writes!` and `audit`.
+  `baredom.test-writes/foreign-writes!` and `audit`. `bb scripts/generate_types.bb` also writes
+  the writes of every component to `dist/foreign-writes.js` and to
+  `src/baredom/foreign_writes.cljs`.
 - **Slot names** — string constants for named slots
 - **CSS custom property names** — `--x-<component>-<property>` constants
 - **Enum values** — sets or vectors of allowed values for constrained attributes
