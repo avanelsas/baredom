@@ -488,8 +488,8 @@
                 (clj->js (model/make-detail (:hex-full m) (:h m) (:s m) (:l m) (:a m)))))
 
 (defn- dispatch-change! [^js el m]
-  (du/dispatch-cancelable! el model/event-change
-                           (clj->js (model/make-detail (:hex-full m) (:h m) (:s m) (:l m) (:a m)))))
+  (du/dispatch! el model/event-change
+                (clj->js (model/make-detail (:hex-full m) (:h m) (:s m) (:l m) (:a m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Value update helper

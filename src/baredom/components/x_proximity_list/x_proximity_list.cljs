@@ -308,8 +308,8 @@
           (recur (inc i)))))))
 
 (defn- dispatch-select! [^js el index ^js item source]
-  (du/dispatch-cancelable! el model/event-select
-                           (clj->js (model/select-detail index item source))))
+  (du/dispatch! el model/event-select
+                (clj->js (model/select-detail index item source))))
 
 (defn- on-click [^js el ^js e]
   (let [m (du/getv el k-model)]

@@ -521,3 +521,12 @@
     (.click (shadow-part el "[part=clear]"))
     (is (= "" (.getAttribute el model/attr-value)))
     (is (= ["" ""] (shown-and-submitted el)))))
+
+(deftest the-search-event-is-not-cancelable
+  (let [el      (field-in-form! {model/attr-value "q"})
+        ^js inp (shadow-part el "[part=input]")
+        heard   (atom nil)]
+    (.addEventListener el model/event-search (fn [^js e] (reset! heard e)))
+    (.dispatchEvent inp (js/KeyboardEvent. "keydown" #js {:key "Enter" :bubbles true}))
+    (is (some? @heard))
+    (is (false? (some-> ^js @heard .-cancelable)))))

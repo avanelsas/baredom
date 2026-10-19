@@ -49,7 +49,7 @@ These are set by the future `x-timeline` parent and are observed for reactive re
 |--------------------------------|---------|----------|------------|--------|
 | `x-timeline-item-connected`    | yes     | yes      | no         | `{ status, label, position, disabled }` |
 | `x-timeline-item-disconnected` | no      | no       | no         | `{ status, label }` — dispatched on `document` |
-| `x-timeline-item-click`        | yes     | yes      | yes        | `{ status, label }` |
+| `x-timeline-item-click`        | yes     | yes      | no         | `{ status, label }` |
 
 ## Slots
 

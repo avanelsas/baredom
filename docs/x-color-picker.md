@@ -41,7 +41,7 @@ A color picker component with a 2D saturation/brightness area, hue strip, option
 | Event                    | Bubbles | Composed | Cancelable | Detail                                  |
 |--------------------------|---------|----------|------------|-----------------------------------------|
 | `x-color-picker-input`   | true    | true     | false      | `{ value, h, s, l, a }`                |
-| `x-color-picker-change`  | true    | true     | true       | `{ value, h, s, l, a }`                |
+| `x-color-picker-change`  | true    | true     | false      | `{ value, h, s, l, a }`                |
 
 - **`input`** fires continuously during drag interaction (area, hue strip, alpha strip).
 - **`change`** fires when the user commits a value (pointer up, Enter key on hex input, swatch click).

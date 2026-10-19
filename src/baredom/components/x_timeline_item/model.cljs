@@ -46,7 +46,7 @@
    event-disconnected {:detail     {:status 'string :label 'string}
                        :cancelable false}
    event-click        {:detail     {:status 'string :label 'string}
-                       :cancelable true}})
+                       :cancelable false}})
 
 ;; ── Private lookup tables ─────────────────────────────────────────────────────
 (def ^:private status->kw

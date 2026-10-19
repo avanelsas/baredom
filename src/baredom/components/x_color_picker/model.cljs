@@ -71,7 +71,7 @@
   {event-input  {:detail {:value 'string :h 'number :s 'number :l 'number :a 'number}
                  :cancelable false}
    event-change {:detail {:value 'string :h 'number :s 'number :l 'number :a 'number}
-                 :cancelable true}})
+                 :cancelable false}})
 
 ;; ---------------------------------------------------------------------------
 ;; Color math — clamping

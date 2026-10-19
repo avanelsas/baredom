@@ -45,14 +45,14 @@ Reading `value` returns the live `input.value` (not the attribute). Setting `val
 | `x-search-field-change-request` | yes     | yes      | yes        | `{name, value, previousValue}` |
 | `x-search-field-input`          | yes     | yes      | no         | `{name, value}`                |
 | `x-search-field-change`         | yes     | yes      | no         | `{name, value}`                |
-| `x-search-field-search`         | yes     | yes      | yes        | `{name, value}`                |
+| `x-search-field-search`         | yes     | yes      | no         | `{name, value}`                |
 | `x-search-field-clear`          | yes     | yes      | no         | `{name}`                       |
 
 `x-search-field-change-request` fires on every keystroke, before the form value changes and before `x-search-field-input`. Call `preventDefault()` to refuse the change. An accepted keystroke writes its text to the `value` attribute, so `value` holds the current text, not a markup default. A refused one puts the input, the form value and the validity back to the `value` attribute, which holds the last accepted text. `previousValue` is the `value` attribute.
 
 The clear button sends the same request with an empty `value`. An accepted one writes `value=""`. A refused one leaves the text as it is, and `x-search-field-clear` does not fire.
 
-`x-search-field-search` is dispatched when the user presses Enter. It is cancelable but does **not** auto-submit a parent form.
+`x-search-field-search` is dispatched when the user presses Enter. It does **not** submit a parent form.
 
 ### Debouncing input
 

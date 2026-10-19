@@ -45,7 +45,7 @@
    :autocomplete {:type 'string  :reflects-attribute attr-autocomplete :enum allowed-autocomplete}})
 
 (def event-schema
-  {event-submit {:cancelable true  :detail {:values 'object}}
+  {event-submit {:cancelable false :detail {:values 'object}}
    event-reset  {:cancelable false :detail {}}})
 
 (def method-api

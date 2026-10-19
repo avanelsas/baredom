@@ -39,7 +39,7 @@
                           :source 'string}
                  :bubbles    true
                  :composed   true
-                 :cancelable true}})
+                 :cancelable false}})
 
 ;; ── Allowed values ──────────────────────────────────────────────────────────
 (def allowed-directions #{"horizontal" "vertical"})

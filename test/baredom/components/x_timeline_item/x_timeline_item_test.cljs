@@ -250,15 +250,13 @@
     (is (= "active" (:status @seen)))
     (is (= "Jan" (:label @seen)))))
 
-(deftest click-is-cancelable-test
+(deftest click-is-not-cancelable-test
   (let [^js el (append! (make-el))
-        fired  (atom false)]
-    (.addEventListener el model/event-click
-                       (fn [^js e]
-                         (reset! fired true)
-                         (.preventDefault e)))
+        fired  (atom nil)]
+    (.addEventListener el model/event-click (fn [^js e] (reset! fired e)))
     (.click el)
-    (is (true? @fired))))
+    (is (some? @fired))
+    (is (false? (some-> ^js @fired .-cancelable)))))
 
 (deftest click-fires-on-enter-key-test
   (let [^js el (append! (make-el))
