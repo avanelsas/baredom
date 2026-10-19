@@ -29,13 +29,16 @@
 
 (defn- element-class
   "A custom element class that calls `show-element!` with the element when it connects and
-   when one of its attributes `attrs` changes."
+   when one of its attributes `attrs` changes. An element that moves with `moveBefore` stays
+   as it is."
   [attrs show-element!]
   (let [^js klass (js* "(class extends HTMLElement {})")
         ^js proto (.-prototype klass)]
     (set! (.-observedAttributes klass) (into-array attrs))
     (set! (.-connectedCallback proto)
           (fn [] (this-as this (show-element! this))))
+    (set! (.-connectedMoveCallback proto)
+          (fn []))
     (set! (.-attributeChangedCallback proto)
           (fn [_name _old _new] (this-as this (show-element! this))))
     klass))

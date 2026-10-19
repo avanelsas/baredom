@@ -97,11 +97,12 @@
   (clj->js (mirror-parts/read-parts node)))
 
 (defn- ->write
-  "One write: `text` when the object has it, and `attrs` as a map."
-  [^js write]
-  (cond-> {}
-    (js-in "text" write)        (assoc :text (.-text write))
-    (some? (.-attrs write))     (assoc :attrs (object-map (.-attrs write)))))
+  "One write, from the own fields of `write`: `text` when it is there, and `attrs` as a map."
+  [write]
+  (let [fields (object-map write)]
+    (cond-> {}
+      (contains? fields "text")    (assoc :text (fields "text"))
+      (some? (fields "attrs"))     (assoc :attrs (object-map (fields "attrs"))))))
 
 (defn write-parts
   "Applies the object `writes` to the object `parts`, both by part name."

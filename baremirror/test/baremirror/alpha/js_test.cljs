@@ -350,6 +350,14 @@
     (testing "a part name that no node has is refused"
       (is (thrown? ExceptionInfo (mjs/write-parts parts #js {:gone #js {:text "x"}}))))))
 
+(deftest write-parts-takes-a-field-of-the-prototype-as-no-field
+  (let [node      (staged! #js ["div" #js ["b" #js {:data-x-part "count"} "0"]])
+        parts     (mjs/read-parts node)
+        inherited (js/Object.create #js {:text "3" :attrs #js {:hidden true}})]
+    (mjs/write-parts parts #js {:count inherited})
+    (is (= "0" (.-textContent (.-count parts))))
+    (is (false? (.hasAttribute (.-count parts) "hidden")))))
+
 (deftest set-attrs-takes-an-object
   (let [node (mjs/make-node #js ["div" #js {:hidden true}])]
     (mjs/set-attrs node #js {:hidden false :data-state "open"})
