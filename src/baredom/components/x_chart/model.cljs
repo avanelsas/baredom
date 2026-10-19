@@ -48,7 +48,7 @@
    :selected {:type 'string :reflects-attribute attr-selected}
    :xFormat  {:type 'string :reflects-attribute attr-x-format}
    :yFormat  {:type 'string :reflects-attribute attr-y-format}
-   :data     {:type 'array   :reflects-attribute attr-data}})
+   :data     {:type 'any     :reflects-attribute attr-data}})
 
 ;; ---- Pure parsing helpers ----
 
@@ -83,24 +83,36 @@
        :color color
        :data  (keep-indexed (fn [_j pt] (parse-point pt)) (array-seq data))})))
 
+(defn chart-data?
+  "True when `v` has a shape the chart reads: an array of series, or one series with a `data` array."
+  [v]
+  (boolean (or (array? v) (and (object? v) (array? (.-data ^js v))))))
+
+(defn data-value
+  "The chart data that the JSON text `s` holds, or nil when `s` is absent, invalid or of another
+   shape."
+  [s]
+  (when (string? s)
+    (let [v (try (js/JSON.parse s) (catch :default _e nil))]
+      (when (chart-data? v) v))))
+
+(defn chart-data-of
+  "The chart data of `v`: `v` itself, or what a JSON text holds. Nil for anything else."
+  [v]
+  (if (string? v) (data-value v) (when (chart-data? v) v)))
+
+(defn- series-at [i raw-s]
+  (parse-one-series raw-s i))
+
 (defn parse-series-data
-  "Parse JSON string into a vector of series maps. Returns [] on error."
+  "The series that the JSON text `json-str` holds, as a vector of maps, or [] when it holds no
+   chart data."
   [json-str]
-  (if-not (string? json-str)
-    []
-    (try
-      (let [parsed (js/JSON.parse json-str)]
-        (cond
-          (array? parsed)
-          (vec (keep-indexed (fn [i s] (parse-one-series s i)) (array-seq parsed)))
-
-          ;; Single-series shorthand: [{:x :y}]
-          (and (object? parsed) (array? (.-data parsed)))
-          (let [s (parse-one-series parsed 0)]
-            (if s [s] []))
-
-          :else []))
-      (catch :default _e []))))
+  (let [v (data-value json-str)]
+    (cond
+      (array? v) (into [] (keep-indexed series-at) (array-seq v))
+      (some? v)  (if-some [s (parse-one-series v 0)] [s] [])
+      :else      [])))
 
 ;; ---- Domain computation ----
 

@@ -322,3 +322,54 @@
            (is (< before (svg-width el)) "the drawing grows with the element")
            (done))
          100)))))
+
+;; ── data reflects its attribute ──────────────────────────────────────────────
+(def ^:private one-series "[{\"name\":\"a\",\"data\":[{\"x\":1,\"y\":2}]}]")
+(def ^:private two-series "[{\"name\":\"b\",\"data\":[]},{\"name\":\"c\",\"data\":[]}]")
+
+(deftest writing-data-writes-the-attribute-test
+  (let [el (append! (make-el))]
+    (set! (.-data el) (js/JSON.parse one-series))
+    (is (= one-series (.getAttribute el model/attr-data)))
+    (set! (.-data el) nil)
+    (is (not (.hasAttribute el model/attr-data)))))
+
+(deftest reading-data-parses-the-attribute-test
+  (let [el (append! (make-el))]
+    (set! (.-data el) (js/JSON.parse one-series))
+    (.setAttribute el model/attr-data two-series)
+    (is (= two-series (js/JSON.stringify (.-data el))))
+    (.setAttribute el model/attr-data "not json")
+    (is (nil? (.-data el)))
+    (.removeAttribute el model/attr-data)
+    (is (nil? (.-data el)))))
+
+(defn- ^js sized-chart! []
+  (let [el (make-el)]
+    (set! (.. el -style -width) "300px")
+    (set! (.. el -style -height) "200px")
+    (append! el)))
+
+(defn- line-count [^js el]
+  (.-length (.querySelectorAll (.-shadowRoot el) "path[fill=none][stroke-width=\"2\"]")))
+
+(deftest writing-data-as-one-series-or-json-text-writes-the-attribute-test
+  (let [el     (append! (make-el))
+        series "{\"data\":[{\"x\":1,\"y\":2}]}"]
+    (set! (.-data el) (js/JSON.parse series))
+    (is (= series (.getAttribute el model/attr-data)))
+    (set! (.-data el) one-series)
+    (is (= one-series (.getAttribute el model/attr-data)))
+    (set! (.-data el) #js {})
+    (is (not (.hasAttribute el model/attr-data)))))
+
+(deftest writing-data-draws-the-series-test
+  (async done
+    (let [el (sized-chart!)]
+      (set! (.-data el) (js/JSON.parse (str "[{\"data\":[{\"x\":1,\"y\":2},{\"x\":2,\"y\":3}]},"
+                                            "{\"data\":[{\"x\":1,\"y\":4},{\"x\":2,\"y\":1}]}]")))
+      (js/setTimeout
+       (fn []
+         (is (= 2 (line-count el)))
+         (done))
+       50))))

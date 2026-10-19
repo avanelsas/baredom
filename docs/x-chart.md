@@ -50,7 +50,7 @@ All properties reflect to their corresponding attributes. Setting a property upd
 | `selected` | string    | yes                | |
 | `xFormat`  | string    | yes (`x-format`)   | |
 | `yFormat`  | string    | yes (`y-format`)   | |
-| `data`     | JS array  | no                 | Alternative to the JSON `data` attribute. Setting this property directly accepts a plain JS array and bypasses JSON parsing. When both the attribute and the property are set, the property takes precedence. |
+| `data`     | array or object | yes          | Reflects the JSON `data` attribute. Writing chart data (an array of series, or one series), or JSON text that holds it, writes its JSON. Anything else removes the attribute. Reading parses the attribute into a new value, or gives `null` when it is absent or not chart data. |
 
 ### x-format / y-format
 

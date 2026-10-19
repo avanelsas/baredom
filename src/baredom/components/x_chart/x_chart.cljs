@@ -8,7 +8,6 @@
 
 (def ^:private k-refs     "__xChartRefs")
 (def ^:private k-model    "__xChartModel")
-(def ^:private k-data     "__xChartData")
 
 ;; ---- SVG namespace ----
 
@@ -795,15 +794,11 @@
         :enumerable   true
         :get (fn []
                (this-as ^js this
-                        (let [cached (du/getv this k-data)]
-                          (or cached
-                              (let [raw (.getAttribute this model/attr-data)]
-                                (model/parse-series-data raw))))))
+                        (model/data-value (.getAttribute this model/attr-data))))
         :set (fn [v]
                (this-as ^js this
-                        (du/setv! this k-data v)
-                        (if (array? v)
-                          (du/set-attr! this model/attr-data (js/JSON.stringify v))
+                        (if-some [d (model/chart-data-of v)]
+                          (du/set-attr! this model/attr-data (js/JSON.stringify d))
                           (du/remove-attr! this model/attr-data))))}))
 
 ;; ---- Element class + registration ----
