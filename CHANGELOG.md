@@ -2,6 +2,64 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.10.0] - 2026-10-19
+
+BareDOM 4.10 lets each component write its own selection or value only after an accepted
+request, and reads a boolean attribute as HTML does. All five adapters are released with it:
+`-react` 3.2.0, `-angular` 3.2.0, `-vue` 0.8.0, `-svelte` 0.8.0 and `-solid` 0.8.0. Each still
+works with `@vanelsas/baredom` 4.0.0 or later. The `value` props of `x-table` and
+`x-table-row` need 4.10.0.
+
+### Added
+
+- **`value` and `value-format` on `x-table`,** with their properties. `value` is the list of
+  selected row values, comma-separated or a JSON array. `x-table` sets `selected` on the rows
+  it names.
+- **`value` on `x-table-row`.** A row's value is its `value`, else its `row-index`.
+- **`x-table-row-select` is a request for the `value` of `x-table`,** and its detail gains
+  `value`. It is in `requestedValues`.
+- **`x-table-cell-sort` is a request for `sort-direction`.** It is in `requestedValues`, and it
+  bubbles on past `x-table`, so a page can answer it.
+
+### Changed
+
+- **A boolean attribute that is off by default is on when present, whatever its text,** as in
+  HTML. `x-checkbox`, `x-date-picker`, `x-command-palette`, `x-chart`, `x-badge`,
+  `x-breadcrumbs`, `x-color-picker`, `x-context-menu`, `x-form` and `x-spacer` read the text
+  `"false"` as off before. An attribute that is on by default still turns off with `"false"`,
+  but no longer with `"0"` (`removable` of `x-chip`, `show-tooltip` of `x-copy`).
+- **`x-table` holds its selection in `value`.** A click on a row asks for a new `value`. A row
+  with neither `value` nor `row-index` is no longer selected by a click, and `selected` written
+  on a row of a table with a `value` is replaced.
+- **`x-tabs` writes `value` only after an accepted `value-change-request`.** Without a `value`
+  it shows the first enabled tab marked `selected`, else the first enabled tab, and
+  `tabs.value` is `null`. A `value` that names no tab is no longer replaced.
+- **`x-select`, `x-form-field`, `x-text-area` and `x-search-field` write `value` after an
+  accepted change.** A later refused change keeps the accepted value, and `previousValue`
+  reports it.
+- **An `x-table-cell` header writes its own `sort-direction`** when its request is not
+  refused. A cancelled `x-table-sort` keeps the cell as it was.
+- **Six events are no longer cancelable,** because their components never acted on a cancel:
+  `x-form-submit`, `x-search-field-search`, `x-liquid-dock-select`,
+  `x-proximity-list-select`, `x-timeline-item-click` and `x-color-picker-change`.
+- **The `data` property of `x-chart` reflects its attribute.** Writing chart data, or JSON text
+  that holds it, writes its JSON. Reading parses the attribute into a new value.
+
+### Fixed
+
+- **A refused change no longer loses an earlier accepted value** in the four form controls
+  above.
+- **`x-select` with no `value` restores the option the markup marks `selected`** after a
+  refused change, keeps an option with an empty value, and gives its form the same value as its
+  `value` getter.
+- **The calendar of `x-date-picker` moves to the month of a date written after it connects,**
+  and keeps a month the user browsed to otherwise. Opening shows the month of the date again,
+  one day cell is always reachable by Tab, and Enter selects the cell it is pressed on.
+- **Cancelling `x-table-row-click` on the row stops the selection,** as the docs said.
+- **`x-tabs` hides the panel of a removed tab.**
+- **The `data` property of `x-chart` no longer disagrees with the chart** after an attribute
+  write, and no longer returns ClojureScript data.
+
 ## [4.9.0] - 2026-10-19
 
 BareDOM 4.9 lets each request event show what its handler leaves. BareMirror cancels a request
