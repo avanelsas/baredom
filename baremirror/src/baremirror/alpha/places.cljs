@@ -15,11 +15,6 @@
   (when-some [k (.getAttribute node attr-key)]
     [k node]))
 
-(defn- keyed-children
-  "The keys and nodes of the keyed children of a container's parent, in document order."
-  [{:keys [^js parent]}]
-  (into [] (keep keyed) (array-seq (.-children parent))))
-
 (defn- part-alone?
   "True when `container` names a part alone, the part of the node of every key."
   [{:keys [parent part] k :key}]
@@ -86,25 +81,36 @@
     (assoc container :parent (part-in node k part))
     container))
 
-(defn- with-children
-  "The `children` by container, with the keyed children of each container that has a parent and
-   is not in `children` yet."
-  [containers children]
-  (into children
-        (comp (filter (comp some? :parent val))
-              (remove (comp (partial contains? children) key))
-              (map (juxt key (comp keyed-children val))))
-        containers))
+(defn- with-read
+  "The `reading` with the keys of the keyed children of `container`, in document order, and
+   their nodes."
+  [{:keys [places nodes]} [container {:keys [^js parent]}]]
+  (loop [^js child (.-firstElementChild parent) ks (transient []) nodes (transient nodes)]
+    (if (some? child)
+      (if-some [k (.getAttribute child attr-key)]
+        (recur (.-nextElementSibling child) (conj! ks k) (assoc! nodes k child))
+        (recur (.-nextElementSibling child) ks nodes))
+      {:places (assoc places container (persistent! ks)) :nodes (persistent! nodes)})))
 
-(defn- nodes-of [children]
-  (into {} cat (vals children)))
+(defn- with-children
+  "The `reading` with the keyed children of each of `containers` that has a parent and is not
+   read yet."
+  [containers {:keys [places] :as reading}]
+  (transduce (comp (filter (comp some? :parent val))
+                   (remove (comp (partial contains? places) key)))
+             (completing with-read)
+             reading
+             containers))
+
+(defn- keys-in [places container]
+  (get places container []))
 
 (defn- places-of
-  "The keys in `children` of each of `containers`, a part alone left out."
-  [containers children]
+  "The keys that `reading` holds for each of `containers`, a part alone left out."
+  [containers {:keys [places]}]
   (into {}
         (comp (remove (comp part-alone? containers))
-              (map (juxt identity (comp (partial mapv first) children))))
+              (map (juxt identity (partial keys-in places))))
         (keys containers)))
 
 (defn- checked-names
@@ -123,15 +129,15 @@
   (let [checked (update-vals containers checked-container)
         part    (part-alone checked)]
     (loop [containers checked
-           children   (with-children containers {})]
-      (let [nodes (nodes-of children)
+           reading    (with-children containers {:places {} :nodes {}})]
+      (let [nodes (:nodes reading)
             found (update-vals (with-part-containers part containers (keys nodes))
                                (partial resolved nodes))]
         (if (= found containers)
           {:containers (checked-names "read-places" part containers (keys nodes))
-           :places     (places-of containers children)
+           :places     (places-of containers reading)
            :nodes      nodes}
-          (recur found (with-children found children)))))))
+          (recur found (with-children found reading)))))))
 
 (defn release!
   "Gives `node` up: it keeps its place in the document and loses its key."
