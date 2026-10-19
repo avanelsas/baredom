@@ -112,18 +112,35 @@
   (when-some [part-name (.getAttribute node template/attr-part)]
     [part-name node]))
 
-(def ^:private selector-parts-below
-  "Selects the parts below a node that are not a keyed node below it, and not in one."
-  (str "[" template/attr-part "]"
-       ":not(:scope [" places/attr-key "], :scope [" places/attr-key "] *)"))
+(defn- with-part
+  "The transient map `found` with `el` under its part name, when it is a part."
+  [found ^js el]
+  (if-some [[part-name node] (part el)]
+    (assoc! found part-name node)
+    found))
+
+(declare with-parts-below)
+
+(defn- with-parts-from
+  "The transient map `found` with `el` and the parts below it. A keyed `el` adds nothing."
+  [found ^js el]
+  (if (.hasAttribute el places/attr-key)
+    found
+    (with-parts-below (with-part found el) el)))
+
+(defn- with-parts-below
+  "The transient map `found` with the parts below `node`, in document order."
+  [found ^js node]
+  (loop [found found ^js child (.-firstElementChild node)]
+    (if (some? child)
+      (recur (with-parts-from found child) (.-nextElementSibling child))
+      found)))
 
 (defn read-parts
   "The parts of `node` by name: `node` itself and the parts below it.
    A keyed node below `node` is left out with everything in it."
   [^js node]
-  (into {}
-        (keep part)
-        (cons node (array-seq (.querySelectorAll node selector-parts-below)))))
+  (persistent! (with-parts-below (with-part (transient {}) node) node)))
 
 (defn- missing-parts
   "The part names of `writes` that have no node in `parts`."
