@@ -15,6 +15,8 @@ The only memory is on the nodes. A node holds its key, and the item last written
   a copy made ahead of time.
 - [A task list](https://avanelsas.github.io/baredom/bare-html/tasks.html): the example of this
   page, in full.
+- [A tree](https://avanelsas.github.io/baredom/bare-html/tree.html): one tree, synced for each
+  list and in one call, side by side.
 
 **It is an alpha.** It ships inside the BareDOM package under names that say so, and a name may
 still change. It needs nothing from BareDOM and works on any HTML.

@@ -113,7 +113,7 @@ jobs:
       - name: Check bundle sizes
         run: bash scripts/check-bundle-size.sh
 
-      - name: Prerender the task list and the mirror demo
+      - name: Prerender the task list, the mirror demo and the tree
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 >/dev/null 2>&1 &
           sleep 1
@@ -123,6 +123,8 @@ jobs:
           node scripts/prerender.mjs --static "http://127.0.0.1:8000/bare-html/mirror.html?copy" /tmp/mirror.static.html
           test "$(grep -oE 'data-x-key="[0-9]+"' /tmp/mirror.static.html | wc -l)" -eq 3
           test "$(grep -o '<script' /tmp/mirror.static.html | wc -l)" -eq 0
+          node scripts/prerender.mjs http://127.0.0.1:8000/bare-html/tree.html /tmp/tree.prerendered.html
+          test "$(grep -oE 'data-x-key="[0-9]+"' /tmp/tree.prerendered.html | wc -l)" -eq 14
         env:
           CHROME_FLAGS: "--no-sandbox"
 

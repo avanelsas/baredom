@@ -6,9 +6,10 @@ This demo is visually identical to `bare-demo/` but consumes the pre-built ES mo
 
 ## Running the demo
 
-The demo must be served over HTTP — browsers block ES module imports on `file://` URLs. Run a static server from the **project root** (not from inside `bare-html/`) so that the relative `../dist/` imports resolve correctly:
+The demo must be served over HTTP — browsers block ES module imports on `file://` URLs. Run a static server from the **project root** (not from inside `bare-html/`) so that the relative `../dist/` imports resolve correctly. Build `dist/` first, which every page imports, and again after a change to the library:
 
 ```bash
+npm run build
 python3 -m http.server 8000
 ```
 
@@ -178,7 +179,8 @@ Each log entry records a timestamp, event type, and source tag name. Entries are
 
 `tasks.html` is a task list in plain JavaScript on BareDOM components. It imports the functions of
 BareMirror from `dist/baremirror-alpha.js`, with no build step. Serve the project root as above and open
-[http://localhost:8000/bare-html/tasks.html](http://localhost:8000/bare-html/tasks.html).
+[http://localhost:8000/bare-html/tasks.html](http://localhost:8000/bare-html/tasks.html), or
+[the page on the demo site](https://avanelsas.github.io/baredom/bare-html/tasks.html).
 
 The script has four parts and a few lines of wiring:
 
@@ -195,20 +197,28 @@ keeps its node, so it keeps focus when it moves. [`docs/baremirror.md`](../docs/
 describes the pattern and every function. With "The server says no" switched on, a tick
 on a checkbox is refused and the checkbox stays as it was.
 
+## One task list, three ways
+
+`mirror.html` shows one task list twice, from one state. The left side rebuilds every row, or
+tracks every change by hand. The right side uses BareMirror. Each side counts its renders and
+times its changes. Open [http://localhost:8000/bare-html/mirror.html](http://localhost:8000/bare-html/mirror.html),
+or [the page on the demo site](https://avanelsas.github.io/baredom/bare-html/mirror.html).
+
 ## A tree with BareMirror
 
 `tree.html` shows the same tree twice, from one state. The left side calls `syncPlaces` once for
 each list of children. The right side calls it once for the whole tree, with a container that
 names a part alone. Type a note in a row and move the row with the buttons: each side says what
 it did, and only the right side keeps a row that changes its parent. Open
-[http://localhost:8000/bare-html/tree.html](http://localhost:8000/bare-html/tree.html).
+[http://localhost:8000/bare-html/tree.html](http://localhost:8000/bare-html/tree.html), or
+[the page on the demo site](https://avanelsas.github.io/baredom/bare-html/tree.html).
 
 ## Project structure
 
 ```
 bare-html/
 ├── demo.html    # Everything in one file: CSS, HTML markup, JS wiring, event log
-├── mirror.html  # One task list, rendered two ways side by side
+├── mirror.html  # One task list, rendered three ways side by side
 ├── mirror/      # The scripts of mirror.html
 ├── tasks.html   # The task list with BareMirror, in one file
 ├── tree.html    # One tree, synced per list and in one call, side by side
@@ -216,4 +226,4 @@ bare-html/
 ```
 
 `demo.html` and `tasks.html` are each one self-contained file. `mirror.html` and `tree.html` load
-their scripts from a folder of their own. There is no `package.json`, no `node_modules`, and no build output to manage.
+their scripts from a folder of their own. There is no `package.json` and no `node_modules`.
