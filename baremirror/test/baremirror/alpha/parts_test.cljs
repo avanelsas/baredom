@@ -291,6 +291,12 @@
                                  [:b {:data-x-part "label"}]])]
     (is (identical? (.-lastElementChild node) ((mirror-parts/read-parts node) "label")))))
 
+(deftest read-parts-leaves-out-a-part-in-a-shadow-root
+  (let [node (mirror-parts/make-node! [:div [:span {:data-x-part "label"}]])
+        root (.attachShadow (.-firstElementChild node) #js {:mode "open"})]
+    (.append root (mirror-parts/make-node! [:b {:data-x-part "inside"}]))
+    (is (= #{"label"} (part-names node)))))
+
 (deftest read-parts-of-a-node-with-no-parts-is-empty
   (is (= {} (mirror-parts/read-parts (mirror-parts/make-node! [:div [:span]])))))
 
