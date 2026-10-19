@@ -9,6 +9,7 @@
     disabled?: boolean;
     interactive?: boolean;
     rowIndex?: number;
+    value?: string;
     onclick?: (e: CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean }>) => void;
     onconnected?: (e: CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean; interactive: boolean }>) => void;
     ondisconnected?: (e: CustomEvent<{}>) => void;
@@ -26,6 +27,7 @@
     disabled,
     interactive,
     rowIndex,
+    value,
     onclick,
     onconnected,
     ondisconnected,
@@ -59,6 +61,7 @@
   {disabled}
   {interactive}
   {rowIndex}
+  {value}
   class={className}
   {id}
   {...rest}

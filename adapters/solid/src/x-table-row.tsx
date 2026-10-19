@@ -11,6 +11,7 @@ export interface XTableRowProps {
   disabled?: boolean;
   interactive?: boolean;
   rowIndex?: number;
+  value?: string;
   onClick?: (e: CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean }>) => void;
   onConnected?: (e: CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean; interactive: boolean }>) => void;
   onDisconnected?: (e: CustomEvent<{}>) => void;

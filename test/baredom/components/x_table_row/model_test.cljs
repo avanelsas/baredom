@@ -111,3 +111,10 @@
 (deftest click-detail-nil-row-index-defaults-to-zero-test
   (let [d (model/click-detail {:selected? false :disabled? false :row-index nil})]
     (is (= 0 (:rowIndex d)))))
+
+(deftest row-value-test
+  (is (= "a" (model/row-value "a" "3")))
+  (is (= "3" (model/row-value nil "3")))
+  (is (= "3" (model/row-value "  " "3")))
+  (is (nil? (model/row-value nil nil)))
+  (is (nil? (model/row-value nil "0"))))

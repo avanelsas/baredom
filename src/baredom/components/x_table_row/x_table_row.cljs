@@ -175,6 +175,7 @@
   (du/define-bool-prop! proto model/attr-selected    model/attr-selected)
   (du/define-bool-prop! proto model/attr-disabled    model/attr-disabled)
   (du/define-bool-prop! proto model/attr-interactive model/attr-interactive)
+  (du/define-string-prop! proto model/attr-value     model/attr-value "")
 
   ;; camelCase JS property for row-index attribute
   (.defineProperty js/Object proto "rowIndex"

@@ -172,6 +172,11 @@
     :gesture (click-part "[part=control]")}
    {:event "value-change-request" :html (str "<x-tabs value=\"a\">" tabs "</x-tabs>")
     :gesture (click-child "x-tab[value=b]") :other {"value" "c"}}
+   {:event "x-table-row-select"
+    :html  (str "<x-table selectable=\"multi\" value=\"a\">"
+                "<x-table-row interactive value=\"a\"></x-table-row>"
+                "<x-table-row interactive value=\"b\"></x-table-row></x-table>")
+    :gesture (click-child "x-table-row[value=b]") :other {"value" "b"}}
    {:event "x-text-area-change-request" :html "<x-text-area value=\"keep\"></x-text-area>"
     :watch "textarea" :gesture (type-into "textarea" "typed") :other {"value" "other"}}
    {:event "x-welcome-tour-step-change" :html (str "<x-welcome-tour>" tour-steps "</x-welcome-tour>")

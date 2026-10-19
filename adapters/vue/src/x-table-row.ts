@@ -19,6 +19,7 @@ export const XTableRow = defineComponent({
     disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     interactive: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     rowIndex: { type: Number as PropType<number | undefined>, default: undefined },
+    value: { type: String as PropType<string | undefined>, default: undefined },
   },
   emits: {
     "click": (_e: CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean }>) => true,

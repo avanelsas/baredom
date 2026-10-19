@@ -6,9 +6,10 @@
 (def attr-disabled    "disabled")
 (def attr-interactive "interactive")
 (def attr-row-index   "row-index")
+(def attr-value       "value")
 
 (def observed-attributes
-  #js [attr-selected attr-disabled attr-interactive attr-row-index])
+  #js [attr-selected attr-disabled attr-interactive attr-row-index attr-value])
 
 ;; ── Event names ──────────────────────────────────────────────────────────────
 
@@ -22,7 +23,8 @@
   {:selected    {:type 'boolean :reflects-attribute attr-selected}
    :disabled    {:type 'boolean :reflects-attribute attr-disabled}
    :interactive {:type 'boolean :reflects-attribute attr-interactive}
-   :rowIndex    {:type 'number  :reflects-attribute attr-row-index}})
+   :rowIndex    {:type 'number  :reflects-attribute attr-row-index}
+   :value       {:type 'string  :reflects-attribute attr-value}})
 
 (def event-schema
   {event-click        {:detail     {:rowIndex 'number :selected 'boolean :disabled 'boolean}
@@ -97,5 +99,13 @@
   {:rowIndex (or row-index 0)
    :selected selected?
    :disabled disabled?})
+
+(defn row-value
+  "The value that names a row in the selection of its table: its `value`, else its `row-index`.
+   Nil when the row has neither, so it cannot be selected."
+  [value-raw row-index-raw]
+  (if (and (string? value-raw) (not= "" (.trim value-raw)))
+    value-raw
+    (some-> (parse-row-index row-index-raw) str)))
 
 (def method-api {})

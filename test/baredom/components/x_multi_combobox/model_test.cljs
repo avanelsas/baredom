@@ -1,30 +1,10 @@
 (ns baredom.components.x-multi-combobox.model-test
   (:require [cljs.test :refer [deftest is testing]]
-            [baredom.components.x-multi-combobox.model :as model]))
+            [baredom.components.x-multi-combobox.model :as model]
+            [baredom.utils.value-list :as vl]))
 
 ;; ── parse-value ──────────────────────────────────────────────────────────
-(deftest parse-value-test
-  (testing "nil and empty string yield empty set"
-    (is (= #{} (model/parse-value nil)))
-    (is (= #{} (model/parse-value ""))))
-  (testing "single value"
-    (is (= #{"apple"} (model/parse-value "apple"))))
-  (testing "multiple values"
-    (is (= #{"apple" "banana" "cherry"} (model/parse-value "apple,banana,cherry"))))
-  (testing "trims whitespace"
-    (is (= #{"apple" "banana"} (model/parse-value " apple , banana "))))
-  (testing "ignores empty segments"
-    (is (= #{"a" "b"} (model/parse-value "a,,b,")))))
-
 ;; ── serialize-value ──────────────────────────────────────────────────────
-(deftest serialize-value-test
-  (testing "empty set yields empty string"
-    (is (= "" (model/serialize-value #{}))))
-  (testing "single value"
-    (is (= "apple" (model/serialize-value #{"apple"}))))
-  (testing "sorted output"
-    (is (= "apple,banana,cherry" (model/serialize-value #{"cherry" "banana" "apple"})))))
-
 ;; ── parse-max ────────────────────────────────────────────────────────────
 (deftest parse-max-test
   (testing "nil yields nil"
@@ -190,65 +170,12 @@
 ;; ── value formats ────────────────────────────────────────────────────────
 (def ^:private charity "Liefdadigheid, religieus en non-profit")
 
-(deftest normalize-value-format-test
-  (testing "csv and json pass through"
-    (is (= "csv" (model/normalize-value-format "csv")))
-    (is (= "json" (model/normalize-value-format "json"))))
-  (testing "nil and unknown values yield csv"
-    (is (= "csv" (model/normalize-value-format nil)))
-    (is (= "csv" (model/normalize-value-format "JSON")))
-    (is (= "csv" (model/normalize-value-format "xml")))))
-
-(deftest parse-json-value-test
-  (testing "nil and empty string yield empty set"
-    (is (= #{} (model/parse-json-value nil)))
-    (is (= #{} (model/parse-json-value ""))))
-  (testing "an empty array yields empty set"
-    (is (= #{} (model/parse-json-value "[]"))))
-  (testing "a value with a comma stays one value"
-    (is (= #{charity "news"} (model/parse-json-value (str "[\"" charity "\",\"news\"]")))))
-  (testing "spaces are kept"
-    (is (= #{" padded "} (model/parse-json-value "[\" padded \"]"))))
-  (testing "an empty string is dropped, as in csv"
-    (is (= #{"a"} (model/parse-json-value "[\"a\",\"\"]")))
-    (is (= #{} (model/parse-json-value "[\"\"]"))))
-  (testing "text that is not a JSON array of strings yields nil"
-    (is (nil? (model/parse-json-value "apple,banana")))
-    (is (nil? (model/parse-json-value "[\"a\",")))
-    (is (nil? (model/parse-json-value "\"apple\"")))
-    (is (nil? (model/parse-json-value "{\"a\":1}")))
-    (is (nil? (model/parse-json-value "[1,2]")))
-    (is (nil? (model/parse-json-value "null")))))
-
-(deftest serialize-json-value-test
-  (testing "empty set yields empty string"
-    (is (= "" (model/serialize-json-value #{}))))
-  (testing "sorted JSON array with exact strings"
-    (is (= (str "[\" padded \",\"" charity "\",\"news\"]")
-           (model/serialize-json-value #{"news" charity " padded "})))))
-
-(deftest json-value-round-trips-test
-  (let [values #{charity " padded " "news"}]
-    (is (= values (model/parse-json-value (model/serialize-json-value values))))))
-
-(deftest parse-value-as-test
-  (testing "csv splits and trims as parse-value does"
-    (is (= {:value #{"a" "b"} :invalid? false} (model/parse-value-as "csv" " a , b "))))
-  (testing "json keeps the exact strings"
-    (is (= {:value #{"a, b"} :invalid? false} (model/parse-value-as "json" "[\"a, b\"]"))))
-  (testing "invalid json yields the empty set and invalid?"
-    (is (= {:value #{} :invalid? true} (model/parse-value-as "json" "a,b")))))
-
-(deftest serialize-value-as-test
-  (is (= "a,b" (model/serialize-value-as "csv" #{"b" "a"})))
-  (is (= "[\"a\",\"b\"]" (model/serialize-value-as "json" #{"b" "a"}))))
-
 (deftest csv-unrepresentable-test
   (testing "plain values can be held"
-    (is (= [] (model/csv-unrepresentable ["apple" "banana split"]))))
+    (is (= [] (vl/csv-unrepresentable ["apple" "banana split"]))))
   (testing "values with the separator or outer whitespace cannot"
     (is (= [charity " padded" "tail "]
-           (model/csv-unrepresentable ["apple" charity " padded" "tail "]))))
+           (vl/csv-unrepresentable ["apple" charity " padded" "tail "]))))
   (testing "the message names the values and the json format"
     (let [msg (model/unrepresentable-message [charity])]
       (is (not= -1 (.indexOf msg charity)))

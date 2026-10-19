@@ -9,11 +9,11 @@
 (def ^:private k-refs     "__xTableRefs")
 (def ^:private k-model    "__xTableModel")
 (def ^:private k-handlers "__xTableHandlers")
+(def ^:private k-observer "__xTableObserver")
 
 ;; ── String-literal constants ────────────────────────────────────────────────
 (def ^:private cell-tag      "x-table-cell")
 (def ^:private sel-rows      (str ":scope > " row-model/tag-name))
-(def ^:private sel-selected  (str row-model/tag-name "[" row-model/attr-selected "]"))
 (def ^:private hk-sort       "sort")
 (def ^:private hk-row-click  "row-click")
 (def ^:private attr-data-striped    "data-striped")
@@ -22,9 +22,6 @@
 (def ^:private attr-data-compact    "data-compact")
 (def ^:private attr-aria-multiselectable "aria-multiselectable")
 (def ^:private attr-aria-rowcount        "aria-rowcount")
-(def ^:private select-none   "none")
-(def ^:private select-single "single")
-(def ^:private select-multi  "multi")
 (def ^:private detail-row-index         "rowIndex")
 (def ^:private detail-direction         "direction")
 (def ^:private detail-previous-direction "previousDirection")
@@ -99,22 +96,93 @@
     :bordered?      (du/has-attr? el model/attr-bordered)
     :full-width?    (du/has-attr? el model/attr-full-width)
     :compact?       (du/has-attr? el model/attr-compact)
-    :row-count-raw  (du/get-attr el model/attr-row-count)}))
+    :row-count-raw  (du/get-attr el model/attr-row-count)
+    :value-raw      (du/get-attr el model/attr-value)
+    :value-format-raw (du/get-attr el model/attr-value-format)}))
+
+(defn- current-model [^js el]
+  (or (du/getv el k-model) (read-model el)))
+
+;; ── Rows ─────────────────────────────────────────────────────────────────────
+(defn- direct-rows [^js el]
+  (array-seq (.querySelectorAll el sel-rows)))
+
+(defn- value-of-row
+  "The value that names `row` in the selection, or nil."
+  [^js row]
+  (row-model/row-value (du/get-attr row row-model/attr-value)
+                       (du/get-attr row row-model/attr-row-index)))
+
+(defn- marked? [^js row]
+  (du/has-attr? row row-model/attr-selected))
+
+(defn- marked-values
+  "The values of the direct rows marked selected, in order."
+  [^js el]
+  (into [] (comp (filter marked?) (keep value-of-row)) (direct-rows el)))
+
+(defn- current-selection
+  "The row values selected now: those `value` names, or those of the rows marked selected when
+   the table has no `value`."
+  [^js el {:keys [selectable value-present? selection]}]
+  (if value-present?
+    selection
+    (model/seed-selection selectable (marked-values el))))
 
 ;; ── Stripe helper ────────────────────────────────────────────────────────────
 (defn- update-stripe-attrs!
   "Writes the stripe of each direct row where it differs."
   [^js el]
-  (let [rows (array-seq (.querySelectorAll el sel-rows))]
-    (doseq [[i ^js row] (map-indexed vector rows)]
-      (du/set-attr-to! row model/row-attr-stripe (model/row-stripe i)))))
+  (doseq [[i ^js row] (map-indexed vector (direct-rows el))]
+    (du/set-attr-to! row model/row-attr-stripe (model/row-stripe i))))
+
+;; ── Selection ────────────────────────────────────────────────────────────────
+(defn- show-selection!
+  "Marks each direct row selected when `selection` holds its value."
+  [^js el selection]
+  (doseq [^js row (direct-rows el)]
+    (du/set-bool-attr-to! row row-model/attr-selected (contains? selection (value-of-row row)))))
+
+(defn- apply-selection!
+  "Shows the selection that `value` names. A removed `value` selects no row."
+  [^js el old-m m]
+  (cond
+    (:value-present? m)     (show-selection! el (:selection m))
+    (:value-present? old-m) (show-selection! el #{})))
 
 ;; ── Child watch ──────────────────────────────────────────────────────────────
 (defn- on-rows-changed!
-  "Stripes the rows again after rows come, go or move."
+  "Stripes the rows and shows the selection again after rows come, go or move."
   [^js el]
-  (when (:striped? (or (du/getv el k-model) (read-model el)))
-    (update-stripe-attrs! el)))
+  (let [m (current-model el)]
+    (when (:striped? m)
+      (update-stripe-attrs! el))
+    (apply-selection! el nil m)))
+
+(defn- direct-child? [^js el ^js node]
+  (identical? el (.-parentElement node)))
+
+(defn- row-record?
+  "True when the mutation record `r` is of a direct row of `el`."
+  [^js el ^js r]
+  (direct-child? el (.-target r)))
+
+(defn- on-row-mutations!
+  "Shows the selection again after the value of a direct row changes."
+  [^js el records]
+  (when (some (partial row-record? el) (array-seq records))
+    (apply-selection! el nil (current-model el))))
+
+(defn- observe-rows! [^js el]
+  (let [observer (js/MutationObserver. (fn on-mutations [records] (on-row-mutations! el records)))]
+    (.observe observer el #js {:attributes      true
+                               :subtree         true
+                               :attributeFilter #js [row-model/attr-value row-model/attr-row-index]})
+    (du/setv! el k-observer observer)))
+
+(defn- unobserve-rows! [^js el]
+  (some-> ^js (du/getv el k-observer) .disconnect)
+  (du/setv! el k-observer nil))
 
 ;; ── DOM initialisation ───────────────────────────────────────────────────────
 (defn- init-dom! [^js el]
@@ -182,6 +250,12 @@
   (when (and (:striped? m) (not (:striped? old-m)))
     (update-stripe-attrs! el)))
 
+(defn- warn-invalid-value!
+  "Warns when `value` is not a JSON array of strings in json format."
+  [{:keys [value-warning]}]
+  (when value-warning
+    (js/console.warn value-warning)))
+
 (defn- apply-model! [^js el old-m m]
   (let [{:keys [caption-div]} (ensure-refs! el)
         ^js caption-div caption-div]
@@ -190,6 +264,8 @@
     (apply-caption!       caption-div m)
     (apply-data-flags!    el m)
     (apply-stripes!       el old-m m)
+    (apply-selection!     el old-m m)
+    (warn-invalid-value!  m)
     (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
@@ -210,26 +286,9 @@
   (du/dispatch-cancelable! el model/event-sort
     (clj->js (model/sort-detail col-index direction previous-direction))))
 
-(defn- dispatch-row-select! [^js el row-index selected? selectable]
+(defn- dispatch-row-select! [^js el row-index selected? selectable value]
   (du/dispatch-cancelable! el model/event-row-select
-    (clj->js (model/row-select-detail row-index selected? selectable))))
-
-;; ── Selection management ─────────────────────────────────────────────────────
-(defn- handle-single-select! [^js el ^js target-row]
-  ;; Deselect all currently-selected rows. If the target was not already
-  ;; selected, select it (toggle behavior: clicking the same row deselects).
-  (let [was-selected? (.hasAttribute target-row row-model/attr-selected)
-        selected-rows (array-seq (.querySelectorAll el sel-selected))]
-    (doseq [^js row selected-rows]
-      (du/remove-attr! row row-model/attr-selected))
-    (when-not was-selected?
-      (du/set-attr! target-row row-model/attr-selected ""))))
-
-(defn- handle-multi-select! [^js _el ^js target-row]
-  ;; Toggle the target row's selected state.
-  (if (.hasAttribute target-row row-model/attr-selected)
-    (du/remove-attr! target-row row-model/attr-selected)
-    (du/set-attr! target-row row-model/attr-selected "")))
+    (clj->js (model/row-select-detail row-index selected? selectable value))))
 
 ;; ── Event handlers ───────────────────────────────────────────────────────────
 (defn- on-cell-sort [^js el ^js e]
@@ -245,18 +304,28 @@
       (.stopPropagation e)
       (dispatch-sort! el col-index direction prev-dir))))
 
-(defn- on-row-click [^js el ^js e]
-  (let [m          (or (du/getv el k-model) (read-model el))
-        selectable (:selectable m)]
-    (when (not= selectable select-none)
-      (let [^js row      (.-target e)
-            row-index    (gobj/get (.-detail e) detail-row-index)
-            currently?   (.hasAttribute row row-model/attr-selected)
-            will-select? (not currently?)]
-        (when (dispatch-row-select! el row-index will-select? selectable)
-          (cond
-            (= selectable select-single) (handle-single-select! el row)
-            (= selectable select-multi)  (handle-multi-select! el row)))))))
+(defn- request-selection!
+  "Asks for the selection that a click on the row with the value `row-value` gives, and writes it
+   to `value` when the request is not refused."
+  [^js el ^js e {:keys [selectable value-format] :as m} row-value]
+  (let [selection (model/next-selection selectable (current-selection el m) row-value)
+        text      (model/selection-text value-format selection)]
+    (when (dispatch-row-select! el (gobj/get (.-detail e) detail-row-index)
+                                (contains? selection row-value) selectable text)
+      (du/set-attr! el model/attr-value text))))
+
+(defn- on-row-click
+  "Asks for the selection that a click on a direct row gives. A row whose value the list cannot
+   hold asks for nothing and warns."
+  [^js el ^js e]
+  (let [{:keys [selectable value-format] :as m} (current-model el)
+        ^js row   (.-target e)
+        row-value (value-of-row row)]
+    (when (and (not= selectable model/selectable-none) (some? row-value)
+               (direct-child? el row) (not (.-defaultPrevented e)))
+      (if (model/holdable? value-format row-value)
+        (request-selection! el e m row-value)
+        (js/console.warn (model/unholdable-message row-value))))))
 
 ;; ── Listener management ──────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -286,6 +355,8 @@
   (du/define-bool-prop!   proto model/attr-bordered   model/attr-bordered)
   (du/define-bool-prop!   proto model/attr-compact    model/attr-compact)
   (du/define-bool-prop!   proto "fullWidth"           model/attr-full-width)
+  (du/define-string-prop! proto model/attr-value      model/attr-value      "")
+  (du/define-string-prop! proto "valueFormat"         model/attr-value-format)
 
   ;; camelCase JS property for row-count
   (.defineProperty js/Object proto "rowCount"
@@ -305,10 +376,14 @@
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (update-from-attrs! el))
+  (unobserve-rows! el)
+  (observe-rows! el)
+  (update-from-attrs! el)
+  (on-rows-changed! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el))
+  (remove-listeners! el)
+  (unobserve-rows! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)

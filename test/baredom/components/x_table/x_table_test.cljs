@@ -205,6 +205,9 @@
     (.setAttribute row1 row-model/attr-interactive "")
     (.setAttribute row2 row-model/attr-interactive "")
     (.setAttribute row3 row-model/attr-interactive "")
+    (.setAttribute row1 row-model/attr-row-index "1")
+    (.setAttribute row2 row-model/attr-row-index "2")
+    (.setAttribute row3 row-model/attr-row-index "3")
     (.setAttribute row1 row-model/attr-selected "")
 
     (doseq [^js r [row1 row2 row3]]
@@ -235,6 +238,8 @@
 
     (.setAttribute row1 row-model/attr-interactive "")
     (.setAttribute row2 row-model/attr-interactive "")
+    (.setAttribute row1 row-model/attr-row-index "1")
+    (.setAttribute row2 row-model/attr-row-index "2")
 
     (doseq [^js r [row1 row2]]
       (let [^js c1 (make-cell)
@@ -292,6 +297,7 @@
           events    (atom [])]
 
       (.setAttribute row1 row-model/attr-interactive "")
+      (.setAttribute row1 row-model/attr-row-index "1")
 
       (let [^js c1 (make-cell)
             ^js c2 (make-cell)]
@@ -305,6 +311,7 @@
                                   {:row-index (gobj/get (.-detail e) "rowIndex")
                                    :selected  (gobj/get (.-detail e) "selected")
                                    :mode      (gobj/get (.-detail e) "selectionMode")
+                                   :value     (gobj/get (.-detail e) "value")
                                    :bubbles   (.-bubbles e)
                                    :cancelable (.-cancelable e)})
                            (done)))
@@ -323,6 +330,7 @@
         events    (atom [])]
 
     (.setAttribute row1 row-model/attr-interactive "")
+    (.setAttribute row1 row-model/attr-row-index "1")
     (.setAttribute row1 row-model/attr-selected "")
 
     (let [^js c1 (make-cell)
@@ -354,19 +362,22 @@
   [selectable n]
   (let [^js table (append! (make-table {:selectable selectable}))
         rows      (vec (repeatedly n make-row))]
-    (doseq [^js row rows]
+    (doseq [[i ^js row] (map-indexed vector rows)]
       (.setAttribute row row-model/attr-interactive "")
+      (.setAttribute row row-model/attr-row-index (str (inc i)))
       (.appendChild table row))
     (.addEventListener table model/event-row-select (fn [^js e] (.preventDefault e)))
     rows))
 
-(defn- click-row! [^js row]
-  (.dispatchEvent row
-                  (js/CustomEvent. row-model/event-click
-                                   #js {:detail     #js {:rowIndex 1 :selected false :disabled false}
-                                        :bubbles    true
-                                        :composed   true
-                                        :cancelable true})))
+(defn- click-row!
+  ([^js row] (click-row! row 1))
+  ([^js row row-index]
+   (.dispatchEvent row
+                   (js/CustomEvent. row-model/event-click
+                                    #js {:detail     #js {:rowIndex row-index :selected false :disabled false}
+                                         :bubbles    true
+                                         :composed   true
+                                         :cancelable true}))))
 
 (deftest a-cancelled-row-select-leaves-the-row-unselected-in-single-mode
   (let [[^js row] (table-with-rows! "single" 1)]
@@ -460,6 +471,7 @@
         events    (atom [])]
 
     (.setAttribute row1 row-model/attr-interactive "")
+    (.setAttribute row1 row-model/attr-row-index "1")
 
     (let [^js c1 (make-cell)
           ^js c2 (make-cell)]
@@ -551,10 +563,254 @@
 (deftest x-table-writes-only-what-it-declares-on-other-nodes-test
   (let [^js el (append! (make-table {:selectable "single"}))
         rows   (vec (repeatedly 3 make-row))]
-    (doseq [^js row rows]
+    (doseq [[i ^js row] (map-indexed vector rows)]
       (.setAttribute row row-model/attr-interactive "")
+      (.setAttribute row row-model/attr-row-index (str (inc i)))
       (.appendChild el row))
     (let [written (writes/foreign-writes! el (fn change-table []
                                                (.setAttribute el model/attr-striped "")
-                                               (click-row! (second rows))))]
+                                               (.setAttribute el model/attr-value "2")))]
       (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))
+
+;; ── value ────────────────────────────────────────────────────────────────────
+(defn- ^js valued-row [v]
+  (doto (make-row)
+    (.setAttribute row-model/attr-interactive "")
+    (.setAttribute row-model/attr-value v)))
+
+(defn- table-of!
+  "A table with `attrs` in the document, with a row for each of `row-values`. Returns the table
+   and the rows."
+  [attrs row-values]
+  (let [^js table (append! (make-table attrs))
+        rows      (mapv valued-row row-values)]
+    (run! (fn [^js row] (.appendChild table row)) rows)
+    [table rows]))
+
+(defn- selected-flags [rows]
+  (mapv (fn [^js row] (.hasAttribute row row-model/attr-selected)) rows))
+
+(deftest value-selects-the-rows-it-names-test
+  (async done
+    (let [[_ rows] (table-of! {:selectable "multi" :value "b,c"} ["a" "b" "c"])]
+      (after-slotchange
+       (fn []
+         (is (= [false true true] (selected-flags rows)))
+         (done))))))
+
+(deftest value-selects-rows-when-selectable-is-none-test
+  (async done
+    (let [[_ rows] (table-of! {:value "a"} ["a" "b"])]
+      (after-slotchange
+       (fn []
+         (is (= [true false] (selected-flags rows)))
+         (done))))))
+
+(deftest value-is-a-list-in-single-mode-too-test
+  (async done
+    (let [[_ rows]  (table-of! {:selectable "single" :value "a,b"} ["a,b" "a" "b"])
+          [_ json] (table-of! {:selectable "single" :value-format "json" :value "[\"a,b\"]"}
+                               ["a,b" "a"])]
+      (after-slotchange
+       (fn []
+         (is (= [false true true] (selected-flags rows)))
+         (is (= [true false] (selected-flags json)))
+         (done))))))
+
+(deftest a-new-value-moves-the-selection-and-a-removed-value-clears-it-test
+  (async done
+    (let [[^js table rows] (table-of! {:selectable "single" :value "a"} ["a" "b"])]
+      (after-slotchange
+       (fn []
+         (.setAttribute table model/attr-value "b")
+         (is (= [false true] (selected-flags rows)))
+         (.removeAttribute table model/attr-value)
+         (is (= [false false] (selected-flags rows)))
+         (done))))))
+
+(deftest a-table-without-value-keeps-marked-rows-and-a-click-builds-value-from-them-test
+  (async done
+    (let [^js table (append! (make-table {:selectable "multi"}))
+          rows      (mapv valued-row ["a" "b" "c"])]
+      (doseq [^js row rows]
+        (.appendChild table row))
+      (.setAttribute (first rows) row-model/attr-selected "")
+      (.setAttribute (peek rows) row-model/attr-selected "")
+      (after-slotchange
+       (fn []
+         (is (not (.hasAttribute table model/attr-value)))
+         (is (= [true false true] (selected-flags rows)))
+         (click-row! (second rows))
+         (is (= "a,b,c" (.getAttribute table model/attr-value)))
+         (done))))))
+
+(defn- row-select-log
+  "Records the `value` and `selected` of each x-table-row-select that `table` sends, and refuses
+   each when `refuse?`."
+  [^js table refuse?]
+  (let [seen (atom [])]
+    (.addEventListener table model/event-row-select
+                       (fn [^js e]
+                         (when (identical? table (.-target e))
+                           (swap! seen conj [(gobj/get (.-detail e) "value")
+                                             (gobj/get (.-detail e) "selected")])
+                           (when refuse? (.preventDefault e)))))
+    seen))
+
+(deftest a-click-asks-for-the-value-and-an-accepted-request-writes-it-test
+  (async done
+    (let [[^js table rows] (table-of! {:selectable "multi" :value "a"} ["a" "b"])
+          seen             (row-select-log table false)]
+      (after-slotchange
+       (fn []
+         (click-row! (second rows))
+         (is (= [["a,b" true]] @seen))
+         (is (= "a,b" (.getAttribute table model/attr-value)))
+         (is (= [true true] (selected-flags rows)))
+         (click-row! (first rows))
+         (is (= ["b" false] (peek @seen)))
+         (done))))))
+
+(deftest a-refused-click-keeps-the-value-test
+  (async done
+    (let [[^js table rows] (table-of! {:selectable "single" :value "a"} ["a" "b"])
+          seen             (row-select-log table true)]
+      (after-slotchange
+       (fn []
+         (click-row! (second rows))
+         (is (= [["b" true]] @seen))
+         (is (= "a" (.getAttribute table model/attr-value)))
+         (is (= [true false] (selected-flags rows)))
+         (done))))))
+
+(deftest a-row-without-value-or-row-index-sends-no-row-select-test
+  (let [^js table (append! (make-table {:selectable "single"}))
+        ^js row   (doto (make-row) (.setAttribute row-model/attr-interactive ""))
+        ^js other (valued-row "b")
+        seen      (row-select-log table false)]
+    (.appendChild table row)
+    (.appendChild table other)
+    (click-row! row)
+    (is (= [] @seen))
+    (is (not (.hasAttribute row row-model/attr-selected)))
+    (click-row! other)
+    (is (= [["b" true]] @seen))))
+
+(deftest a-click-on-a-row-that-csv-cannot-hold-asks-for-nothing-test
+  (let [[^js table rows] (table-of! {:selectable "multi"} ["a,b" "a" "b"])
+        seen             (row-select-log table false)
+        warned           (atom 0)
+        warn             (.-warn js/console)]
+    (set! (.-warn js/console) (fn [& _] (swap! warned inc)))
+    (try
+      (click-row! (first rows))
+      (finally
+        (set! (.-warn js/console) warn)))
+    (is (= [] @seen))
+    (is (= 1 @warned))
+    (is (not (.hasAttribute table model/attr-value)))))
+
+(deftest json-format-holds-a-value-with-a-comma-test
+  (async done
+    (let [[^js table rows] (table-of! {:selectable "multi" :value-format "json" :value "[\"a,1\"]"}
+                                      ["a,1" "b"])
+          seen             (row-select-log table false)]
+      (after-slotchange
+       (fn []
+         (is (= [true false] (selected-flags rows)))
+         (click-row! (second rows))
+         (is (= [["[\"a,1\",\"b\"]" true]] @seen))
+         (done))))))
+
+(defn- after-mutations
+  "Calls `f` after the mutation observer callbacks of the changes made so far."
+  [f]
+  (js/setTimeout f 0))
+
+(deftest a-new-row-value-shows-the-selection-again-test
+  (async done
+    (let [[_ rows] (table-of! {:selectable "single" :value "x"} ["y"])
+          ^js row  (first rows)]
+      (after-slotchange
+       (fn []
+         (is (= [false] (selected-flags rows)))
+         (.setAttribute row row-model/attr-value "x")
+         (after-mutations
+          (fn []
+            (is (= [true] (selected-flags rows)))
+            (done))))))))
+
+(deftest value-properties-reflect-their-attributes-test
+  (let [^js table (append! (make-table))
+        ^js row   (make-row)]
+    (set! (.-value table) "a")
+    (set! (.-valueFormat table) "json")
+    (set! (.-value row) "r")
+    (is (= "a" (.getAttribute table model/attr-value)))
+    (is (= "json" (.getAttribute table model/attr-value-format)))
+    (is (= "r" (.getAttribute row row-model/attr-value)))))
+
+(deftest a-table-with-selectable-none-leaves-marked-rows-to-the-app-test
+  (async done
+    (let [^js table (append! (make-table))
+          ^js row   (doto (valued-row "a") (.setAttribute row-model/attr-selected ""))
+          ^js other (valued-row "b")]
+      (.appendChild table row)
+      (.appendChild table other)
+      (after-slotchange
+       (fn []
+         (is (not (.hasAttribute table model/attr-value)))
+         (.removeAttribute row row-model/attr-selected)
+         (.setAttribute other row-model/attr-selected "")
+         (.insertBefore table other row)
+         (after-slotchange
+          (fn []
+            (is (= [false true] (selected-flags [row other])))
+            (done))))))))
+
+(deftest a-click-on-a-row-of-a-nested-table-leaves-the-outer-value-test
+  (async done
+    (let [[^js outer _] (table-of! {:selectable "multi" :value "a"} ["a"])
+          ^js inner     (make-table {:selectable "multi"})
+          ^js holder    (valued-row "h")
+          ^js inner-row (valued-row "z")
+          seen          (row-select-log outer false)]
+      (.appendChild inner inner-row)
+      (.appendChild holder inner)
+      (.appendChild outer holder)
+      (after-slotchange
+       (fn []
+         (click-row! inner-row)
+         (is (= [] @seen))
+         (is (= "a" (.getAttribute outer model/attr-value)))
+         (is (= "z" (.getAttribute inner model/attr-value)))
+         (done))))))
+
+(deftest a-cancelled-row-click-asks-for-no-selection-test
+  (let [[^js table rows] (table-of! {:selectable "single"} ["a"])
+        ^js row          (first rows)
+        seen             (row-select-log table false)]
+    (.addEventListener row row-model/event-click (fn [^js e] (.preventDefault e)))
+    (click-row! row)
+    (is (= [] @seen))
+    (is (not (.hasAttribute table model/attr-value)))))
+
+(deftest a-reconnected-table-shows-a-row-value-changed-while-away-test
+  (async done
+    (let [[^js table rows] (table-of! {:selectable "single" :value "x"} ["y"])
+          ^js row          (first rows)]
+      (after-slotchange
+       (fn []
+         (.remove table)
+         (.setAttribute row row-model/attr-value "x")
+         (append! table)
+         (is (= [true] (selected-flags rows)))
+         (done))))))
+
+(deftest the-row-select-detail-carries-the-row-index-of-the-click-test
+  (let [[^js table rows] (table-of! {:selectable "multi"} ["a"])
+        index            (atom nil)]
+    (.addEventListener table model/event-row-select
+                       (fn [^js e] (reset! index (gobj/get (.-detail e) "rowIndex"))))
+    (click-row! (first rows) 7)
+    (is (= 7 @index))))

@@ -359,7 +359,7 @@
     // ── Row selection for the selectable-table ────────────────────────────────
     selectableTable.addEventListener('x-table-row-select', e => {
       addLog(
-        `[x-table-row-select] rowIndex=${e.detail.rowIndex} selected=${e.detail.selected} mode=${e.detail.selectionMode}`,
+        `[x-table-row-select] rowIndex=${e.detail.rowIndex} selected=${e.detail.selected} mode=${e.detail.selectionMode} value=${e.detail.value}`,
         'log-select'
       );
     });
