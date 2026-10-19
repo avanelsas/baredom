@@ -53,7 +53,7 @@ jobs:
           cp -r demo _site/demo
           cp -r dist _site/dist
           mkdir _site/bare-html
-          cp -r bare-html/mirror.html bare-html/mirror bare-html/tasks.html _site/bare-html/
+          cp -r bare-html/mirror.html bare-html/mirror bare-html/tasks.html bare-html/tree.html bare-html/tree _site/bare-html/
           touch _site/.nojekyll
 
       - name: Make the copy of the mirror demo with no script

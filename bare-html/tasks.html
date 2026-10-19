@@ -157,7 +157,7 @@
     const store = { value: initial };
     const dispatch = dispatcher(store, step, view, render);
     const detailValue = (origin, event) => event.detail.value;
-    const pressedKey = (origin, event) => event.key;
+    const pressedKey = (origin, event) => (event.isComposing ? undefined : event.key);
 
     listen(page, {
       dispatch,
