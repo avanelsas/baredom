@@ -16,19 +16,11 @@
   (is (= "vertical"   (model/parse-axis "VERTICAL")))
   (is (= "horizontal" (model/parse-axis "Horizontal"))))
 
-;; ── parse-grow ────────────────────────────────────────────────────────────
-(deftest parse-grow-absent-test
-  (is (false? (model/parse-grow nil))))
-
-(deftest parse-grow-present-test
-  (is (true? (model/parse-grow "")))
-  (is (true? (model/parse-grow "true")))
-  (is (true? (model/parse-grow "grow"))))
-
-(deftest parse-grow-explicit-false-test
-  (is (false? (model/parse-grow "false")))
-  (is (false? (model/parse-grow "FALSE")))
-  (is (false? (model/parse-grow "  false  "))))
+;; ── grow ──────────────────────────────────────────────────────────────────
+(deftest grow-is-on-when-present-whatever-its-text-test
+  (is (false? (:grow? (model/normalize {}))))
+  (is (true? (:grow? (model/normalize {:grow-raw ""}))))
+  (is (true? (:grow? (model/normalize {:grow-raw "false"})))))
 
 ;; ── parse-size ────────────────────────────────────────────────────────────
 (deftest parse-size-valid-test

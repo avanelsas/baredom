@@ -1,18 +1,6 @@
 (ns baredom.components.x-switch.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-switch.model :as model]
-            [baredom.utils.model :as mu]))
-
-(deftest parse-bool-attr-test
-  (testing "nil returns false"
-    (is (= false (mu/parse-bool-attr nil))))
-  (testing "\"false\" string still true (presence semantics)"
-    (is (= false (mu/parse-bool-attr "false"))))
-  (testing "empty string returns true"
-    (is (= true (mu/parse-bool-attr ""))))
-  (testing "any other string returns true"
-    (is (= true (mu/parse-bool-attr "true")))
-    (is (= true (mu/parse-bool-attr "yes")))))
+            [baredom.components.x-switch.model :as model]))
 
 (deftest switch-value-test
   (testing "nil yields \"on\""

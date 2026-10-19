@@ -5,7 +5,6 @@
             [baredom.utils.forms :as forms]
             [baremirror.alpha.places :as places]
             [goog.object :as gobj]
-            [baredom.utils.model :as mu]
             [baredom.components.x-date-picker.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -43,11 +42,9 @@
                     :format     (du/get-attr el model/attr-format)
                     :locale     (du/get-attr el model/attr-locale)
                     :separator  (du/get-attr el model/attr-separator)
-                    :auto-swap? (mu/parse-bool-attr
-                                 (du/get-attr el model/attr-auto-swap))
+                    :auto-swap? (du/has-attr? el model/attr-auto-swap)
                     :range-allow-same-day?
-                    (mu/parse-bool-attr
-                     (du/get-attr el model/attr-range-allow-same))})
+                    (du/has-attr? el model/attr-range-allow-same)})
         cfg       {:format (:format canon) :locale (:locale canon)}
         disp      (model/display-value canon cfg)
         existing  (du/getv el k-state)

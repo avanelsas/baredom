@@ -1,7 +1,6 @@
 (ns baredom.components.x-proximity-list.model-test
   (:require [cljs.test :refer-macros [deftest is]]
-            [baredom.components.x-proximity-list.model :as model]
-            [baredom.utils.model :as mu]))
+            [baredom.components.x-proximity-list.model :as model]))
 
 ;; ── parse-direction ─────────────────────────────────────────────────────────
 (deftest parse-direction-valid-test
@@ -78,12 +77,6 @@
 (deftest parse-gap-clamping-test
   (is (= 0  (model/parse-gap "-5")))
   (is (= 64 (model/parse-gap "999"))))
-
-;; ── parse-bool-present ──────────────────────────────────────────────────────
-(deftest parse-bool-present-test
-  (is (false? (mu/parse-bool-present nil)))
-  (is (true?  (mu/parse-bool-present "")))
-  (is (true?  (mu/parse-bool-present "anything"))))
 
 ;; ── normalize ───────────────────────────────────────────────────────────────
 (deftest normalize-defaults-test

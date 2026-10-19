@@ -1,7 +1,6 @@
 (ns baredom.components.x-scroll.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-scroll.model :as model]
-            [baredom.utils.model :as mu]))
+  (:require [cljs.test :refer-macros [deftest is]]
+            [baredom.components.x-scroll.model :as model]))
 
 ;; ── parse-mode ──────────────────────────────────────────────────────────────
 (deftest parse-mode-known-values-test
@@ -32,17 +31,6 @@
   (is (= "none" (model/parse-snap nil)))
   (is (= "none" (model/parse-snap "")))
   (is (= "none" (model/parse-snap "middle"))))
-
-;; ── parse-bool-attr ─────────────────────────────────────────────────────────
-(deftest parse-bool-attr-test
-  (testing "absent (nil) -> false"
-    (is (false? (mu/parse-bool-present nil))))
-  (testing "present (empty string) -> true"
-    (is (true? (mu/parse-bool-present ""))))
-  (testing "present (any value) -> true"
-    (is (true? (mu/parse-bool-present "true")))
-    (is (true? (mu/parse-bool-present "false")))
-    (is (true? (mu/parse-bool-present "anything")))))
 
 ;; ── parse-non-neg-int ───────────────────────────────────────────────────────
 (deftest parse-non-neg-int-valid-test

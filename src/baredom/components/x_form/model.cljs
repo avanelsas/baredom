@@ -27,15 +27,10 @@
 (defn normalize-autocomplete [raw]
   (if (contains? allowed-autocomplete raw) raw "on"))
 
-(defn bool-attr?
-  "Returns true when attribute is present and not literally \"false\"."
-  [v]
-  (and (some? v) (not= v "false")))
-
 (defn normalize
   "Derives a complete view-model map from raw attribute values."
   [{:keys [loading-raw novalidate-raw autocomplete-raw]}]
-  {:loading?     (bool-attr? loading-raw)
+  {:loading?     (some? loading-raw)
    :novalidate?  (some? novalidate-raw)
    :autocomplete (normalize-autocomplete autocomplete-raw)})
 

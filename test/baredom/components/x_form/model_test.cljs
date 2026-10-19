@@ -2,15 +2,10 @@
   (:require [cljs.test :refer-macros [deftest is testing]]
             [baredom.components.x-form.model :as model]))
 
-(deftest bool-attr-test
-  (testing "nil → false"
-    (is (= false (model/bool-attr? nil))))
-  (testing "empty string → true (presence)"
-    (is (= true (model/bool-attr? ""))))
-  (testing "any string value → true"
-    (is (= true (model/bool-attr? "loading"))))
-  (testing "literal \"false\" → false"
-    (is (= false (model/bool-attr? "false")))))
+(deftest loading-is-on-when-present-whatever-its-text-test
+  (is (false? (:loading? (model/normalize {}))))
+  (is (true? (:loading? (model/normalize {:loading-raw ""}))))
+  (is (true? (:loading? (model/normalize {:loading-raw "false"})))))
 
 (deftest normalize-autocomplete-test
   (testing "\"on\" passes through"
@@ -33,9 +28,7 @@
   (testing "loading-raw present sets loading? true"
     (is (= true (:loading? (model/normalize {:loading-raw ""})))))
   (testing "loading-raw nil sets loading? false"
-    (is (= false (:loading? (model/normalize {:loading-raw nil})))))
-  (testing "loading-raw \"false\" sets loading? false"
-    (is (= false (:loading? (model/normalize {:loading-raw "false"}))))))
+    (is (= false (:loading? (model/normalize {:loading-raw nil}))))))
 
 (deftest normalize-novalidate-test
   (testing "novalidate-raw empty string (present) sets novalidate? true"

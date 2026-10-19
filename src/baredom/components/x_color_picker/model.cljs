@@ -343,7 +343,7 @@
                                  (== 8 (count (second (re-matches hex-re v)))))))
         alpha-val (if has-alpha-val a 1.0)
         {:keys [h s l]} (rgb->hsl r g b)
-        readonly? (mu/parse-bool-attr readonly)
+        readonly? (mu/parse-bool-present readonly)
         alpha?    (mu/parse-bool-present alpha)
         open?     (mu/parse-bool-present open)
         norm-mode (normalize-mode mode)]

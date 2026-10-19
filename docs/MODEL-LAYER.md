@@ -28,6 +28,8 @@ Keys:
 - `:readonly` — `true` for read-only properties (optional)
 - `:enum`: the set of canonical values of a property that takes one value of a fixed set (optional). The model may accept more, such as another case, and the property returns the text of the attribute as it is. Name the set that the model normalises with, and define that set above `property-api`. A property that takes a list of values, or an open set, names none.
 
+A boolean attribute that is off by default follows HTML: it is on when present, whatever its text, so `auto-swap="false"` is on. One that is on by default turns off with the text `"false"`. Read the first with `du/has-attr?` or `mu/parse-bool-present`, and the second with `mu/parse-bool-default-true`.
+
 **Every public attribute has a property that reflects it.** The manifest takes the type of an attribute from that property. The name of the property is the attribute in camel case, with no dash. Two kinds of attribute need no property: `role` and `aria-` attributes, which are text by the ARIA standard, and the attributes a model names in `internal-attributes`.
 
 `bb scripts/check_attribute_api.bb` enforces this in CI. It also checks that each link agrees with how the component installs the property, and that the manifest publishes the same type and field name as the model.

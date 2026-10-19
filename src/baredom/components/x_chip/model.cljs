@@ -1,4 +1,5 @@
-(ns baredom.components.x-chip.model)
+(ns baredom.components.x-chip.model
+  (:require [baredom.utils.model :as mu]))
 
 ;; ── Tag & attribute constants ─────────────────────────────────────────────
 (def tag-name      "x-chip")
@@ -14,15 +15,6 @@
 (def event-remove "x-chip-remove")
 
 ;; ── Parse helpers ─────────────────────────────────────────────────────────
-(defn parse-bool-default-true
-  "nil (attribute absent) → true.
-   'false' or '0' → false.
-   Anything else → true."
-  [s]
-  (if (nil? s)
-    true
-    (not (or (= s "false") (= s "0")))))
-
 (defn effective-value
   "Returns value-raw when it is a non-nil, non-empty string; else falls back to label."
   [label value-raw]
@@ -36,7 +28,7 @@
    disabled-present? should be boolean: (du/has-attr? el attr-disabled)"
   [{:keys [label-raw value-raw removable-raw disabled-present?]}]
   (let [label      (or label-raw "")
-        removable? (parse-bool-default-true removable-raw)
+        removable? (mu/parse-bool-default-true removable-raw)
         disabled?  (boolean disabled-present?)]
     {:label      label
      :value      (effective-value label value-raw)

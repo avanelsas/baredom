@@ -68,13 +68,12 @@
     (is (= "true" (.getAttribute control "aria-checked")))
     (is (.hasAttribute el "data-checked"))))
 
-(deftest checked-false-string-not-checked-test
+(deftest checked-with-any-text-is-checked-test
   (let [el      (append! (make-el))
         control (shadow-part el "[part=control]")]
     (.setAttribute el model/attr-checked "false")
-    (is (= "false" (.getAttribute control "aria-checked"))
-        "checked=\"false\" must not be treated as checked")
-    (is (not (.hasAttribute el "data-checked")))))
+    (is (= "true" (.getAttribute control "aria-checked")))
+    (is (true? (.-checked el)))))
 
 (deftest indeterminate-attr-updates-aria-test
   (let [el      (append! (make-el))

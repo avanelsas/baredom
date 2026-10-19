@@ -88,10 +88,8 @@
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:open-present?     (when (du/has-attr? el model/attr-open)
-                         (du/get-attr el model/attr-open))
-    :disabled-present? (when (du/has-attr? el model/attr-disabled)
-                         (du/get-attr el model/attr-disabled))
+   {:open-present?     (du/has-attr? el model/attr-open)
+    :disabled-present? (du/has-attr? el model/attr-disabled)
     :placement-raw     (du/get-attr el model/attr-placement)
     :offset-raw        (du/get-attr el model/attr-offset)
     :z-index-raw       (du/get-attr el model/attr-z-index)}))

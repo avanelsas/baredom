@@ -1,15 +1,7 @@
 (ns baredom.components.x-command-palette.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
             [clojure.string :as str]
-            [baredom.components.x-command-palette.model :as model]
-            [baredom.utils.model :as mu]))
-
-(deftest parse-bool-attr-test
-  (testing "parse-bool-attr"
-    (is (= true  (mu/parse-bool-attr "")))
-    (is (= true  (mu/parse-bool-attr "true")))
-    (is (= false (mu/parse-bool-attr "false")))
-    (is (= false (mu/parse-bool-attr nil)))))
+            [baredom.components.x-command-palette.model :as model]))
 
 (deftest normalize-str-test
   (testing "normalize-str"

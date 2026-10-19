@@ -22,13 +22,6 @@
   (let [v (when (string? s) (.toLowerCase (.trim s)))]
     (if (contains? valid-axes v) v default-axis)))
 
-(defn parse-grow
-  "Returns true when the grow attribute is present and not explicitly 'false'.
-  grow is false when absent (nil), true when present (empty string or any value
-  other than 'false')."
-  [s]
-  (and (some? s) (not= (.toLowerCase (.trim (str s))) "false")))
-
 (defn parse-size
   "Returns the size value, or the default when nil/blank."
   [s]
@@ -52,7 +45,7 @@
   [{:keys [size-raw axis-raw grow-raw]}]
   {:size  (parse-size size-raw)
    :axis  (parse-axis axis-raw)
-   :grow? (parse-grow grow-raw)})
+   :grow? (some? grow-raw)})
 
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api

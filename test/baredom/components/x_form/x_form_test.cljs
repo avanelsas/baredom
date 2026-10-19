@@ -335,3 +335,12 @@
                                                (.setFieldError el "email" "Invalid email")
                                                (.clearErrors el)))]
       (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))
+
+(deftest loading-with-any-text-blocks-submit-test
+  (let [el    (append! (make-el))
+        heard (atom 0)]
+    (.setAttribute el model/attr-loading "false")
+    (.addEventListener el model/event-submit (fn [_] (swap! heard inc)))
+    (.submit el)
+    (is (= 0 @heard))
+    (is (= "true" (.getAttribute (shadow-part el "[part=root]") "aria-busy")))))

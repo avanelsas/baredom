@@ -74,23 +74,10 @@
     (update-from-attrs! el)))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
-;; grow uses model/parse-grow getter — kept inline
-(defn- def-bool-presence-prop! [^js proto attr]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-grow (.getAttribute this attr))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (du/set-attr! this attr "")
-                                          (du/remove-attr! this attr))))
-                        :enumerable true :configurable true}))
-
 (defn- install-property-accessors! [^js proto]
   (du/define-string-prop! proto model/attr-size model/attr-size model/default-size)
   (du/define-string-prop! proto model/attr-axis model/attr-axis model/default-axis)
-  (def-bool-presence-prop! proto model/attr-grow))
+  (du/define-bool-prop!   proto model/attr-grow model/attr-grow))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────

@@ -1,8 +1,7 @@
 (ns baredom.components.x-scroll-timeline.model-test
   (:require
    [cljs.test :refer [deftest testing is]]
-   [baredom.components.x-scroll-timeline.model :as model]
-   [baredom.utils.model :as mu]))
+   [baredom.components.x-scroll-timeline.model :as model]))
 
 ;; ── parse-layout ────────────────────────────────────────────────────────────
 (deftest parse-layout-test
@@ -56,12 +55,6 @@
   (testing "unknown defaults to dot"
     (is (= "dot" (model/parse-marker "circle")))
     (is (= "dot" (model/parse-marker nil)))))
-
-;; ── parse-bool-attr ─────────────────────────────────────────────────────────
-(deftest parse-bool-attr-test
-  (is (true?  (mu/parse-bool-present "")))
-  (is (true?  (mu/parse-bool-present "anything")))
-  (is (false? (mu/parse-bool-present nil))))
 
 ;; ── parse-autoplay-speed ────────────────────────────────────────────────────
 (deftest parse-autoplay-speed-test

@@ -70,10 +70,10 @@
     (.setAttribute el model/attr-removable "false")
     (is (false? (.hasAttribute el "data-removable")))))
 
-(deftest removable-zero-removes-data-attr-test
+(deftest removable-zero-keeps-the-chip-removable-test
   (let [^js el (append! (make-el))]
     (.setAttribute el model/attr-removable "0")
-    (is (false? (.hasAttribute el "data-removable")))))
+    (is (true? (.hasAttribute el "data-removable")))))
 
 (deftest removable-absent-defaults-to-true-test
   (let [^js el (append! (make-el))]

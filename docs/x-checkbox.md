@@ -16,7 +16,7 @@ An accessible, themeable checkbox control that supports checked, indeterminate, 
 
 | Attribute           | Type    | Default | Description                                                         |
 |---------------------|---------|---------|---------------------------------------------------------------------|
-| `checked`           | boolean | `false` | Whether the checkbox is checked. Setting `checked="false"` is treated as absent (unchecked). |
+| `checked`           | boolean | `false` | Whether the checkbox is checked. Present means checked, whatever its text, as in HTML. |
 | `indeterminate`     | boolean | `false` | Indeterminate (mixed) state — overrides `checked` visually          |
 | `disabled`          | boolean | `false` | Disables interaction                                                |
 | `readonly`          | boolean | `false` | Prevents user toggling (still focusable)                            |

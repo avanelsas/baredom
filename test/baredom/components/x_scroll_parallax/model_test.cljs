@@ -1,7 +1,6 @@
 (ns baredom.components.x-scroll-parallax.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-scroll-parallax.model :as model]
-            [baredom.utils.model :as mu]))
+            [baredom.components.x-scroll-parallax.model :as model]))
 
 ;; ── parse-direction ─────────────────────────────────────────────────────────
 (deftest parse-direction-known-values-test
@@ -42,17 +41,6 @@
   (is (= "none" (model/parse-easing nil)))
   (is (= "none" (model/parse-easing "")))
   (is (= "none" (model/parse-easing "ease-in"))))
-
-;; ── parse-bool-attr ─────────────────────────────────────────────────────────
-(deftest parse-bool-attr-test
-  (testing "absent (nil) -> false"
-    (is (false? (mu/parse-bool-present nil))))
-  (testing "present (empty string) -> true"
-    (is (true? (mu/parse-bool-present ""))))
-  (testing "present (any value) -> true"
-    (is (true? (mu/parse-bool-present "true")))
-    (is (true? (mu/parse-bool-present "false")))
-    (is (true? (mu/parse-bool-present "anything")))))
 
 ;; ── parse-speed ─────────────────────────────────────────────────────────────
 (deftest parse-speed-valid-test

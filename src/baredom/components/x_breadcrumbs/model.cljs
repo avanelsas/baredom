@@ -123,7 +123,7 @@
   (let [m {:separator             (normalize-separator separator-raw)
            :size                  (parse-size    size-raw)
            :variant               (parse-variant variant-raw)
-           :wrap                  (mu/parse-bool-attr wrap-raw)
+           :wrap                  (mu/parse-bool-present wrap-raw)
            :max-items             (parse-pos-int-or-nil max-items-raw)
            :items-before          (parse-pos-int items-before-raw default-items-before)
            :items-after           (parse-pos-int items-after-raw  default-items-after)

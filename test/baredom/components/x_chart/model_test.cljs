@@ -1,7 +1,6 @@
 (ns baredom.components.x-chart.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-chart.model :as model]
-            [baredom.utils.model :as mu]))
+            [baredom.components.x-chart.model :as model]))
 
 ;; ---- parse-type ----
 
@@ -27,12 +26,6 @@
     (is (= "nearest" (model/parse-cursor "hover")))))
 
 ;; ---- parse-bool-attr ----
-
-(deftest parse-bool-attr-test
-  (is (true?  (mu/parse-bool-attr "")))
-  (is (true?  (mu/parse-bool-attr "true")))
-  (is (false? (mu/parse-bool-attr "false")))
-  (is (false? (mu/parse-bool-attr nil))))
 
 ;; ---- parse-int-pos ----
 
@@ -185,12 +178,12 @@
            {:type-raw         "bar"
             :height-raw       "250"
             :padding-raw      "20"
-            :grid-present?    "false"
+            :grid-raw         "false"
             :axes-raw         "false"
-            :tooltip-present? ""
+            :tooltip-present? true
             :cursor-raw       "x"
-            :disabled-present? ""
-            :loading-present?  ""
+            :disabled-present? true
+            :loading-present?  true
             :selected-raw      "s1:2"})]
     (is (= "bar"  (:type m)))
     (is (= 250    (:height m)))
@@ -277,3 +270,11 @@
                  0 "category" [0 1] bounds [0 10])]
         (is (approx= (:px (first two))   0 0.01))
         (is (approx= (:px (second two)) 100 0.01))))))
+
+(deftest grid-and-axes-are-on-by-default-and-off-with-false-test
+  (let [on  (model/normalize {})
+        off (model/normalize {:grid-raw "false" :axes-raw "false"})]
+    (is (true? (:grid? on)))
+    (is (true? (:axes? on)))
+    (is (false? (:grid? off)))
+    (is (false? (:axes? off)))))
