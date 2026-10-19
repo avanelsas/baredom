@@ -17,17 +17,19 @@ export class BaredomTable implements OnInit, OnDestroy {
     this.zone = zone;
   }
 
-  @Input() set columns(v: string) { this.el.columns = v as any; }
-  @Input() set caption(v: string) { this.el.caption = v as any; }
-  @Input() set selectable(v: string) { this.el.selectable = v as any; }
   @Input() set striped(v: boolean) { this.el.striped = v as any; }
+  @Input() set caption(v: string) { this.el.caption = v as any; }
   @Input() set bordered(v: boolean) { this.el.bordered = v as any; }
-  @Input() set fullWidth(v: boolean) { this.el.fullWidth = v as any; }
+  @Input() set columns(v: string) { this.el.columns = v as any; }
+  @Input() set value(v: string) { this.el.value = v as any; }
   @Input() set compact(v: boolean) { this.el.compact = v as any; }
+  @Input() set fullWidth(v: boolean) { this.el.fullWidth = v as any; }
   @Input() set rowCount(v: number) { this.el.rowCount = v as any; }
+  @Input() set valueFormat(v: string) { this.el.valueFormat = v as any; }
+  @Input() set selectable(v: string) { this.el.selectable = v as any; }
 
   @Output() sort = new EventEmitter<CustomEvent<{ colIndex: number; direction: string; previousDirection: string }>>();
-  @Output() rowSelect = new EventEmitter<CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string }>>();
+  @Output() rowSelect = new EventEmitter<CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string; value: string }>>();
 
   ngOnInit(): void {
     this.listen('x-table-sort', this.sort);

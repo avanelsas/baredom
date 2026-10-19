@@ -19005,9 +19005,9 @@
       },
       "members" : [ {
         "kind" : "field",
-        "name" : "columns",
+        "name" : "striped",
         "type" : {
-          "text" : "string"
+          "text" : "boolean"
         }
       }, {
         "kind" : "field",
@@ -19017,19 +19017,25 @@
         }
       }, {
         "kind" : "field",
-        "name" : "selectable",
-        "type" : {
-          "text" : "string"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "striped",
+        "name" : "bordered",
         "type" : {
           "text" : "boolean"
         }
       }, {
         "kind" : "field",
-        "name" : "bordered",
+        "name" : "columns",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "compact",
         "type" : {
           "text" : "boolean"
         }
@@ -19041,15 +19047,21 @@
         }
       }, {
         "kind" : "field",
-        "name" : "compact",
-        "type" : {
-          "text" : "boolean"
-        }
-      }, {
-        "kind" : "field",
         "name" : "rowCount",
         "type" : {
           "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "valueFormat",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "selectable",
+        "type" : {
+          "text" : "string"
         }
       } ],
       "attributes" : [ {
@@ -19100,6 +19112,18 @@
         "type" : {
           "text" : "number"
         }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value-format",
+        "fieldName" : "valueFormat",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "events" : [ {
         "name" : "x-table-sort",
@@ -19115,13 +19139,17 @@
       }, {
         "name" : "x-table-row-select",
         "type" : {
-          "text" : "CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string }>"
+          "text" : "CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string; value: string }>"
         },
         "cancelable" : true,
+        "requests" : {
+          "value" : "value"
+        },
         "detail" : {
           "rowIndex" : "number",
           "selected" : "boolean",
-          "selectionMode" : "string"
+          "selectionMode" : "string",
+          "value" : "string"
         }
       } ],
       "slots" : [ {
@@ -19459,6 +19487,12 @@
         "type" : {
           "text" : "number"
         }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "attributes" : [ {
         "name" : "selected",
@@ -19483,6 +19517,12 @@
         "fieldName" : "rowIndex",
         "type" : {
           "text" : "number"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
         }
       } ],
       "events" : [ {
@@ -19844,6 +19884,12 @@
         "type" : {
           "text" : "number"
         }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
       } ],
       "attributes" : [ {
         "name" : "selected",
@@ -19868,6 +19914,12 @@
         "fieldName" : "rowIndex",
         "type" : {
           "text" : "number"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
         }
       } ],
       "events" : [ {

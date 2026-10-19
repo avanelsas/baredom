@@ -25,10 +25,11 @@ A stateless Web Component that represents a table row. Wraps `x-table-cell` chil
 
 | Attribute     | Type    | Default | Description |
 |---------------|---------|---------|-------------|
-| `selected`    | boolean | absent  | Row is in the selected state. Sets `aria-selected="true"` and applies selection styling. |
+| `selected`    | boolean | absent  | Row is in the selected state. Sets `aria-selected="true"` and applies selection styling. Inside an `x-table` with a `value`, the table sets it, and removes it when `value` is removed. |
 | `disabled`    | boolean | absent  | Row is disabled. Sets `aria-disabled="true"` and suppresses click events and interaction. |
 | `interactive` | boolean | absent  | Row responds to hover and click. Sets `tabindex="0"`, focus ring, cursor pointer, and hover background. Also sets `aria-selected="false"` when not selected (indicates row is in a selection context). |
 | `row-index`   | number  | absent  | Positive integer for `aria-rowindex`. Useful with virtual/windowed rendering where only a subset of rows are in the DOM. Invalid or zero values are ignored. |
+| `value`       | string  | absent  | The value that names the row in the `value` of its `x-table`. Without it the row uses its `row-index`. |
 
 ---
 
@@ -40,6 +41,7 @@ A stateless Web Component that represents a table row. Wraps `x-table-cell` chil
 | `disabled`    | `boolean` | `false` | `disabled`         |
 | `interactive` | `boolean` | `false` | `interactive`      |
 | `rowIndex`    | `number\|null` | `null` | `row-index`   |
+| `value`       | `string` | `""` | `value`       |
 
 ```js
 const row = document.querySelector('x-table-row');
@@ -249,8 +251,7 @@ document.querySelector('x-table-row').addEventListener('x-table-row-click', e =>
 
 ```js
 row.addEventListener('x-table-row-click', e => {
-  if (someGuard) e.preventDefault();
-  // after preventDefault: do not update selected state
+  if (someGuard) e.preventDefault(); // the table asks for no new value
 });
 ```
 

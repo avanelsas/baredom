@@ -28,12 +28,14 @@ A stateless Web Component that acts as the grid container for `x-table-row` and 
 |-----------|------|---------|-------------|
 | `columns` | string | absent | CSS `grid-template-columns` value. A positive integer (e.g. `"4"`) expands to `repeat(4,minmax(0,1fr))` (equal-width columns). Any other string is used as-is. Absent → no explicit column template. |
 | `caption` | string | absent | Visible caption text rendered before the first row. Also sets `aria-label` on the host. |
-| `selectable` | `"none"\|"single"\|"multi"` | `"none"` | Row selection mode. `"single"` and `"multi"` switch `role` to `"grid"` and enable automatic selection management via `x-table-row-click` events. `"multi"` also adds `aria-multiselectable="true"`. |
+| `selectable` | `"none"\|"single"\|"multi"` | `"none"` | Row selection mode. `"single"` and `"multi"` switch `role` to `"grid"`, and a click on a row asks for a new `value`. `"multi"` also adds `aria-multiselectable="true"`. |
 | `striped` | boolean | absent | Applies an alternating background to even-indexed `x-table-row` children. |
 | `bordered` | boolean | absent | Renders an outer border and border-radius around the table. |
 | `full-width` | boolean | absent | Sets `width:100%` on the host element. |
 | `compact` | boolean | absent | Reduces cell padding by overriding `--x-table-cell-padding` for all descendant cells. |
 | `row-count` | number | absent | Explicit `aria-rowcount` for windowed/virtual tables where only a subset of rows is in the DOM. |
+| `value` | string | absent | The selected rows, as a list of row values in `value-format`. See [Selection Management](#selection-management). |
+| `value-format` | `"csv"\|"json"` | `"csv"` | How `value` lists several values: comma-separated, or a JSON array of strings for values that hold a comma. |
 
 ---
 
@@ -49,6 +51,8 @@ A stateless Web Component that acts as the grid container for `x-table-row` and 
 | `fullWidth` | `boolean` | `false` | `full-width` |
 | `compact` | `boolean` | `false` | `compact` |
 | `rowCount` | `number\|null` | `null` | `row-count` |
+| `value` | `string` | `""` | `value` |
+| `valueFormat` | `string` | `null` | `value-format` |
 
 ```js
 const table = document.querySelector('x-table');
@@ -94,7 +98,7 @@ table.addEventListener('x-table-sort', e => {
 
 ### `x-table-row-select`
 
-Fires when a row is clicked and `selectable` is not `"none"`. Fires **after** `x-table-row-click` but before `x-table` updates the row's selected state. Canceling this event prevents `x-table` from updating the DOM.
+Fires when a row with a `value` or a `row-index` is clicked and `selectable` is not `"none"`. It asks for a new `value`. Fires **after** `x-table-row-click`. When it is not cancelled, `x-table` writes `value`, and the rows show it. It is a request, so it is in `requestedValues`.
 
 | Property | Value |
 |----------|-------|
@@ -109,10 +113,11 @@ Fires when a row is clicked and `selectable` is not `"none"`. Fires **after** `x
 | `rowIndex` | `number` | Row index (from `row-index` attribute, or `0`) |
 | `selected` | `boolean` | Whether the row will be selected after this action |
 | `selectionMode` | `string` | `"single"` or `"multi"` |
+| `value` | `string` | The text of `value` that the click asks for |
 
 ```js
 table.addEventListener('x-table-row-select', e => {
-  if (someGuard) e.preventDefault(); // prevents selection DOM update
+  if (someGuard) e.preventDefault(); // keeps the value as it is
   console.log(`Row ${e.detail.rowIndex} → selected=${e.detail.selected}`);
 });
 ```
@@ -163,7 +168,7 @@ x-table {
 
 | Node | Attribute | When |
 |------|-----------|------|
-| each `x-table-row` child | `selected` | a click selects a row |
+| each `x-table-row` child | `selected` | `value` names the row, or no longer names it |
 | each `x-table-row` child | `data-stripe` | `striped` is on |
 
 ## Accessibility
@@ -209,11 +214,19 @@ The slot inside `x-table`'s shadow DOM has `display:contents`, making `x-table-r
 
 ## Selection Management
 
-When `selectable` is set, `x-table` listens to `x-table-row-click` events and automatically manages the `selected` attribute on rows:
+`value` holds the selection, as a list of row values in `value-format` in every mode. Each row has a value: its `value` attribute, else its `row-index`. Two rows with the same value are selected together. `x-table` sets `selected` on each direct row whose value `value` names, and removes it from the others. It does so in every mode, so a table with `selectable="none"` can show a selection too. Write `value`, not `selected` on a row: `x-table` overwrites `selected` on its next render.
 
-- **`selectable="single"`** — clicking a row removes `selected` from all other rows and sets it on the clicked row. Clicking the already-selected row deselects it.
-- **`selectable="multi"`** — clicking a row toggles its `selected` attribute. Other rows are not affected.
-- **`selectable="none"` (default)** — `x-table` does not manage selection. The app handles `x-table-row-click` events directly.
+- **`selectable="single"`.** A click on a row asks for that row alone. A click on a selected row asks for no row.
+- **`selectable="multi"`.** A click toggles the row in the list.
+- **`selectable="none"` (default).** A click asks for nothing. With no `value`, the app owns `selected` on the rows and handles `x-table-row-click`.
+
+A row with neither `value` nor `row-index` cannot be selected. A click on it sends `x-table-row-click` and no `x-table-row-select`. Only a click on a direct row counts: a nested table answers its own rows.
+
+A table with no `value` leaves `selected` on its rows as it is. In single or multi mode, the first click builds `value` from the rows marked `selected`. In single mode it takes the first. Removing `value` selects no row.
+
+In csv format, a row whose value holds a comma or outer whitespace cannot be selected: a click on it asks for nothing and warns in the console. Use `value-format="json"` for such values. A `value` that is not a JSON array of strings in json format selects no row and warns.
+
+A listener on the row can cancel `x-table-row-click`, and the table then asks for nothing. A listener on the table runs too late to stop the request.
 
 In all modes, `x-table-row` must have the `interactive` attribute set to receive clicks.
 
@@ -290,7 +303,7 @@ table.addEventListener('x-table-sort', e => {
   });
 
   table.addEventListener('x-table-row-select', e => {
-    console.log(`Row ${e.detail.rowIndex} selected=${e.detail.selected}`);
+    console.log(`Row ${e.detail.rowIndex} selected=${e.detail.selected}, value=${e.detail.value}`);
   });
 </script>
 ```

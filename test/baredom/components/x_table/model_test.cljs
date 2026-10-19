@@ -102,15 +102,59 @@
 
 ;; ── row-select-detail ────────────────────────────────────────────────────────
 (deftest row-select-detail-test
-  (let [d (model/row-select-detail 3 true "single")]
+  (let [d (model/row-select-detail 3 true "single" "a")]
     (is (= 3        (:rowIndex d)))
     (is (true?      (:selected d)))
-    (is (= "single" (:selectionMode d)))))
+    (is (= "single" (:selectionMode d)))
+    (is (= "a"      (:value d)))))
 
 (deftest row-select-detail-nil-index-test
-  (let [d (model/row-select-detail nil false "multi")]
+  (let [d (model/row-select-detail nil false "multi" "")]
     (is (= 0 (:rowIndex d)))))
 
 ;; ── row-stripe ───────────────────────────────────────────────────────────────
 (deftest row-stripe-test
   (is (= [nil "even" nil "even"] (mapv model/row-stripe (range 4)))))
+
+;; ── selection ────────────────────────────────────────────────────────────────
+(deftest normalize-reads-value-as-a-list-test
+  (is (= #{"a" "b"} (:selection (model/normalize {:value-raw "a, b"}))))
+  (is (= #{"a,1"} (:selection (model/normalize {:value-raw "[\"a,1\"]" :value-format-raw "json"}))))
+  (is (= #{} (:selection (model/normalize {:value-raw "  "})))))
+
+(deftest normalize-warns-about-an-invalid-json-value-test
+  (is (string? (:value-warning (model/normalize {:value-raw "a" :value-format-raw "json"}))))
+  (is (nil? (:value-warning (model/normalize {:value-raw "[\"a\"]" :value-format-raw "json"})))))
+
+(deftest holdable?-test
+  (is (true? (model/holdable? "csv" "a")))
+  (is (false? (model/holdable? "csv" "a,b")))
+  (is (false? (model/holdable? "csv" " a")))
+  (is (true? (model/holdable? "json" "a,b"))))
+
+(deftest next-selection-test
+  (testing "single mode selects the row alone, or nothing when it was selected"
+    (is (= #{"b"} (model/next-selection "single" #{"a"} "b")))
+    (is (= #{} (model/next-selection "single" #{"a"} "a")))
+    (is (= #{"c"} (model/next-selection "single" #{"a" "b"} "c")))
+    (is (= #{} (model/next-selection "single" #{"a" "b"} "a"))))
+  (testing "multi mode toggles the row"
+    (is (= #{"a" "b"} (model/next-selection "multi" #{"a"} "b")))
+    (is (= #{"b"} (model/next-selection "multi" #{"a" "b"} "a")))))
+
+(deftest seed-selection-test
+  (is (= #{"x"} (model/seed-selection "single" ["x" "y"])))
+  (is (= #{"x" "y"} (model/seed-selection "multi" ["x" "y"]))))
+
+(deftest selection-text-test
+  (is (= "a" (model/selection-text "csv" #{"a"})))
+  (is (= "" (model/selection-text "csv" #{})))
+  (is (= "a,b" (model/selection-text "csv" #{"b" "a"})))
+  (is (= "[\"a\",\"b\"]" (model/selection-text "json" #{"b" "a"}))))
+
+(deftest normalize-reads-the-value-test
+  (let [m (model/normalize {:selectable-raw "multi" :value-raw "a,b" :value-format-raw "bad"})]
+    (is (true? (:value-present? m)))
+    (is (= "csv" (:value-format m)))
+    (is (= #{"a" "b"} (:selection m))))
+  (is (false? (:value-present? (model/normalize {})))))

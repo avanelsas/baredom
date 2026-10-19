@@ -21,6 +21,7 @@ export class BaredomTableRow implements OnInit, OnDestroy {
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
   @Input() set interactive(v: boolean) { this.el.interactive = v as any; }
   @Input() set rowIndex(v: number) { this.el.rowIndex = v as any; }
+  @Input() set value(v: string) { this.el.value = v as any; }
 
   @Output() click = new EventEmitter<CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean }>>();
   @Output() connected = new EventEmitter<CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean; interactive: boolean }>>();

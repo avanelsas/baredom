@@ -1,5 +1,6 @@
 (ns baredom.components.x-table.model
-  (:require [baredom.components.x-table-row.model :as row-model]))
+  (:require [baredom.components.x-table-row.model :as row-model]
+            [baredom.utils.value-list :as vl]))
 
 (def tag-name "x-table")
 
@@ -11,11 +12,13 @@
 (def attr-full-width "full-width")
 (def attr-compact    "compact")
 (def attr-row-count  "row-count")
+(def attr-value        "value")
+(def attr-value-format "value-format")
 
 (def observed-attributes
   #js [attr-columns attr-caption attr-selectable
        attr-striped attr-bordered attr-full-width
-       attr-compact attr-row-count])
+       attr-compact attr-row-count attr-value attr-value-format])
 
 (def row-attr-stripe "data-stripe")
 
@@ -29,7 +32,10 @@
 (def event-row-select "x-table-row-select")
 
 ;; ── Enum sets ────────────────────────────────────────────────────────────────
-(def selectable-values #{"none" "single" "multi"})
+(def selectable-none   "none")
+(def selectable-single "single")
+(def selectable-multi  "multi")
+(def selectable-values #{selectable-none selectable-single selectable-multi})
 
 ;; ── Property API metadata ────────────────────────────────────────────────────
 (def property-api
@@ -40,7 +46,9 @@
    :bordered   {:type 'boolean :reflects-attribute attr-bordered}
    :fullWidth  {:type 'boolean :reflects-attribute attr-full-width}
    :compact    {:type 'boolean :reflects-attribute attr-compact}
-   :rowCount   {:type 'number  :reflects-attribute attr-row-count}})
+   :rowCount   {:type 'number  :reflects-attribute attr-row-count}
+   :value      {:type 'string  :reflects-attribute attr-value}
+   :valueFormat {:type 'string :reflects-attribute attr-value-format :enum vl/allowed-value-formats}})
 
 (def event-schema
   {event-sort
@@ -48,8 +56,9 @@
     :cancelable true}
 
    event-row-select
-   {:detail     {:rowIndex 'number :selected 'boolean :selectionMode 'string}
-    :cancelable true}})
+   {:detail     {:rowIndex 'number :selected 'boolean :selectionMode 'string :value 'string}
+    :cancelable true
+    :requests   {attr-value :value}}})
 
 ;; ── Parse helpers ────────────────────────────────────────────────────────────
 
@@ -78,7 +87,26 @@
   "Normalise selectable attribute. Unknown/nil → \"none\"."
   [s]
   (let [v (when (string? s) (.toLowerCase (.trim s)))]
-    (if (contains? selectable-values v) v "none")))
+    (if (contains? selectable-values v) v selectable-none)))
+
+(defn holdable?
+  "True when a list in `value-format` can hold the row value `row-value`. A comma-separated list
+   cannot hold a value with a comma or outer whitespace."
+  [value-format row-value]
+  (or (= value-format vl/value-format-json)
+      (empty? (vl/csv-unrepresentable [row-value]))))
+
+(defn unholdable-message
+  "The warning for a click on a row whose value a comma-separated `value` cannot hold."
+  [row-value]
+  (str "[x-table] The row value " (js/JSON.stringify row-value)
+       " cannot be held in a comma-separated value. Set value-format=\"json\"."))
+
+(defn invalid-json-message
+  "The warning for a `value` that is not a JSON array of strings."
+  [value-raw]
+  (str "[x-table] The value " (js/JSON.stringify value-raw)
+       " is not a JSON array of strings, so no row is selected."))
 
 (defn parse-row-count
   "Parse row-count to a positive integer, or nil if absent/invalid."
@@ -102,30 +130,39 @@
     :full-width?     boolean
     :compact?        boolean
     :row-count-raw   string | nil
+    :value-raw       string | nil
+    :value-format-raw string | nil
 
   Output keys mirror the attribute semantics with parsed/normalised values."
   [{:keys [columns-raw caption-raw selectable-raw
-           striped? bordered? full-width? compact? row-count-raw]}]
-  {:columns    (parse-columns columns-raw)
-   :caption    (or caption-raw "")
-   :selectable (parse-selectable selectable-raw)
-   :striped?   (boolean striped?)
-   :bordered?  (boolean bordered?)
-   :full-width? (boolean full-width?)
-   :compact?   (boolean compact?)
-   :row-count  (parse-row-count row-count-raw)})
+           striped? bordered? full-width? compact? row-count-raw value-raw value-format-raw]}]
+  (let [selectable   (parse-selectable selectable-raw)
+        value-format (vl/normalize-value-format value-format-raw)
+        parsed       (vl/parse-value-as value-format value-raw)]
+    {:columns        (parse-columns columns-raw)
+     :caption        (or caption-raw "")
+     :selectable     selectable
+     :striped?       (boolean striped?)
+     :bordered?      (boolean bordered?)
+     :full-width?    (boolean full-width?)
+     :compact?       (boolean compact?)
+     :row-count      (parse-row-count row-count-raw)
+     :value-format   value-format
+     :value-present? (some? value-raw)
+     :value-warning  (when (:invalid? parsed) (invalid-json-message value-raw))
+     :selection      (:value parsed)}))
 
 ;; ── Derived view-model functions ─────────────────────────────────────────────
 
 (defn role-for-selectable
   "Return ARIA role string. \"none\" → \"table\"; any selection mode → \"grid\"."
   [selectable]
-  (if (= selectable "none") "table" "grid"))
+  (if (= selectable selectable-none) "table" "grid"))
 
 (defn aria-multiselectable
   "Return \"true\" for multi-select, nil otherwise (attribute should be removed)."
   [selectable]
-  (when (= selectable "multi") "true"))
+  (when (= selectable selectable-multi) "true"))
 
 (defn sort-detail
   "Build event detail for x-table-sort."
@@ -135,11 +172,32 @@
    :previousDirection previous-direction})
 
 (defn row-select-detail
-  "Build event detail for x-table-row-select."
-  [row-index selected? selectable]
+  "Build event detail for x-table-row-select. `value` is the text of `value` that the click asks for."
+  [row-index selected? selectable value]
   {:rowIndex      (or row-index 0)
    :selected      selected?
-   :selectionMode selectable})
+   :selectionMode selectable
+   :value         value})
+
+(defn next-selection
+  "The row values selected after a click on the row with the value `row-value`. Single mode asks
+   for that row alone, or for no row when it is selected."
+  [selectable selection row-value]
+  (cond
+    (= selectable selectable-single) (if (contains? selection row-value) #{} #{row-value})
+    (contains? selection row-value)  (disj selection row-value)
+    :else                            (conj selection row-value)))
+
+(defn seed-selection
+  "The selection that the rows marked selected give, from their values in order. Single mode
+   takes the first."
+  [selectable marked-values]
+  (set (if (= selectable selectable-single) (take 1 marked-values) marked-values)))
+
+(defn selection-text
+  "The text of `value` for the row values `selection`, as a list in `value-format`."
+  [value-format selection]
+  (vl/serialize-value-as value-format selection))
 
 (defn row-stripe
   "Return \"even\" for every second row, and nil for the others. `index` counts from zero."

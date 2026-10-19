@@ -8,16 +8,18 @@ import { init } from "@vanelsas/baredom/x-table";
 init();
 
 export interface XTableProps {
-  columns?: string;
-  caption?: string;
-  selectable?: string;
   striped?: boolean;
+  caption?: string;
   bordered?: boolean;
-  fullWidth?: boolean;
+  columns?: string;
+  value?: string;
   compact?: boolean;
+  fullWidth?: boolean;
   rowCount?: number;
+  valueFormat?: string;
+  selectable?: string;
   onSort?: (e: CustomEvent<{ colIndex: number; direction: string; previousDirection: string }>) => void;
-  onRowSelect?: (e: CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string }>) => void;
+  onRowSelect?: (e: CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string; value: string }>) => void;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;

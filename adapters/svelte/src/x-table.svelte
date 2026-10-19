@@ -5,16 +5,18 @@
   init();
   export type { XTableElement };
   export interface XTableProps {
-    columns?: string;
-    caption?: string;
-    selectable?: string;
     striped?: boolean;
+    caption?: string;
     bordered?: boolean;
-    fullWidth?: boolean;
+    columns?: string;
+    value?: string;
     compact?: boolean;
+    fullWidth?: boolean;
     rowCount?: number;
+    valueFormat?: string;
+    selectable?: string;
     onsort?: (e: CustomEvent<{ colIndex: number; direction: string; previousDirection: string }>) => void;
-    onrowselect?: (e: CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string }>) => void;
+    onrowselect?: (e: CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string; value: string }>) => void;
     el?: XTableElement | null;
     children?: import("svelte").Snippet;
     class?: string;
@@ -25,14 +27,16 @@
 
 <script lang="ts">
   let {
-    columns,
-    caption,
-    selectable,
     striped,
+    caption,
     bordered,
-    fullWidth,
+    columns,
+    value,
     compact,
+    fullWidth,
     rowCount,
+    valueFormat,
+    selectable,
     onsort,
     onrowselect,
     el = $bindable(null),
@@ -49,7 +53,7 @@
     const onsortHandler = (e: Event) => onsort?.(e as CustomEvent<{ colIndex: number; direction: string; previousDirection: string }>);
     node.addEventListener("x-table-sort", onsortHandler);
     cleanups.push(() => node.removeEventListener("x-table-sort", onsortHandler));
-    const onrowselectHandler = (e: Event) => onrowselect?.(e as CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string }>);
+    const onrowselectHandler = (e: Event) => onrowselect?.(e as CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string; value: string }>);
     node.addEventListener("x-table-row-select", onrowselectHandler);
     cleanups.push(() => node.removeEventListener("x-table-row-select", onrowselectHandler));
     return () => cleanups.forEach((fn) => fn());
@@ -58,14 +62,16 @@
 
 <x-table
   bind:this={el}
-  {columns}
-  {caption}
-  {selectable}
   {striped}
+  {caption}
   {bordered}
-  {fullWidth}
+  {columns}
+  {value}
   {compact}
+  {fullWidth}
   {rowCount}
+  {valueFormat}
+  {selectable}
   class={className}
   {id}
   {...rest}

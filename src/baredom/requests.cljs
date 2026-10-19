@@ -32,6 +32,7 @@
    "x-slider-change-request" ["value"]
    "x-stepper-change" ["current"]
    "x-switch-change-request" ["checked"]
+   "x-table-row-select" ["value"]
    "x-text-area-change-request" ["value"]
    "x-welcome-tour-step-change" ["step"]})
 
@@ -67,5 +68,6 @@
    "x-slider-change-request" {"value" "value"}
    "x-stepper-change" {"current" "to"}
    "x-switch-change-request" {"checked" "nextChecked"}
+   "x-table-row-select" {"value" "value"}
    "x-text-area-change-request" {"value" "value"}
    "x-welcome-tour-step-change" {"step" "step"}})

@@ -15,18 +15,20 @@ export const XTable = defineComponent({
   name: "XTable",
   inheritAttrs: false,
   props: {
-    columns: { type: String as PropType<string | undefined>, default: undefined },
-    caption: { type: String as PropType<string | undefined>, default: undefined },
-    selectable: { type: String as PropType<string | undefined>, default: undefined },
     striped: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    caption: { type: String as PropType<string | undefined>, default: undefined },
     bordered: { type: Boolean as PropType<boolean | undefined>, default: undefined },
-    fullWidth: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    columns: { type: String as PropType<string | undefined>, default: undefined },
+    value: { type: String as PropType<string | undefined>, default: undefined },
     compact: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    fullWidth: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     rowCount: { type: Number as PropType<number | undefined>, default: undefined },
+    valueFormat: { type: String as PropType<string | undefined>, default: undefined },
+    selectable: { type: String as PropType<string | undefined>, default: undefined },
   },
   emits: {
     "sort": (_e: CustomEvent<{ colIndex: number; direction: string; previousDirection: string }>) => true,
-    "row-select": (_e: CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string }>) => true,
+    "row-select": (_e: CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string; value: string }>) => true,
   },
   setup(props, { emit, attrs, slots, expose }) {
     const elRef = ref<XTableElement | null>(null);

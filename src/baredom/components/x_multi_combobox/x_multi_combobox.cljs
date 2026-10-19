@@ -6,6 +6,7 @@
             [baredom.utils.dom :as du]
             [baredom.utils.forms :as forms]
             [baredom.utils.overlay :as overlay]
+            [baredom.utils.value-list :as vl]
             [baremirror.alpha.places :as places]
             [clojure.string :as str]))
 
@@ -84,7 +85,7 @@
 (defn- value-format-of
   "The value format of `el`."
   [^js el]
-  (model/normalize-value-format (du/get-attr el model/attr-value-format)))
+  (vl/normalize-value-format (du/get-attr el model/attr-value-format)))
 
 ;; ---------------------------------------------------------------------------
 ;; Style
@@ -576,7 +577,7 @@
 ;; Form association: push the selected set (serialized in its value format) into
 ;; the form and refresh validity via the shared policy. No-op when not form-associated.
 (defn- sync-form-state! [^js el ^js input-el {:keys [value value-format has-error?]}]
-  (forms/sync! (du/getv el k-internals) input-el (model/serialize-value-as value-format value)
+  (forms/sync! (du/getv el k-internals) input-el (vl/serialize-value-as value-format value)
                {:has-error?      has-error?
                 :error           (du/get-attr el model/attr-error)
                 :required?       (du/has-attr? el model/attr-required)
@@ -654,7 +655,7 @@
   [^js el value-set]
   (if (empty? value-set)
     (du/remove-attr! el model/attr-value)
-    (du/set-attr! el model/attr-value (model/serialize-value-as (value-format-of el) value-set)))
+    (du/set-attr! el model/attr-value (vl/serialize-value-as (value-format-of el) value-set)))
   (du/dispatch! el model/event-change #js {:value (sorted-value-array value-set)}))
 
 (defn- clear-query!
@@ -1022,8 +1023,8 @@
    trims."
   [^js el ^js arr]
   (let [values (js->clj arr)]
-    (write-value-attr! el (str/join model/value-separator values))
-    (when-some [bad (not-empty (model/csv-unrepresentable (mapv str values)))]
+    (write-value-attr! el (str/join vl/value-separator values))
+    (when-some [bad (not-empty (vl/csv-unrepresentable (mapv str values)))]
       (report-unrepresentable! el bad))))
 
 (defn- write-json-array!
@@ -1040,13 +1041,13 @@
   (cond
     (string? v) (write-value-attr! el v)
     (not (array? v)) (write-value-attr! el "")
-    (= (value-format-of el) model/value-format-json) (write-json-array! el v)
+    (= (value-format-of el) vl/value-format-json) (write-json-array! el v)
     :else (write-csv-array! el v)))
 
 (defn- value-array
   "The values that the value attribute text `s` holds in `value-format`, as a sorted JS array."
   [value-format s]
-  (sorted-value-array (:value (model/parse-value-as value-format s))))
+  (sorted-value-array (:value (vl/parse-value-as value-format s))))
 
 ;; ---------------------------------------------------------------------------
 ;; Property accessors
