@@ -50,6 +50,16 @@
       (pos? length) (mark-run! before (aget ends (dec length))))))
 
 #?(:cljs
+   (defn- string-so-far [_ x]
+     (or (string? x) (reduced false))))
+
+#?(:cljs
+   (defn- strings?
+     "True when every item of `xs` is a string."
+     [xs]
+     (reduce string-so-far true xs)))
+
+#?(:cljs
    (defn- note-position! [^js found i k]
      (.set found k i)
      (inc i)))
@@ -71,8 +81,13 @@
 (defn- positions
   "A function of a key that gives its position in `ks`, or nil."
   [ks]
-  (or #?(:cljs (when (every? string? ks) (string-positions ks)))
+  (or #?(:cljs (when (strings? ks) (string-positions ks)))
       (zipmap ks (range))))
+
+(defn- ranks
+  "The position in `current` of each key of `wanted`, as an array, or nil for a key it lacks."
+  [current wanted]
+  (object-array (eduction (map (positions current)) wanted)))
 
 #?(:cljs
    (defn- note-key! [^js found k]
@@ -89,7 +104,7 @@
 (defn- among
   "A function of a key that is true when the key is in one of the sequences `kss`."
   [kss]
-  (or #?(:cljs (when (every? (partial every? string?) kss)
+  (or #?(:cljs (when (every? strings? kss)
                  (partial noted? (reduce note-keys! (js/Set.) kss))))
       (into #{} cat kss)))
 
@@ -136,9 +151,7 @@
    The keys that both share at the start and at the end are left alone."
   [container current wanted]
   (let [[head tail :as ends] (shared-ends current wanted)
-        stays                (longest-rising
-                              (object-array (map (positions (middle current ends))
-                                                 (middle wanted ends))))]
+        stays                (longest-rising (ranks (middle current ends) (middle wanted ends)))]
     (into []
           (comp (remove (partial stays-at? stays head))
                 (map (partial placement container wanted)))
