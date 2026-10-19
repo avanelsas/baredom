@@ -349,10 +349,10 @@
         `[x-table-sort] colIndex=${colIndex} direction=${direction} prev=${e.detail.previousDirection}`,
         'log-sort'
       );
-      // Update sort-direction on header cells
+      // The clicked cell writes its own direction. Reset the other columns.
       const headerCells = headerRow.querySelectorAll('x-table-cell');
       headerCells.forEach((cell, i) => {
-        cell.setAttribute('sort-direction', i === colIndex ? direction : 'none');
+        if (i !== colIndex) cell.setAttribute('sort-direction', 'none');
       });
     });
 
@@ -371,6 +371,10 @@
         `[preview x-table-sort] colIndex=${e.detail.colIndex} direction=${e.detail.direction}`,
         'log-sort'
       );
+      // The clicked cell writes its own direction. Reset the other columns.
+      previewTable.querySelectorAll('x-table-row:first-child x-table-cell').forEach((cell, i) => {
+        if (i !== e.detail.colIndex) cell.setAttribute('sort-direction', 'none');
+      });
     });
 
     previewTable.addEventListener('x-table-row-select', e => {

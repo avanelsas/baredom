@@ -271,17 +271,19 @@
       (is (= "desc" (:direction @d2)))
       (is (= "asc"  (:previousDirection @d2))))))
 
-(deftest sort-event-cancelable-test
+(deftest a-refused-sort-keeps-the-direction-test
   (let [^js el (append! (make-el))
         fired  (atom false)]
     (.setAttribute el model/attr-type "header")
     (.setAttribute el model/attr-sortable "")
+    (.setAttribute el model/attr-sort-direction "asc")
     (.addEventListener el model/event-sort
                        (fn [^js e]
                          (reset! fired true)
                          (.preventDefault e)))
     (.click (shadow-part el "[part=sort-btn]"))
-    (is (true? @fired))))
+    (is (true? @fired))
+    (is (= "asc" (.getAttribute el model/attr-sort-direction)))))
 
 (deftest sort-event-not-fired-when-disabled-test
   (let [^js el (append! (make-el))

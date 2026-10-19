@@ -69,7 +69,7 @@ table.rowCount   = 500; // for virtual scrolling
 
 ### `x-table-sort`
 
-Fires when a sortable column header (`x-table-cell` with `sortable`) is clicked. `x-table` intercepts the lower-level `x-table-cell-sort` event, adds column index information, and re-fires as `x-table-sort`.
+Fires when a sortable column header (`x-table-cell` with `sortable`) is clicked. `x-table` hears the lower-level `x-table-cell-sort` request, adds column index information, and sends `x-table-sort`. The cell's request then bubbles on to the page. When neither is cancelled, the clicked cell writes the new `sort-direction`. Cancelling it keeps the cell as it was. The other headers keep their direction, so an app that sorts by one column at a time resets them.
 
 | Property | Value |
 |----------|-------|
@@ -87,11 +87,10 @@ Fires when a sortable column header (`x-table-cell` with `sortable`) is clicked.
 
 ```js
 table.addEventListener('x-table-sort', e => {
-  // Update sort-direction on the header cell
+  // The clicked cell writes its own direction. Reset the other columns.
   const headers = table.querySelectorAll('x-table-row:first-child x-table-cell');
-  // Clear all, apply to clicked column
   headers.forEach((h, i) => {
-    h.setAttribute('sort-direction', i === e.detail.colIndex ? e.detail.direction : 'none');
+    if (i !== e.detail.colIndex) h.setAttribute('sort-direction', 'none');
   });
 });
 ```
@@ -234,16 +233,18 @@ In all modes, `x-table-row` must have the `interactive` attribute set to receive
 
 ## Sort Coordination
 
-`x-table` intercepts `x-table-cell-sort` events that bubble up through the DOM, computes the zero-based column index of the firing cell, stops the original event from propagating further, and fires `x-table-sort` instead. This means consumers should listen to `x-table-sort` rather than `x-table-cell-sort` when using the full `x-table` → `x-table-row` → `x-table-cell` composition.
+`x-table` hears each `x-table-cell-sort` request as it bubbles up, computes the zero-based column index of the cell, and sends `x-table-sort`. A cancelled `x-table-sort` cancels the cell's request. The cell's request bubbles on, so a page can answer it too, as BareMirror's `listen` does with `requestedValues`.
 
 ```js
-// Recommended: listen at x-table level
+// The column that was clicked
 table.addEventListener('x-table-sort', e => {
-  // e.detail.colIndex is the column that was clicked
+  console.log(e.detail.colIndex, e.detail.direction);
 });
 
-// Discouraged when using x-table (intercepted and stopped):
-// document.addEventListener('x-table-cell-sort', ...)
+// The request of the cell itself, which bubbles on
+document.addEventListener('x-table-cell-sort', e => {
+  if (!allowed(e.detail.direction)) e.preventDefault(); // the cell keeps its direction
+});
 ```
 
 ---
@@ -293,11 +294,11 @@ table.addEventListener('x-table-sort', e => {
   const table = document.getElementById('users-table');
 
   table.addEventListener('x-table-sort', e => {
-    const { colIndex, direction } = e.detail;
-    // Update sort directions in the header row
+    const { colIndex } = e.detail;
+    // The clicked cell writes its own direction. Reset the other columns.
     const headerCells = table.querySelectorAll('x-table-row:first-child x-table-cell');
     headerCells.forEach((cell, i) => {
-      cell.setAttribute('sort-direction', i === colIndex ? direction : 'none');
+      if (i !== colIndex) cell.setAttribute('sort-direction', 'none');
     });
     // Fetch sorted data and update rows...
   });

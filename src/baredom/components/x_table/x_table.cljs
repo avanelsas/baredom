@@ -291,18 +291,17 @@
     (clj->js (model/row-select-detail row-index selected? selectable value))))
 
 ;; ── Event handlers ───────────────────────────────────────────────────────────
-(defn- on-cell-sort [^js el ^js e]
-  ;; x-table-cell-sort bubbles up from a header cell. Re-fire as x-table-sort
-  ;; with column index information.
+(defn- on-cell-sort
+  "Sends x-table-sort with the column of the cell that asks to sort, and refuses the cell's
+   request when x-table-sort is cancelled. The cell's request bubbles on to the page."
+  [^js el ^js e]
   (let [^js cell    (.-target e)
         col-index   (col-index-of cell)
         direction   (gobj/get (.-detail e) detail-direction)
         prev-dir    (gobj/get (.-detail e) detail-previous-direction)]
-    (when (>= col-index 0)
-      ;; Stop the original cell-sort from propagating further so x-table-sort
-      ;; is the canonical event for consumers above x-table.
-      (.stopPropagation e)
-      (dispatch-sort! el col-index direction prev-dir))))
+    (when (and (>= col-index 0)
+               (not (dispatch-sort! el col-index direction prev-dir)))
+      (.preventDefault e))))
 
 (defn- request-selection!
   "Asks for the selection that a click on the row with the value `row-value` gives, and writes it

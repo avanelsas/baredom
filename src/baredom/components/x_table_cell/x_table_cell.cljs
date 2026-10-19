@@ -271,11 +271,14 @@
       (apply-model! el new-m))))
 
 ;; ── Event dispatch ───────────────────────────────────────────────────────────
-(defn- dispatch-sort! [^js el]
+(defn- request-sort!
+  "Asks for the next sort direction, and writes it when the request is not refused."
+  [^js el]
   (let [current  (model/parse-sort-direction (du/get-attr el model/attr-sort-direction))
         next-dir (model/next-sort-direction current)]
-    (du/dispatch-cancelable! el model/event-sort
-      #js {:direction next-dir :previousDirection current})))
+    (when (du/dispatch-cancelable! el model/event-sort
+                                   #js {:direction next-dir :previousDirection current})
+      (du/set-attr! el model/attr-sort-direction next-dir))))
 
 (defn- dispatch-connected! [^js el m]
   (du/dispatch! el model/event-connected (clj->js (model/connected-detail m))))
@@ -287,7 +290,7 @@
 (defn- on-sort-click [^js el ^js _e]
   (let [m (or (du/getv el k-model) (read-model el))]
     (when (and (model/sort-btn-visible? m) (not (:disabled? m)))
-      (dispatch-sort! el))))
+      (request-sort! el))))
 
 ;; ── Listener management ──────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]

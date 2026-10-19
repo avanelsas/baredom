@@ -19351,6 +19351,9 @@
           "text" : "CustomEvent<{ direction: string; previousDirection: string }>"
         },
         "cancelable" : true,
+        "requests" : {
+          "sort-direction" : "direction"
+        },
         "detail" : {
           "direction" : "string",
           "previousDirection" : "string"
@@ -19748,6 +19751,9 @@
           "text" : "CustomEvent<{ direction: string; previousDirection: string }>"
         },
         "cancelable" : true,
+        "requests" : {
+          "sort-direction" : "direction"
+        },
         "detail" : {
           "direction" : "string",
           "previousDirection" : "string"

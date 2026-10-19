@@ -814,3 +814,51 @@
                        (fn [^js e] (reset! index (gobj/get (.-detail e) "rowIndex"))))
     (click-row! (first rows) 7)
     (is (= 7 @index))))
+
+;; ── sort as a request ────────────────────────────────────────────────────────
+(defn- ^js sortable-header-in-table!
+  "A table in the document with one sortable header cell. Returns the cell."
+  []
+  (let [^js table (append! (make-table {:columns "1"}))
+        ^js row   (make-row)
+        ^js cell  (make-cell)]
+    (.setAttribute cell cell-model/attr-type "header")
+    (.setAttribute cell cell-model/attr-sortable "")
+    (.appendChild row cell)
+    (.appendChild table row)
+    cell))
+
+(defn- click-sort! [^js cell]
+  (.click (.querySelector (.-shadowRoot cell) "[part=sort-btn]")))
+
+(deftest an-accepted-sort-writes-the-cell-direction-test
+  (let [cell (sortable-header-in-table!)]
+    (click-sort! cell)
+    (is (= "asc" (.getAttribute cell cell-model/attr-sort-direction)))
+    (click-sort! cell)
+    (is (= "desc" (.getAttribute cell cell-model/attr-sort-direction)))))
+
+(deftest a-cancelled-table-sort-refuses-the-cell-request-test
+  (let [cell      (sortable-header-in-table!)
+        ^js table (.closest cell model/tag-name)
+        heard     (atom nil)
+        hear!     (fn [^js e] (reset! heard e))]
+    (.addEventListener table model/event-sort (fn [^js e] (.preventDefault e)))
+    (.addEventListener js/document cell-model/event-sort hear!)
+    (try
+      (click-sort! cell)
+      (finally
+        (.removeEventListener js/document cell-model/event-sort hear!)))
+    (is (some? @heard) "the cell request bubbles on to the page")
+    (is (true? (some-> ^js @heard .-defaultPrevented)))
+    (is (not (.hasAttribute cell cell-model/attr-sort-direction)))))
+
+(deftest a-page-can-refuse-the-cell-request-of-a-table-test
+  (let [cell    (sortable-header-in-table!)
+        refuse! (fn [^js e] (.preventDefault e))]
+    (.addEventListener js/document cell-model/event-sort refuse!)
+    (try
+      (click-sort! cell)
+      (finally
+        (.removeEventListener js/document cell-model/event-sort refuse!)))
+    (is (not (.hasAttribute cell cell-model/attr-sort-direction)))))

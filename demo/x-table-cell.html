@@ -301,9 +301,7 @@
   <script>
     // ── Sort cycling for all sortable demo cells ─────────────────────────────
     document.addEventListener('x-table-cell-sort', function (e) {
-      // Auto-update sort-direction on the firing element
-      e.target.setAttribute('sort-direction', e.detail.direction);
-
+      // The cell writes its own sort-direction when the request is not cancelled.
       logEvent('x-table-cell-sort',
         'direction=' + e.detail.direction +
         ' prev=' + e.detail.previousDirection +
@@ -352,10 +350,8 @@
         cancelNext = false;
         document.getElementById('cancel-next-sort').textContent = 'Cancel next sort';
         logEvent('x-table-cell-sort', 'CANCELLED (preventDefault called)');
-        // remove sort-direction update that would have happened
-        e.target.setAttribute('sort-direction', e.detail.previousDirection);
       }
-    }, true); // capture phase to run before the auto-update listener
+    }, true);
 
     // ── Live control panel wiring ────────────────────────────────────────────
     var demoCell = document.getElementById('demo-cell');

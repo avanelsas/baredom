@@ -52,7 +52,7 @@ A stateless table cell Web Component. Works standalone today and coordinates wit
 
 ### `x-table-cell-sort`
 
-Fired when the sort button is activated. The component is stateless — the consumer must update the `sort-direction` attribute to reflect the new state.
+Fired when the sort button is activated. It asks for the next `sort-direction`. When it is not cancelled, the cell writes it. It is a request, so it is in `requestedValues`.
 
 | Property | Value |
 |----------|-------|
@@ -211,14 +211,7 @@ The sort button's `aria-label` describes the **action that will occur** on activ
 
 ## Sort Cycling
 
-The component is **stateless** — clicking the sort button fires `x-table-cell-sort` and does nothing else. The consumer must update the `sort-direction` attribute:
-
-```js
-cell.addEventListener('x-table-cell-sort', (e) => {
-  // e.detail.direction is the next direction
-  cell.setAttribute('sort-direction', e.detail.direction);
-});
-```
+Clicking the sort button sends `x-table-cell-sort` with the next direction in `e.detail.direction`. When the request is not cancelled, the cell writes that direction to `sort-direction`.
 
 Direction cycles: `"none"` → `"asc"` → `"desc"` → `"none"`.
 
@@ -287,8 +280,9 @@ When `x-table-row` and `x-table` are implemented, they will consume the `x-table
 </x-table-cell>
 
 <script>
+  // The cell writes the next direction itself. Cancel to keep it as it is.
   document.querySelector('x-table-cell').addEventListener('x-table-cell-sort', (e) => {
-    e.target.setAttribute('sort-direction', e.detail.direction);
+    console.log('sort', e.detail.direction);
   });
 </script>
 ```
@@ -343,17 +337,15 @@ cell.sortDirection = 'asc';
 cell.colSpan = 2;
 cell.disabled = false;
 
-// Events
+// Events: the cell writes e.detail.direction itself unless the request is cancelled
 cell.addEventListener('x-table-cell-sort', (e) => {
-  cell.sortDirection = e.detail.direction;
+  console.log(e.detail.direction);
 });
 ```
 
 ### ClojureScript / Hiccup
 
 ```clojure
-[:x-table-cell {:type "header" :sortable "" :sort-direction "none"
-                :on-x-table-cell-sort #(set! (.-sortDirection (.-target %))
-                                             (.-direction (.-detail %)))}
+[:x-table-cell {:type "header" :sortable "" :sort-direction "none"}
  "Column Name"]
 ```
