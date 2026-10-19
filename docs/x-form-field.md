@@ -48,7 +48,7 @@ A self-contained, form-associated text-input field with a label, optional hint, 
 
 ### Value sync note
 
-The `value` property setter updates both the `value` attribute and the shadow `<input>` value. On user input, the component does **not** reflect back to the `value` attribute (avoids cursor jumps). The attribute only changes when set programmatically.
+The `value` property setter updates both the `value` attribute and the shadow `<input>` value. An accepted keystroke writes its text to the `value` attribute. The caret stays where it is. So `value` holds the current text, not a markup default.
 
 ---
 
@@ -60,7 +60,7 @@ The `value` property setter updates both the `value` attribute and the shadow `<
 | `x-form-field-input`          | true    | true     | false      | `{ name: string, value: string }`                        |
 | `x-form-field-change`         | true    | true     | false      | `{ name: string, value: string }`                        |
 
-`x-form-field-change-request` fires on every keystroke, before the form value changes and before `x-form-field-input`. Call `preventDefault()` to refuse the change. The input, the form value and the validity then go back to the `value` attribute, and `x-form-field-input` does not fire. `previousValue` is the `value` attribute. An application that refuses requests writes each value it accepts to `value`.
+`x-form-field-change-request` fires on every keystroke, before the form value changes and before `x-form-field-input`. Call `preventDefault()` to refuse the change. The input, the form value and the validity then go back to the `value` attribute, which holds the last accepted text, and `x-form-field-input` does not fire. `previousValue` is the `value` attribute.
 
 `x-form-field-input` fires on every keystroke (mirrors native `input` event).
 `x-form-field-change` fires on blur/commit (mirrors native `change` event).

@@ -187,7 +187,6 @@
    {:label-raw         (du/get-attr el model/attr-label)
     :type-raw          (du/get-attr el model/attr-type)
     :name-raw          (du/get-attr el model/attr-name)
-    :value-raw         (du/get-attr el model/attr-value)
     :placeholder-raw   (du/get-attr el model/attr-placeholder)
     :hint-raw          (du/get-attr el model/attr-hint)
     :error-raw         (du/get-attr el model/attr-error)
@@ -278,11 +277,6 @@
   (sync-form-value! el input-el)
   (apply-validity! el input-el))
 
-(defn- value-attr
-  "The value attribute of `el`, or empty text."
-  [^js el]
-  (or (du/get-attr el model/attr-value) ""))
-
 (defn- on-input-input [^js el ^js _evt]
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)
@@ -290,10 +284,10 @@
       (if (du/dispatch-cancelable! el model/event-change-request
                                    #js {:name          name
                                         :value         (.-value input-el)
-                                        :previousValue (value-attr el)})
-        (do (sync-form! el input-el)
+                                        :previousValue (du/get-attr el model/attr-value "")})
+        (do (du/set-attr! el model/attr-value (.-value input-el))
             (du/dispatch! el model/event-input #js {:name name :value (.-value input-el)}))
-        (do (set! (.-value input-el) (value-attr el))
+        (do (set! (.-value input-el) (du/get-attr el model/attr-value ""))
             (sync-form! el input-el))))))
 
 (defn- on-input-change [^js el ^js _evt]
@@ -364,7 +358,7 @@
       (let [^js input-el (gobj/get refs rk-input)]
         (when (not= (.-value input-el) new-val)
           (set! (.-value input-el) (or new-val "")))
-        (sync-form-value! el input-el))))
+        (sync-form! el input-el))))
   (update-from-attrs! el))
 
 ;; ── Property accessors ────────────────────────────────────────────────────

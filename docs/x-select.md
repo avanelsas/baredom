@@ -20,7 +20,7 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 | `required`    | boolean (presence)    | false   | Marks the field as required for form validation  |
 | `size`        | `"sm"` \| `"md"` \| `"lg"` | `"md"` | Visual size variant                    |
 | `placeholder` | string                | —       | Placeholder option shown when no value selected  |
-| `value`       | string                | —       | Currently selected value (consumer-controlled)   |
+| `value`       | string                | —       | Selected value. An accepted change writes it      |
 | `name`        | string                | —       | Form field name forwarded to the internal select |
 | `error`       | string                | —       | Inline validation message; shows the `error` part and marks the field invalid |
 
@@ -43,7 +43,7 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 | `x-select-change-request` | yes | yes | **yes** | `{ value: string, label: string, previousValue: string }` |
 | `select-change` | yes     | yes      | no         | `{ value: string, label: string }` |
 
-- **`x-select-change-request`** — fires before the selection updates. Call `preventDefault()` to block the change (controlled mode).
+- **`x-select-change-request`** fires before the selection updates. Call `preventDefault()` to block the change. An accepted change writes its value to the `value` attribute. A refused one shows the option shown before: the `value` attribute, else the option the markup marks `selected`.
 - **`select-change`** — fires after the selection has changed.
 
 ## Slots
@@ -135,7 +135,7 @@ Transitions on the wrapper respect `@media (prefers-reduced-motion: reduce)` —
 </x-select>
 ```
 
-### Consumer-controlled value
+### Refusing a selection
 
 ```html
 <x-select id="my-select" name="plan" value="pro">
@@ -146,10 +146,11 @@ Transitions on the wrapper respect `@media (prefers-reduced-motion: reduce)` —
 
 <script>
   const sel = document.getElementById('my-select');
+  sel.addEventListener('x-select-change-request', e => {
+    if (e.detail.value === 'enterprise') e.preventDefault(); // stays on the option shown before
+  });
   sel.addEventListener('select-change', e => {
-    // Consumer decides whether to persist the selection
-    sel.setAttribute('value', e.detail.value);
-    console.log('Selected:', e.detail.value, e.detail.label);
+    console.log('Selected:', e.detail.value, e.detail.label); // value is now the attribute too
   });
 </script>
 ```
@@ -210,6 +211,6 @@ Clear it by removing the attribute (or `el.error = ''`).
 ## Rendering Invariants
 
 - `DOM = f(attributes)` — render reads only from HTML attributes, never from mutable state.
-- The `value` attribute is never auto-set by the component on user interaction.
+- An accepted change writes the `value` attribute.
 - Options are cloned (not moved) from light DOM into the shadow `<select>`, so the light DOM children remain intact.
 - The placeholder `<option>` is always the first child of the internal `<select>` and is never removed.

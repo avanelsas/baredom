@@ -447,10 +447,10 @@
        0))))
 
 ;; ---------------------------------------------------------------------------
-;; value attr is NOT auto-set on user change
+;; An accepted change writes the value attribute
 ;; ---------------------------------------------------------------------------
 
-(deftest value-attr-not-auto-set-on-change-test
+(deftest an-accepted-change-writes-the-value-attribute-test
   (async done
     (let [el    (append! (make-el))
           opt-a (.createElement js/document "option")
@@ -466,8 +466,7 @@
            (.dispatchEvent sel (js/Event. "change" #js {:bubbles true})))
          (js/setTimeout
           (fn []
-            (is (not (.hasAttribute el model/attr-value))
-                "host value attr should NOT be auto-set after user change")
+            (is (= "q" (.getAttribute el model/attr-value)))
             (done))
           0))
        0))))
@@ -792,4 +791,66 @@
               (is (= "b" (.-value sel)))
               (done))
             0)))
+       0))))
+
+(defn- pick! [^js el value]
+  (let [^js sel (shadow-part el "[part=select]")]
+    (set! (.-value sel) value)
+    (.dispatchEvent sel (js/Event. "change" #js {:bubbles true}))))
+
+(deftest a-refused-change-shows-and-reports-the-option-shown-before-test
+  (async done
+    (let [el       (make-el)
+          previous (atom [])]
+      (set! (.-innerHTML el) (str "<option value=\"a\">A</option>"
+                                  "<option value=\"b\" selected>B</option>"
+                                  "<option value=\"c\">C</option>"))
+      (append! el)
+      (.addEventListener el model/event-change-request
+                         (fn [^js e]
+                           (swap! previous conj (.. e -detail -previousValue))
+                           (when (= "a" (.. e -detail -value)) (.preventDefault e))))
+      (js/setTimeout
+       (fn []
+         (let [^js sel (shadow-part el "[part=select]")]
+           (pick! el "a")
+           (is (= "b" (.-value sel)))
+           (pick! el "c")
+           (pick! el "a")
+           (is (= "c" (.-value sel)))
+           (is (= ["b" "b" "c"] @previous))
+           (done)))
+       0))))
+
+(deftest picking-an-option-with-an-empty-value-keeps-that-option-test
+  (async done
+    (let [el (make-el)]
+      (set! (.-innerHTML el) "<option value=\"\">None</option><option value=\"a\" selected>A</option>")
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (let [^js sel  (shadow-part el "[part=select]")
+               ^js none (.find (js/Array.from (.-options sel)) (fn none? [^js o] (= "None" (.-text o))))]
+           (set! (.-selectedIndex sel) (.-index none))
+           (.dispatchEvent sel (js/Event. "change" #js {:bubbles true}))
+           (is (= "" (.getAttribute el model/attr-value)))
+           (is (identical? none (aget (.-selectedOptions sel) 0)))
+           (done)))
+       0))))
+
+(deftest a-picked-value-whose-option-goes-away-stays-in-value-and-form-test
+  (async done
+    (let [^js pair (make-form-with-select {"name" "fruit"})
+          ^js form (aget pair 0)
+          ^js el   (aget pair 1)]
+      (js/setTimeout
+       (fn []
+         (pick! el "banana")
+         (.remove (.querySelector el "option[value=banana]"))
+         (js/setTimeout
+          (fn []
+            (is (= "banana" (.-value el)))
+            (is (= "banana" (.get (js/FormData. form) "fruit")))
+            (done))
+          0))
        0))))

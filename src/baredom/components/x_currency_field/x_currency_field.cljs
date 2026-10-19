@@ -365,21 +365,16 @@
   (apply-model! el (read-model el) true))
 
 ;; ── Event handlers ────────────────────────────────────────────────────────
-(defn- value-attr
-  "The value attribute of `el`, or empty text."
-  [^js el]
-  (or (du/get-attr el model/attr-value) ""))
-
 (defn- sync-form-value!
   "Gives the form the value attribute of `el`."
   [^js el]
   (when-let [^js internals (du/getv el k-internals)]
-    (.setFormValue internals (value-attr el))))
+    (.setFormValue internals (du/get-attr el model/attr-value ""))))
 
 (defn- on-input-focus [^js el ^js _evt]
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)]
-      (set! (.-value input-el) (value-attr el)))))
+      (set! (.-value input-el) (du/get-attr el model/attr-value "")))))
 
 (defn- on-input-input [^js el ^js _evt]
   (when-let [refs (du/getv el k-refs)]
@@ -387,11 +382,11 @@
           value        (.-value input-el)
           name         (or (du/get-attr el model/attr-name) "")]
       (if (du/dispatch-cancelable! el model/event-change-request
-                                   #js {:name name :value value :previousValue (value-attr el)})
+                                   #js {:name name :value value :previousValue (du/get-attr el model/attr-value "")})
         (do
           (du/set-attr! el model/attr-value value)
           (du/dispatch! el model/event-input #js {:name name :value value}))
-        (set! (.-value input-el) (value-attr el))))))
+        (set! (.-value input-el) (du/get-attr el model/attr-value ""))))))
 
 (defn- on-input-change [^js el ^js _evt]
   (when-let [refs (du/getv el k-refs)]
@@ -401,12 +396,12 @@
           canonical    (if (js/isNaN num) raw (str num))
           name         (or (du/get-attr el model/attr-name) "")]
       (if (du/dispatch-cancelable! el model/event-change-request
-                                   #js {:name name :value canonical :previousValue (value-attr el)})
+                                   #js {:name name :value canonical :previousValue (du/get-attr el model/attr-value "")})
         (do
           (du/set-attr! el model/attr-value canonical)
           (render-committed! el)
           (du/dispatch! el model/event-change #js {:name name :value canonical}))
-        (set! (.-value input-el) (value-attr el))))))
+        (set! (.-value input-el) (du/get-attr el model/attr-value ""))))))
 
 (defn- on-input-blur [^js el ^js _evt]
   (render-committed! el))

@@ -496,12 +496,13 @@
     (enter-text! el "new")
     (is (empty? @inputs))))
 
-(deftest a-refused-change-request-puts-the-input-and-the-form-value-back-to-the-attribute
+(deftest a-refused-change-request-keeps-the-input-and-the-form-value-of-the-accepted-change
   (let [el (field-in-form! {model/attr-value "old"})]
     (enter-text! el "accepted")
+    (is (= "accepted" (.getAttribute el model/attr-value)))
     (.addEventListener el model/event-change-request refuse!)
     (enter-text! el "refused")
-    (is (= ["old" "old"]
+    (is (= ["accepted" "accepted"]
            [(.-value (shadow-part el "[part=input]")) (form-value el)]))))
 
 (deftest a-refused-change-request-empties-a-field-with-no-value-attribute
@@ -513,7 +514,6 @@
 
 (deftest a-refused-change-request-makes-a-required-field-with-no-value-invalid
   (let [el (field-in-form! {model/attr-required ""})]
-    (enter-text! el "accepted")
     (.addEventListener el model/event-change-request refuse!)
     (enter-text! el "refused")
     (is (.-valueMissing (.-validity el)))))
@@ -543,3 +543,25 @@
   (let [el (typed! "abc")]
     (set! (.-value el) "")
     (is (= "" (.-value (shadow-part el "[part=input]"))))))
+
+(deftest an-accepted-change-keeps-the-caret
+  (let [el       (field-in-form! {model/attr-value "abcd"})
+        input-el (shadow-part el "[part=input]")]
+    (set! (.-value input-el) "abXcd")
+    (.setSelectionRange input-el 3 3)
+    (.dispatchEvent input-el (js/Event. "input" #js {:bubbles true}))
+    (is (= "abXcd" (.getAttribute el model/attr-value)))
+    (is (= 3 (.-selectionStart input-el)))))
+
+(deftest a-form-reset-after-an-accepted-change-empties-the-field
+  (let [el (field-in-form! {model/attr-value "old"})]
+    (enter-text! el "accepted")
+    (.reset (.-form el))
+    (is (not (.hasAttribute el model/attr-value)))
+    (is (= "" (.-value (shadow-part el "[part=input]"))))))
+
+(deftest an-accepted-change-makes-a-required-field-valid
+  (let [el (field-in-form! {model/attr-required ""})]
+    (is (.-valueMissing (.-validity el)))
+    (enter-text! el "filled")
+    (is (not (.-valueMissing (.-validity el))))))

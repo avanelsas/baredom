@@ -206,15 +206,12 @@
   (set! (.-value (gobj/get refs "input")) value)
   (sync-field! el refs))
 
-(defn- committed-value [^js el]
-  (or (du/get-attr el model/attr-value) ""))
-
 (defn- field-name [^js el]
   (or (du/get-attr el model/attr-name) ""))
 
 (defn- change-allowed! [^js el name value]
   (du/dispatch-cancelable! el model/event-change-request
-                           #js {:name name :value value :previousValue (committed-value el)}))
+                           #js {:name name :value value :previousValue (du/get-attr el model/attr-value "")}))
 
 ;; ---------------------------------------------------------------------------
 ;; Render
@@ -222,7 +219,6 @@
 (defn- read-model [^js el]
   (model/normalize
    {:name-raw          (du/get-attr el model/attr-name)
-    :value-raw         (du/get-attr el model/attr-value)
     :placeholder-raw   (du/get-attr el model/attr-placeholder)
     :label-raw         (du/get-attr el model/attr-label)
     :disabled-present? (forms/disabled? el)
@@ -306,9 +302,9 @@
       (let [^js input-el (gobj/get refs "input")
             name         (field-name el)]
         (if (change-allowed! el name (.-value input-el))
-          (do (sync-field! el refs)
+          (do (du/set-attr! el model/attr-value (.-value input-el))
               (schedule-input-dispatch! el name (.-value input-el)))
-          (show-value! el refs (committed-value el)))))))
+          (show-value! el refs (du/get-attr el model/attr-value "")))))))
 
 (defn- make-change-handler [^js el]
   (fn [^js _evt]
@@ -338,7 +334,7 @@
       (let [^js input-el (gobj/get refs "input")
             name         (field-name el)]
         (when (change-allowed! el name "")
-          (show-value! el refs "")
+          (du/set-attr! el model/attr-value "")
           (clear-pending-debounce! el)
           (du/dispatch! el model/event-clear #js {:name name})
           (.focus input-el))))))
@@ -421,7 +417,8 @@
       (when-let [refs (du/getv el k-refs)]
         (let [^js input-el (gobj/get refs "input")]
           (when (not= (.-value input-el) new-val)
-            (set! (.-value input-el) (or new-val ""))))))
+            (set! (.-value input-el) (or new-val "")))
+          (sync-field! el refs))))
     (update-from-attrs! el)))
 
 ;; ---------------------------------------------------------------------------

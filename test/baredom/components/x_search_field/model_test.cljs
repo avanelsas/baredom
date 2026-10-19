@@ -70,7 +70,6 @@
 (deftest normalize-empty-defaults-test
   (let [m (model/normalize {})]
     (is (= "" (:name m)))
-    (is (= "" (:value m)))
     (is (= "" (:placeholder m)))
     (is (= "" (:label m)))
     (is (= false (:disabled? m)))
@@ -87,10 +86,8 @@
 
 (deftest normalize-string-fields-test
   (let [m (model/normalize {:name-raw        "q"
-                             :value-raw       "hello"
                              :placeholder-raw "Search…"
                              :label-raw       "Site search"})]
     (is (= "q"           (:name m)))
-    (is (= "hello"       (:value m)))
     (is (= "Search…"     (:placeholder m)))
     (is (= "Site search" (:label m)))))

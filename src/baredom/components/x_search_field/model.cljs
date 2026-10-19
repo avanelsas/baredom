@@ -71,10 +71,9 @@
 
 (defn normalize
   "Derives a complete view-model map from raw attribute values."
-  [{:keys [name-raw value-raw placeholder-raw label-raw
+  [{:keys [name-raw placeholder-raw label-raw
            disabled-present? required-present? autocomplete-raw debounce-raw]}]
   {:name         (or name-raw "")
-   :value        (or value-raw "")
    :placeholder  (or placeholder-raw "")
    :label        (or label-raw "")
    :disabled?    (boolean disabled-present?)
