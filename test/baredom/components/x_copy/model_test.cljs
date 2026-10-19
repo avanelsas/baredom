@@ -15,21 +15,6 @@
   (testing "empty defaults to text"
     (is (= "text" (model/parse-mode "")))))
 
-;; ── parse-bool-default-true ───────────────────────────────────────────────────
-(deftest parse-bool-default-true-test
-  (testing "nil → true"
-    (is (= true (model/parse-bool-default-true nil))))
-  (testing "empty string → true"
-    (is (= true (model/parse-bool-default-true ""))))
-  (testing "\"true\" → true"
-    (is (= true (model/parse-bool-default-true "true"))))
-  (testing "\"false\" → false"
-    (is (= false (model/parse-bool-default-true "false"))))
-  (testing "\"0\" → false"
-    (is (= false (model/parse-bool-default-true "0"))))
-  (testing "any other string → true"
-    (is (= true (model/parse-bool-default-true "yes")))))
-
 ;; ── parse-int-pos ─────────────────────────────────────────────────────────────
 (deftest parse-int-pos-test
   (testing "valid positive integer"

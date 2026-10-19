@@ -2,6 +2,7 @@
   (:require
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
+   [baredom.utils.model :as mu]
    [goog.object :as gobj]
    [baredom.components.x-copy.model :as model]))
 
@@ -402,7 +403,7 @@
   (.defineProperty js/Object proto "showTooltip"
                    #js {:get (fn []
                                (this-as ^js this
-                                        (model/parse-bool-default-true
+                                        (mu/parse-bool-default-true
                                          (.getAttribute this model/attr-show-tooltip))))
                         :set (fn [v]
                                (this-as ^js this

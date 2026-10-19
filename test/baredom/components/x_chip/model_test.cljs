@@ -2,27 +2,6 @@
   (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-chip.model :as model]))
 
-;; ── parse-bool-default-true ───────────────────────────────────────────────
-(deftest parse-bool-default-true-nil-test
-  (is (true? (model/parse-bool-default-true nil))))
-
-(deftest parse-bool-default-true-empty-test
-  (is (true? (model/parse-bool-default-true ""))))
-
-(deftest parse-bool-default-true-explicit-true-test
-  (is (true? (model/parse-bool-default-true "true"))))
-
-(deftest parse-bool-default-true-false-test
-  (is (false? (model/parse-bool-default-true "false"))))
-
-(deftest parse-bool-default-true-zero-test
-  (is (false? (model/parse-bool-default-true "0"))))
-
-(deftest parse-bool-default-true-other-values-test
-  (is (true? (model/parse-bool-default-true "1")))
-  (is (true? (model/parse-bool-default-true "yes")))
-  (is (true? (model/parse-bool-default-true "on"))))
-
 ;; ── effective-value ───────────────────────────────────────────────────────
 (deftest effective-value-uses-value-raw-test
   (is (= "chip-1" (model/effective-value "My Chip" "chip-1"))))
@@ -58,9 +37,9 @@
   (let [m (model/normalize {:removable-raw "false"})]
     (is (false? (:removable? m)))))
 
-(deftest normalize-removable-zero-test
+(deftest normalize-removable-zero-is-on-test
   (let [m (model/normalize {:removable-raw "0"})]
-    (is (false? (:removable? m)))))
+    (is (true? (:removable? m)))))
 
 (deftest normalize-removable-nil-defaults-true-test
   (let [m (model/normalize {:removable-raw nil})]

@@ -73,8 +73,8 @@
         count-val (parse-int-attr count-raw nil)]
     {:variant          (parse-variant variant-raw)
      :size             (parse-size size-raw)
-     :pill             (mu/parse-bool-attr pill-raw)
-     :dot              (mu/parse-bool-attr dot-raw)
+     :pill             (mu/parse-bool-present pill-raw)
+     :dot              (mu/parse-bool-present dot-raw)
      :count            count-val
      :max              max-val
      :text             (when (string? text-raw)

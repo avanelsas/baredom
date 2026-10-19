@@ -810,3 +810,10 @@
            (mapv (fn iso [^js b] (.getAttribute b "data-iso"))
                  (array-seq (.querySelectorAll (shadow-part el "[part=grid]")
                                                "[part=day][tabindex=\"0\"]")))))))
+
+(deftest auto-swap-with-any-text-is-on-test
+  (let [el (range-from-march-10! "auto-swap=\"false\"")]
+    (is (true? (.-autoSwap el)))
+    (click-iso! el "2026-03-08")
+    (is (= "2026-03-08" (.getAttribute el model/attr-start)))
+    (is (= "2026-03-10" (.getAttribute el model/attr-end)))))

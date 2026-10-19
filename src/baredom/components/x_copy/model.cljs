@@ -1,4 +1,5 @@
-(ns baredom.components.x-copy.model)
+(ns baredom.components.x-copy.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-copy")
 
@@ -35,15 +36,6 @@
   [s]
   (if (= s "html") "html" "text"))
 
-(defn parse-bool-default-true
-  "nil/absent → true, \"false\"/\"0\" → false, anything else → true."
-  [s]
-  (cond
-    (nil? s)                true
-    (= s "false")           false
-    (= s "0")               false
-    :else                   true))
-
 (defn parse-int-pos
   "Parse a positive integer from s, returning default-v if not valid or not positive."
   [s default-v]
@@ -72,7 +64,7 @@
                       (.trim from-attr-raw))
    :mode            (parse-mode mode-raw)
    :disabled?       (boolean disabled-present?)
-   :show-tooltip?   (parse-bool-default-true show-tooltip-raw)
+   :show-tooltip?   (mu/parse-bool-default-true show-tooltip-raw)
    :tooltip-ms      (clamp (parse-int-pos tooltip-ms-raw 1200) 100 10000)
    :success-message (or (and (string? success-message-raw)
                               (not= success-message-raw "")

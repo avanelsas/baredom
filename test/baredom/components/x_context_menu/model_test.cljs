@@ -1,7 +1,6 @@
 (ns baredom.components.x-context-menu.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-context-menu.model :as model]
-            [baredom.utils.model :as mu]))
+            [baredom.components.x-context-menu.model :as model]))
 
 ;; ---- parse-placement ----
 
@@ -29,12 +28,6 @@
 
 ;; ---- parse-bool-attr ----
 
-(deftest parse-bool-attr-test
-  (is (true?  (mu/parse-bool-attr "")))
-  (is (true?  (mu/parse-bool-attr "true")))
-  (is (false? (mu/parse-bool-attr "false")))
-  (is (false? (mu/parse-bool-attr nil))))
-
 ;; ---- normalize ----
 
 (deftest normalize-defaults-test
@@ -47,8 +40,8 @@
 
 (deftest normalize-with-values-test
   (let [m (model/normalize
-           {:open-present?     ""
-            :disabled-present? ""
+           {:open-present?     true
+            :disabled-present? true
             :placement-raw     "top-end"
             :offset-raw        "16"
             :z-index-raw       "2000"})]
@@ -58,10 +51,8 @@
     (is (= 16        (:offset m)))
     (is (= 2000      (:z-index m)))))
 
-(deftest normalize-false-attrs-test
-  (let [m (model/normalize
-           {:open-present?     "false"
-            :disabled-present? "false"})]
+(deftest normalize-reads-absent-flags-as-off-test
+  (let [m (model/normalize {})]
     (is (false? (:open? m)))
     (is (false? (:disabled? m)))))
 

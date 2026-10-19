@@ -126,3 +126,15 @@
   (is (= [{:id "x" :key "x|0"} {:id "y" :key "y|0"} {:id "x" :key "x|1"}]
          (model/with-unique-keys :id [{:id "x"} {:id "y"} {:id "x"}]))))
 
+
+(deftest parse-bool-present-reads-presence-whatever-the-text-test
+  (is (false? (model/parse-bool-present nil)))
+  (is (true? (model/parse-bool-present "")))
+  (is (true? (model/parse-bool-present "false"))))
+
+(deftest parse-bool-attr-reads-false-in-any-case-as-off-test
+  (is (false? (model/parse-bool-attr nil)))
+  (is (false? (model/parse-bool-attr "false")))
+  (is (false? (model/parse-bool-attr " False ")))
+  (is (true? (model/parse-bool-attr "")))
+  (is (true? (model/parse-bool-attr "true"))))

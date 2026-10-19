@@ -105,8 +105,9 @@ them and the `.d.ts` marks them `readonly`) and the two methods in `method-api`.
 
 | Function | Signature | Description |
 |----------|-----------|-------------|
-| `parse-bool-attr` | `[s]` | Parse boolean attribute: `nil` → `false`, `"false"` → `false`, anything else → `true` |
-| `parse-bool-present` | `[s]` | `true` when the attribute is present (any value including `""`) |
+| `parse-bool-present` | `[s]` | An attribute that is off by default: `true` when present, whatever its text, as in HTML |
+| `parse-bool-default-true` | `[s]` | An attribute that is on by default: `true` when absent, `false` only for `"false"` |
+| `parse-bool-attr` | `[s]` | An attribute that says true or false with no default of its own: `false` when absent or `"false"` |
 | `non-empty-string?` | `[value]` | String predicate — `true` for non-blank strings |
 
 ### Keys
@@ -134,4 +135,4 @@ them and the `.d.ts` marks them `readonly`) and the two methods in `method-api`.
 
 **Property accessors:** Use `du/install-properties!` with `model/property-api` for standard properties. Only add manual `.defineProperty` for properties with custom getter/setter logic (e.g. `timeoutMs` with coercion).
 
-**Boolean parsing in model:** Components may define their own parsing functions in `model.cljs` (like `parse-bool-default-true`) when the semantics differ from `mu/parse-bool-attr`. Use `mu/parse-bool-attr` when standard true/false parsing suffices.
+**Boolean parsing in model:** Use `mu/parse-bool-present` (or `du/has-attr?`) for an attribute that is off by default, and `mu/parse-bool-default-true` for one that is on by default. Do not write a local parser for either.

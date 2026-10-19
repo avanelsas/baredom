@@ -177,7 +177,7 @@
 
 (defn normalize
   [{:keys [type-raw data-raw height-raw padding-raw
-           grid-present? axes-raw tooltip-present? cursor-raw
+           grid-raw axes-raw tooltip-present? cursor-raw
            disabled-present? loading-present? selected-raw
            x-format-raw y-format-raw]}]
   (let [series  (parse-series-data data-raw)
@@ -185,12 +185,12 @@
     {:type      (parse-type type-raw)
      :height    (parse-int-pos height-raw default-height)
      :padding   (parse-int-pos padding-raw default-padding)
-     :grid?     (if (nil? grid-present?) true (mu/parse-bool-attr grid-present?))
-     :axes?     (if (nil? axes-raw) true (mu/parse-bool-attr axes-raw))
-     :tooltip?  (mu/parse-bool-attr tooltip-present?)
+     :grid?     (mu/parse-bool-default-true grid-raw)
+     :axes?     (mu/parse-bool-default-true axes-raw)
+     :tooltip?  (boolean tooltip-present?)
      :cursor    (parse-cursor cursor-raw)
-     :disabled? (mu/parse-bool-attr disabled-present?)
-     :loading?  (mu/parse-bool-attr loading-present?)
+     :disabled? (boolean disabled-present?)
+     :loading?  (boolean loading-present?)
      :series    series
      :x-kind    (x-kind series)
      :y-domain  [ymn ymx]

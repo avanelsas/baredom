@@ -1,7 +1,6 @@
 (ns baredom.components.x-badge.model-test
   (:require [cljs.test :refer-macros [deftest is]]
-            [baredom.components.x-badge.model :as model]
-            [baredom.utils.model :as mu]))
+            [baredom.components.x-badge.model :as model]))
 
 ;; ── parse-variant ─────────────────────────────────────────────────────────
 (deftest parse-variant-valid-test
@@ -36,13 +35,6 @@
   (is (= 0  (model/parse-int-attr "abc" 0)))
   (is (= 42 (model/parse-int-attr nil   42)))
   (is (= 42 (model/parse-int-attr ""    42))))
-
-;; ── parse-bool-attr ───────────────────────────────────────────────────────
-(deftest parse-bool-attr-test
-  (is (true?  (mu/parse-bool-attr "")))
-  (is (true?  (mu/parse-bool-attr "true")))
-  (is (false? (mu/parse-bool-attr "false")))
-  (is (false? (mu/parse-bool-attr nil))))
 
 ;; ── compute-mode ─────────────────────────────────────────────────────────
 (deftest compute-mode-slot-priority-test

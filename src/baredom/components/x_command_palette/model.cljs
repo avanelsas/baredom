@@ -195,7 +195,7 @@
            label-raw placeholder-raw empty-text-raw]}]
   (let [modal?          (mu/parse-bool-default-true modal-raw)
         dismissible?    (mu/parse-bool-default-true dismissible-raw)
-        no-scrim?       (mu/parse-bool-attr no-scrim-raw)
+        no-scrim?       (mu/parse-bool-present no-scrim-raw)
         scrim?          (and modal? (not no-scrim?))
         close-on-scrim? (if (some? close-on-scrim-raw)
                           (mu/parse-bool-attr close-on-scrim-raw)
@@ -204,7 +204,7 @@
     {:open?            (boolean open-present?)
      :modal?           modal?
      :dismissible?     dismissible?
-     :disabled?        (mu/parse-bool-attr disabled-raw)
+     :disabled?        (mu/parse-bool-present disabled-raw)
      :scrim?           scrim?
      :close-on-scrim?  close-on-scrim?
      :close-on-escape? close-on-escape?

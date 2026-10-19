@@ -1,35 +1,26 @@
 (ns baredom.utils.model
   (:require [clojure.string :as str]))
 
-(defn parse-bool-attr
-  "HTML boolean-attribute semantics: an attribute is true when it is
-   present with any value other than the literal string `\"false\"`.
-   The empty string and `\"0\"` both count as true. Pass the value of
-   `getAttribute` (a string or `nil`); never the result of
-   `hasAttribute`. For strict presence semantics use `parse-bool-present`."
-  [s]
-  (and (some? s) (not= s "false")))
+(defn- false-text? [s]
+  (= "false" (.toLowerCase (.trim (str s)))))
 
 (defn parse-bool-present
-  "Strict-presence variant of `parse-bool-attr`: true when the attribute
-   exists at all, regardless of value. Pass the value of `getAttribute`
-   (a string or `nil`)."
+  "An attribute that is off by default, read as HTML does: true when present, whatever its text.
+   Pass the value of `getAttribute`."
   [s]
   (some? s))
 
 (defn parse-bool-default-true
-  "HTML boolean attribute that defaults to `true`: absent → true, present
-   with the literal value `\"false\"` (case-insensitive, trimmed) → false,
-   anything else (including the empty string) → true. Pass the value of
-   `getAttribute` (a string or `nil`).
-
-   Same shape as `parse-bool-attr` but inverted default. Use for
-   attributes like `dismissible`, `arrows`, `dots`, `spinner` where
-   the natural default is enabled and opting out is explicit."
+  "An attribute that is on by default: true when absent, false only for the text `\"false\"`
+   in any case. Pass the value of `getAttribute`."
   [s]
-  (if (nil? s)
-    true
-    (not= (.toLowerCase (.trim (str s))) "false")))
+  (or (nil? s) (not (false-text? s))))
+
+(defn parse-bool-attr
+  "An attribute that says true or false with no default of its own: false when absent or
+   `\"false\"` in any case. For an attribute that is off by default use `parse-bool-present`."
+  [s]
+  (and (some? s) (not (false-text? s))))
 
 (defn non-empty-string?
   "True when value is a string with at least one character."
