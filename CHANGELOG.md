@@ -2,6 +2,46 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.9.0] - 2026-10-19
+
+BareDOM 4.9 lets each request event show what its handler leaves. BareMirror cancels a request
+when the page does not show the value it asked for, and names the holes that a component may
+also write. No adapter is released with it.
+
+### Added
+
+- **`requestedValues` in `@vanelsas/baredom/requests`,** and `requested-values` in
+  `baredom.requests`. It maps each request event to what it asks of each attribute: the name of
+  a detail field, or a fixed boolean.
+- **`@vanelsas/baredom/foreign-writes`,** and `baredom.foreign-writes`. It maps each component
+  to the attributes it writes on nodes it does not own.
+- **`sharedHoles` in BareMirror,** and `template/shared-holes`. It names each hole of a split
+  template that a component may also write. It only reports.
+
+### Changed
+
+- **BareMirror `listen` takes `requestedValues`.** It cancels a request when its part does not
+  show the asked value after the dispatch, so a `step` that accepts another value refuses the
+  request. `listen` no longer takes `requests`. The `requests` map is still published.
+- **The BareMirror functions for JavaScript read only the own fields of an object.**
+- **A range click on `x-date-picker` asks for the range it gives.** The `start` and `end` of
+  `x-date-picker-change-request` hold that range, and an accepted request writes exactly it. A
+  picker given only `start` ends the range on the next later click.
+- **A clear of `x-date-picker` holds `null` in `value`, `start` and `end`,** where it held `""`.
+  The component removes those attributes.
+
+### Fixed
+
+- **A refused change shows and submits the `value` attribute that the handler left,** in
+  `x-form-field`, `x-text-area`, `x-select` and `x-currency-field`.
+- **A written `value` reaches the form** in `x-text-area`, `x-currency-field` and
+  `x-form-field`.
+- **`x-multi-combobox` no longer throws when a handler writes its value during a removal
+  request,** and its panel shows every option left after an add that the handler wrote.
+- **The input event of `x-text-area` reports what the textarea shows.**
+- **`auto-swap` on `x-date-picker` swaps.** A click before the start gives the range from that
+  day to the start. Before, it started a new range.
+
 ## [4.8.0] - 2026-10-17
 
 BareDOM 4.8 lets `x-multi-combobox` take values that hold a comma, and fixes two `x-date-picker`
