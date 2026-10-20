@@ -2,6 +2,28 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.11.0] - 2026-10-20
+
+BareDOM 4.11 lets a BareMirror template write the properties of a component, and a component
+takes over a property that was set before it was defined. The adapters are not released with
+it: they work with `@vanelsas/baredom` 4.0.0 or later.
+
+### Added
+
+- **Property holes in BareMirror.** A template names them in `props`, next to `on`:
+  `['x-command-palette', { props: { items: item => item.commands } }]`. A write sets each
+  property after the text and the attributes, and only when its value differs from the value
+  last written to that node. JavaScript arrays and plain objects compare by their content.
+- **The task list demo** finds a task with an `x-command-palette`, whose `items` it writes
+  through `props`.
+
+### Fixed
+
+- **A component takes over a property set before it was defined.** Such a value hid the
+  accessor of the component, so a property written to a node from `nodeMaker`, or before the
+  module loaded, never reached it. The component now sets the value again through its
+  accessor when it connects.
+
 ## [4.10.1] - 2026-10-20
 
 BareDOM 4.10.1 stops a focused control from recalculating the styles of the page on every
