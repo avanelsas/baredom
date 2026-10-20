@@ -437,3 +437,61 @@
 
 (deftest write-parts-returns-nothing
   (is (nil? (mirror-parts/write-parts! {} {}))))
+
+(defn- prop-recorder!
+  "An element with a property `items` that adds each value set to it to `log`."
+  [log]
+  (doto (element! "div")
+    (js/Object.defineProperty "items" #js {:set (partial swap! log conj)})))
+
+(defn- write-items! [^js el items]
+  (mirror-parts/write-parts! {"list" el} {"list" {:props {:items items}}}))
+
+(deftest write-parts-sets-a-property-that-differs-from-the-value-last-written
+  (let [log (atom [])
+        el  (prop-recorder! log)]
+    (write-items! el [1 2])
+    (write-items! el [1 2])
+    (write-items! el [3])
+    (is (= [[1 2] [3]] @log))))
+
+(deftest write-parts-compares-a-javascript-array-and-object-by-content
+  (let [log (atom [])
+        el  (prop-recorder! log)]
+    (write-items! el #js [#js {:id "a"}])
+    (write-items! el #js [#js {:id "a"}])
+    (write-items! el #js [#js {:id "b"}])
+    (write-items! el #js [#js {:id "b" :label nil}])
+    (is (= 3 (count @log)))))
+
+(deftest write-parts-compares-an-instance-of-a-class-by-identity
+  (let [log   (atom [])
+        el    (prop-recorder! log)
+        items (js/Map.)]
+    (write-items! el items)
+    (write-items! el items)
+    (write-items! el (js/Map.))
+    (is (= 2 (count @log)))))
+
+(defn- record-what-is-there!
+  "Puts the text and the `open` attribute of `el` into `seen`."
+  [seen ^js el]
+  (reset! seen [(.-textContent el) (.getAttribute el "open")]))
+
+(deftest write-parts-sets-the-properties-after-the-text-and-the-attributes
+  (let [seen (atom nil)
+        el   (element! "div")]
+    (js/Object.defineProperty el "items" #js {:set (fn [_] (record-what-is-there! seen el))})
+    (mirror-parts/write-parts! {"list" el} {"list" {:text "x" :attrs {:open true} :props {:items []}}})
+    (is (= ["x" ""] @seen))))
+
+(deftest same-value-compares-by-equality-and-by-content
+  (testing "ClojureScript values compare by ="
+    (is (true? (mirror-parts/same-value? [1 {:a 2}] [1 {:a 2}]))))
+  (testing "JavaScript arrays and plain objects compare by content, at every depth"
+    (is (true? (mirror-parts/same-value? #js [#js {:a #js [1]}] #js [#js {:a #js [1]}])))
+    (is (false? (mirror-parts/same-value? #js [#js {:a #js [1]}] #js [#js {:a #js [2]}]))))
+  (testing "an array and an object with the same entries differ"
+    (is (false? (mirror-parts/same-value? #js ["a"] #js {"0" "a"}))))
+  (testing "objects with other keys differ, even when each value is undefined"
+    (is (false? (mirror-parts/same-value? #js {:a js/undefined} #js {:b js/undefined})))))

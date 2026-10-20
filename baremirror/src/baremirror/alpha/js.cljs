@@ -34,13 +34,19 @@
   [meaning]
   (if (array? meaning) (vec meaning) meaning))
 
+(defn- ->value
+  "One value of a template: `hole` applied to a function, or the value itself."
+  [hole v]
+  (if (fn? v) (hole v) v))
+
 (defn- ->attr
-  "One attribute of a template. `on` holds event meanings, and `hole` is applied to a function."
+  "One attribute of a template. `on` holds event meanings, `props` holds property holes, and
+   `hole` is applied to each function."
   [hole [k v]]
-  (cond
-    (= "on" k) [:on (update-vals (object-map v) ->meaning)]
-    (fn? v)    [k (hole v)]
-    :else      [k v]))
+  (case k
+    "on"    [:on (update-vals (object-map v) ->meaning)]
+    "props" [:props (update-vals (object-map v) (partial ->value hole))]
+    [k (->value hole v)]))
 
 (defn- ->child [hole child]
   (cond
@@ -97,12 +103,14 @@
   (clj->js (mirror-parts/read-parts node)))
 
 (defn- ->write
-  "One write, from the own fields of `write`: `text` when it is there, and `attrs` as a map."
+  "One write, from the own fields of `write`: `text` when it is there, and `attrs` and `props` as
+   maps."
   [write]
   (let [fields (object-map write)]
     (cond-> {}
       (contains? fields "text")    (assoc :text (fields "text"))
-      (some? (fields "attrs"))     (assoc :attrs (object-map (fields "attrs"))))))
+      (some? (fields "attrs"))     (assoc :attrs (object-map (fields "attrs")))
+      (some? (fields "props"))     (assoc :props (object-map (fields "props"))))))
 
 (defn write-parts
   "Applies the object `writes` to the object `parts`, both by part name."

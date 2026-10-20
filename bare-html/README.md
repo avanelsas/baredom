@@ -196,7 +196,8 @@ Nothing in the script compares the old screen with the new one. A row that stays
 keeps its node, so it keeps focus when it moves. [`docs/baremirror.md`](../docs/baremirror.md)
 describes the pattern and every function. With "The server says no" switched on, a tick
 on a checkbox is refused and the checkbox stays as it was. The counter is `task-count`, an element
-with no state that `defineElement` makes from a template.
+with no state that `defineElement` makes from a template. "Find a task" opens an
+`x-command-palette`. `writeParts` writes its `items` property from the tasks, through `props`.
 
 ## One task list, three ways
 

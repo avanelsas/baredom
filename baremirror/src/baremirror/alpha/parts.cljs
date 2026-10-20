@@ -147,18 +147,59 @@
   [parts writes]
   (into [] (remove parts) (keys writes)))
 
+(declare same-value?)
+
+(defn- same-at?
+  "True when `a` and `b` have the same value under `k`."
+  [^js a ^js b k]
+  (and (js/Object.hasOwn b k)
+       (same-value? (unchecked-get a k) (unchecked-get b k))))
+
+(defn- same-entries?
+  "True when `a` and `b` have the same own keys, with the same value under each."
+  [^js a ^js b]
+  (let [ks (js/Object.keys a)]
+    (and (== (alength ks) (alength (js/Object.keys b)))
+         (every? (partial same-at? a b) ks))))
+
+(defn same-value?
+  "True when `a` and `b` are equal: by `=`, and by content for JavaScript arrays and plain
+   objects."
+  [a b]
+  (cond
+    (identical? a b)              true
+    (and (array? a) (array? b))   (same-entries? a b)
+    (and (object? a) (object? b)) (same-entries? a b)
+    :else                         (= a b)))
+
+(def ^:private written-props
+  "The symbol under which a node holds the value last written to each of its properties."
+  (js/Symbol "baremirror.written-props"))
+
+(defn- set-prop!
+  "Sets one property of `el` to `v`, unless `v` is the value last written to it."
+  [^js el [k v]]
+  (let [prop    (name k)
+        written (unchecked-get el written-props)]
+    (when-not (and (contains? written prop) (same-value? v (get written prop)))
+      (unchecked-set el prop v)
+      (unchecked-set el written-props (assoc written prop v)))))
+
 (defn- write-part!
-  "Applies the write of one part to its node: the text, then the attributes."
-  [parts [part-name {:keys [attrs] :as write}]]
+  "Applies the write of one part to its node: the text, then the attributes, then the
+   properties."
+  [parts [part-name {:keys [attrs props] :as write}]]
   (let [node (parts part-name)]
     (when (contains? write :text)
       (set-text! node (:text write)))
     (when attrs
-      (set-attrs! node attrs))))
+      (set-attrs! node attrs))
+    (run! (partial set-prop! node) props)))
 
 (defn write-parts!
   "Applies `writes` to `parts`, which are maps by part name: the nodes as `read-parts` gives
-   them, and `:text` and `:attrs` as `template/writes` gives them.
+   them, and `:text`, `:attrs` and `:props` as `template/writes` gives them. A property is
+   written when its value differs from the value last written to it, as `same-value?` sees it.
    Throws before any write when a part name has no node."
   [parts writes]
   (when-some [missing (seq (missing-parts parts writes))]

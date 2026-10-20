@@ -346,7 +346,7 @@ script checks it.
   places into the wanted places.
 - **Template**: a vector of a tag, an optional map of attributes, and children. **Hole**: a
   keyword or a function of the item, in a template. **Fixed template**: a template with no hole
-  and no `:on` entry. **Split template**: what `split` returns, as data. **Item**: the value
+  and no `:on` or `:props` entry. **Split template**: what `split` returns, as data. **Item**: the value
   that one node shows.
 - **Part**: a node marked with `data-x-part`. **Message**: what the application receives.
   "Event" means a DOM event only.

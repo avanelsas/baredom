@@ -75,6 +75,8 @@
     (is (false? (template/fixed? [:ul (map (partial vector :li) ["a" "b"])]))))
   (testing "a template with an :on entry is not fixed"
     (is (false? (template/fixed? [:x-button {:on {"press" :remove}}]))))
+  (testing "a template with a :props entry is not fixed"
+    (is (false? (template/fixed? [:x-command-palette {:props {:items :items}}]))))
   (testing "a hole in a child template leaves the template around it fixed"
     (is (true? (template/fixed? [:li [:span :text]])))))
 
@@ -107,6 +109,16 @@
   (testing "the name may be a string"
     (is (= [:span {:data-x-part "row.0"}] (:fixed (template/split "row" [:span :text]))))))
 
+(deftest split-of-properties
+  (is (= {:fixed  [:li [:x-command-palette {:open true :data-x-part "row.0"}]]
+          :holes  [{:part "row.0" :props {:items :items}}]
+          :events {}}
+         (template/split :row [:li [:x-command-palette {:open true :props {:items :items}}]]))))
+
+(deftest split-refuses-a-property-that-is-not-a-hole
+  (is (thrown-with-msg? #?(:clj clojure.lang.ExceptionInfo :cljs ExceptionInfo) #"is a hole"
+                        (template/split :row [:x-command-palette {:props {:items []}}]))))
+
 (deftest split-refuses-a-text-hole-beside-other-children
   (is (thrown? #?(:clj clojure.lang.ExceptionInfo :cljs ExceptionInfo)
                (template/split :row [:span "Task: " :text]))))
@@ -124,6 +136,10 @@
     (testing "a hole that is a function is called with the item"
       (is (= {"row.0" {:text 2}}
              (template/writes (template/split :row [:span count]) [:a :b]))))
+    (testing "a property hole gives the value of the item"
+      (is (= {"row.0" {:props {:items ["a"]}}}
+             (template/writes (template/split :row [:x-command-palette {:props {:items :items}}])
+                              {:items ["a"]}))))
     (testing "a template with no hole has no writes"
       (is (= {} (template/writes (template/split :row [:li "text"]) {}))))))
 

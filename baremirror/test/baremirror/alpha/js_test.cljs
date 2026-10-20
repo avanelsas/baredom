@@ -350,6 +350,20 @@
     (testing "a part name that no node has is refused"
       (is (thrown? ExceptionInfo (mjs/write-parts parts #js {:gone #js {:text "x"}}))))))
 
+(defn- items-of [^js item]
+  (.-items item))
+
+(deftest a-property-hole-sets-a-property-of-its-part
+  (let [split (mjs/split-template "menu" #js ["div" #js {:props #js {:items items-of}}])
+        node  (staged! (.-fixed split))
+        items #js [#js {:id "a"}]]
+    (testing "write-item sets the property to the value of the hole"
+      (mjs/write-item node split #js {:items items})
+      (is (identical? items (.-items node))))
+    (testing "write-parts sets a property from props"
+      (mjs/write-parts (mjs/read-parts node) #js {"menu.0" #js {:props #js {:items #js []}}})
+      (is (= [] (data (.-items node)))))))
+
 (deftest write-parts-takes-a-field-of-the-prototype-as-no-field
   (let [node      (staged! #js ["div" #js ["b" #js {:data-x-part "count"} "0"]])
         parts     (mjs/read-parts node)
