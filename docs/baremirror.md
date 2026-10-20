@@ -286,7 +286,8 @@ not on your page, pass a copy of `foreignWrites` without it.
   component that is in the page renders for each write.
 - **A node from `node-maker` is not a component until it is in the page.** Its custom elements
   are plain elements until then, so a write to it costs what an attribute costs. Write
-  attributes and text to it. A property or a method of a component is not there yet.
+  attributes and text to it. A method of a component is not there yet. A component of BareDOM
+  takes over a property set before it was defined. A component of another library may not.
 - **In JavaScript, a reading and a plan are frozen.** `perform` takes them as `readPlaces` and
   `plan` gave them. It also takes a plain object of the same shape: one that you made yourself,
   or a copy with a field changed.
