@@ -48,7 +48,7 @@ jobs:
           bb --version
 
       - name: Lint with clj-kondo
-        run: clj-kondo --lint src test baremirror --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
+        run: clj-kondo --lint src test baremirror bare-html/holes/src --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
 
       - name: Check method-api drift
         run: bb scripts/check_method_api.bb
@@ -113,7 +113,10 @@ jobs:
       - name: Check bundle sizes
         run: bash scripts/check-bundle-size.sh
 
-      - name: Prerender the task list, the mirror demo and the tree
+      - name: Build the holes demo
+        run: npm run build:holes
+
+      - name: Prerender the task list, the mirror demo, the tree and the holes page
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 >/dev/null 2>&1 &
           sleep 1
@@ -125,6 +128,9 @@ jobs:
           test "$(grep -o '<script' /tmp/mirror.static.html | wc -l)" -eq 0
           node scripts/prerender.mjs http://127.0.0.1:8000/bare-html/tree.html /tmp/tree.prerendered.html
           test "$(grep -oE 'data-x-key="[0-9]+"' /tmp/tree.prerendered.html | wc -l)" -eq 14
+          node scripts/prerender.mjs http://127.0.0.1:8000/bare-html/holes.html /tmp/holes.prerendered.html
+          test "$(grep -oE 'data-x-key="[0-9]+"' /tmp/holes.prerendered.html | wc -l)" -eq 3
+          grep -q 'x-table also writes selected on x-table-row.' /tmp/holes.prerendered.html
         env:
           CHROME_FLAGS: "--no-sandbox"
 

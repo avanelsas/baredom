@@ -1,5 +1,5 @@
 {:source-paths
- ["src" "test" "baremirror/src" "baremirror/test"]
+ ["src" "test" "baremirror/src" "baremirror/test" "bare-html/holes/src"]
 
  :dependencies
  [[org.clojure/test.check "1.1.1"]]
@@ -35,6 +35,12 @@
    :output-dir "public/js"
    :asset-path "/js"
    :modules {:main {:init-fn baredom.core/init!}}}
+
+  :holes
+  {:target     :browser
+   :output-dir "bare-html/holes/js"
+   :asset-path "holes/js"
+   :modules    {:main {:init-fn holes.main/start!}}}
 
   :lib
   {:target :esm

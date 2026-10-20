@@ -29,7 +29,7 @@ npm run pack:local
 
 **Lint (clj-kondo):**
 ```
-clj-kondo --lint src test baremirror
+clj-kondo --lint src test baremirror bare-html/holes/src
 ```
 Code must have **zero lint warnings and errors** before pushing to GitHub. Always run the linter and fix any issues before `git push`.
 

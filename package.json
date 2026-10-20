@@ -620,6 +620,7 @@
     "clean": "rm -rf dist .shadow-cljs",
     "build": "npm run clean && npx shadow-cljs release lib && bb scripts/generate_types.bb && bb scripts/generate_all.bb && ./scripts/generate-integrity.sh",
     "build:demo": "npx shadow-cljs release demo",
+    "build:holes": "npx shadow-cljs release holes",
     "pack:local": "npm pack",
     "test": "npx shadow-cljs compile test-karma && npx karma start karma.conf.cjs --single-run",
     "test:types": "npx tsc -p test/types/tsconfig.json",

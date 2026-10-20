@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BareMirror holes</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif;
+            --hole: color-mix(in srgb, #2563eb 25%, transparent);
+            --shared: color-mix(in srgb, #dc2626 30%, transparent); }
+    body { margin: 0; padding: 2rem 1rem; line-height: 1.5; }
+    main { max-width: 48rem; margin: 0 auto; display: grid; gap: 1rem; }
+    h1 { margin: 0; font-size: 1.5rem; }
+    h2 { margin: 1rem 0 0; font-size: 1.15rem; }
+    p { margin: 0; }
+    .bar { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+    .panels { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+    figure { margin: 0; display: grid; gap: 0.25rem; }
+    figcaption { font-size: 0.85rem; font-weight: 600; }
+    pre { margin: 0; padding: 0.75rem; overflow-x: auto; white-space: pre-wrap; font-size: 0.85rem;
+          border: 1px solid color-mix(in srgb, currentColor 20%, transparent); border-radius: 0.5rem; }
+    mark { color: inherit; border-radius: 0.2rem; padding: 0 0.1rem; }
+    mark.hole { background: var(--hole); }
+    mark.shared { background: var(--shared); }
+    ol { margin: 0; padding-left: 1.25rem; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <main id="app">
+    <h1>Holes, and a hole with two writers</h1>
+    <p>BareMirror writes each row of this table from a template. A template is data. A keyword
+      in it is a <mark class="hole">hole</mark>: BareMirror fills it from the item of the row.</p>
+
+    <x-table data-x-part="table" selectable="single" value="1" columns="1fr 1fr"></x-table>
+    <div class="bar">
+      <x-button data-x-part="add" variant="primary">Add a row</x-button>
+    </div>
+
+    <div class="panels">
+      <figure>
+        <figcaption>The template</figcaption>
+        <pre data-x-part="template"></pre>
+      </figure>
+      <figure>
+        <figcaption>The item of the selected row</figcaption>
+        <pre data-x-part="item"></pre>
+      </figure>
+      <figure>
+        <figcaption>The selected row in the page</figcaption>
+        <pre id="row"></pre>
+      </figure>
+    </div>
+
+    <h2>Two writers</h2>
+    <p>Click Grace, then add a row. The highlight jumps back to Ada, and the item of Grace still
+      says <code>:selected? true</code>. The hole on <code>selected</code> is
+      <mark class="shared">shared</mark>: <code>x-table</code> writes that attribute too, from its
+      own <code>value</code>, which still names Ada. The last write wins.</p>
+    <ol id="log" aria-live="polite"></ol>
+
+    <h2>The check</h2>
+    <p>BareMirror can find such a hole before it bites. It compares the holes of a template with
+      the writes that BareDOM declares for each component:</p>
+    <pre>(template/shared-holes (splits :rows) on-this-page)</pre>
+    <pre data-x-part="check"></pre>
+    <label class="bar">
+      <x-switch data-x-part="move" aria-label="Write the selection to the table"></x-switch>
+      Write the selection to the <code>value</code> of the table, and not to the rows
+    </label>
+  </main>
+
+  <script src="holes/js/main.js"></script>
+</body>
+</html>

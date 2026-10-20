@@ -45,6 +45,9 @@ jobs:
       - name: Build ESM library
         run: npm run build
 
+      - name: Build the holes demo
+        run: npm run build:holes
+
       - name: Assemble site
         run: |
           mkdir -p _site
@@ -53,7 +56,7 @@ jobs:
           cp -r demo _site/demo
           cp -r dist _site/dist
           mkdir _site/bare-html
-          cp -r bare-html/mirror.html bare-html/mirror bare-html/tasks.html bare-html/tree.html bare-html/tree _site/bare-html/
+          cp -r bare-html/mirror.html bare-html/mirror bare-html/tasks.html bare-html/tree.html bare-html/tree bare-html/holes.html bare-html/holes _site/bare-html/
           touch _site/.nojekyll
 
       - name: Make the copy of the mirror demo with no script
