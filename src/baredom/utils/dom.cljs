@@ -168,6 +168,11 @@
       (set-attr! el attr-name value)
       (remove-attr! el attr-name))))
 
+(defn set-tab-index-to!
+  "Sets the tabindex of `el` to `n`, only where it differs."
+  [^js el n]
+  (set-attr-to! el "tabindex" (str n)))
+
 (defn set-bool-attr-to!
   "Adds `attr-name` to `el` when `on?`, or removes it, only where its presence differs.
    An attribute that stays keeps its value."

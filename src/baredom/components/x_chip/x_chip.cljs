@@ -211,7 +211,7 @@
     (if removable?
       (du/set-attr! el attr-data-removable "")
       (du/remove-attr! el attr-data-removable))
-    (set! (.-tabIndex el) (if eligible 0 -1))
+    (du/set-tab-index-to! el (if eligible 0 -1))
     (if disabled?
       (du/set-attr! el attr-aria-disabled val-true)
       (du/remove-attr! el attr-aria-disabled))

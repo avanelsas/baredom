@@ -255,8 +255,7 @@
     (apply-span! el col-span row-span)
 
     (set! (.-hidden sort-btn) (not visible?))
-    (set! (.-tabIndex sort-btn)
-          (js/parseInt (model/sort-btn-tabindex m) 10))
+    (du/set-tab-index-to! sort-btn (model/sort-btn-tabindex m))
     (du/set-attr! sort-btn "aria-label" (model/sort-btn-aria-label sort-direction))
     (set! (.-disabled sort-btn) (boolean disabled?))
 

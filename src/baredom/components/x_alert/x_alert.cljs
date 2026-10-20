@@ -299,7 +299,7 @@
 
 (defn- apply-host-a11y! [^js el {:keys [dismissible? disabled?]}]
   (let [interactive? (and dismissible? (not disabled?))]
-    (set! (.-tabIndex el) (if interactive? 0 -1))
+    (du/set-tab-index-to! el (if interactive? 0 -1))
     (if disabled?
       (du/set-attr! el attr-aria-disabled val-true)
       (du/remove-attr! el attr-aria-disabled))
