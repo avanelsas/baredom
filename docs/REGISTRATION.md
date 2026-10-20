@@ -57,6 +57,8 @@ The component reads the state with `forms/disabled?` and styles it with `:host(:
 
 Components install JS property accessors at one of three tiers. **Pick the simplest tier the component qualifies for.** Mixing tiers within one `install-property-accessors!` is fine; document and justify any drop to a lower tier inline.
 
+When an element connects, `register!` passes each value set before the element was defined through the accessor of its property, at every tier.
+
 ### Tier 0 — Data-driven (preferred)
 
 One line:

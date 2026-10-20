@@ -82,8 +82,29 @@
    :old-value o
    :new-value v})
 
+(defn- settable?
+  "True when the property `n` of `proto` has a setter."
+  [^js proto n]
+  (some? (.-set (js/Object.getOwnPropertyDescriptor proto n))))
+
+(defn- settable-names
+  "The names of the properties of `proto` that have a setter."
+  [^js proto]
+  (into [] (filter (partial settable? proto)) (js/Object.getOwnPropertyNames proto)))
+
+(defn- take-over!
+  "Sets the own property `n` of `el` again through the accessor of its class, when `el` has that
+   own property. A property set before the element was defined is such an own property."
+  [^js el n]
+  (when (js/Object.hasOwn el n)
+    (let [v (unchecked-get el n)]
+      (js-delete el n)
+      (unchecked-set el n v))))
+
 (defn make-element-class
   "Create a custom element class from a declarative options map.
+   Each property of the class with a setter takes over a value set before the element was
+   defined, when the element connects.
 
    Required keys:
      :observed-attributes  — #js [...] array of attribute names
@@ -127,11 +148,16 @@
     (when form-associated?
       (set! (.-formAssociated klass) true))
 
-    (set! (.-connectedCallback proto)
-          (fn []
-            (this-as ^js this
-              (fire! {:type :lifecycle/connected :el this})
-              (connected-fn this))))
+    (when setup-prototype-fn
+      (setup-prototype-fn proto))
+
+    (let [names (settable-names proto)]
+      (set! (.-connectedCallback proto)
+            (fn []
+              (this-as ^js this
+                (fire! {:type :lifecycle/connected :el this})
+                (connected-fn this)
+                (run! (partial take-over! this) names)))))
 
     (when disconnected-fn
       (set! (.-disconnectedCallback proto)
@@ -168,9 +194,6 @@
     (when form-reset-fn
       (set! (.-formResetCallback proto)
             (fn [] (this-as ^js this (form-reset-fn this)))))
-
-    (when setup-prototype-fn
-      (setup-prototype-fn proto))
 
     klass))
 

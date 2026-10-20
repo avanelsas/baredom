@@ -249,3 +249,30 @@
     (reset! component/lifecycle-hook (partial swap! records conj))
     (move! parent el)
     (is (= [:lifecycle/moved] (mapv :type @records)))))
+
+(def ^:private early-tag "x-early-probe")
+
+(defn- install-early-props! [^js proto]
+  (js/Object.defineProperty proto "label"
+                            #js {:configurable true
+                                 :get          (fn [] (this-as ^js this (.getAttribute this "label")))
+                                 :set          (fn [v] (this-as ^js this (.setAttribute this "label" v)))})
+  (js/Object.defineProperty proto "size"
+                            #js {:configurable true
+                                 :get          (fn [] 3)}))
+
+(deftest a-property-set-before-the-element-is-defined-goes-through-its-setter
+  (let [^js el (.createElement js/document early-tag)]
+    (set! (.-label el) "early")
+    (set! (.-size el) 9)
+    (component/register! early-tag {:observed-attributes  #js []
+                                    :connected-fn         identity
+                                    :attribute-changed-fn identity
+                                    :setup-prototype-fn   install-early-props!})
+    (elements/node-in-body! el)
+    (testing "the setter writes the value"
+      (is (= "early" (.getAttribute el "label")))
+      (is (= "early" (.-label el)))
+      (is (not (js/Object.hasOwn el "label"))))
+    (testing "a value set on a property with only a getter stays on the element"
+      (is (= 9 (.-size el))))))
