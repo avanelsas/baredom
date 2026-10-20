@@ -781,7 +781,7 @@
     (set! (.-disabled next-btn) (not (model/can-go-next? m cnt)))
 
     ;; Tabindex for keyboard navigation
-    (set! (.-tabIndex el) (if disabled? -1 0))
+    (du/set-tab-index-to! el (if disabled? -1 0))
 
     ;; Indicators
     (render-indicators! el m cnt)

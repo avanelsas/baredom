@@ -320,9 +320,9 @@
   (du/set-attr! el "role" "listitem")
   (if disabled?
     (do (du/set-attr! el "aria-disabled" "true")
-        (set! (.-tabIndex el) -1))
+        (du/set-tab-index-to! el -1))
     (do (du/remove-attr! el "aria-disabled")
-        (set! (.-tabIndex el) 0)))
+        (du/set-tab-index-to! el 0)))
   (let [host-label (cond
                      (not= title "") title
                      (not= label "") label

@@ -241,7 +241,7 @@
       (du/remove-attr! control-el attr-aria-describedby))))
 
 (defn- apply-control-disabled! [^js control-el {:keys [disabled?]}]
-  (set! (.-tabIndex control-el) (if disabled? -1 0))
+  (du/set-tab-index-to! control-el (if disabled? -1 0))
   (if disabled?
     (du/set-attr! control-el attr-disabled "")
     (du/remove-attr! control-el attr-disabled)))

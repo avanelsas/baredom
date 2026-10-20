@@ -209,7 +209,7 @@
                         tab      (cond
                                    checked (if (= r checked) 0 -1)
                                    :else   (if (= r first-r) 0 -1))]
-                    (set! (.-tabIndex ctrl) tab)))))))
+                    (du/set-tab-index-to! ctrl tab)))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Selection logic

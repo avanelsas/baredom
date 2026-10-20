@@ -116,7 +116,7 @@
     (du/set-attr! el "data-interactive" "")
     (du/remove-attr! el "data-interactive"))
 
-  (set! (.-tabIndex el) (if (model/interactive-eligible? m) 0 -1)))
+  (du/set-tab-index-to! el (if (model/interactive-eligible? m) 0 -1)))
 
 (defn- apply-model! [^js el m]
   (ensure-shadow! el)
