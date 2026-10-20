@@ -2,6 +2,44 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.10.1] - 2026-10-20
+
+BareDOM 4.10.1 stops a focused control from recalculating the styles of the page on every
+render, and makes BareMirror faster at many rows. All five adapters are released with it:
+`-react` 3.3.0, `-angular` 3.3.0, `-vue` 0.9.0, `-svelte` 0.9.0 and `-solid` 0.9.0. They bind
+`x-form-field`, `x-search-field` and `x-rating` to a form value. Each still works with
+`@vanelsas/baredom` 4.0.0 or later. The binding of `x-search-field` follows a clear with 4.10.1.
+
+### Added
+
+- **Form bindings for `x-form-field`, `x-search-field` and `x-rating`** in the five adapters:
+  `v-model` in Vue, `bind:value` in Svelte, a control value accessor in Angular, and a
+  controlled mode in React and Solid. A binding follows the committed change event, so a text
+  field updates its value on blur or Enter, not while typing.
+- **Two demos of BareMirror.** [Holes](https://avanelsas.github.io/baredom/bare-html/holes.html)
+  is a table written from a template in ClojureScript, with a hole that `x-table` also writes
+  and the check that finds it. [The tree](https://avanelsas.github.io/baredom/bare-html/tree.html)
+  is now on the demo site too.
+
+### Changed
+
+- **BareMirror reads and plans a move in 1,000 rows in about half the time.** Moving the first
+  row to the end through `syncPlaces` takes 0.50 ms, from 0.92 ms.
+- **The task list demo** makes its counter with `defineElement`, and a row that leaves fades
+  out after `release`.
+
+### Fixed
+
+- **A component writes `tabindex` only when it changes.** `x-checkbox`, `x-switch`, `x-radio`,
+  `x-chip`, `x-alert`, `x-toast`, `x-table-row`, `x-table-cell`, `x-timeline-item` and
+  `x-scroll` wrote it on every render. On a focused control that made the browser recalculate
+  the styles of the page each time.
+- **`x-search-field` sends `x-search-field-change` with an empty value when it is cleared.**
+- **`writeParts` reads only the own fields of a write.** A field inherited from a prototype is
+  no field.
+- **An element from `defineElement` stays as it is when it moves** with `moveBefore`.
+- **In the task list demo, Enter during IME composition no longer adds a task.**
+
 ## [4.10.0] - 2026-10-19
 
 BareDOM 4.10 lets each component write its own selection or value only after an accepted
