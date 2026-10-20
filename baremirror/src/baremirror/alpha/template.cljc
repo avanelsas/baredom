@@ -24,12 +24,12 @@
   (or (vector? x) (string? x) (number? x)))
 
 (defn fixed?
-  "True when the element of `template` can be made as it is: no `:on` entry, each attribute value
-   text, a number, a boolean or nil, and each child a template, text or a number.
+  "True when the element of `template` can be made as it is: no `:on` or `:props` entry, each
+   attribute value text, a number, a boolean or nil, and each child a template, text or a number.
    The templates among its children are not looked at."
   [template]
   (let [[_ attrs children] (pieces template)]
-    (and (not (contains? attrs :on))
+    (and (not-any? (partial contains? attrs) [:on :props])
          (every? fixed-value? (vals attrs))
          (every? fixed-child? children))))
 
@@ -52,15 +52,23 @@
     (throw (ex-info "A child of a template is a template, text, a number or one hole."
                     {:tag tag}))))
 
+(defn- prop-holes
+  "The `props` of an element with the tag `tag`. Throws when one of them is not a hole."
+  [tag props]
+  (if (every? hole? (vals props))
+    props
+    (throw (ex-info "A value in :props is a hole." {:tag tag}))))
+
 (defn- element
   "What the element of `template` holds: its fixed attributes, its attribute holes, its text hole,
-   its event meanings and its children."
+   its property holes, its event meanings and its children."
   [template]
   (let [[tag attrs children] (pieces template)
-        values               (dissoc attrs :on)
+        values               (dissoc attrs :on :props)
         text                 (text-hole tag children)]
     {:tag        tag
      :on         (:on attrs)
+     :props      (prop-holes tag (:props attrs))
      :fixed      (into {} (remove (comp hole? val)) values)
      :attr-holes (into {} (filter (comp hole? val)) values)
      :text       text
@@ -71,18 +79,24 @@
   [fixed]
   (some (fn [[k v]] (when (= attr-part (name k)) v)) fixed))
 
+(defn- has-hole?
+  "True when the element has a hole."
+  [{:keys [attr-holes text props]}]
+  (boolean (or (seq attr-holes) text (seq props))))
+
 (defn- needs-part?
   "True when the element has an event meaning or a hole, so a write or an event must find it."
-  [{:keys [on attr-holes text]}]
-  (boolean (or (seq on) (seq attr-holes) text)))
+  [{:keys [on] :as el}]
+  (boolean (or (seq on) (has-hole? el))))
 
 (defn- hole-of
   "The hole entry of an element with the part name `part`, or nil when it has no hole."
-  [part {:keys [attr-holes text]}]
-  (when (or (seq attr-holes) text)
+  [part {:keys [attr-holes text props] :as el}]
+  (when (has-hole? el)
     (cond-> {:part part}
       (seq attr-holes) (assoc :attrs attr-holes)
-      text             (assoc :text text))))
+      text             (assoc :text text)
+      (seq props)      (assoc :props props))))
 
 (defn- event-entry [part [event-type meaning]]
   [[event-type part] meaning])
@@ -128,8 +142,8 @@
 
 (defn split
   "Splits `template`: its fixed template under `:fixed`, its holes and its event meanings.
-   A hole is an attribute value or the only child of an element, and `:on` maps an event type
-   to a meaning."
+   A hole is an attribute value, the only child of an element or a value in `:props`, which
+   maps a property name to a hole. `:on` maps an event type to a meaning."
   [template-name template]
   (let [[fixed found] (split-element (name template-name) {:n 0 :holes [] :events {}} template)]
     {:fixed  fixed
@@ -141,10 +155,11 @@
 
 (defn- hole-writes
   "The part name of `hole` and its writes for `item`."
-  [item {:keys [part attrs text]}]
+  [item {:keys [part attrs text props]}]
   [part (cond-> {}
           attrs (assoc :attrs (update-vals attrs (partial fill item)))
-          text  (assoc :text (fill item text)))])
+          text  (assoc :text (fill item text))
+          props (assoc :props (update-vals props (partial fill item))))])
 
 (defn split?
   "True when `x` is a split template."

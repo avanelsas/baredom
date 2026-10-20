@@ -5,7 +5,8 @@ show. You keep the state. The functions place the nodes, write the values and tu
 messages. No function compares an old screen with a new one, and a node that stays is never
 made again.
 
-The only memory is on the nodes. A node holds its key, and the item last written to it.
+The only memory is on the nodes. A node holds its key, the item last written to it, and the
+value last written to each of its properties.
 
 ## See it run
 
@@ -219,7 +220,7 @@ and a part name is a string.
 | `parts/make-node!` | `makeNode` | One detached element from a fixed template. |
 | `parts/node-maker` | `nodeMaker` | A function that makes one detached element from a fixed template each time, whatever it is called with. It copies one node, so use it for a template that makes many nodes. It can be the function that `sync!` makes a node with. |
 | `parts/read-parts` | `readParts` | The parts of a node and below it, by name. |
-| `parts/write-parts!` | `writeParts` | Applies writes to parts: text and attributes. |
+| `parts/write-parts!` | `writeParts` | Applies writes to parts: text, attributes and properties. |
 | `parts/write-item!` | `writeItem` | Brings a node to an item. Writes nothing when the item is the same as last time. Throws when it gets no split template. In ClojureScript, a first argument `same?` replaces `=`. |
 | `parts/set-attrs!` | `setAttrs` | Brings attributes to their values, where they differ. |
 | `parts/set-text!` | `setText` | Makes text the content of an element, where it differs. |
@@ -250,6 +251,22 @@ A component can show a value that your state does not hold when `listen` has no
 `requestedValues`, or when your application has no entry for the event. `write-parts!` brings
 such a row back at the next render, and `write-item!` does not.
 
+## Properties
+
+Some values reach a component as a property, not as an attribute: `x-command-palette` takes its
+`items` as an array. Put such a hole in `props`, next to `on`:
+
+```js
+['x-command-palette', { props: { items: item => item.commands } }]
+```
+
+In ClojureScript it is `{:props {:items :commands}}`. Each value in `props` is a hole. A write
+sets a property after the text and the attributes, and only when the value differs from the
+value last written to that node. That holds for `write-parts!` too. ClojureScript values compare
+by `=`, JavaScript arrays and plain objects by their content, and other objects by identity. So
+make a new array, and do not change one in place.
+[`bare-html/tasks.html`](../bare-html/tasks.html) writes the `items` of a palette this way.
+
 ## Attributes a component writes
 
 Some components write attributes on nodes they do not own: `x-tabs` writes `selected` on each
@@ -275,8 +292,8 @@ not on your page, pass a copy of `foreignWrites` without it.
   the same as last time. It cannot see a change inside the same object, or in anything else a
   hole reads. Make a new item.
 - **Use one way of writing for a node.** `write-item!` skips the item it last wrote itself.
-  `write-parts!` compares with the page every time. Use `write-parts!` where something other
-  than your state can change the node.
+  `write-parts!` compares text and attributes with the page every time. Use `write-parts!` where
+  something other than your state can change the node.
 - **Split a template once.** Do it outside your render function. `write-item!` writes every
   time it gets a split template it did not use for that node the last time.
 - **In JavaScript, an item is a flat object literal.** `writeItem` compares the fields of two
@@ -286,8 +303,9 @@ not on your page, pass a copy of `foreignWrites` without it.
   component that is in the page renders for each write.
 - **A node from `node-maker` is not a component until it is in the page.** Its custom elements
   are plain elements until then, so a write to it costs what an attribute costs. Write
-  attributes and text to it. A method of a component is not there yet. A component of BareDOM
-  takes over a property set before it was defined. A component of another library may not.
+  attributes, text and properties to it. A method of a component is not there yet. A component
+  of BareDOM takes over a property set before it was defined. A component of another library
+  may not.
 - **In JavaScript, a reading and a plan are frozen.** `perform` takes them as `readPlaces` and
   `plan` gave them. It also takes a plain object of the same shape: one that you made yourself,
   or a copy with a field changed.

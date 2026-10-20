@@ -39,6 +39,7 @@
         <option value="done">Done</option>
       </x-select>
       <x-button data-x-part="rotate" variant="ghost">Move the first task to the end</x-button>
+      <x-button data-x-part="find" variant="ghost">Find a task</x-button>
       <label class="mode">
         <x-switch data-x-part="refusing" aria-label="The server says no"></x-switch>
         The server says no
@@ -47,11 +48,14 @@
 
     <ul data-x-part="tasks"></ul>
     <p data-x-part="empty" hidden>Nothing to show.</p>
+    <x-command-palette data-x-part="palette" label="Find a task"
+                       placeholder="Check or uncheck a task"></x-command-palette>
   </main>
 
   <script type="module">
     import { init as initButton }    from '../dist/x-button.js';
     import { init as initCheckbox }  from '../dist/x-checkbox.js';
+    import { init as initPalette }   from '../dist/x-command-palette.js';
     import { init as initFormField } from '../dist/x-form-field.js';
     import { init as initSelect }    from '../dist/x-select.js';
     import { init as initSwitch }    from '../dist/x-switch.js';
@@ -59,7 +63,7 @@
              writeItem, listen, dispatcher, defineElement } from '../dist/baremirror-alpha.js';
     import { requestedValues } from '../dist/requests.js';
 
-    [initButton, initCheckbox, initFormField, initSelect, initSwitch].forEach(init => init());
+    [initButton, initCheckbox, initPalette, initFormField, initSelect, initSwitch].forEach(init => init());
 
     defineElement('task-count', {
       attrs: ['count'],
@@ -79,6 +83,7 @@
       showing: 'all',
       refusing: false,
       refused: null,
+      finding: false,
     };
 
     const toggled = (id, task) => (task.id === id ? { ...task, done: !task.done } : task);
@@ -104,6 +109,8 @@
         case 'show':     return { ...cleared, showing: arg };
         case 'rotate':   return { ...cleared, tasks: [...tasks.slice(1), ...tasks.slice(0, 1)] };
         case 'refusing': return { ...cleared, refusing: !refusing };
+        case 'find':     return { ...cleared, finding: true };
+        case 'close':    return { ...cleared, finding: false };
         default:         return state;
       }
     }
@@ -122,6 +129,8 @@
 
     const shows = { all: () => true, active: task => !task.done, done: task => task.done };
 
+    const command = task => ({ id: task.id, label: task.text, group: task.done ? 'Done' : 'To do' });
+
     const shown = (state, task) =>
       ({ ...task, note: state.refused === task.id ? 'Not allowed' : '' });
 
@@ -135,6 +144,7 @@
           filter:   { attrs: { value: state.showing } },
           refusing: { attrs: { checked: state.refusing } },
           empty:    { attrs: { hidden: rows.length > 0 } },
+          palette:  { attrs: { open: state.finding }, props: { items: state.tasks.map(command) } },
         },
         order: rows.map(task => task.id),
         rows: Object.fromEntries(rows.map(task => [task.id, shown(state, task)])),
@@ -177,18 +187,23 @@
     const dispatch = dispatcher(store, step, view, render);
     const detailValue = (origin, event) => event.detail.value;
     const pressedKey = (origin, event) => (event.isComposing ? undefined : event.key);
+    const pickedId = (origin, event) => event.detail.item.id;
 
     listen(page, {
       dispatch,
       requestedValues,
       events: [
         ...row.events,
-        [['x-form-field-input', 'draft'],         ['draft', detailValue]],
-        [['keydown', 'draft'],                    ['key', pressedKey]],
-        [['press', 'add'],                        'add'],
-        [['x-select-change-request', 'filter'],   ['show', detailValue]],
-        [['press', 'rotate'],                     'rotate'],
-        [['x-switch-change-request', 'refusing'], 'refusing'],
+        [['x-form-field-input', 'draft'],                ['draft', detailValue]],
+        [['keydown', 'draft'],                           ['key', pressedKey]],
+        [['press', 'add'],                               'add'],
+        [['x-select-change-request', 'filter'],          ['show', detailValue]],
+        [['press', 'rotate'],                            'rotate'],
+        [['x-switch-change-request', 'refusing'],        'refusing'],
+        [['press', 'find'],                              'find'],
+        [['x-command-palette-open-request', 'palette'],  'find'],
+        [['x-command-palette-close-request', 'palette'], 'close'],
+        [['x-command-palette-select', 'palette'],        ['toggle', pickedId]],
       ],
     });
 
