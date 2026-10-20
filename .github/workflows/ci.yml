@@ -122,7 +122,7 @@ jobs:
           sleep 1
           node scripts/prerender.mjs http://127.0.0.1:8000/bare-html/tasks.html /tmp/tasks.prerendered.html
           test "$(grep -oE 'data-x-key="[0-9]+"' /tmp/tasks.prerendered.html | wc -l)" -eq 3
-          test "$(grep -o 'shadowrootmode' /tmp/tasks.prerendered.html | wc -l)" -eq 11
+          test "$(grep -o 'shadowrootmode' /tmp/tasks.prerendered.html | wc -l)" -eq 12
           node scripts/prerender.mjs --static "http://127.0.0.1:8000/bare-html/mirror.html?copy" /tmp/mirror.static.html
           test "$(grep -oE 'data-x-key="[0-9]+"' /tmp/mirror.static.html | wc -l)" -eq 3
           test "$(grep -o '<script' /tmp/mirror.static.html | wc -l)" -eq 0

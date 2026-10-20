@@ -129,7 +129,8 @@ render(view(store.value));
 
 A click on a checkbox sends `['toggle', '1']`. The argument is the key of the row, because the
 template names no other. [`bare-html/tasks.html`](../bare-html/tasks.html) is a full task list
-built this way, with adding, removing, a filter and a move.
+built this way, with adding, removing, a filter and a move. A row that leaves fades out after
+`release`. The counter is an element made with `defineElement`.
 
 ## A tree
 
