@@ -17,6 +17,8 @@ The only memory is on the nodes. A node holds its key, and the item last written
   page, in full.
 - [A tree](https://avanelsas.github.io/baredom/bare-html/tree.html): one tree, synced for each
   list and in one call, side by side.
+- [Holes](https://avanelsas.github.io/baredom/bare-html/holes.html): a table from a template in
+  ClojureScript, and a hole that `x-table` also writes.
 
 **It is an alpha.** It ships inside the BareDOM package under names that say so, and a name may
 still change. It needs nothing from BareDOM and works on any HTML.
@@ -258,6 +260,7 @@ is on the page.
 A target of `"any"` says that the writer may write the attribute: `x-form` writes `error` on
 the fields it holds, whatever their tag. `x-i18n-provider` may write any attribute. When it is
 not on your page, pass a copy of `foreignWrites` without it.
+[`bare-html/holes.html`](../bare-html/holes.html) shows such a hole, and the check, in ClojureScript.
 
 ## Things to know
 

@@ -213,6 +213,18 @@ it did, and only the right side keeps a row that changes its parent. Open
 [http://localhost:8000/bare-html/tree.html](http://localhost:8000/bare-html/tree.html), or
 [the page on the demo site](https://avanelsas.github.io/baredom/bare-html/tree.html).
 
+## Holes, in ClojureScript
+
+`holes.html` is the one page here with a ClojureScript script. It writes the rows of an
+`x-table` from a template, and shows the template, the item of the selected row and the row in
+the page side by side, with each hole marked. Its template also puts a hole on `selected`, which
+`x-table` writes too. Click a row and add one: the highlight jumps back, and a log says who wrote
+what. `template/shared-holes` names that hole, and a switch moves the selection to the `value` of
+the table. The script requires the components from their namespaces, so the page needs
+`npm run build:holes` and not `dist/`. Run `npx shadow-cljs watch holes` to change it. Open
+[http://localhost:8000/bare-html/holes.html](http://localhost:8000/bare-html/holes.html), or
+[the page on the demo site](https://avanelsas.github.io/baredom/bare-html/holes.html).
+
 ## Project structure
 
 ```
@@ -220,10 +232,13 @@ bare-html/
 ├── demo.html    # Everything in one file: CSS, HTML markup, JS wiring, event log
 ├── mirror.html  # One task list, rendered three ways side by side
 ├── mirror/      # The scripts of mirror.html
+├── holes.html   # A table from a template, and a hole that x-table also writes
+├── holes/src/   # The ClojureScript of holes.html. Its build goes to holes/js/
 ├── tasks.html   # The task list with BareMirror, in one file
 ├── tree.html    # One tree, synced per list and in one call, side by side
 └── tree/        # The scripts of tree.html
 ```
 
 `demo.html` and `tasks.html` are each one self-contained file. `mirror.html` and `tree.html` load
-their scripts from a folder of their own. There is no `package.json` and no `node_modules`.
+their scripts from a folder of their own, and `holes.html` its build. There is no `package.json`
+and no `node_modules`.
