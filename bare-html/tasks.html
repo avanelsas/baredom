@@ -16,12 +16,15 @@
     li { display: flex; gap: 0.75rem; align-items: center; }
     .text { flex: 1; }
     .note { color: var(--x-color-danger, #dc2626); font-size: 0.85rem; }
+    li.leaving { animation: leave 200ms ease-in forwards; }
+    @keyframes leave { to { opacity: 0; transform: translateX(1rem); } }
+    @media (prefers-reduced-motion: reduce) { li.leaving { animation: none; } }
   </style>
 </head>
 <body>
   <main id="app">
     <h1>Tasks</h1>
-    <p data-x-part="counter" aria-live="polite"></p>
+    <p aria-live="polite"><task-count data-x-part="counter"></task-count></p>
 
     <div class="bar">
       <x-form-field data-x-part="draft" name="draft" label="New task"
@@ -52,11 +55,16 @@
     import { init as initFormField } from '../dist/x-form-field.js';
     import { init as initSelect }    from '../dist/x-select.js';
     import { init as initSwitch }    from '../dist/x-switch.js';
-    import { splitTemplate, nodeMaker, readParts, syncPlaces, writeParts, writeItem, listen, dispatcher }
-      from '../dist/baremirror-alpha.js';
+    import { splitTemplate, nodeMaker, readParts, readPlaces, plan, syncPlaces, release, writeParts,
+             writeItem, listen, dispatcher, defineElement } from '../dist/baremirror-alpha.js';
     import { requestedValues } from '../dist/requests.js';
 
     [initButton, initCheckbox, initFormField, initSelect, initSwitch].forEach(init => init());
+
+    defineElement('task-count', {
+      attrs: ['count'],
+      template: ['span', ['b', item => item.count], ' remaining'],
+    });
 
     // 1. The state, and what a message does to it.
 
@@ -122,7 +130,7 @@
       const remaining = state.tasks.filter(task => !task.done).length;
       return {
         fixed: {
-          counter:  { text: `${remaining} remaining` },
+          counter:  { attrs: { count: remaining } },
           draft:    { attrs: { value: state.draft } },
           filter:   { attrs: { value: state.showing } },
           refusing: { attrs: { checked: state.refusing } },
@@ -144,10 +152,21 @@
       return node;
     }
 
+    function leave(node) {
+      release(node);
+      node.inert = true;
+      node.classList.add('leaving');
+      const finished = node.getAnimations().map(animation => animation.finished);
+      Promise.allSettled(finished).then(() => node.remove());
+    }
+
     function render(vm) {
       const parts = readParts(page);
-      const nodes = syncPlaces({ tasks: { parent: parts.tasks } }, { tasks: vm.order },
-                               key => made(vm.rows[key]));
+      const containers = { tasks: { parent: parts.tasks } };
+      const wanted = { tasks: vm.order };
+      const reading = readPlaces(containers);
+      plan(reading.places, wanted).remove.forEach(key => leave(reading.nodes[key]));
+      const nodes = syncPlaces(containers, wanted, key => made(vm.rows[key]));
       writeParts(parts, vm.fixed);
       vm.order.forEach(key => writeItem(nodes[key], row, vm.rows[key]));
     }
