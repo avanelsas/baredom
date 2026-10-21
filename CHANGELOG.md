@@ -18,6 +18,10 @@ All notable changes to BareDOM will be documented in this file.
 
 ### Fixed
 
+- **`x-particle-button` reads a translucent colour the same each time, and `x-neural-glow` reads
+  every colour syntax.** `x-particle-button` painted a colour over the one it read before, so
+  `rgba(255, 0, 0, 0.5)` took on the colour read before it. `x-neural-glow` drew a colour in `oklch`,
+  `lab`, `color()` or `color-mix` as black. Both now read a cleared pixel.
 - **BareDOM loads on a server.** A component module and its `init()` do nothing where there is
   no DOM, so a page that uses the adapters renders on a server, as in a Next.js build.
   `x-neural-glow`, `x-particle-button` and `x-trace-history` make their canvas or media query

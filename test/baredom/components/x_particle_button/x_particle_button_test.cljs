@@ -331,3 +331,11 @@
               (done))
             50)))
        50))))
+
+(deftest parse-rgb-reads-a-translucent-colour-the-same-after-any-other
+  (let [parse-rgb #'component/parse-rgb
+        half-red  "rgba(255, 0, 0, 0.5)"]
+    (parse-rgb "#0000ff")
+    (let [after-blue (parse-rgb half-red)]
+      (parse-rgb "#ffffff")
+      (is (= [255 0 0] after-blue (parse-rgb half-red))))))
