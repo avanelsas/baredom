@@ -485,6 +485,8 @@ declare global {
 ;; ── Main ────────────────────────────────────────────────────────────────────
 (def requests-ns-file "src/baredom/requests.cljs")
 
+(def baremirror-dts-file "baremirror/baremirror-alpha.d.ts")
+
 (defn requested-values-map
   "A sorted map from each request event to what it asks of each attribute: a detail field or a
    fixed value."
@@ -648,9 +650,13 @@ declare global {
       (spit (io/file dist-dir "foreign-writes.d.ts") foreign-writes-dts)
       (spit foreign-writes-ns-file (foreign-writes-ns foreign-writes)))
 
+    ;; BareMirror's types are written by hand, next to its source.
+    (io/copy (io/file baremirror-dts-file) (io/file dist-dir "baremirror-alpha.d.ts"))
+
     (let [trace-history? (contains? exported-names "x-trace-history")]
       (println (str "Generated " (count exported-models) " .d.ts files"
                     (when trace-history? " + x-trace-history.d.ts")
-                    ", baredom.d.ts, custom-elements.json, the requests map and the foreign writes")))))
+                    ", baredom.d.ts, custom-elements.json, the requests map and the foreign writes,"
+                    " and copied baremirror-alpha.d.ts")))))
 
 (-main)

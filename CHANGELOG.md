@@ -12,6 +12,9 @@ All notable changes to BareDOM will be documented in this file.
   namespace, and the children of a `foreignObject` are HTML again. An element with an `xmlns`
   attribute is in that namespace, so a template for a `circle` can make rows for an `svg` on
   the page. `splitTemplate` refuses an `xmlns` hole.
+- **Types for BareMirror.** `@vanelsas/baredom/baremirror-alpha` ships `baremirror-alpha.d.ts`.
+  The item of a split template follows from its holes, so `writeItem` refuses an item of
+  another type and a copy of a split template, and `makeNode` refuses a template with holes.
 
 ### Fixed
 

@@ -577,6 +577,7 @@
       "default": "./dist/all.js"
     },
     "./baremirror-alpha": {
+      "types": "./dist/baremirror-alpha.d.ts",
       "import": "./dist/baremirror-alpha.js",
       "default": "./dist/baremirror-alpha.js"
     }

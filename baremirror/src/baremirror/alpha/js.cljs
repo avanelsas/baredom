@@ -87,12 +87,12 @@
                      taken))))
 
 (defn make-node
-  "Makes one detached HTML element from the fixed template `array`."
+  "Makes one detached element from the fixed template `array`, as `parts/make-node!` makes it."
   [array]
   (mirror-parts/make-node! (->template identity array)))
 
 (defn node-maker
-  "A function that makes one detached HTML element from the fixed template `array` each time,
+  "A function that makes one detached element from the fixed template `array` each time,
    whatever it is called with."
   [array]
   (mirror-parts/node-maker (->template identity array)))

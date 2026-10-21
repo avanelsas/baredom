@@ -327,8 +327,10 @@ not on your page, pass a copy of `foreignWrites` without it.
 - **A text hole is the only child of its element.** Wrap a value in an element of its own.
 - **A part gets a name by itself** when its element has a hole or an event. Give it
   `data-x-part` when the page must find it by a name you choose.
-- **There are no types yet.** A TypeScript project can import the module, with no checking on
-  it.
+- **The types catch most misuse, not all.** An item of another type, a copy of a split
+  template, a hole where `makeNode` takes a fixed template, an attribute hole that gives an
+  object, and a hole on `xmlns` do not compile. A text hole beside other children still throws only when the template is split.
+  The argument of a message is `unknown`.
 
 ## How to get it
 
