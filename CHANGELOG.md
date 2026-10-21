@@ -18,6 +18,10 @@ All notable changes to BareDOM will be documented in this file.
 
 ### Fixed
 
+- **BareDOM loads on a server.** A component module and its `init()` do nothing where there is
+  no DOM, so a page that uses the adapters renders on a server, as in a Next.js build.
+  `x-neural-glow`, `x-particle-button` and `x-trace-history` make their canvas or media query
+  on first use. CI loads each module in Node.
 - **`nodeMaker` and `defineElement` in BareMirror can be called where there is no DOM.**
   `nodeMaker` checks its template at once and makes its first node on its first call, and
   `defineElement` defines nothing where there is no `customElements`. A module that calls them

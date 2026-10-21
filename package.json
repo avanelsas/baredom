@@ -616,7 +616,7 @@
   "sideEffects": [
     "./dist/*.js"
   ],
-  "description": "Native Web Components with centralised theming — stateless, framework-free, zero runtime. Built with ClojureScript, compiled to tree-shakeable ESM.",
+  "description": "Native Web Components with centralised theming — stateless, framework-free, no dependencies. Built with ClojureScript, compiled to ESM, one module per component.",
   "scripts": {
     "clean": "rm -rf dist .shadow-cljs",
     "build": "npm run clean && npx shadow-cljs release lib && bb scripts/generate_types.bb && bb scripts/generate_all.bb && ./scripts/generate-integrity.sh",

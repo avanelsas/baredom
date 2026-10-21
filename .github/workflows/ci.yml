@@ -116,6 +116,9 @@ jobs:
       - name: Check the types
         run: npm run test:types
 
+      - name: Check that each module loads where there is no DOM
+        run: node scripts/check_server_load.mjs dist
+
       - name: Check bundle sizes
         run: bash scripts/check-bundle-size.sh
 
