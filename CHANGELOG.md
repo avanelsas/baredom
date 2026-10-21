@@ -2,7 +2,13 @@
 
 All notable changes to BareDOM will be documented in this file.
 
-## [Unreleased]
+## [4.12.0] - 2026-10-21
+
+BareDOM 4.12 can be imported on a server, so a page that uses its components renders with a
+server renderer such as Next.js. BareMirror's `listen` returns a function that stops it, a
+template can make SVG, and the module ships TypeScript types. The adapters are not released
+with it: they work with `@vanelsas/baredom` 4.0.0 or later, and a page that uses them renders
+on a server with 4.12.0 or later.
 
 ### Added
 
@@ -20,8 +26,8 @@ All notable changes to BareDOM will be documented in this file.
 
 - **`x-particle-button` reads a translucent colour the same each time, and `x-neural-glow` reads
   every colour syntax.** `x-particle-button` painted a colour over the one it read before, so
-  `rgba(255, 0, 0, 0.5)` took on the colour read before it. `x-neural-glow` drew a colour in `oklch`,
-  `lab`, `color()` or `color-mix` as black. Both now read a cleared pixel.
+  `rgba(255, 0, 0, 0.5)` took on the colour read before it. `x-neural-glow` drew a colour in
+  `oklch`, `lab`, `color()` or `color-mix` as black. Both now read a cleared pixel.
 - **BareDOM loads on a server.** A component module and its `init()` do nothing where there is
   no DOM, so a page that uses the adapters renders on a server, as in a Next.js build.
   `x-neural-glow`, `x-particle-button` and `x-trace-history` make their canvas or media query
@@ -33,6 +39,12 @@ All notable changes to BareDOM will be documented in this file.
 - **`listen` in BareMirror hears an event that does not bubble.** `focus`, `blur`,
   `pointerenter`, `scroll` and a custom event with no `bubbles` reached no listener. They now
   reach `listen` on their way down. An event that bubbles is handled as before.
+
+### Changed
+
+- **The README states the bundle size and the runtime as they are.** `base.js` is about 72 KB
+  gzipped and holds the ClojureScript core and the shared components, and BareDOM is no longer
+  called zero runtime. The npm description says no dependencies instead.
 
 ## [4.11.0] - 2026-10-20
 
