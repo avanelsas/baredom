@@ -19,6 +19,10 @@
                         {:attrs    ["title"]
                          :template [:section [:h2 :title] [:slot]]})
 
+(mirror-element/define-element! "bm-bar"
+                        {:attrs    ["size"]
+                         :template [:svg [:rect {:width :size :height 4}]]})
+
 (defn- task-count!
   "A bm-task-count element with the attributes `attrs`, in the document."
   [attrs]
@@ -36,6 +40,12 @@
       (is (= "left" (.-textContent (in-shadow el "i")))))
     (testing "the style element holds the css"
       (is (= ":host{display:inline-flex}" (.-textContent (in-shadow el "style")))))))
+
+(deftest define-element-makes-an-svg-in-the-svg-namespace
+  (let [el (element-with! "bm-bar" {"size" "7"})]
+    (.append (stage!) el)
+    (is (= "http://www.w3.org/2000/svg" (.-namespaceURI (in-shadow el "rect"))))
+    (is (= "7" (.getAttribute (in-shadow el "rect") "width")))))
 
 (deftest define-element-follows-a-change-of-an-attribute
   (let [el      (task-count! {"count" "3" "label" "left"})

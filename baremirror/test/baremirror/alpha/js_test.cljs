@@ -51,6 +51,11 @@
       (is (js/Object.isFrozen (aget (.-fixed row) 1)))
       (is (js/Object.isFrozen (aget (.-events row) 0))))))
 
+(deftest make-node-makes-an-element-in-the-namespace-of-its-xmlns
+  (let [svg-ns "http://www.w3.org/2000/svg"
+        node   (mjs/make-node #js ["circle" #js {:xmlns svg-ns :r 4}])]
+    (is (= svg-ns (.-namespaceURI node)))))
+
 (deftest make-node-takes-an-array-and-refuses-a-hole
   (let [node (mjs/make-node #js ["li" #js {:class "row"} "Buy " #js ["b" "milk"]])]
     (is (= "row" (.getAttribute node "class")))
@@ -423,6 +428,15 @@
     (mjs/listen button #js {:dispatch (partial swap! messages conj) :events (.-events tag)})
     (send! button "click")
     (is (= [["untag" 0]] (mapv data @messages)))))
+
+(deftest listen-returns-a-function-that-removes-the-listeners
+  (let [page     (page!)
+        messages (atom [])
+        stop     (mjs/listen page #js {:dispatch (partial swap! messages conj)
+                                       :events   #js [#js [#js ["press" "remove"] "remove"]]})]
+    (stop)
+    (send! (.querySelector page "button") "press")
+    (is (= [] @messages))))
 
 (defn- cancelled?
   "True when a `toggle` from the check of a page is cancelled, with `answer` as the dispatch and

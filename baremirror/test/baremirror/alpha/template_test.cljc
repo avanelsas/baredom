@@ -127,6 +127,19 @@
   (is (thrown? #?(:clj clojure.lang.ExceptionInfo :cljs ExceptionInfo)
                (template/split :row [:ul (map (partial vector :li) ["a" "b"])]))))
 
+(deftest split-refuses-an-xmlns-hole
+  (testing "on the top element"
+    (is (thrown-with-msg? #?(:clj clojure.lang.ExceptionInfo :cljs ExceptionInfo) #"xmlns"
+                          (template/split :dot [:circle {:xmlns :ns}]))))
+  (testing "on an element below"
+    (is (thrown-with-msg? #?(:clj clojure.lang.ExceptionInfo :cljs ExceptionInfo) #"xmlns"
+                          (template/split :dot [:g [:circle {"xmlns" :ns}]])))))
+
+(deftest attr-value-finds-an-attribute-by-keyword-or-by-string
+  (is (= "a" (template/attr-value {:xmlns "a"} "xmlns")))
+  (is (= "b" (template/attr-value {"xmlns" "b"} "xmlns")))
+  (is (nil? (template/attr-value {:id "c"} "xmlns"))))
+
 (deftest writes-of-an-item
   (let [split-row (template/split :row row)]
     (testing "each hole gives the value of the item"

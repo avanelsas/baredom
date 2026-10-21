@@ -96,13 +96,40 @@
           (dispatch-request! dispatch! node asked e message)
           (dispatch! message))))))
 
-(defn- add-listener! [^js root options event-type]
-  (.addEventListener root event-type (partial handle! options)))
+(defn- on-capture! [options ^js e]
+  (when-not (.-bubbles e)
+    (handle! options e)))
+
+(defn- on-bubble! [options ^js e]
+  (when (.-bubbles e)
+    (handle! options e)))
+
+(defn- event-listeners
+  "The capture and the bubble listener of `event-type`."
+  [options event-type]
+  [[event-type (partial on-capture! options) true]
+   [event-type (partial on-bubble! options) false]])
+
+(defn- listeners
+  "An event type, a handler and whether it captures, for each listener of `options`."
+  [{:keys [events] :as options}]
+  (into []
+        (comp (map first) (distinct) (mapcat (partial event-listeners options)))
+        (keys events)))
+
+(defn- add-listener! [^js root [event-type handler capture?]]
+  (.addEventListener root event-type handler capture?))
+
+(defn- remove-listener! [^js root [event-type handler capture?]]
+  (.removeEventListener root event-type handler capture?))
 
 (defn listen!
-  "Adds one listener to `root` for each event type in `:events`, which maps an event type and a
-   part name to the meaning of a message for `:dispatch!`. `:requested-values` maps a request
-   event to what it asks of each attribute, and `listen!` cancels it when its part does not show
-   that after the dispatch."
-  [^js root {:keys [events] :as options}]
-  (run! (partial add-listener! root options) (into #{} (map first) (keys events))))
+  "Listens on `root` for each event type in `:events`, which maps an event type and a part name
+   to the meaning of a message for `:dispatch!`, and returns a function that removes the
+   listeners. `:requested-values` maps a request event to what it asks of each attribute, and
+   `listen!` cancels it when its part does not show that after the dispatch.
+   An event that does not bubble reaches `root` in the capture phase, before the listeners below."
+  [^js root options]
+  (let [spec (listeners options)]
+    (run! (partial add-listener! root) spec)
+    (partial run! (partial remove-listener! root) spec)))

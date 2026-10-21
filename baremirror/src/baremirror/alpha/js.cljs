@@ -336,7 +336,8 @@
 (defn listen
   "Adds the listeners of `options` to `root`: `dispatch`, a function of a message, `events`,
    pairs of an event type with a part name and a meaning, and `requestedValues`, an object from
-   a request event to what it asks of each attribute."
+   a request event to what it asks of each attribute. Returns a function that removes the
+   listeners."
   [root ^js options]
   (mirror-events/listen! root {:dispatch!        (->message-handler (.-dispatch options))
                                :events           (->events (.-events options))

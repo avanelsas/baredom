@@ -2,6 +2,23 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- **`listen` in BareMirror returns a function that removes its listeners.** `events/listen!`
+  returns the same function.
+- **SVG in a BareMirror template.** An `svg` and the elements below it are made in the SVG
+  namespace, and the children of a `foreignObject` are HTML again. An element with an `xmlns`
+  attribute is in that namespace, so a template for a `circle` can make rows for an `svg` on
+  the page. `splitTemplate` refuses an `xmlns` hole.
+
+### Fixed
+
+- **`listen` in BareMirror hears an event that does not bubble.** `focus`, `blur`,
+  `pointerenter`, `scroll` and a custom event with no `bubbles` reached no listener. They now
+  reach `listen` on their way down. An event that bubbles is handled as before.
+
 ## [4.11.0] - 2026-10-20
 
 BareDOM 4.11 lets a BareMirror template write the properties of a component, and a component

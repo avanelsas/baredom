@@ -22,7 +22,8 @@ value last written to each of its properties.
   ClojureScript, and a hole that `x-table` also writes.
 
 **It is an alpha.** It ships inside the BareDOM package under names that say so, and a name may
-still change. It needs nothing from BareDOM and works on any HTML.
+still change. It works on any HTML. In JavaScript it loads the runtime of BareDOM, see
+[How to get it](#how-to-get-it).
 
 ## The words
 
@@ -53,7 +54,8 @@ An application has four parts and a few lines of wiring.
 event  ->  message  ->  step  ->  state  ->  view  ->  render  ->  page
 ```
 
-`listen` turns an event into a message, and `dispatcher` runs the rest.
+`listen` turns an event into a message, and `dispatcher` runs the rest. `listen` returns a
+function that removes its listeners: call it when the page or the view goes away.
 
 **Holes yes, logic no.** A template says where a value goes. It never says when something
 exists: no loop and no condition. A list is a container, and `view` gives its keys.
@@ -225,7 +227,7 @@ and a part name is a string.
 | `parts/set-attrs!` | `setAttrs` | Brings attributes to their values, where they differ. |
 | `parts/set-text!` | `setText` | Makes text the content of an element, where it differs. |
 | `parts/with-one-render!` | `withOneRender` | Runs work while a BareDOM element holds its render. |
-| `events/listen!` | `listen` | Turns the events of a page into messages. |
+| `events/listen!` | `listen` | Turns the events of a page into messages. Returns a function that removes its listeners. |
 | `events/dispatcher` | `dispatcher` | A function of a message: step, view, render. |
 | `events/read-origin` | `readOrigin` | The keys and the part an event came from. |
 | `element/define-element!` | `defineElement` | An element with no state, from a template. |
@@ -316,6 +318,12 @@ not on your page, pass a copy of `foreignWrites` without it.
 - **One container may name a part alone,** because its containers are named by the key. Every
   keyed node in those containers has that part, and no key is the name of another container.
 - **A container named by a key or a part alone takes no `:before` yet.**
+- **An event that does not bubble reaches `listen` too.** `focus`, `blur`, `pointerenter` and
+  `scroll` reach it on their way down, before a listener on the part itself.
+- **An `svg` in a template makes SVG elements.** The `svg` and every element below it are in
+  the SVG namespace, with their case kept: `linearGradient`, `viewBox`. The children of a
+  `foreignObject` are HTML again. A template for an element that goes into an `svg` on the
+  page names its namespace: `['circle', { xmlns: 'http://www.w3.org/2000/svg', r: d => d.r }]`.
 - **A text hole is the only child of its element.** Wrap a value in an element of its own.
 - **A part gets a name by itself** when its element has a hole or an event. Give it
   `data-x-part` when the page must find it by a name you choose.
@@ -327,3 +335,8 @@ not on your page, pass a copy of `foreignWrites` without it.
 It is in the BareDOM package: `@vanelsas/baredom/baremirror-alpha` for JavaScript, and the
 namespaces `baremirror.alpha.*` in `com.github.avanelsas/baredom` for ClojureScript. See
 [`installation.md`](installation.md).
+
+**What it costs in JavaScript.** The module shares `base.js` with the components of BareDOM.
+On a page that loads a component, BareMirror adds about 7 KB, gzipped. On a page with no
+component, it loads `base.js` too, and costs about 78 KB. A build in ClojureScript takes only
+what it uses.
