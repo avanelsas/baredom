@@ -164,6 +164,7 @@ All code must survive Google Closure Advanced Compilation (minification + renami
 - Apply `^js` type hints on all parameters representing DOM nodes, events, or element instances
 - Define constants for tag names, attribute names, event names, and CSS custom property names — no duplicated string literals
 - Do not define a local `(defn- make-el [tag] (.createElement js/document tag))` shim — it conflicts with the test-side `make-el` and is a thin wrapper. Inline `.createElement js/document` directly. Enforced in CI. (Exception: `x-copy` retains a `[^js doc tag]` variant because the doc parameter is a real abstraction over a custom document — not a shim.)
+- No DOM at namespace load. A server renderer loads each module where there is no DOM. A top-level `def` that needs the DOM (`js/document`, `js/window`, `js/customElements`) is a `delay`, read with `@`. Code that runs at load checks with `exists?`. Enforced in CI by `node scripts/check_server_load.mjs dist`.
 
 **Forbidden:**
 - React, Reagent, Lit, Vue, Svelte, Alpine, JSX, TypeScript, virtual DOM, template DSLs, framework runtimes

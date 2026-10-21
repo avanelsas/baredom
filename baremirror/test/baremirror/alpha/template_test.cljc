@@ -80,6 +80,16 @@
   (testing "a hole in a child template leaves the template around it fixed"
     (is (true? (template/fixed? [:li [:span :text]])))))
 
+(deftest unfixed-finds-the-first-element-that-is-not-fixed
+  (testing "a fixed template has none"
+    (is (nil? (template/unfixed [:ul [:li "Tasks: " 3 [:b "open"]]]))))
+  (testing "a hole two levels below"
+    (is (= [:span :text] (template/unfixed [:ul [:li [:span :text]]]))))
+  (testing "an :on entry below"
+    (is (= [:button {:on {"press" :go}}] (template/unfixed [:li [:button {:on {"press" :go}}]]))))
+  (testing "the element itself"
+    (is (= [:b :name] (template/unfixed [:b :name])))))
+
 (deftest split-of-a-row
   (is (= {:fixed  [:li
                    [:x-checkbox {:data-x-part "row.0"}]
@@ -126,6 +136,19 @@
 (deftest split-refuses-a-child-that-is-no-template-text-number-or-hole
   (is (thrown? #?(:clj clojure.lang.ExceptionInfo :cljs ExceptionInfo)
                (template/split :row [:ul (map (partial vector :li) ["a" "b"])]))))
+
+(deftest split-refuses-an-xmlns-hole
+  (testing "on the top element"
+    (is (thrown-with-msg? #?(:clj clojure.lang.ExceptionInfo :cljs ExceptionInfo) #"xmlns"
+                          (template/split :dot [:circle {:xmlns :ns}]))))
+  (testing "on an element below"
+    (is (thrown-with-msg? #?(:clj clojure.lang.ExceptionInfo :cljs ExceptionInfo) #"xmlns"
+                          (template/split :dot [:g [:circle {"xmlns" :ns}]])))))
+
+(deftest attr-value-finds-an-attribute-by-keyword-or-by-string
+  (is (= "a" (template/attr-value {:xmlns "a"} "xmlns")))
+  (is (= "b" (template/attr-value {"xmlns" "b"} "xmlns")))
+  (is (nil? (template/attr-value {:id "c"} "xmlns"))))
 
 (deftest writes-of-an-item
   (let [split-row (template/split :row row)]

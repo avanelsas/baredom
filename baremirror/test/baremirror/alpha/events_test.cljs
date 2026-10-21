@@ -191,6 +191,55 @@
          (messages-of! {["press" "remove"] :remove ["press" "add"] :add}
                        (fn [root] (send! (find-one root "i") "press" nil))))))
 
+(defn- send-plain!
+  "Sends an event of `event-type` from `target` that bubbles when `bubbles?` is true."
+  [^js target event-type bubbles?]
+  (.dispatchEvent target (js/Event. event-type #js {:bubbles bubbles? :composed true})))
+
+(deftest listen-dispatches-an-event-that-does-not-bubble
+  (is (= [[:focus-draft]]
+         (messages-of! {["focus" "draft"] :focus-draft}
+                       (fn [root] (send-plain! (find-one root "input") "focus" false))))))
+
+(deftest listen-dispatches-an-event-once
+  (testing "an event that bubbles"
+    (is (= [[:add]]
+           (messages-of! {["press" "add"] :add}
+                         (fn [root]
+                           (send-plain! (find-one root "[data-x-part=add]") "press" true))))))
+  (testing "an event sent from the node that listens"
+    (let [root     (staged! [:div {:data-x-part "app"}])
+          messages (atom [])]
+      (mirror-events/listen! root {:dispatch! (partial swap! messages conj)
+                                   :events    {["press" "app"] :press ["focus" "app"] :focus}})
+      (send-plain! root "press" true)
+      (send-plain! root "focus" false)
+      (is (= [[:press] [:focus]] @messages)))))
+
+(deftest listen-dispatches-an-event-that-does-not-bubble-before-the-listeners-below
+  (let [root            (staged! task-page)
+        input           (find-one root "input")
+        input-saw-state (atom nil)
+        state           (atom :before)]
+    (.addEventListener input "focus" (fn [_] (reset! input-saw-state @state)))
+    (mirror-events/listen! root {:dispatch! (fn [_] (reset! state :after))
+                                 :events    {["focus" "draft"] :focus-draft}})
+    (send-plain! input "focus" false)
+    (is (= :after @input-saw-state))))
+
+(deftest listen-returns-a-function-that-removes-the-listeners
+  (let [root     (staged! task-page)
+        messages (atom [])
+        events   {["press" "add"] :add ["focus" "draft"] :focus-draft}
+        stop!    (mirror-events/listen! root {:dispatch! (partial swap! messages conj)
+                                              :events    events})]
+    (testing "the function returns nothing"
+      (is (nil? (stop!))))
+    (send-plain! (find-one root "[data-x-part=add]") "press" true)
+    (send-plain! (find-one root "input") "focus" false)
+    (testing "no event is dispatched after it is called"
+      (is (= [] @messages)))))
+
 (defn- answer-with!
   "A dispatch function that brings the part named `part-name` of `root` to `attrs`."
   [^js root part-name attrs]

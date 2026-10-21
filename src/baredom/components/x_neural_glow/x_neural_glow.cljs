@@ -53,16 +53,17 @@
 
 ;; ── CSS color → RGB float array ─────────────────────────────────────────────
 (def ^:private color-canvas-ctx
-  (let [^js c (.createElement js/document "canvas")]
-    (set! (.-width c) 1)
-    (set! (.-height c) 1)
-    (.getContext c "2d")))
+  (delay
+    (let [^js c (.createElement js/document "canvas")]
+      (set! (.-width c) 1)
+      (set! (.-height c) 1)
+      (.getContext c "2d"))))
 
 (defn- css-color-to-rgb
   "Converts any CSS color string to [r g b] floats in [0, 1].
    Uses an offscreen canvas for browser-native parsing."
   [color-str]
-  (let [^js ctx color-canvas-ctx]
+  (let [^js ctx @color-canvas-ctx]
     (set! (.-fillStyle ctx) "#000000")
     (set! (.-fillStyle ctx) color-str)
     (let [style (.-fillStyle ctx)]

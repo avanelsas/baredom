@@ -2100,16 +2100,17 @@
    x-search-field, x-select), register the <x-trace-history> custom
    element (idempotent), and auto-mount the dock if activation is on.
    Defers mounting to DOMContentLoaded if document.body is not yet
-   available."
+   available. Does nothing where there is no `window`, such as on a server."
   []
-  (recorder/register!)
-  (baredom.components.x-button.x-button/init!)
-  (baredom.components.x-checkbox.x-checkbox/init!)
-  (baredom.components.x-search-field.x-search-field/init!)
-  (baredom.components.x-select.x-select/init!)
-  (comp/register! model/tag-name element-opts)
-  (when (model/enabled? js/window)
-    (if (.-body js/document)
-      (activate!)
-      (.addEventListener js/document "DOMContentLoaded" activate!
-                         #js {:once true}))))
+  (when (exists? js/window)
+    (recorder/register!)
+    (baredom.components.x-button.x-button/init!)
+    (baredom.components.x-checkbox.x-checkbox/init!)
+    (baredom.components.x-search-field.x-search-field/init!)
+    (baredom.components.x-select.x-select/init!)
+    (comp/register! model/tag-name element-opts)
+    (when (model/enabled? js/window)
+      (if (.-body js/document)
+        (activate!)
+        (.addEventListener js/document "DOMContentLoaded" activate!
+                           #js {:once true})))))

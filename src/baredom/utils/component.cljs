@@ -198,7 +198,8 @@
     klass))
 
 (defn register!
-  "Register a custom element if not already defined."
+  "Register a custom element if not already defined. Does nothing where there is no
+   `customElements`, such as on a server."
   [tag-name class-opts]
-  (when-not (.get js/customElements tag-name)
+  (when (and (exists? js/customElements) (not (.get js/customElements tag-name)))
     (.define js/customElements tag-name (make-element-class class-opts))))

@@ -2,6 +2,34 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- **`listen` in BareMirror returns a function that removes its listeners.** `events/listen!`
+  returns the same function.
+- **SVG in a BareMirror template.** An `svg` and the elements below it are made in the SVG
+  namespace, and the children of a `foreignObject` are HTML again. An element with an `xmlns`
+  attribute is in that namespace, so a template for a `circle` can make rows for an `svg` on
+  the page. `splitTemplate` refuses an `xmlns` hole.
+- **Types for BareMirror.** `@vanelsas/baredom/baremirror-alpha` ships `baremirror-alpha.d.ts`.
+  The item of a split template follows from its holes, so `writeItem` refuses an item of
+  another type and a copy of a split template, and `makeNode` refuses a template with holes.
+
+### Fixed
+
+- **BareDOM loads on a server.** A component module and its `init()` do nothing where there is
+  no DOM, so a page that uses the adapters renders on a server, as in a Next.js build.
+  `x-neural-glow`, `x-particle-button` and `x-trace-history` make their canvas or media query
+  on first use. CI loads each module in Node.
+- **`nodeMaker` and `defineElement` in BareMirror can be called where there is no DOM.**
+  `nodeMaker` checks its template at once and makes its first node on its first call, and
+  `defineElement` defines nothing where there is no `customElements`. A module that calls them
+  when it loads can be imported on a server.
+- **`listen` in BareMirror hears an event that does not bubble.** `focus`, `blur`,
+  `pointerenter`, `scroll` and a custom event with no `bubbles` reached no listener. They now
+  reach `listen` on their way down. An event that bubbles is handled as before.
+
 ## [4.11.0] - 2026-10-20
 
 BareDOM 4.11 lets a BareMirror template write the properties of a component, and a component

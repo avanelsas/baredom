@@ -61,50 +61,82 @@
       (set! (.-textContent el) wanted)))
   nil)
 
+(def ^:private svg-ns "http://www.w3.org/2000/svg")
+
+;; A namespace of nil is HTML.
+(defn- own-ns
+  "The namespace of an element with the tag `tag` and the attributes `attrs`, below a parent
+   whose children are in `ns`. An `xmlns` attribute gives it, and an `svg` is in SVG."
+  [ns tag attrs]
+  (or (template/attr-value attrs "xmlns")
+      (case tag "svg" svg-ns ns)))
+
+(defn- children-ns
+  "The namespace of the children of an element with the tag `tag` in the namespace `ns`."
+  [ns tag]
+  (case tag "foreignObject" nil ns))
+
+(defn- create-element!
+  "A new element with the tag `tag` in the namespace `ns` of `doc`."
+  [^js doc ns tag]
+  (if (some? ns)
+    (.createElementNS doc ns tag)
+    (.createElement doc tag)))
+
 (declare make-node-in!)
 
 (defn- append-child!
-  "Appends one child of a template to `el`: a node for a template, text for anything else."
-  [^js doc ^js el child]
-  (.append el (if (vector? child) (make-node-in! doc child) (str child))))
+  "Appends one child of a template to `el`: a node in the namespace `ns` for a template, text
+   for anything else."
+  [^js doc ns ^js el child]
+  (.append el (if (vector? child) (make-node-in! doc ns child) (str child))))
 
-(defn- fixed-pieces
-  "The pieces of the template `fixed`. Throws when its element is not fixed."
+(defn- checked-fixed
+  "The template `fixed`. Throws when one of its elements is not fixed."
   [fixed]
-  (if (template/fixed? fixed)
-    (template/pieces fixed)
+  (if-some [el (template/unfixed fixed)]
     (throw (ex-info "A node is made from a fixed template. split takes holes and :on out of one."
-                    {:tag (first fixed)}))))
+                    {:tag (first el)}))
+    fixed))
 
 (defn- make-node-in!
-  "Makes one detached HTML element from the template `fixed`, in the document `doc`."
-  [^js doc fixed]
-  (let [[tag attrs children] (fixed-pieces fixed)
-        el                   (.createElement doc (name tag))]
+  "Makes one detached element from the checked template `fixed`, in the document `doc`, below a
+   parent whose children are in the namespace `ns`."
+  [^js doc ns fixed]
+  (let [[tag attrs children] (template/pieces fixed)
+        tag-name             (name tag)
+        el-ns                (own-ns ns tag-name attrs)
+        el                   (create-element! doc el-ns tag-name)]
     (set-attrs! el attrs)
-    (run! (partial append-child! doc el) children)
+    (run! (partial append-child! doc (children-ns el-ns tag-name) el) children)
     el))
 
 (defn make-node!
-  "Makes one detached HTML element from the template `fixed`.
+  "Makes one detached element from the template `fixed`. An element with an `xmlns` attribute is
+   in that namespace, an `svg` is in SVG, and the elements below take the namespace of their
+   parent. The children of a `foreignObject` are HTML again.
    Throws when the template is not fixed, as `template/fixed?` defines it."
   [fixed]
-  (make-node-in! js/document fixed))
+  (make-node-in! js/document nil (checked-fixed fixed)))
 
-(defn- copy-of [^js node & _]
-  (.cloneNode node true))
+(defn- inert-document
+  "The document of a template element, where no element is defined."
+  []
+  (.-ownerDocument (.-content (.createElement js/document "template"))))
 
-;; The first node is made in the document of a template element, where no element is defined.
-;; A copy of it is a plain element until it enters the page, so a write before that costs what
-;; an attribute costs.
+(defn- copy-of [prototype & _]
+  (.cloneNode ^js @prototype true))
+
+;; The first node is made on the first call, in a document where no element is defined. A copy
+;; of it is a plain element until it enters the page, so a write before that costs what an
+;; attribute costs.
 (defn node-maker
-  "A function that makes one detached HTML element from the template `fixed` each time,
-   whatever it is called with. Throws when the template is not fixed, as `template/fixed?`
-   defines it."
+  "A function that makes one detached element from the template `fixed` each time, as
+   `make-node!` makes it, whatever it is called with. Throws when the template is not fixed, as
+   `template/fixed?` defines it. It needs no document until it is first called."
   [fixed]
-  (let [^js holder (.createElement js/document "template")
-        ^js inert  (.-ownerDocument (.-content holder))]
-    (partial copy-of (make-node-in! inert fixed))))
+  (let [fixed (checked-fixed fixed)]
+    (partial copy-of (delay (make-node-in! (inert-document) nil fixed)))))
 
 (defn part
   "The part name of `node` and the node, when it is a part."

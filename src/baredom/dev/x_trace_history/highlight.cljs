@@ -116,20 +116,21 @@
 ;; ---------------------------------------------------------------------------
 ;; matchMedia returns a *live* MediaQueryList whose `.matches` tracks
 ;; the current OS / browser preference and updates if the user flips
-;; the setting at runtime. Resolve the query once at namespace load and
+;; the setting at runtime. Resolve the query once, on first use, and
 ;; cache the live object; subsequent calls read `.matches` on it.
 
 (defonce ^:private reduced-motion-mql
-  (let [^js mm js/window.matchMedia]
-    (when mm
-      (.call mm js/window reduced-motion-query))))
+  (delay
+    (let [^js mm js/window.matchMedia]
+      (when mm
+        (.call mm js/window reduced-motion-query)))))
 
 (defn- prefers-reduced-motion?
   "True when the user has opted out of animation via OS / browser
    settings. Falls back to false if matchMedia is unavailable (non-
    browser test environments)."
   []
-  (boolean (when reduced-motion-mql (.-matches reduced-motion-mql))))
+  (boolean (some-> ^js @reduced-motion-mql .-matches)))
 
 ;; ---------------------------------------------------------------------------
 ;; Layer construction (lazy)

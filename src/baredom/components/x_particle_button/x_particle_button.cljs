@@ -129,15 +129,16 @@
   ;; store optimised for getImageData reads — otherwise the browser
   ;; logs a Canvas2D performance warning because parse-rgb does a
   ;; getImageData immediately after every fillRect.
-  (let [^js c (.createElement js/document "canvas")]
-    (set! (.-width c) 1)
-    (set! (.-height c) 1)
-    (.getContext c "2d" #js {:willReadFrequently true})))
+  (delay
+    (let [^js c (.createElement js/document "canvas")]
+      (set! (.-width c) 1)
+      (set! (.-height c) 1)
+      (.getContext c "2d" #js {:willReadFrequently true}))))
 
 (defn- parse-rgb
   "Parse any CSS color string to [r g b] (0-255) using offscreen canvas."
   [color-str]
-  (let [^js ctx color-parse-ctx]
+  (let [^js ctx @color-parse-ctx]
     (set! (.-fillStyle ctx) "#000")
     (set! (.-fillStyle ctx) color-str)
     (.fillRect ctx 0 0 1 1)

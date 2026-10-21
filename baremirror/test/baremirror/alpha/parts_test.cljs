@@ -182,6 +182,63 @@
 (deftest make-node-takes-a-template-of-a-tag-alone
   (is (= "li" (.-localName (mirror-parts/make-node! [:li])))))
 
+(def ^:private svg-ns "http://www.w3.org/2000/svg")
+
+(def ^:private html-ns "http://www.w3.org/1999/xhtml")
+
+(defn- namespace-of [^js node]
+  (.-namespaceURI node))
+
+(def ^:private icon-template
+  [:span
+   [:svg {:viewBox "0 0 24 24"}
+    [:linearGradient {:id "fade"}]
+    [:path {:d "M0 0h24"}]
+    [:foreignObject [:p "note"]]]])
+
+(deftest make-node-makes-an-svg-and-the-elements-below-it-in-the-svg-namespace
+  (let [node (mirror-parts/make-node! icon-template)
+        svg  (.querySelector node "svg")]
+    (testing "an element above the svg is HTML"
+      (is (= html-ns (namespace-of node))))
+    (testing "the svg and its children are SVG elements"
+      (is (= [svg-ns svg-ns svg-ns svg-ns]
+             (mapv namespace-of (cons svg (array-seq (.-children svg)))))))
+    (testing "a tag and an attribute keep their case"
+      (is (= ["linearGradient" "path" "foreignObject"] (child-tags svg)))
+      (is (= "0 0 24 24" (.getAttribute svg "viewBox"))))
+    (testing "a child of a foreignObject is HTML"
+      (is (= html-ns (namespace-of (.querySelector node "p")))))))
+
+(deftest make-node-makes-an-element-in-the-namespace-of-its-xmlns
+  (let [node (mirror-parts/make-node! [:g {:xmlns svg-ns} [:circle {:r 4}]])]
+    (testing "the element and the elements below it are SVG elements"
+      (is (= [svg-ns svg-ns] (mapv namespace-of [node (.-firstElementChild node)]))))
+    (testing "the element keeps its xmlns attribute"
+      (is (= svg-ns (.getAttribute node "xmlns"))))))
+
+(deftest node-maker-makes-svg-rows-that-draw-in-an-svg-of-the-page
+  (let [svg      (mirror-parts/make-node! [:svg {:width 20 :height 20}])
+        dot      (template/split :dot [:circle {:xmlns svg-ns :r :r :cx 10 :cy 10}])
+        make-dot (mirror-parts/node-maker (:fixed dot))
+        radii    {"a" 2 "b" 5}]
+    (.append (stage!) svg)
+    (let [nodes (mirror-places/sync! {:dots {:parent svg}} {:dots ["a" "b"]} make-dot)]
+      (doseq [[k r] radii]
+        (mirror-parts/write-item! (nodes k) dot {:r r}))
+      (is (every? (partial instance? js/SVGCircleElement) (vals nodes)))
+      (is (= 10 (.-width (.getBBox (nodes "b"))))))))
+
+(deftest make-node-makes-a-foreign-object-outside-an-svg-in-html
+  (let [node (mirror-parts/make-node! [:div [:foreignObject [:p "note"]]])]
+    (is (= html-ns (namespace-of (.-firstElementChild node))))
+    (is (= html-ns (namespace-of (.querySelector node "p"))))))
+
+(deftest node-maker-makes-an-svg-in-the-svg-namespace
+  (let [node ((mirror-parts/node-maker icon-template))]
+    (is (= svg-ns (namespace-of (.querySelector node "path"))))
+    (is (= html-ns (namespace-of (.querySelector node "p"))))))
+
 (def ^:private row-template
   [:li {:class "row"} "Buy " [:b "milk"] [:x-button {:size "sm" :disabled true}]])
 
@@ -199,7 +256,26 @@
   (testing "a hole as a child"
     (is (thrown? ExceptionInfo (mirror-parts/node-maker [:span :text]))))
   (testing "a hole in a template below"
-    (is (thrown? ExceptionInfo (mirror-parts/node-maker [:li [:span :text]])))))
+    (is (thrown? ExceptionInfo (mirror-parts/node-maker [:li [:span :text]]))))
+  (testing "a hole two levels below"
+    (is (thrown? ExceptionInfo (mirror-parts/node-maker [:ul [:li [:span :text]]]))))
+  (testing "an :on entry below"
+    (is (thrown? ExceptionInfo (mirror-parts/node-maker [:li [:button {:on {"press" :go}}]])))))
+
+(deftest node-maker-makes-no-element-before-its-first-call
+  (let [made     (atom 0)
+        original (.-createElement js/document)]
+    (set! (.-createElement js/document)
+          (fn [tag] (swap! made inc) (.call original js/document tag)))
+    (try
+      (let [make-row (mirror-parts/node-maker [:li [:b "text"]])]
+        (testing "the maker touches no document"
+          (is (= 0 @made)))
+        (make-row)
+        (testing "the first call does"
+          (is (pos? @made))))
+      (finally
+        (set! (.-createElement js/document) original)))))
 
 (deftest node-maker-makes-a-node-whatever-it-is-called-with
   (let [make-row (mirror-parts/node-maker [:li "text"])

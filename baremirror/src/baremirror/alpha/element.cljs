@@ -55,8 +55,9 @@
 (defn define-element!
   "Registers `tag` as an element with no state: its shadow tree is `:template`, with each hole
    filled from the attributes named in `:attrs`, by keyword, and styled by `:css`.
-   A tag that is already registered is left as it is."
+   A tag that is already registered is left as it is. Where there is no `customElements`, such
+   as on a server, it only checks the template."
   [tag {:keys [attrs css] element-template :template}]
   (let [options {:attrs attrs :css css :split (element-split tag element-template)}]
-    (when-not (.get js/customElements tag)
+    (when (and (exists? js/customElements) (not (.get js/customElements tag)))
       (.define js/customElements tag (element-class attrs (partial show! options))))))

@@ -12,6 +12,11 @@
     [tag (first more) (next more)]
     [tag nil (seq more)]))
 
+(defn attr-value
+  "The value of the attribute `attr-name` in `attrs`, by keyword or by string."
+  [attrs attr-name]
+  (some (fn [[k v]] (when (= attr-name (name k)) v)) attrs))
+
 (defn hole?
   "True when `x` is a hole: a keyword or a function of the item."
   [x]
@@ -59,6 +64,15 @@
     props
     (throw (ex-info "A value in :props is a hole." {:tag tag}))))
 
+(defn- checked-attr-holes
+  "The holes among the attributes `values` of an element with the tag `tag`.
+   Throws when `xmlns` is one of them."
+  [tag values]
+  (let [holes (into {} (filter (comp hole? val)) values)]
+    (if (attr-value holes "xmlns")
+      (throw (ex-info "xmlns is a fixed value, never a hole." {:tag tag}))
+      holes)))
+
 (defn- element
   "What the element of `template` holds: its fixed attributes, its attribute holes, its text hole,
    its property holes, its event meanings and its children."
@@ -70,14 +84,14 @@
      :on         (:on attrs)
      :props      (prop-holes tag (:props attrs))
      :fixed      (into {} (remove (comp hole? val)) values)
-     :attr-holes (into {} (filter (comp hole? val)) values)
+     :attr-holes (checked-attr-holes tag values)
      :text       text
      :children   (when-not text (fixed-children tag children))}))
 
 (defn- given-part
   "The part name that the fixed attributes give, or nil."
   [fixed]
-  (some (fn [[k v]] (when (= attr-part (name k)) v)) fixed))
+  (attr-value fixed attr-part))
 
 (defn- has-hole?
   "True when the element has a hole."
@@ -173,6 +187,11 @@
 
 (defn- child-templates [template]
   (filter vector? (nth (pieces template) 2)))
+
+(defn unfixed
+  "The first element of `template`, or of a template below it, that is not fixed, or nil."
+  [template]
+  (first (remove fixed? (tree-seq vector? child-templates template))))
 
 (defn- part-and-tag
   "The part name and the tag of the element of `template`, or nil when it is not a part."

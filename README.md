@@ -8,7 +8,7 @@
   </picture>
 </p>
 
-**Native web components. Zero runtime. No framework required.**
+**Native web components. No framework runtime. No dependencies.**
 
 [![npm version](https://img.shields.io/npm/v/%40vanelsas%2Fbaredom.svg)](https://www.npmjs.com/package/@vanelsas/baredom)
 [![license](https://img.shields.io/npm/l/%40vanelsas%2Fbaredom.svg)](./LICENSE)
@@ -52,7 +52,7 @@ All components can be explored in the [live demo](https://avanelsas.github.io/ba
 
 **Stateless.** Every render is a pure function of attributes and properties — no hidden state, no signals, no virtual DOM. Inspect attributes in DevTools and you see the truth. (And when you need deeper traces, BareDOM ships a time-travel debugger — see below.)
 
-**Zero runtime, tree-shakeable.** Each component is a self-contained ES module compiled with Google Closure Advanced. The only JavaScript in your bundle is the components you import — no framework, no utility belt, no runtime library.
+**No framework, no dependencies.** Each component is an ES module compiled with Google Closure Advanced. A page loads one shared `base.js`, with the ClojureScript core and what several components share, plus a small module for each component it uses. No framework, no virtual DOM, nothing to install beside BareDOM.
 
 **Predictable theming.** Every visual detail is exposed as a `--x-<component>-<property>` CSS custom property. Set it on the component, or wrap the page in [`<x-theme>`](./docs/x-theme.md) for coordinated palettes with built-in presets. Light/dark mode adapts automatically via `prefers-color-scheme`.
 
@@ -106,6 +106,8 @@ BareDOM components are native HTML elements — they work natively in any framew
 | Solid 1.9+  | `@vanelsas/baredom-solid`   | 2.6.0 | [README](./adapters/solid/README.md) · [npm](https://www.npmjs.com/package/@vanelsas/baredom-solid) |
 
 All adapters are auto-generated from the same Custom Elements Manifest, so adding a new BareDOM component updates every adapter in lockstep.
+
+**Server rendering.** BareDOM can be imported on a server. A component module and its `init()` do nothing where there is no DOM, so a server renderer, as in a Next.js build, writes each component as its tag, attributes and children. The browser makes it a component when the page loads. The server does not render a component's shadow tree: to send a page with it, [prerender](./docs/PRERENDER.md) the page.
 
 ---
 
@@ -179,14 +181,16 @@ BareDOM compiles to lightweight ES modules. Sizes below are gzipped:
 
 | Module | Gzipped |
 |--------|---------|
-| `base.js` (shared runtime) | ~35 KB |
+| `base.js` (shared runtime and shared components) | ~72 KB |
 | Median component | ~3 KB |
-| Smallest (`x-spacer`) | ~1 KB |
-| Largest (`x-chart`) | ~9 KB |
+| Largest (`x-particle-button`) | ~11 KB |
 
-Each component loads `base.js` once plus its own module. A typical page using 5-10 components weighs **40-65 KB** gzipped total.
+Each page loads `base.js` once, plus a module per component. `base.js` holds what several
+modules share: the runtime, and the components that others are built from, such as
+`x-button`, `x-checkbox`, `x-select` and `x-search-field`. Those add almost nothing on their
+own. A page using 5–10 other components weighs about **85–105 KB** gzipped.
 
-> **ESM only.** BareDOM ships ES modules exclusively — there is no CommonJS or UMD build. This works natively in all modern browsers and with any bundler that supports ESM (webpack 5+, Vite, esbuild, Rollup, Parcel). TypeScript declarations (`.d.ts`) are included for every component. If you need server-side rendering, pre-render the HTML and hydrate with component registration on the client.
+> **ESM only.** BareDOM ships ES modules exclusively — there is no CommonJS or UMD build. This works natively in all modern browsers and with any bundler that supports ESM (webpack 5+, Vite, esbuild, Rollup, Parcel). TypeScript declarations (`.d.ts`) are included for every component. For a server, see [Server rendering](#framework-adapters).
 
 ---
 

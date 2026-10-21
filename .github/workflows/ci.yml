@@ -65,6 +65,9 @@ jobs:
       - name: Test the pure parts of BareMirror with no browser
         run: bb scripts/test_baremirror_pure.bb
 
+      - name: Check that the types of BareMirror name each export
+        run: bb scripts/check_baremirror_types.bb
+
       - name: Check that every component hides under hidden
         run: bb scripts/check_hidden_rule.bb
 
@@ -109,6 +112,12 @@ jobs:
 
       - name: Build ESM library
         run: npm run build
+
+      - name: Check the types
+        run: npm run test:types
+
+      - name: Check that each module loads where there is no DOM
+        run: node scripts/check_server_load.mjs dist
 
       - name: Check bundle sizes
         run: bash scripts/check-bundle-size.sh
