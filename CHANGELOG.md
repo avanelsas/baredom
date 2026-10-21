@@ -18,6 +18,10 @@ All notable changes to BareDOM will be documented in this file.
 
 ### Fixed
 
+- **`nodeMaker` and `defineElement` in BareMirror can be called where there is no DOM.**
+  `nodeMaker` checks its template at once and makes its first node on its first call, and
+  `defineElement` defines nothing where there is no `customElements`. A module that calls them
+  when it loads can be imported on a server.
 - **`listen` in BareMirror hears an event that does not bubble.** `focus`, `blur`,
   `pointerenter`, `scroll` and a custom event with no `bubbles` reached no listener. They now
   reach `listen` on their way down. An event that bubbles is handled as before.

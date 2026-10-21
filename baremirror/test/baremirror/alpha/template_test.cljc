@@ -80,6 +80,16 @@
   (testing "a hole in a child template leaves the template around it fixed"
     (is (true? (template/fixed? [:li [:span :text]])))))
 
+(deftest unfixed-finds-the-first-element-that-is-not-fixed
+  (testing "a fixed template has none"
+    (is (nil? (template/unfixed [:ul [:li "Tasks: " 3 [:b "open"]]]))))
+  (testing "a hole two levels below"
+    (is (= [:span :text] (template/unfixed [:ul [:li [:span :text]]]))))
+  (testing "an :on entry below"
+    (is (= [:button {:on {"press" :go}}] (template/unfixed [:li [:button {:on {"press" :go}}]]))))
+  (testing "the element itself"
+    (is (= [:b :name] (template/unfixed [:b :name])))))
+
 (deftest split-of-a-row
   (is (= {:fixed  [:li
                    [:x-checkbox {:data-x-part "row.0"}]

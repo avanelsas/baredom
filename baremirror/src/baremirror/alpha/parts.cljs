@@ -91,19 +91,19 @@
   [^js doc ns ^js el child]
   (.append el (if (vector? child) (make-node-in! doc ns child) (str child))))
 
-(defn- fixed-pieces
-  "The pieces of the template `fixed`. Throws when its element is not fixed."
+(defn- checked-fixed
+  "The template `fixed`. Throws when one of its elements is not fixed."
   [fixed]
-  (if (template/fixed? fixed)
-    (template/pieces fixed)
+  (if-some [el (template/unfixed fixed)]
     (throw (ex-info "A node is made from a fixed template. split takes holes and :on out of one."
-                    {:tag (first fixed)}))))
+                    {:tag (first el)}))
+    fixed))
 
 (defn- make-node-in!
-  "Makes one detached element from the template `fixed`, in the document `doc`, below a parent
-   whose children are in the namespace `ns`."
+  "Makes one detached element from the checked template `fixed`, in the document `doc`, below a
+   parent whose children are in the namespace `ns`."
   [^js doc ns fixed]
-  (let [[tag attrs children] (fixed-pieces fixed)
+  (let [[tag attrs children] (template/pieces fixed)
         tag-name             (name tag)
         el-ns                (own-ns ns tag-name attrs)
         el                   (create-element! doc el-ns tag-name)]
@@ -117,22 +117,26 @@
    parent. The children of a `foreignObject` are HTML again.
    Throws when the template is not fixed, as `template/fixed?` defines it."
   [fixed]
-  (make-node-in! js/document nil fixed))
+  (make-node-in! js/document nil (checked-fixed fixed)))
 
-(defn- copy-of [^js node & _]
-  (.cloneNode node true))
+(defn- inert-document
+  "The document of a template element, where no element is defined."
+  []
+  (.-ownerDocument (.-content (.createElement js/document "template"))))
 
-;; The first node is made in the document of a template element, where no element is defined.
-;; A copy of it is a plain element until it enters the page, so a write before that costs what
-;; an attribute costs.
+(defn- copy-of [prototype & _]
+  (.cloneNode ^js @prototype true))
+
+;; The first node is made on the first call, in a document where no element is defined. A copy
+;; of it is a plain element until it enters the page, so a write before that costs what an
+;; attribute costs.
 (defn node-maker
   "A function that makes one detached element from the template `fixed` each time, as
    `make-node!` makes it, whatever it is called with. Throws when the template is not fixed, as
-   `template/fixed?` defines it."
+   `template/fixed?` defines it. It needs no document until it is first called."
   [fixed]
-  (let [^js holder (.createElement js/document "template")
-        ^js inert  (.-ownerDocument (.-content holder))]
-    (partial copy-of (make-node-in! inert nil fixed))))
+  (let [fixed (checked-fixed fixed)]
+    (partial copy-of (delay (make-node-in! (inert-document) nil fixed)))))
 
 (defn part
   "The part name of `node` and the node, when it is a part."

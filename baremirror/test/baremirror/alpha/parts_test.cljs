@@ -256,7 +256,26 @@
   (testing "a hole as a child"
     (is (thrown? ExceptionInfo (mirror-parts/node-maker [:span :text]))))
   (testing "a hole in a template below"
-    (is (thrown? ExceptionInfo (mirror-parts/node-maker [:li [:span :text]])))))
+    (is (thrown? ExceptionInfo (mirror-parts/node-maker [:li [:span :text]]))))
+  (testing "a hole two levels below"
+    (is (thrown? ExceptionInfo (mirror-parts/node-maker [:ul [:li [:span :text]]]))))
+  (testing "an :on entry below"
+    (is (thrown? ExceptionInfo (mirror-parts/node-maker [:li [:button {:on {"press" :go}}]])))))
+
+(deftest node-maker-makes-no-element-before-its-first-call
+  (let [made     (atom 0)
+        original (.-createElement js/document)]
+    (set! (.-createElement js/document)
+          (fn [tag] (swap! made inc) (.call original js/document tag)))
+    (try
+      (let [make-row (mirror-parts/node-maker [:li [:b "text"]])]
+        (testing "the maker touches no document"
+          (is (= 0 @made)))
+        (make-row)
+        (testing "the first call does"
+          (is (pos? @made))))
+      (finally
+        (set! (.-createElement js/document) original)))))
 
 (deftest node-maker-makes-a-node-whatever-it-is-called-with
   (let [make-row (mirror-parts/node-maker [:li "text"])

@@ -303,6 +303,9 @@ not on your page, pass a copy of `foreignWrites` without it.
   it is the same array or object. An instance of a class and an array are written every time.
 - **Write a new node before it is placed.** The function that makes a node gets its key. A
   component that is in the page renders for each write.
+- **`nodeMaker` and `defineElement` may run when a module loads,** also on a server.
+  `nodeMaker` makes its first node on its first call, and `defineElement` defines nothing where
+  there is no `customElements`. `makeNode` needs a document.
 - **A node from `node-maker` is not a component until it is in the page.** Its custom elements
   are plain elements until then, so a write to it costs what an attribute costs. Write
   attributes, text and properties to it. A method of a component is not there yet. A component

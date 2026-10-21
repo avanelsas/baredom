@@ -188,6 +188,11 @@
 (defn- child-templates [template]
   (filter vector? (nth (pieces template) 2)))
 
+(defn unfixed
+  "The first element of `template`, or of a template below it, that is not fixed, or nil."
+  [template]
+  (first (remove fixed? (tree-seq vector? child-templates template))))
+
 (defn- part-and-tag
   "The part name and the tag of the element of `template`, or nil when it is not a part."
   [template]
