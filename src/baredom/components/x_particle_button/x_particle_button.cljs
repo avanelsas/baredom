@@ -136,11 +136,13 @@
       (.getContext c "2d" #js {:willReadFrequently true}))))
 
 (defn- parse-rgb
-  "Parse any CSS color string to [r g b] (0-255) using offscreen canvas."
+  "Parse any CSS color string to [r g b] (0-255) using offscreen canvas.
+   An invalid colour reads as black."
   [color-str]
   (let [^js ctx @color-parse-ctx]
     (set! (.-fillStyle ctx) "#000")
     (set! (.-fillStyle ctx) color-str)
+    (.clearRect ctx 0 0 1 1)
     (.fillRect ctx 0 0 1 1)
     (let [^js data (.-data (.getImageData ctx 0 0 1 1))]
       [(aget data 0) (aget data 1) (aget data 2)])))

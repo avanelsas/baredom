@@ -1,5 +1,5 @@
 (ns baredom.components.x-neural-glow.x-neural-glow-test
-  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
             [baredom.components.x-neural-glow.x-neural-glow :as x]
             [baredom.components.x-neural-glow.model          :as model]))
 
@@ -129,3 +129,15 @@
     (.remove el)
     (.appendChild (.-body js/document) el)
     (is (= 1 (.-length (.querySelectorAll (.-shadowRoot el) "canvas"))))))
+
+(defn- rgb-255 [color-str]
+  (mapv #(js/Math.round (* 255 %)) (#'x/css-color-to-rgb color-str)))
+
+(deftest css-color-to-rgb-reads-each-colour-syntax
+  (testing "an sRGB colour reads exactly"
+    (is (= [255 99 71] (rgb-255 "tomato")))
+    (is (= [255 102 0] (rgb-255 "#f60")))
+    (is (= [128 0 128] (rgb-255 "color-mix(in srgb, red 50%, blue)"))))
+  (testing "a colour in oklch or lab reads as a colour, not black"
+    (is (not= [0 0 0] (rgb-255 "oklch(0.7 0.15 30)")))
+    (is (not= [0 0 0] (rgb-255 "lab(60 40 30)")))))

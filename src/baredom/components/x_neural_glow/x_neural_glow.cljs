@@ -53,34 +53,25 @@
 
 ;; ── CSS color → RGB float array ─────────────────────────────────────────────
 (def ^:private color-canvas-ctx
+  ;; 1×1 offscreen canvas. Painting a colour and reading the pixel resolves every CSS colour
+  ;; syntax, including oklch, lab, color() and color-mix. willReadFrequently keeps the read fast.
   (delay
     (let [^js c (.createElement js/document "canvas")]
       (set! (.-width c) 1)
       (set! (.-height c) 1)
-      (.getContext c "2d"))))
+      (.getContext c "2d" #js {:willReadFrequently true}))))
 
 (defn- css-color-to-rgb
   "Converts any CSS color string to [r g b] floats in [0, 1].
-   Uses an offscreen canvas for browser-native parsing."
+   Uses an offscreen canvas for browser-native parsing. An invalid colour reads as black."
   [color-str]
   (let [^js ctx @color-canvas-ctx]
     (set! (.-fillStyle ctx) "#000000")
     (set! (.-fillStyle ctx) color-str)
-    (let [style (.-fillStyle ctx)]
-      (if (and (string? style) (= (aget style 0) "#"))
-        ;; Hex format
-        (let [hex (.substring style 1)
-              r (js/parseInt (.substring hex 0 2) 16)
-              g (js/parseInt (.substring hex 2 4) 16)
-              b (js/parseInt (.substring hex 4 6) 16)]
-          #js [(/ r 255.0) (/ g 255.0) (/ b 255.0)])
-        ;; Try rgb(...) format
-        (if-let [m (.match style #"rgba?\((\d+),\s*(\d+),\s*(\d+)")]
-          (let [r (js/parseInt (aget m 1) 10)
-                g (js/parseInt (aget m 2) 10)
-                b (js/parseInt (aget m 3) 10)]
-            #js [(/ r 255.0) (/ g 255.0) (/ b 255.0)])
-          #js [0.0 0.0 0.0])))))
+    (.clearRect ctx 0 0 1 1)
+    (.fillRect ctx 0 0 1 1)
+    (let [^js data (.-data (.getImageData ctx 0 0 1 1))]
+      #js [(/ (aget data 0) 255.0) (/ (aget data 1) 255.0) (/ (aget data 2) 255.0)])))
 
 (defn- get-color-rgb
   "Get RGB for a color string, using a cache on the element instance."
