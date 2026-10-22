@@ -2,10 +2,25 @@
 
 All notable changes to BareDOM will be documented in this file.
 
-## [Unreleased]
+## [4.13.0] - 2026-10-22
+
+BareDOM 4.13 is the public alpha of BareMirror. BareMirror gets a README and a first look in
+JavaScript and in ClojureScript, and its small updates cost less. The adapters are not released
+with it.
+
+### Added
+
+- **A README for BareMirror.** `baremirror/README.md` says what BareMirror is, how to install it
+  and what alpha means. The README of BareDOM links to it.
+- **A first look at BareMirror.** A list of tasks in plain HTML, in JavaScript in
+  `bare-html/first-look.html` and in ClojureScript in `bare-html/first-look-cljs.html`. CI
+  renders both, and the demo site publishes them.
 
 ### Changed
 
+- **The guide to BareMirror uses the names of JavaScript.** `docs/baremirror.md` says
+  `writeItem`, `writeParts` and `nodeMaker` in the text that both languages share. The
+  ClojureScript names are in its ClojureScript section and in the table of functions.
 - **Small updates in BareMirror are cheaper.** The `nodes` of a reading from `readPlaces` are
   made when they are first read, so a render that plans and performs never makes them.
   `writeItem` compares the item before it checks the split template, so an item it has written
