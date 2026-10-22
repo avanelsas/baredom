@@ -255,9 +255,10 @@
   ([^js node split-template item]
    (write-item! = node split-template item))
   ([same? ^js node split-template item]
-   (when-not (template/split? split-template)
-     (throw (ex-info "write-item!: not a split template." {:given split-template})))
+   ;; Only a split template was ever written, so the check waits until something is.
    (when-not (written? same? node split-template item)
+     (when-not (template/split? split-template)
+       (throw (ex-info "write-item!: not a split template." {:given split-template})))
      (write-parts! (read-parts node) (template/writes split-template item))
      (unchecked-set node last-written [split-template item]))
    nil))

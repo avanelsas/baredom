@@ -161,7 +161,8 @@ synced this way beside one that is synced one list at a time.
 ## In ClojureScript
 
 The same functions, in a namespace for each word. State is in an atom, a hole may be a keyword,
-and a part name is a string.
+and a part name is a string. The rest of this page uses the JavaScript names.
+[The functions](#the-functions) gives the ClojureScript name of each.
 
 ```clojure
 (ns app.tasks
@@ -213,14 +214,14 @@ and a part name is a string.
 |---|---|---|
 | `plan/plan` | `plan` | The plan from the current places to the wanted places. Pure. |
 | `places/read-places` | `readPlaces` | The places of containers now, with the node of each key. |
-| `places/perform!` | `perform` | Performs a plan on what `read-places` returned. |
+| `places/perform!` | `perform` | Performs a plan on what `readPlaces` returned. |
 | `places/sync!` | `syncPlaces` | The three above in one call. Returns the node of each key. |
 | `places/release!` | `release` | Gives a node up. It keeps its place and loses its key. |
 | `template/split` | `splitTemplate` | The fixed template, the holes and the events of a template. |
 | `template/shared-holes` | `sharedHoles` | The holes of a split template that a component may also write. |
 | `template/writes` | the `writes` of a split template | The writes of one item, by part name. Pure. |
 | `parts/make-node!` | `makeNode` | One detached element from a fixed template. |
-| `parts/node-maker` | `nodeMaker` | A function that makes one detached element from a fixed template each time, whatever it is called with. It copies one node, so use it for a template that makes many nodes. It can be the function that `sync!` makes a node with. |
+| `parts/node-maker` | `nodeMaker` | A function that makes one detached element from a fixed template each time, whatever it is called with. It copies one node, so use it for a template that makes many nodes. It can be the function that `syncPlaces` makes a node with. |
 | `parts/read-parts` | `readParts` | The parts of a node and below it, by name. |
 | `parts/write-parts!` | `writeParts` | Applies writes to parts: text, attributes and properties. |
 | `parts/write-item!` | `writeItem` | Brings a node to an item. Writes nothing when the item is the same as last time. Throws when it gets no split template. In ClojureScript, a first argument `same?` replaces `=`. |
@@ -250,8 +251,8 @@ mode: no `value` in range mode, and no `start` or `end` in single mode. Give a p
 attributes of its mode.
 
 A component can show a value that your state does not hold when `listen` has no
-`requestedValues`, or when your application has no entry for the event. `write-parts!` brings
-such a row back at the next render, and `write-item!` does not.
+`requestedValues`, or when your application has no entry for the event. `writeParts` brings
+such a row back at the next render, and `writeItem` does not.
 
 ## Properties
 
@@ -264,7 +265,7 @@ Some values reach a component as a property, not as an attribute: `x-command-pal
 
 In ClojureScript it is `{:props {:items :commands}}`. Each value in `props` is a hole. A write
 sets a property after the text and the attributes, and only when the value differs from the
-value last written to that node. That holds for `write-parts!` too. ClojureScript values compare
+value last written to that node. That holds for `writeParts` too. ClojureScript values compare
 by `=`, JavaScript arrays and plain objects by their content, and other objects by identity. So
 make a new array, and do not change one in place.
 [`bare-html/tasks.html`](../bare-html/tasks.html) writes the `items` of a palette this way.
@@ -290,13 +291,13 @@ not on your page, pass a copy of `foreignWrites` without it.
 - **A node that stays keeps its state.** It keeps focus, a selection and a running animation.
   Where the browser offers `moveBefore`, it keeps them across a move too. Safari 26.5 does not
   offer it, so there a row that moves loses its focus.
-- **An item is a value, and a hole reads the item alone.** `write-item!` skips an item that is
+- **An item is a value, and a hole reads the item alone.** `writeItem` skips an item that is
   the same as last time. It cannot see a change inside the same object, or in anything else a
   hole reads. Make a new item.
-- **Use one way of writing for a node.** `write-item!` skips the item it last wrote itself.
-  `write-parts!` compares text and attributes with the page every time. Use `write-parts!` where
+- **Use one way of writing for a node.** `writeItem` skips the item it last wrote itself.
+  `writeParts` compares text and attributes with the page every time. Use `writeParts` where
   something other than your state can change the node.
-- **Split a template once.** Do it outside your render function. `write-item!` writes every
+- **Split a template once.** Do it outside your render function. `writeItem` writes every
   time it gets a split template it did not use for that node the last time.
 - **In JavaScript, an item is a flat object literal.** `writeItem` compares the fields of two
   objects one level deep. A field that holds an array or an object counts as the same only when
@@ -306,7 +307,7 @@ not on your page, pass a copy of `foreignWrites` without it.
 - **`nodeMaker` and `defineElement` may run when a module loads,** also on a server.
   `nodeMaker` makes its first node on its first call, and `defineElement` defines nothing where
   there is no `customElements`. `makeNode` needs a document.
-- **A node from `node-maker` is not a component until it is in the page.** Its custom elements
+- **A node from `nodeMaker` is not a component until it is in the page.** Its custom elements
   are plain elements until then, so a write to it costs what an attribute costs. Write
   attributes, text and properties to it. A method of a component is not there yet. A component
   of BareDOM takes over a property set before it was defined. A component of another library
@@ -320,7 +321,7 @@ not on your page, pass a copy of `foreignWrites` without it.
   elsewhere gets a second node. In a tree, name a part alone, so that every node has its container.
 - **One container may name a part alone,** because its containers are named by the key. Every
   keyed node in those containers has that part, and no key is the name of another container.
-- **A container named by a key or a part alone takes no `:before` yet.**
+- **A container named by a key or a part alone takes no `before` yet.**
 - **An event that does not bubble reaches `listen` too.** `focus`, `blur`, `pointerenter` and
   `scroll` reach it on their way down, before a listener on the part itself.
 - **An `svg` in a template makes SVG elements.** The `svg` and every element below it are in

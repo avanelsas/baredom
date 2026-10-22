@@ -121,7 +121,10 @@
 (defn- shared-length
   "How many of the first `limit` positions pass `same?`, counted until one fails."
   [same? limit]
-  (transduce (comp (take-while same?) (map (constantly 1))) + (range limit)))
+  (loop [i 0]
+    (if (and (< i limit) (same? i))
+      (recur (inc i))
+      i)))
 
 (defn- shared-ends
   "How many keys `xs` and `ys` share at the start and, after those, at the end."

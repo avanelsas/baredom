@@ -255,14 +255,23 @@
 (defn- container->js [{:keys [parent before part] k :key}]
   #js {:parent parent :before before :key k :part part})
 
+(defn- with-nodes-when-read
+  "The object `o` with a field `nodes` that makes the frozen object of the map `nodes` when it
+   is first read."
+  [^js o nodes]
+  (let [made (delay (js/Object.freeze (object-of nodes)))]
+    (js/Object.defineProperty o "nodes" #js {:get (fn [] @made) :enumerable true})))
+
+;; `perform` takes the reading that the object holds, so a render that only performs never
+;; reads `nodes`, and a list of many keys does not pay for an object of them.
 (defn- reading->js
   "The reading as a frozen object with `containers`, `places` and `nodes`, holding the reading."
   [{:keys [containers places nodes] :as reading}]
-  (frozen (holding #js {:containers (object-of (update-vals containers container->js))
-                        :places     (object-of (update-vals places array-of))
-                        :nodes      (object-of nodes)}
-                   value-of
-                   reading)))
+  (-> #js {:containers (frozen (object-of (update-vals containers container->js)))
+           :places     (frozen (object-of (update-vals places array-of)))}
+      (with-nodes-when-read nodes)
+      (holding value-of reading)
+      (js/Object.freeze)))
 
 (defn- ->reading [^js reading]
   (or (stood-for reading)

@@ -1,5 +1,5 @@
 {:source-paths
- ["src" "test" "baremirror/src" "baremirror/test" "bare-html/holes/src"]
+ ["src" "test" "baremirror/src" "baremirror/test" "bare-html/holes/src" "bare-html/first-look-cljs/src"]
 
  :dependencies
  [[org.clojure/test.check "1.1.1"]]
@@ -35,6 +35,12 @@
    :output-dir "public/js"
    :asset-path "/js"
    :modules {:main {:init-fn baredom.core/init!}}}
+
+  :first-look
+  {:target     :browser
+   :output-dir "bare-html/first-look-cljs/js"
+   :asset-path "first-look-cljs/js"
+   :modules    {:main {:init-fn first-look.main/start!}}}
 
   :holes
   {:target     :browser
