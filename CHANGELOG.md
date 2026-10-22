@@ -2,6 +2,15 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- **Small updates in BareMirror are cheaper.** The `nodes` of a reading from `readPlaces` are
+  made when they are first read, so a render that plans and performs never makes them.
+  `writeItem` compares the item before it checks the split template, so an item it has written
+  already costs less than half what it did.
+
 ## [4.12.0] - 2026-10-21
 
 BareDOM 4.12 can be imported on a server, so a page that uses its components renders with a

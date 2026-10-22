@@ -95,6 +95,16 @@
     (is (= ["a" "b"] (keys-in parent)))
     (is (= #{"a" "b"} (set (js-keys nodes))))))
 
+(deftest the-nodes-of-a-reading-are-one-object-of-key-to-node
+  (let [parent         (staged! #js ["ul"])
+        [containers a] (items parent ["a" "b"])
+        _              (mjs/sync-places containers a make-item)
+        ^js reading    (mjs/read-places containers)]
+    (is (= ["a" "b"] (sort (js-keys (.-nodes reading)))))
+    (is (identical? (.-firstElementChild parent) (.-a (.-nodes reading))))
+    (is (identical? (.-nodes reading) (.-nodes reading)))
+    (is (= ["containers" "places" "nodes"] (vec (js-keys reading))))))
+
 (deftest a-reading-and-a-plan-are-frozen
   (let [parent         (staged! #js ["ul"])
         [containers a] (items parent ["a" "b"])
