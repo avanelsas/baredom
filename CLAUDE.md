@@ -29,13 +29,13 @@ npm run pack:local
 
 **Lint (clj-kondo):**
 ```
-clj-kondo --lint src test baremirror bare-html/holes/src
+clj-kondo --lint src test baremirror bare-html/holes/src bare-html/first-look-cljs/src
 ```
 Code must have **zero lint warnings and errors** before pushing to GitHub. Always run the linter and fix any issues before `git push`.
 
 ## Releasing a New Version
 
-See [`docs/RELEASING.md`](docs/RELEASING.md) — update 4 version locations, tag, push via PR.
+See [`docs/RELEASING.md`](docs/RELEASING.md) — update 5 version locations, tag, push via PR.
 
 ## Roadmap
 

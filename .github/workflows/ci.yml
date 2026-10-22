@@ -48,7 +48,7 @@ jobs:
           bb --version
 
       - name: Lint with clj-kondo
-        run: clj-kondo --lint src test baremirror bare-html/holes/src --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
+        run: clj-kondo --lint src test baremirror bare-html/holes/src bare-html/first-look-cljs/src --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
 
       - name: Check method-api drift
         run: bb scripts/check_method_api.bb
@@ -125,7 +125,10 @@ jobs:
       - name: Build the holes demo
         run: npm run build:holes
 
-      - name: Prerender the task list, the mirror demo, the tree and the holes page
+      - name: Build the ClojureScript first look
+        run: npm run build:first-look
+
+      - name: Prerender the demos of BareMirror
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 >/dev/null 2>&1 &
           sleep 1
@@ -140,6 +143,10 @@ jobs:
           node scripts/prerender.mjs http://127.0.0.1:8000/bare-html/holes.html /tmp/holes.prerendered.html
           test "$(grep -oE 'data-x-key="[0-9]+"' /tmp/holes.prerendered.html | wc -l)" -eq 3
           grep -q 'x-table also writes selected on x-table-row.' /tmp/holes.prerendered.html
+          node scripts/prerender.mjs http://127.0.0.1:8000/bare-html/first-look.html /tmp/first-look.prerendered.html
+          test "$(grep -oE 'data-x-key="[0-9]+"' /tmp/first-look.prerendered.html | wc -l)" -eq 2
+          node scripts/prerender.mjs http://127.0.0.1:8000/bare-html/first-look-cljs.html /tmp/first-look-cljs.prerendered.html
+          test "$(grep -oE 'data-x-key="[0-9]+"' /tmp/first-look-cljs.prerendered.html | wc -l)" -eq 2
         env:
           CHROME_FLAGS: "--no-sandbox"
 

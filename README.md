@@ -16,10 +16,16 @@
 [![TypeScript](https://img.shields.io/badge/types-included-blue.svg)](https://www.typescriptlang.org/)
 [![Custom Elements v1](https://img.shields.io/badge/Custom%20Elements-v1-green.svg)](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements)
 
+Use BareDOM and BareMirror from JavaScript, TypeScript or ClojureScript. They ship as plain ES
+modules with type declarations, so JavaScript never needs ClojureScript. In ClojureScript you
+require their namespaces directly.
+
 ---
 
 **Part of a set.** [BareDOM](https://github.com/avanelsas/baredom) is a comprehensive web component
-library. [BareBuild](https://github.com/avanelsas/barebuild) is a small runtime that drives web
+library. [BareMirror](https://github.com/avanelsas/baredom/blob/main/baremirror/README.md) ships
+inside it as an alpha, and brings a page to the state your application holds in the browser.
+[BareBuild](https://github.com/avanelsas/barebuild) is a small runtime that drives web
 components from server state alone. [BareReplay](https://github.com/avanelsas/barereplay) is a
 powerful time-travel replay debugger for BareBuild-based apps.
 [BareProbe](https://github.com/avanelsas/bareprobe) reads the same log from a REPL.
@@ -37,8 +43,6 @@ DOM = f(attributes, properties)
 ```
 
 Components are **stateless**. Every visual state is derived directly from attributes and properties at render time. There are no hidden reactive systems, no internal signals, no component lifecycles to manage. Set an attribute, the DOM updates. Remove it, the DOM updates back.
-
-BareDOM is authored in ClojureScript and compiled to optimised, minified ES modules using Google Closure's advanced compilation pass.
 
 BareDOM has been created using Claude Code. The CLAUDE.md file is added to the repository for your convenience.
 
@@ -156,7 +160,7 @@ Register your own preset, override individual tokens via CSS, or nest themes for
 
 ## BareMirror (alpha)
 
-A small set of functions for an application on top of the components: they place keyed nodes, write values into the parts of a template and turn events into messages, with no comparing of old and new in your code. It ships inside this package as an alpha, for JavaScript and ClojureScript. See [`docs/baremirror.md`](./docs/baremirror.md). The [demo](https://avanelsas.github.io/baredom/bare-html/mirror.html) renders one task list three ways, side by side.
+A small set of functions for an application on top of the components: they place keyed nodes, write values into the parts of a template and turn events into messages, with no comparing of old and new in your code. It ships inside this package as an alpha, for JavaScript and ClojureScript. Start with the [BareMirror README](https://github.com/avanelsas/baredom/blob/main/baremirror/README.md), and see [`docs/baremirror.md`](./docs/baremirror.md) for the guide. The [demo](https://avanelsas.github.io/baredom/bare-html/mirror.html) renders one task list three ways, side by side.
 
 ---
 
@@ -177,7 +181,9 @@ Try the [live editor](https://avanelsas.github.io/bareforge/) or see the [reposi
 
 ## Bundle Size
 
-BareDOM compiles to lightweight ES modules. Sizes below are gzipped:
+BareDOM is written in ClojureScript and compiled to ES modules with the advanced compilation of
+Google Closure. The runtime in `base.js` is the core library of ClojureScript. Sizes below are
+gzipped:
 
 | Module | Gzipped |
 |--------|---------|

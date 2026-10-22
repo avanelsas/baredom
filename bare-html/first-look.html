@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BareMirror first look</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { margin: 0; padding: 2rem 1rem; }
+    main { max-width: 40rem; margin: 0 auto; }
+    h1 { margin: 0 0 1rem; font-size: 1.5rem; }
+    ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+    li { display: flex; gap: 0.75rem; align-items: center; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Tasks</h1>
+    <ul id="tasks"></ul>
+  </main>
+
+  <script type="module">
+    import { splitTemplate, nodeMaker, syncPlaces, writeItem, listen, dispatcher }
+      from '../dist/baremirror-alpha.js';
+
+    // A checkbox stops following its checked attribute once clicked, so checked is a property.
+    const row = splitTemplate('row',
+      ['li',
+        ['input', { type: 'checkbox', props: { checked: task => task.done }, on: { change: 'toggle' } }],
+        ['span', task => task.text]]);
+
+    const toggled = (id, task) => (task.id === id ? { ...task, done: !task.done } : task);
+
+    function step(state, [meaning, id]) {
+      if (meaning !== 'toggle') return state;
+      return { ...state, tasks: state.tasks.map(task => toggled(id, task)) };
+    }
+
+    const view = state => ({ order: state.tasks.map(task => task.id),
+                             rows:  Object.fromEntries(state.tasks.map(task => [task.id, task])) });
+
+    const ul = document.getElementById('tasks');
+    const makeRow = nodeMaker(row.fixed);
+
+    function render(vm) {
+      const nodes = syncPlaces({ tasks: { parent: ul } }, { tasks: vm.order }, makeRow);
+      vm.order.forEach(key => writeItem(nodes[key], row, vm.rows[key]));
+    }
+
+    const store = { value: { tasks: [{ id: '1', text: 'Read the guide', done: false },
+                                     { id: '2', text: 'Try BareMirror', done: true }] } };
+    listen(ul, { dispatch: dispatcher(store, step, view, render), events: row.events });
+    render(view(store.value));
+  </script>
+</body>
+</html>
