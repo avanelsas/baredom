@@ -9,7 +9,7 @@
   "peerDependencies" : {
     "@angular/core" : ">=17.0.0",
     "@angular/forms" : ">=17.0.0",
-    "@vanelsas/baredom" : ">=4.0.0"
+    "@vanelsas/baredom" : ">=4.14.0"
   },
   "name" : "@vanelsas/baredom-angular",
   "scripts" : {
@@ -530,7 +530,7 @@
     "@vanelsas/baredom" : "file:../../"
   },
   "files" : [ "dist", "README.md", "LICENSE" ],
-  "version" : "3.3.0",
+  "version" : "3.4.0",
   "main" : "./dist/index.js",
   "sideEffects" : true
 }
