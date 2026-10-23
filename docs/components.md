@@ -1,12 +1,12 @@
 # Components
 
-The full catalogue of BareDOM components — 106 UI web components across 11 categories. Every UI component is a native Custom Element with auto-generated TypeScript declarations and is exposed in all five [framework adapters](../README.md#framework-adapters).
+The full catalogue of BareDOM components — 107 UI web components across 11 categories. Every UI component is a native Custom Element with auto-generated TypeScript declarations and is exposed in all five [framework adapters](../README.md#framework-adapters).
 
 Tag names are case-insensitive in HTML but always lowercase-kebab-case in the source. Component documentation links to deeper guides with API tables, examples, and a11y notes.
 
 - [Form (23)](#form-23)
 - [Feedback (11)](#feedback-11)
-- [Navigation (8)](#navigation-8)
+- [Navigation (9)](#navigation-9)
 - [Layout (12)](#layout-12)
 - [Data (11)](#data-11)
 - [Overlay (10)](#overlay-10)
@@ -62,7 +62,7 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 | [`<x-toast>`](./x-toast.md) | Single transient notification with enter/exit animations and auto-dismiss. |
 | [`<x-toaster>`](./x-toaster.md) | Toast manager. Positions a queue of `<x-toast>` elements, enforces `max-toasts`, and fires `x-toaster-dismiss`. |
 
-## Navigation (8)
+## Navigation (9)
 
 | Tag | Description |
 |-----|-------------|
@@ -74,6 +74,7 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 | [`<x-sidebar>`](./x-sidebar.md) | Collapsible side navigation panel with collapse/expand animation. |
 | [`<x-tab>`](./x-tab.md) | Individual tab within an `<x-tabs>` container. |
 | [`<x-tabs>`](./x-tabs.md) | Tab container that coordinates `<x-tab>` children, manages active state, and fires change events. |
+| [`<x-toc>`](./x-toc.md) | Table of contents built from the headings of a container. Marks the heading the reader is at. |
 
 ## Layout (12)
 

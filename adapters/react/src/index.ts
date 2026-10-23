@@ -104,6 +104,7 @@ export { XTimeline, type XTimelineProps } from "./x-timeline";
 export { XTimelineItem, type XTimelineItemProps } from "./x-timeline-item";
 export { XToast, type XToastProps } from "./x-toast";
 export { XToaster, type XToasterProps } from "./x-toaster";
+export { XToc, type XTocProps } from "./x-toc";
 export { XTooltip, type XTooltipProps } from "./x-tooltip";
 export { XTypography, type XTypographyProps } from "./x-typography";
 export { XWelcomeTour, type XWelcomeTourProps } from "./x-welcome-tour";

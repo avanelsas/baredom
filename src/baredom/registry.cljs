@@ -114,6 +114,7 @@
    [baredom.exports.x-timeline-item       :as x-timeline-item]
    [baredom.exports.x-toast               :as x-toast]
    [baredom.exports.x-toaster             :as x-toaster]
+   [baredom.exports.x-toc                 :as x-toc]
    [baredom.exports.x-tooltip             :as x-tooltip]
    [baredom.exports.x-trace-history       :as x-trace-history]
    [baredom.exports.x-typography          :as x-typography]
@@ -225,6 +226,7 @@
    x-timeline-item/register!
    x-toast/register!
    x-toaster/register!
+   x-toc/register!
    x-tooltip/register!
    x-trace-history/register!
    x-typography/register!

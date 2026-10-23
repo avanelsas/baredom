@@ -104,6 +104,7 @@ export { default as XTimeline, type XTimelineProps, type XTimelineElement } from
 export { default as XTimelineItem, type XTimelineItemProps, type XTimelineItemElement } from "./x-timeline-item.svelte";
 export { default as XToast, type XToastProps, type XToastElement } from "./x-toast.svelte";
 export { default as XToaster, type XToasterProps, type XToasterElement } from "./x-toaster.svelte";
+export { default as XToc, type XTocProps, type XTocElement } from "./x-toc.svelte";
 export { default as XTooltip, type XTooltipProps, type XTooltipElement } from "./x-tooltip.svelte";
 export { default as XTypography, type XTypographyProps, type XTypographyElement } from "./x-typography.svelte";
 export { default as XWelcomeTour, type XWelcomeTourProps, type XWelcomeTourElement } from "./x-welcome-tour.svelte";

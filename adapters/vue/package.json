@@ -447,6 +447,10 @@
       "import" : "./dist/x-toaster.js",
       "types" : "./dist/x-toaster.d.ts"
     },
+    "./x-toc" : {
+      "import" : "./dist/x-toc.js",
+      "types" : "./dist/x-toc.d.ts"
+    },
     "./x-tooltip" : {
       "import" : "./dist/x-tooltip.js",
       "types" : "./dist/x-tooltip.d.ts"

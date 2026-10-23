@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-toc demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; padding: 24px; max-width: 1100px; margin: 0 auto; }
+
+      .panel {
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        padding: 16px;
+        background: var(--surface-bg);
+        margin-bottom: 24px;
+      }
+
+      .controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; font-size: 13px; }
+      .controls label { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+
+      .event-log {
+        font-family: ui-monospace, monospace; font-size: 12px;
+        background: #111827; color: #f9fafb; border-radius: 8px;
+        padding: 12px; height: 96px; overflow-y: auto; margin-top: 12px;
+      }
+      .event-log p { margin: 0.1rem 0; }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 15rem;
+        gap: 2.5rem;
+      }
+      .layout article h2 { margin-top: 2.5rem; }
+      .layout article p { color: var(--muted); }
+
+      #toc-collapse { display: none; }
+
+      @media (max-width: 760px) {
+        .layout { grid-template-columns: 1fr; gap: 1rem; }
+        .layout aside {
+          order: -1;
+          position: sticky;
+          top: var(--toc-bar-top, 3.5rem);
+          z-index: 10;
+          height: var(--toc-bar-height, 3rem);
+        }
+        #toc-collapse {
+          display: block;
+          background: var(--surface-bg);
+          border: 1px solid var(--surface-border);
+          border-radius: 8px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        }
+        #toc-collapse #toc {
+          position: static;
+          max-height: 50vh;
+          overflow-y: auto;
+          padding: 0.5rem 0.75rem 0.75rem;
+        }
+      }
+
+      .panel-demo {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 14rem;
+        gap: 1.5rem;
+        padding: 24px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #1f2a30, #34474d);
+        color: #f3f4f6;
+      }
+      .panel-demo .scroller { height: 320px; overflow-y: auto; padding-right: 12px; }
+      .panel-demo p { color: #cbd5e1; }
+      .panel-demo x-toc {
+        --x-toc-color: #f3f4f6;
+        --x-toc-hover-color: var(--x-color-primary-hover, #93c5fd);
+        --x-toc-active-color: var(--x-color-primary, #60a5fa);
+        --x-toc-label-color: #cbd5e1;
+        --x-toc-rail-color: #64748b;
+        --x-toc-font-size: 1rem;
+      }
+
+      @media (max-width: 640px) {
+        .panel-demo { grid-template-columns: 1fr; }
+        .panel-demo x-toc { order: -1; }
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+  </head>
+  <body>
+    <x-typography variant="h1">&lt;x-toc&gt;</x-typography>
+    <p style="color:var(--muted);margin:0 0 16px;">A table of contents that follows the reader through the headings of an article.</p>
+
+    <div class="panel">
+      <div class="controls">
+        <label>
+          Selector
+          <x-select id="ctl-selector" value="h2, h3">
+            <option value="h2, h3" selected>h2, h3</option>
+            <option value="h2">h2</option>
+            <option value="h3">h3</option>
+          </x-select>
+        </label>
+        <label>
+          Offset
+          <x-select id="ctl-offset" value="25%">
+            <option value="25%" selected>25%</option>
+            <option value="10%">10%</option>
+            <option value="50%">50%</option>
+            <option value="80px">80px</option>
+          </x-select>
+        </label>
+        <label><x-switch id="ctl-sticky" checked></x-switch> Sticky</label>
+        <label><x-switch id="ctl-hash"></x-switch> Update hash</label>
+        <label><x-switch id="ctl-flat"></x-switch> Flat</label>
+        <x-button id="ctl-add" size="sm" variant="secondary">Add a section</x-button>
+      </div>
+      <div class="event-log" id="log"><p style="color:#9ca3af">Events appear here.</p></div>
+    </div>
+
+    <div class="layout">
+      <article id="post">
+        <p>Web components in ClojureScript started as an experiment born from frustration with a client stack of re-frame, React and many supporting libraries. Web components promise encapsulation and smaller bundles, but their API is complex and they leave rendering to you.</p>
+        <h2>What is a web component</h2>
+        <p>A web component is a custom HTML element. Once it is registered, the browser treats it like a native element.</p>
+        <p>It rests on three standards: custom elements, shadow DOM for private styling, and templates for internal structure. A bento grid built from custom tags shows how they fit together.</p>
+        <h2>What does an implementation have to cover</h2>
+        <p>A component has to handle identity, inputs, rendering, lifecycle, encapsulation, slots, outputs, styling, accessibility and form behaviour.</p>
+        <p>Each of these is a responsibility for the author of the component. None of them comes for free.</p>
+        <h2>Writing a Web Component in CLJS</h2>
+        <p>The approach follows the design choices of BareDOM, so it is opinionated. A decorative animated component, x-gaussian-blur, shows what a web component can do.</p>
+        <h2>Let's start writing a Web Component in Clojurescript</h2>
+        <p>The tutorial builds x-icon, a small component that wraps an SVG and exposes theming options.</p>
+        <h3>Step 1: start with data</h3>
+        <p>The model file defines the tag name, the observed attributes, and the public property, event and method APIs. Parsers fall back to defaults on bad input, and a normalise function turns raw attributes into a clean view model.</p>
+        <p>The DOM file then sets up the shadow root, runs a read, check and apply render pipeline, and wires the lifecycle callbacks.</p>
+        <h2>Web components are not that simple</h2>
+        <p>Forms and buttons add complexity, but the process stays the same. Shared code in BareDOM is reused across components.</p>
+        <h2>What do you get for it?</h2>
+        <p>The icon component adds about 2 KB to a bundle.</p>
+        <p>It depends on no framework, so it works in plain JavaScript and in Angular, React, Solid, Svelte and Vue.</p>
+        <h2>What isn't covered here</h2>
+        <p>Server-side state, efficient re-rendering and debugging are left for a follow-up post.</p>
+        <h2>Source code</h2>
+        <p>BareDOM holds more than 100 web components. The source and a demo are on GitHub.</p>
+        <p style="height:40vh"></p>
+      </article>
+      <aside id="toc-aside">
+        <x-collapse id="toc-collapse" header="Content">
+          <div slot="content" id="toc-slot"></div>
+        </x-collapse>
+        <x-toc id="toc" for="post" label="Content" sticky></x-toc>
+      </aside>
+    </div>
+
+    <h2 style="margin-top:4rem">Inside a scrolling panel</h2>
+    <p style="color:var(--muted)">The scroll root is the nearest scrolling ancestor of the article. Here it is the panel, not the page.</p>
+    <div class="panel-demo">
+      <div class="scroller">
+        <article id="panel-post">
+          <h2>What is a web component</h2>
+          <p>A custom HTML element that the browser treats like a native one once it is registered.</p>
+          <p>It rests on custom elements, shadow DOM and templates.</p>
+          <h2>Writing a Web Component in CLJS</h2>
+          <p>The approach follows the design choices of BareDOM.</p>
+          <p>A model file holds the data. A DOM file holds the effects.</p>
+          <h2>What do you get for it?</h2>
+          <p>About 2 KB per component, and no framework to depend on.</p>
+          <p>It works in plain JavaScript and in every major framework.</p>
+          <h2>What isn't covered here</h2>
+          <p>Server-side state, re-rendering and debugging come in a follow-up post.</p>
+          <p style="height:200px"></p>
+        </article>
+      </div>
+      <x-toc for="panel-post" selector="h2" label="Content"></x-toc>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+    <script>
+      const toc = document.getElementById('toc');
+      const log = document.getElementById('log');
+      let added = 0;
+
+      function write(text) {
+        const p = document.createElement('p');
+        p.textContent = text;
+        log.prepend(p);
+      }
+
+      document.getElementById('ctl-selector').addEventListener('select-change', e => {
+        toc.selector = e.detail.value;
+      });
+      document.getElementById('ctl-offset').addEventListener('select-change', e => {
+        toc.offset = e.detail.value;
+      });
+      document.getElementById('ctl-sticky').addEventListener('x-switch-change', e => {
+        toc.sticky = e.detail.checked;
+      });
+      document.getElementById('ctl-hash').addEventListener('x-switch-change', e => {
+        toc.updateHash = e.detail.checked;
+      });
+      document.getElementById('ctl-flat').addEventListener('x-switch-change', e => {
+        toc.style.setProperty('--x-toc-indent', e.detail.checked ? '0' : '');
+      });
+      document.getElementById('ctl-add').addEventListener('click', () => {
+        added += 1;
+        const article = document.getElementById('post');
+        const h = document.createElement('h2');
+        const p = document.createElement('p');
+        h.textContent = `Added section ${added}`;
+        p.textContent = 'This section was added after the page loaded. The table of contents picked it up.';
+        article.insertBefore(p, article.lastElementChild);
+        article.insertBefore(h, p);
+      });
+
+      const narrow   = matchMedia('(max-width: 760px)');
+      const aside    = document.getElementById('toc-aside');
+      const collapse = document.getElementById('toc-collapse');
+      const tocSlot  = document.getElementById('toc-slot');
+
+      function headingText(id) {
+        const h = id && document.getElementById(id);
+        return h ? h.textContent.trim() : '';
+      }
+
+      function setBarHeader(id) {
+        const text = headingText(id);
+        collapse.header = text ? `Content: ${text}` : 'Content';
+      }
+
+      function placeToc() {
+        if (narrow.matches) {
+          tocSlot.append(toc);
+          toc.removeAttribute('label');
+        } else {
+          collapse.open = false;
+          aside.append(toc);
+          toc.label = 'Content';
+        }
+        setBarHeader(toc.activeId);
+      }
+
+      function clearThemeBar() {
+        const bar = [...document.body.children].find(el => el._themePickerBar);
+        if (!bar) return;
+        const sync = () => {
+          const top = `${bar.offsetHeight + 8}px`;
+          document.documentElement.style.setProperty('--toc-bar-top', top);
+          toc.style.setProperty('--x-toc-sticky-top', top);
+        };
+        new ResizeObserver(sync).observe(bar);
+      }
+
+      addEventListener('load', clearThemeBar);
+      narrow.addEventListener('change', placeToc);
+      placeToc();
+
+      toc.addEventListener('x-toc-navigate', () => {
+        if (narrow.matches) collapse.open = false;
+      });
+
+      toc.addEventListener('x-toc-change', e => {
+        setBarHeader(e.detail.id);
+      });
+
+      toc.addEventListener('x-toc-change', e => {
+        const d = e.detail;
+        write(`x-toc-change  ${d.previousId} → ${d.id}  (level ${d.level}, index ${d.index})`);
+      });
+      toc.addEventListener('x-toc-navigate', e => {
+        write(`x-toc-navigate  ${e.detail.id}`);
+      });
+    </script>
+  </body>
+</html>

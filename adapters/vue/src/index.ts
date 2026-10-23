@@ -104,6 +104,7 @@ export { XTimeline, type XTimelineInstance, type XTimelineExposed } from "./x-ti
 export { XTimelineItem, type XTimelineItemInstance, type XTimelineItemExposed } from "./x-timeline-item";
 export { XToast, type XToastInstance, type XToastExposed } from "./x-toast";
 export { XToaster, type XToasterInstance, type XToasterExposed } from "./x-toaster";
+export { XToc, type XTocInstance, type XTocExposed } from "./x-toc";
 export { XTooltip, type XTooltipInstance, type XTooltipExposed } from "./x-tooltip";
 export { XTypography, type XTypographyInstance, type XTypographyExposed } from "./x-typography";
 export { XWelcomeTour, type XWelcomeTourInstance, type XWelcomeTourExposed } from "./x-welcome-tour";

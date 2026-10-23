@@ -415,6 +415,11 @@
      {init baredom.exports.x-toaster/init}
      :depends-on #{:base}}
 
+    :x-toc
+    {:exports
+     {init baredom.exports.x-toc/init}
+     :depends-on #{:base}}
+
     :x-tooltip
     {:exports
      {init baredom.exports.x-tooltip/init}
