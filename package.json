@@ -101,6 +101,11 @@
       "import": "./dist/x-code.js",
       "default": "./dist/x-code.js"
     },
+    "./x-toc": {
+      "types": "./dist/x-toc.d.ts",
+      "import": "./dist/x-toc.js",
+      "default": "./dist/x-toc.js"
+    },
     "./x-tooltip": {
       "types": "./dist/x-tooltip.d.ts",
       "import": "./dist/x-tooltip.js",

@@ -17,4 +17,5 @@
    "x-table" [{:target "x-table-row", :attributes ["data-stripe" "selected"]}]
    "x-tabs" [{:target "x-tab", :attributes ["selected"]} {:target "any", :attributes ["hidden"]}]
    "x-timeline" [{:target "x-timeline-item", :attributes ["data-index" "data-last" "data-position" "data-striped"]}]
+   "x-toc" [{:target "any", :attributes ["id" "tabindex"]}]
    "x-tooltip" [{:target "any", :attributes ["aria-describedby"]}]})

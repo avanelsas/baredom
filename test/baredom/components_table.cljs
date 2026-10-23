@@ -105,6 +105,7 @@
    [baredom.exports.x-timeline-item       :as x-timeline-item]
    [baredom.exports.x-toast               :as x-toast]
    [baredom.exports.x-toaster             :as x-toaster]
+   [baredom.exports.x-toc                 :as x-toc]
    [baredom.exports.x-tooltip             :as x-tooltip]
    [baredom.exports.x-typography          :as x-typography]
    [baredom.exports.x-welcome-tour        :as x-welcome-tour]))
@@ -215,6 +216,7 @@
    [x-timeline-item/register!       x-timeline-item/public-api]
    [x-toast/register!               x-toast/public-api]
    [x-toaster/register!             x-toaster/public-api]
+   [x-toc/register!                 x-toc/public-api]
    [x-tooltip/register!             x-tooltip/public-api]
    [x-typography/register!          x-typography/public-api]
    [x-welcome-tour/register!        x-welcome-tour/public-api]])

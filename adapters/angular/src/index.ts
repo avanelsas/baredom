@@ -105,6 +105,7 @@ export { BaredomTimeline } from './directives/x-timeline.directive';
 export { BaredomTimelineItem } from './directives/x-timeline-item.directive';
 export { BaredomToast } from './directives/x-toast.directive';
 export { BaredomToaster } from './directives/x-toaster.directive';
+export { BaredomToc } from './directives/x-toc.directive';
 export { BaredomTooltip } from './directives/x-tooltip.directive';
 export { BaredomTypography } from './directives/x-typography.directive';
 export { BaredomWelcomeTour } from './directives/x-welcome-tour.directive';

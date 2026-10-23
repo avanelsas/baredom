@@ -504,6 +504,10 @@
       "import" : "./dist/directives/x-toaster.directive.js",
       "types" : "./dist/directives/x-toaster.directive.d.ts"
     },
+    "./x-toc" : {
+      "import" : "./dist/directives/x-toc.directive.js",
+      "types" : "./dist/directives/x-toc.directive.d.ts"
+    },
     "./x-tooltip" : {
       "import" : "./dist/directives/x-tooltip.directive.js",
       "types" : "./dist/directives/x-tooltip.directive.d.ts"

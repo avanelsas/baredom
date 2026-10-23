@@ -21720,6 +21720,219 @@
     } ]
   }, {
     "kind" : "javascript-module",
+    "path" : "dist/x-toc.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XToc",
+      "tagName" : "x-toc",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "for",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "selector",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "offset",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "sticky",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "updateHash",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "activeId",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      } ],
+      "attributes" : [ {
+        "name" : "for",
+        "fieldName" : "for",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "selector",
+        "fieldName" : "selector",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "offset",
+        "fieldName" : "offset",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "sticky",
+        "fieldName" : "sticky",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "update-hash",
+        "fieldName" : "updateHash",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-toc-change",
+        "type" : {
+          "text" : "CustomEvent<{ id: string; text: string; level: number; index: number; previousId: string }>"
+        },
+        "cancelable" : false,
+        "detail" : {
+          "id" : "string",
+          "text" : "string",
+          "level" : "number",
+          "index" : "number",
+          "previousId" : "string"
+        }
+      }, {
+        "name" : "x-toc-navigate",
+        "type" : {
+          "text" : "CustomEvent<{ id: string; text: string; level: number; index: number }>"
+        },
+        "cancelable" : true,
+        "detail" : {
+          "id" : "string",
+          "text" : "string",
+          "level" : "number",
+          "index" : "number"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ],
+      "cssProperties" : [ {
+        "name" : "--x-toc-active-color",
+        "default" : "var(--x-color-primary,#2563eb)"
+      }, {
+        "name" : "--x-toc-color",
+        "default" : "var(--x-color-text,#1f2937)"
+      }, {
+        "name" : "--x-toc-font-family",
+        "default" : "var(--x-font-family,inherit)"
+      }, {
+        "name" : "--x-toc-font-size",
+        "default" : "var(--x-font-size-sm,0.875rem)"
+      }, {
+        "name" : "--x-toc-gap",
+        "default" : "var(--x-space-sm,0.5rem)"
+      }, {
+        "name" : "--x-toc-hover-color",
+        "default" : "var(--x-color-primary-hover,#1d4ed8)"
+      }, {
+        "name" : "--x-toc-indent",
+        "default" : "0.75rem"
+      }, {
+        "name" : "--x-toc-indicator-color",
+        "default" : "var(--x-toc-active-color)"
+      }, {
+        "name" : "--x-toc-indicator-radius",
+        "default" : "var(--x-radius-full,9999px)"
+      }, {
+        "name" : "--x-toc-indicator-width",
+        "default" : "3px"
+      }, {
+        "name" : "--x-toc-label-color",
+        "default" : "var(--x-color-text-muted,#6b7280)"
+      }, {
+        "name" : "--x-toc-label-font-family",
+        "default" : "var(--x-font-family-mono,ui-monospace,monospace)"
+      }, {
+        "name" : "--x-toc-label-font-size",
+        "default" : "var(--x-font-size-xs,0.75rem)"
+      }, {
+        "name" : "--x-toc-label-letter-spacing",
+        "default" : "0.12em"
+      }, {
+        "name" : "--x-toc-label-transform",
+        "default" : "uppercase"
+      }, {
+        "name" : "--x-toc-rail-color",
+        "default" : "var(--x-color-border,#e5e7eb)"
+      }, {
+        "name" : "--x-toc-rail-width",
+        "default" : "var(--x-border-width,1px)"
+      }, {
+        "name" : "--x-toc-sticky-top",
+        "default" : "1rem"
+      }, {
+        "name" : "--x-toc-transition-duration",
+        "default" : "var(--x-transition-duration,200ms)"
+      } ],
+      "cssParts" : [ {
+        "name" : "body"
+      }, {
+        "name" : "indicator"
+      }, {
+        "name" : "item"
+      }, {
+        "name" : "label"
+      }, {
+        "name" : "link"
+      }, {
+        "name" : "list"
+      }, {
+        "name" : "nav"
+      }, {
+        "name" : "part"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "any",
+        "attributes" : [ "id", "tabindex" ]
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-toc",
+      "declaration" : {
+        "name" : "XToc"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
     "path" : "dist/x-tooltip.js",
     "declarations" : [ {
       "kind" : "class",

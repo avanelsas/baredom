@@ -106,6 +106,7 @@ import type { XTimeline } from "@vanelsas/baredom/x-timeline";
 import type { XTimelineItem } from "@vanelsas/baredom/x-timeline-item";
 import type { XToast } from "@vanelsas/baredom/x-toast";
 import type { XToaster } from "@vanelsas/baredom/x-toaster";
+import type { XToc } from "@vanelsas/baredom/x-toc";
 import type { XTooltip } from "@vanelsas/baredom/x-tooltip";
 import type { XTypography } from "@vanelsas/baredom/x-typography";
 import type { XWelcomeTour } from "@vanelsas/baredom/x-welcome-tour";
@@ -217,6 +218,7 @@ declare module "solid-js" {
       "x-timeline-item": JSX.HTMLAttributes<XTimelineItem> & Record<string, any>;
       "x-toast": JSX.HTMLAttributes<XToast> & Record<string, any>;
       "x-toaster": JSX.HTMLAttributes<XToaster> & Record<string, any>;
+      "x-toc": JSX.HTMLAttributes<XToc> & Record<string, any>;
       "x-tooltip": JSX.HTMLAttributes<XTooltip> & Record<string, any>;
       "x-typography": JSX.HTMLAttributes<XTypography> & Record<string, any>;
       "x-welcome-tour": JSX.HTMLAttributes<XWelcomeTour> & Record<string, any>;
