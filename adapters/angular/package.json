@@ -530,7 +530,7 @@
     "@vanelsas/baredom" : "file:../../"
   },
   "files" : [ "dist", "README.md", "LICENSE" ],
-  "version" : "3.4.0",
+  "version" : "3.5.0",
   "main" : "./dist/index.js",
   "sideEffects" : true
 }

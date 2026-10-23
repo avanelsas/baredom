@@ -2,6 +2,23 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.15.0] - 2026-10-23
+
+BareDOM 4.15 adds gradient text to `x-typography`. All five adapters are released with it:
+`-react` 3.5.0, `-angular` 3.5.0, `-vue` 0.11.0, `-svelte` 0.11.0 and `-solid` 0.11.0. They type
+the new `gradient` prop, and each still works with `@vanelsas/baredom` 4.14.0 or later.
+
+### Added
+
+- **Gradient text in `x-typography`.** A `gradient` attribute fills the text with
+  `--x-typography-gradient`. Without the variable, the gradient runs from the theme's primary
+  colour to its secondary and tertiary, so it follows `x-theme`. The gradient spans the text, not
+  the width of the element, and a slotted block gets its own. A new `text` part holds the
+  gradient, so it can be styled or moved. Under forced colours, in a selection and in a browser
+  without `background-clip: text`, the text stays readable. See
+  [`docs/x-typography.md`](docs/x-typography.md) and the
+  [demo](https://avanelsas.github.io/baredom/demo/x-typography.html).
+
 ## [4.14.0] - 2026-10-23
 
 BareDOM 4.14 adds `x-toc`, a table of contents that follows the reader. All five adapters are
