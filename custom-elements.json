@@ -22138,6 +22138,12 @@
         "type" : {
           "text" : "number"
         }
+      }, {
+        "kind" : "field",
+        "name" : "gradient",
+        "type" : {
+          "text" : "boolean"
+        }
       } ],
       "attributes" : [ {
         "name" : "variant",
@@ -22163,6 +22169,12 @@
         "type" : {
           "text" : "number"
         }
+      }, {
+        "name" : "gradient",
+        "fieldName" : "gradient",
+        "type" : {
+          "text" : "boolean"
+        }
       } ],
       "events" : [ ],
       "slots" : [ {
@@ -22187,6 +22199,8 @@
       }, {
         "name" : "--x-typography-font-family"
       }, {
+        "name" : "--x-typography-gradient"
+      }, {
         "name" : "--x-typography-kbd-bg"
       }, {
         "name" : "--x-typography-kbd-border"
@@ -22201,6 +22215,8 @@
       } ],
       "cssParts" : [ {
         "name" : "container"
+      }, {
+        "name" : "text"
       } ]
     } ],
     "exports" : [ {

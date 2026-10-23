@@ -124,6 +124,24 @@
       
           </style>
   <link rel="stylesheet" href="demo-responsive.css" />
+  <style>
+    .gradient-dark {
+      background: #1d1a18;
+      border-radius: 0.5rem;
+      padding: 1rem 1.25rem;
+    }
+    .gradient-custom {
+      --x-typography-gradient: linear-gradient(90deg, #e2477e, #ff8a65, #ffd54f, #a5f3f5);
+    }
+    .gradient-shimmer::part(text) {
+      background-size: 200% 100%;
+      animation: gradient-shimmer 4s linear infinite;
+    }
+    @keyframes gradient-shimmer { to { background-position: -200% 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .gradient-shimmer::part(text) { animation: none; }
+    }
+  </style>
   </head>
 
   <body>
@@ -150,6 +168,21 @@
           <x-typography variant="blockquote">The only way to do great work is to love what you do. — Steve Jobs</x-typography>
           <x-typography variant="code">const greeting = "Hello, world!"; function add(a, b) { return a + b; }</x-typography>
           <x-typography variant="kbd">Ctrl + Shift + P</x-typography>
+        </div>
+
+        <h2 style="margin-top:2rem;">Gradient text</h2>
+        <p style="color:var(--muted);font-size:0.875rem;">
+          The first heading follows the theme: pick a preset in the bar at the top. The others set
+          <code>--x-typography-gradient</code>.
+        </p>
+        <div class="stack" id="gradient-demo">
+          <x-typography variant="h1" gradient>Theme gradient</x-typography>
+          <div class="gradient-dark">
+            <x-typography variant="h1" class="gradient-custom" gradient>Your own colours</x-typography>
+          </div>
+          <x-typography variant="h3" align="center" class="gradient-custom" gradient>Centred, the gradient spans the text</x-typography>
+          <x-typography variant="h3" class="gradient-custom" gradient style="max-width:22rem;">A longer heading that wraps runs one gradient across its lines</x-typography>
+          <x-typography variant="h2" class="gradient-custom gradient-shimmer" gradient>Moving through the text part</x-typography>
         </div>
 
         <h2>Property API</h2>
@@ -264,6 +297,24 @@
         <div class="field" id="custom-color-field" style="display:none;">
           <label for="ctl-color-picker">pick color</label>
           <input id="ctl-color-picker" type="color" value="#0f172a" />
+        </div>
+
+        <div class="panel-section">Gradient</div>
+
+        <div class="checkbox-field">
+          <x-switch id="ctl-gradient"></x-switch>
+          <label for="ctl-gradient">gradient</label>
+        </div>
+
+        <div class="field">
+          <label for="ctl-gradient-fill">--x-typography-gradient</label>
+          <x-select id="ctl-gradient-fill" value="">
+            <option value="">theme (default)</option>
+            <option value="linear-gradient(90deg, #e2477e, #ff8a65, #ffd54f, #a5f3f5)">Warm to cyan</option>
+            <option value="linear-gradient(90deg, #7c3aed, #db2777)">Violet to pink</option>
+            <option value="linear-gradient(90deg, #0891b2, #22c55e)">Teal to green</option>
+            <option value="linear-gradient(180deg, #f59e0b, #b45309)">Amber, top to bottom</option>
+          </x-select>
         </div>
 
         <div class="panel-section">Variant Theming</div>
@@ -382,6 +433,16 @@
           else el.style.removeProperty('--x-typography-color');
         });
 
+        // Gradient
+        const gradient = ctl('ctl-gradient').checked;
+        const fill = ctl('ctl-gradient-fill').value;
+        els.forEach(el => {
+          if (gradient) el.setAttribute('gradient', '');
+          else el.removeAttribute('gradient');
+          if (fill) el.style.setProperty('--x-typography-gradient', fill);
+          else el.style.removeProperty('--x-typography-gradient');
+        });
+
         // Code bg
         const codeBg = ctl('ctl-code-bg').value;
         els.forEach(el => {
@@ -406,6 +467,8 @@
       });
 
       ctl('ctl-truncate').addEventListener('change', reapplyControls);
+      ctl('ctl-gradient').addEventListener('change', reapplyControls);
+      ctl('ctl-gradient-fill').addEventListener('change', reapplyControls);
       ctl('ctl-lineclamp').addEventListener('input', reapplyControls);
       ctl('ctl-font-family').addEventListener('change', reapplyControls);
       ctl('ctl-font-scale').addEventListener('change', reapplyControls);

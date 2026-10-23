@@ -6,9 +6,10 @@
 (def attr-align      "align")
 (def attr-truncate   "truncate")
 (def attr-line-clamp "line-clamp")
+(def attr-gradient   "gradient")
 
 (def observed-attributes
-  #js [attr-variant attr-align attr-truncate attr-line-clamp])
+  #js [attr-variant attr-align attr-truncate attr-line-clamp attr-gradient])
 
 (def allowed-variants
   #{"h1" "h2" "h3" "h4" "h5" "h6"
@@ -23,7 +24,8 @@
   {:variant   {:type 'string  :reflects-attribute attr-variant :enum allowed-variants}
    :align     {:type 'string  :reflects-attribute attr-align :enum allowed-aligns}
    :truncate  {:type 'boolean :reflects-attribute attr-truncate}
-   :lineClamp {:type 'number  :reflects-attribute attr-line-clamp}})
+   :lineClamp {:type 'number  :reflects-attribute attr-line-clamp}
+   :gradient  {:type 'boolean :reflects-attribute attr-gradient}})
 
 (def event-schema {})
 

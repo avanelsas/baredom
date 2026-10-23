@@ -19,6 +19,7 @@ export const XTypography = defineComponent({
     align: { type: String as PropType<string | undefined>, default: undefined },
     truncate: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     lineClamp: { type: Number as PropType<number | undefined>, default: undefined },
+    gradient: { type: Boolean as PropType<boolean | undefined>, default: undefined },
   },
   setup(props, { emit, attrs, slots, expose }) {
     const elRef = ref<XTypographyElement | null>(null);

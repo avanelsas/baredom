@@ -18,5 +18,6 @@ export class BaredomTypography {
   @Input() set align(v: string) { this.el.align = v as any; }
   @Input() set truncate(v: boolean) { this.el.truncate = v as any; }
   @Input() set lineClamp(v: number) { this.el.lineClamp = v as any; }
+  @Input() set gradient(v: boolean) { this.el.gradient = v as any; }
 
 }

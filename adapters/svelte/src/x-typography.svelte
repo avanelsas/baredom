@@ -9,6 +9,7 @@
     align?: string;
     truncate?: boolean;
     lineClamp?: number;
+    gradient?: boolean;
     el?: XTypographyElement | null;
     children?: import("svelte").Snippet;
     class?: string;
@@ -23,6 +24,7 @@
     align,
     truncate,
     lineClamp,
+    gradient,
     el = $bindable(null),
     children,
     class: className,
@@ -37,6 +39,7 @@
   {align}
   {truncate}
   {lineClamp}
+  {gradient}
   class={className}
   {id}
   {...rest}
