@@ -32,11 +32,6 @@
 (def ^:private settle-ms        150)
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
-(def ^:private level-rules
-  (apply str (for [n (range 2 7)]
-               (str "[part~='item'][data-level='" n "']{"
-                    "padding-inline-start:calc(var(--x-toc-indent) * " (dec n) ");}"))))
-
 (def ^:private style-text
   (str
    ":host{"
@@ -52,7 +47,7 @@
    "--x-toc-label-letter-spacing:0.12em;"
    "--x-toc-label-transform:uppercase;"
    "--x-toc-rail-color:var(--x-color-border,#e5e7eb);"
-   "--x-toc-rail-width:1px;"
+   "--x-toc-rail-width:var(--x-border-width,1px);"
    "--x-toc-indicator-color:var(--x-toc-active-color);"
    "--x-toc-indicator-width:3px;"
    "--x-toc-indicator-radius:var(--x-radius-full,9999px);"
@@ -129,13 +124,17 @@
    "gap:var(--x-toc-gap);}"
 
    "[part~='item']{margin:0;}"
-   level-rules
+   "[part~='item'][data-level='2']{padding-inline-start:calc(var(--x-toc-indent) * 1);}"
+   "[part~='item'][data-level='3']{padding-inline-start:calc(var(--x-toc-indent) * 2);}"
+   "[part~='item'][data-level='4']{padding-inline-start:calc(var(--x-toc-indent) * 3);}"
+   "[part~='item'][data-level='5']{padding-inline-start:calc(var(--x-toc-indent) * 4);}"
+   "[part~='item'][data-level='6']{padding-inline-start:calc(var(--x-toc-indent) * 5);}"
 
    "[part~='link']{"
    "display:block;"
    "color:var(--x-toc-color);"
    "text-decoration:none;"
-   "line-height:1.4;"
+   "line-height:var(--x-line-height-normal,1.5);"
    "overflow-wrap:anywhere;"
    "border-radius:var(--x-radius-sm,0.25rem);"
    "transition:color var(--x-toc-transition-duration) var(--x-transition-easing,ease);}"

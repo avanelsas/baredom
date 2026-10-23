@@ -21888,7 +21888,7 @@
         "default" : "var(--x-color-border,#e5e7eb)"
       }, {
         "name" : "--x-toc-rail-width",
-        "default" : "1px"
+        "default" : "var(--x-border-width,1px)"
       }, {
         "name" : "--x-toc-sticky-top",
         "default" : "1rem"

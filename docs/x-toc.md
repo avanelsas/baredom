@@ -129,7 +129,7 @@ stretches to the height of the article:
 | `--x-toc-label-letter-spacing` | `0.12em` | | Title tracking |
 | `--x-toc-label-transform` | `uppercase` | | Title case |
 | `--x-toc-rail-color` | `var(--x-color-border,#e5e7eb)` | `var(--x-color-border,#374151)` | The vertical rail |
-| `--x-toc-rail-width` | `1px` | | Rail width |
+| `--x-toc-rail-width` | `var(--x-border-width,1px)` | | Rail width |
 | `--x-toc-indicator-color` | `var(--x-toc-active-color)` | | The bar beside the active entry |
 | `--x-toc-indicator-width` | `3px` | | Bar width |
 | `--x-toc-indicator-radius` | `var(--x-radius-full,9999px)` | | Bar corners |
