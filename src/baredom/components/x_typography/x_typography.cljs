@@ -21,7 +21,15 @@
         kbd-bd-light    "rgba(0,0,0,0.15)"
         kbd-bd-dark     "rgba(255,255,255,0.2)"
         bq-bd-light     "rgba(0,0,0,0.2)"
-        bq-bd-dark      "rgba(255,255,255,0.25)"]
+        bq-bd-dark      "rgba(255,255,255,0.25)"
+        ;; Gradient fallbacks: the default preset of x-theme, light and dark
+        gradient-light  (str "linear-gradient(90deg,var(--x-color-primary,#2563eb),"
+                             "var(--x-color-secondary,#64748b),var(--x-color-tertiary,#94a3b8))")
+        gradient-dark   (str "linear-gradient(90deg,var(--x-color-primary,#3b82f6),"
+                             "var(--x-color-secondary,#94a3b8),var(--x-color-tertiary,#64748b))")
+        ;; The inline text box, and slotted blocks, which leave the inline box
+        gradient-text   (str ":host([gradient]) [part=text],"
+                             ":host([gradient]) ::slotted(:is(p,div,h1,h2,h3,h4,h5,h6,ul,ol,li,blockquote))")]
     (str
      ;; ── Host: no custom-property definitions — consumer sets them,
      ;;    we only read via var(--prop, fallback). This ensures inline
@@ -131,17 +139,35 @@
 
      ;; ── Truncation on container (overflow is not inherited) ──
      "[part=container][data-truncate]{"
-     "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}")))
+     "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}"
+
+     ;; ── Gradient fill on the inline text box, so it spans the text ──
+     gradient-text "{"
+     "background-image:var(--x-typography-gradient," gradient-light ");"
+     "-webkit-background-clip:text;background-clip:text;color:transparent;}"
+     ":host([gradient])::selection{"
+     "color:var(--x-typography-color,var(--x-color-text,CanvasText));"
+     "background-color:color-mix(in srgb,var(--x-color-primary,#2563eb) 35%,transparent);}"
+     "@media (prefers-color-scheme:dark){"
+     gradient-text "{"
+     "background-image:var(--x-typography-gradient," gradient-dark ");}}"
+     "@supports not ((background-clip:text) or (-webkit-background-clip:text)){"
+     gradient-text "{background-image:none;color:inherit;}}"
+     "@media (forced-colors:active){"
+     gradient-text "{background-image:none;color:inherit;}}")))
 
 ;; ── DOM initialisation ───────────────────────────────────────────────────────
 (defn- init-dom! [^js el]
   (let [root      (.attachShadow el #js {:mode "open"})
         style     (.createElement js/document "style")
         container (.createElement js/document "div")
+        text      (.createElement js/document "span")
         slot      (.createElement js/document "slot")]
     (set! (.-textContent style) style-text)
     (du/set-attr! container "part" "container")
-    (.appendChild container slot)
+    (du/set-attr! text "part" "text")
+    (.appendChild text slot)
+    (.appendChild container text)
     (.appendChild root style)
     (.appendChild root container)
     (du/setv! el k-refs {:root root :container container})))
@@ -200,6 +226,7 @@
   (du/define-string-prop! proto model/attr-variant  model/attr-variant  "body1")
   (du/define-string-prop! proto model/attr-align    model/attr-align    "left")
   (du/define-bool-prop!   proto model/attr-truncate model/attr-truncate)
+  (du/define-bool-prop!   proto model/attr-gradient model/attr-gradient)
 
   ;; camelCase JS property mapping to kebab-case attribute
   (.defineProperty js/Object proto "lineClamp"

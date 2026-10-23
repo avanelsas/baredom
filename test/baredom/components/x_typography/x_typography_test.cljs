@@ -194,3 +194,96 @@
   (is (.includes (font-in! "font-family:PageFontTest,serif;--x-font-family:ThemeFontTest")
                  "ThemeFontTest")))
 
+;; ── Gradient ─────────────────────────────────────────────────────────────────
+(def ^:private transparent "rgba(0, 0, 0, 0)")
+
+(defn- ^js text-style [^js el]
+  (js/getComputedStyle (shadow-part el "[part=text]")))
+
+(defn- ^js append-text! [^js el text]
+  (set! (.-textContent el) text)
+  (append! el))
+
+(deftest text-part-wraps-the-slot-test
+  (let [^js el   (append! (make-el))
+        ^js text (shadow-part el "[part=text]")]
+    (is (= "SPAN" (.-tagName text)))
+    (is (= "SLOT" (.-tagName (.-firstElementChild text))))
+    (is (identical? (shadow-part el "[part=container]") (.-parentElement text)))))
+
+(deftest without-gradient-the-text-has-no-fill-test
+  (let [^js el (append-text! (make-el) "Plain")]
+    (is (= "none" (.-backgroundImage (text-style el))))
+    (is (not= transparent (.-color (text-style el))))))
+
+(deftest gradient-fills-the-text-with-the-theme-gradient-test
+  (let [^js el (make-el)]
+    (.setAttribute el "gradient" "")
+    (append-text! el "Gradient")
+    (let [^js s (text-style el)]
+      (is (re-find #"^linear-gradient" (.-backgroundImage s)))
+      (is (= "text" (or (.-backgroundClip s) (.-webkitBackgroundClip s))))
+      (is (= transparent (.-color s))))))
+
+(deftest gradient-follows-the-theme-tokens-test
+  (let [^js el (make-el)]
+    (.setAttribute el "gradient" "")
+    (.setProperty (.-style el) "--x-color-primary" "rgb(1, 2, 3)")
+    (append-text! el "Themed")
+    (is (re-find #"rgb\(1, 2, 3\)" (.-backgroundImage (text-style el))))))
+
+(deftest custom-gradient-wins-over-the-theme-test
+  (let [^js el (make-el)]
+    (.setAttribute el "gradient" "")
+    (.setProperty (.-style el) "--x-color-primary" "rgb(1, 2, 3)")
+    (.setProperty (.-style el) "--x-typography-gradient"
+                  "linear-gradient(90deg, rgb(10, 20, 30), rgb(40, 50, 60))")
+    (append-text! el "Custom")
+    (let [image (.-backgroundImage (text-style el))]
+      (is (re-find #"rgb\(10, 20, 30\)" image))
+      (is (not (re-find #"rgb\(1, 2, 3\)" image))))))
+
+(deftest gradient-property-reflects-the-attribute-test
+  (let [^js el (append-text! (make-el) "Toggle")]
+    (is (false? (.-gradient el)))
+    (set! (.-gradient el) true)
+    (is (.hasAttribute el "gradient"))
+    (is (= transparent (.-color (text-style el))))
+    (set! (.-gradient el) false)
+    (is (not (.hasAttribute el "gradient")))
+    (is (= "none" (.-backgroundImage (text-style el))))))
+
+(deftest slotted-block-gets-its-own-gradient-test
+  (let [^js el (make-el)
+        ^js p  (.createElement js/document "p")]
+    (.setAttribute el "gradient" "")
+    (set! (.-textContent p) "A paragraph")
+    (.appendChild el p)
+    (append! el)
+    (let [^js s (js/getComputedStyle p)]
+      (is (re-find #"^linear-gradient" (.-backgroundImage s)))
+      (is (= "text" (or (.-backgroundClip s) (.-webkitBackgroundClip s)))))))
+
+(deftest slotted-block-has-no-fill-without-gradient-test
+  (let [^js el (make-el)
+        ^js p  (.createElement js/document "p")]
+    (set! (.-textContent p) "A paragraph")
+    (.appendChild el p)
+    (append! el)
+    (is (= "none" (.-backgroundImage (js/getComputedStyle p))))))
+
+(deftest host-selection-of-gradient-text-is-solid-on-a-tint-test
+  (let [^js plain (append-text! (make-el) "Plain")
+        ^js el    (make-el)]
+    (.setAttribute el "gradient" "")
+    (append-text! el "Select me")
+    (is (= transparent (.-backgroundColor (js/getComputedStyle plain "::selection"))))
+    (is (not= transparent (.-backgroundColor (js/getComputedStyle el "::selection"))))
+    (is (not= transparent (.-color (js/getComputedStyle el "::selection"))))))
+
+(deftest host-selection-takes-the-typography-colour-test
+  (let [^js el (make-el)]
+    (.setAttribute el "gradient" "")
+    (.setProperty (.-style el) "--x-typography-color" "rgb(9, 8, 7)")
+    (append-text! el "Select me")
+    (is (= "rgb(9, 8, 7)" (.-color (js/getComputedStyle el "::selection"))))))

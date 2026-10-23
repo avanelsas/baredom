@@ -11,6 +11,7 @@ export interface XTypographyProps {
   align?: string;
   truncate?: boolean;
   lineClamp?: number;
+  gradient?: boolean;
   ref?: XTypographyElement | ((el: XTypographyElement) => void);
   children?: JSX.Element;
   class?: string;
