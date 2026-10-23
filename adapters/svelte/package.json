@@ -7,7 +7,7 @@
   },
   "license" : "MIT",
   "peerDependencies" : {
-    "@vanelsas/baredom" : ">=4.0.0",
+    "@vanelsas/baredom" : ">=4.14.0",
     "svelte" : ">=5.0.0"
   },
   "svelte" : "./dist/index.js",
@@ -475,7 +475,7 @@
     "@vanelsas/baredom" : "file:../../"
   },
   "files" : [ "dist", "README.md", "LICENSE" ],
-  "version" : "0.9.0",
+  "version" : "0.10.0",
   "main" : "./dist/index.js",
   "sideEffects" : [ "./dist/*.svelte", "./dist/*.js" ]
 }

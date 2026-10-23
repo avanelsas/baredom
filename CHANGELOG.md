@@ -2,6 +2,27 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.14.0] - 2026-10-23
+
+BareDOM 4.14 adds `x-toc`, a table of contents that follows the reader. All five adapters are
+released with it: `-react` 3.4.0, `-angular` 3.4.0, `-vue` 0.10.0, `-svelte` 0.10.0 and
+`-solid` 0.10.0. They add `XToc`, and each now needs `@vanelsas/baredom` 4.14.0 or later.
+
+### Added
+
+- **`x-toc`, a table of contents.** It lists the headings of a container that `for` names, marks
+  the heading the reader is at while they scroll, and scrolls to a heading on click. A heading
+  without an id gets one from its text. With `sticky` it stays in view while the page scrolls.
+  It finds the nearest scrolling ancestor of the container, and a container that appears or is
+  replaced later. See [`docs/x-toc.md`](docs/x-toc.md) and the
+  [demo](https://avanelsas.github.io/baredom/demo/x-toc.html).
+- **`XToc` in the five adapters.**
+
+### Changed
+
+- **The adapters need `@vanelsas/baredom` 4.14.0 or later.** Their index exports `XToc`, which
+  imports `@vanelsas/baredom/x-toc`.
+
 ## [4.13.0] - 2026-10-22
 
 BareDOM 4.13 is the public alpha of BareMirror. BareMirror gets a README and a first look in
