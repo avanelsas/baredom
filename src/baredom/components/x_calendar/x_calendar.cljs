@@ -74,7 +74,7 @@
    "--x-calendar-focus:var(--x-color-focus-ring,#60a5fa);"
    "--x-calendar-hover:var(--x-color-surface-active,#f1f5f9);"
    "--x-calendar-selected-bg:var(--x-color-primary,#2563eb);"
-   "--x-calendar-selected-text:#fff;"
+   "--x-calendar-selected-text:var(--x-color-on-primary,#fff);"
    "--x-calendar-range-bg:var(--x-color-surface-active,#dbeafe);"
    "--x-calendar-range-text:var(--x-color-primary-active,#1e40af);"
    "--x-calendar-today-ring:var(--x-color-primary,#2563eb);"

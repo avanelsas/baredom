@@ -20,9 +20,9 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-bento-grid` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-bento-item` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-breadcrumbs` | 8/8 |  | 3/3 | 1/1 |  |  |  |  | 0/1 |  |  |
-| `x-button` | 42/42 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 1/1 |
-| `x-calendar` | 17/17 |  | 4/4 | 4/4 |  | 7/7 | 1/1 | 1/1 | 0/11 |  | 2/2 |
-| `x-cancel-dialogue` | 18/18 |  | 3/3 | 2/2 | 1/1 | 2/2 | 2/2 |  | 0/6 | 1/1 |  |
+| `x-button` | 46/46 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 2/2 | 0/2 |  | 1/1 |
+| `x-calendar` | 18/18 |  | 4/4 | 4/4 |  | 7/7 | 1/1 | 1/1 | 0/11 |  | 2/2 |
+| `x-cancel-dialogue` | 20/20 |  | 3/3 | 2/2 | 1/1 | 2/2 | 2/2 |  | 0/6 | 1/1 |  |
 | `x-card` | 14/14 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 1/1 |
 | `x-carousel` | 12/12 |  |  |  |  | 1/1 | 1/1 | 3/3 | 0/3 |  |  |
 | `x-chart` | 14/14 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 1/1 | 0/6 |  | 2/2 |
@@ -31,14 +31,14 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-code` | 9/9 | 1/1 | 3/3 | 1/1 |  | 2/2 |  | 1/1 | 0/8 |  | 4/4 |
 | `x-collapse` | 14/14 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  | 2/2 |
 | `x-color-picker` | 10/10 | 1/1 | 1/1 |  |  | 2/2 | 3/3 |  | 0/5 | 1/1 | 4/4 |
-| `x-combobox` | 26/26 |  | 2/2 | 1/1 |  | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 10/10 |
+| `x-combobox` | 27/27 |  | 2/2 | 1/1 |  | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 10/10 |
 | `x-command-palette` | 11/11 |  | 4/4 | 1/1 |  | 1/1 | 2/2 |  | 0/6 | 2/2 | 1/1 |
 | `x-confetti` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-container` | 2/2 |  |  |  |  |  |  |  | 0/3 |  | 1/1 |
 | `x-context-menu` | 8/8 |  |  |  |  | 1/1 | 2/2 | 1/1 | 0/1 |  | 1/1 |
-| `x-copy` | 8/8 |  | 1/1 |  |  | 1/1 |  |  | 0/1 | 1/1 |  |
+| `x-copy` | 12/12 |  | 1/1 |  |  | 1/1 |  |  | 0/1 | 1/1 |  |
 | `x-currency-field` | 16/16 |  | 5/5 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  | 2/2 |
-| `x-date-picker` | 25/25 |  | 5/5 | 4/4 |  | 4/4 | 1/1 |  | 0/9 | 1/1 | 3/3 |
+| `x-date-picker` | 26/26 |  | 5/5 | 4/4 |  | 4/4 | 1/1 |  | 0/9 | 1/1 | 3/3 |
 | `x-divider` | 3/3 |  | 1/1 | 1/1 |  |  |  |  | 0/2 |  |  |
 | `x-drag-panel` | 7/7 |  |  |  |  | 2/2 | 2/2 | 1/1 | 0/4 | 1/1 | 2/2 |
 | `x-drawer` | 6/6 |  |  |  |  |  | 2/2 | 2/2 | 0/3 | 1/1 | 2/2 |
@@ -68,7 +68,7 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-metaball-cursor` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-modal` | 3/3 |  |  |  |  | 1/1 | 1/1 | 2/2 | 0/3 | 1/1 | 2/2 |
 | `x-morph-stack` |  |  |  |  |  |  |  |  |  |  |  |
-| `x-multi-combobox` | 26/26 |  | 2/2 | 1/1 |  | 3/3 | 4/4 | 3/3 | 0/8 | 1/1 | 10/10 |
+| `x-multi-combobox` | 27/27 |  | 2/2 | 1/1 |  | 3/3 | 4/4 | 3/3 | 0/8 | 1/1 | 10/10 |
 | `x-navbar` | 8/8 |  |  |  |  |  | 2/2 | 2/2 | 0/3 |  | 1/1 |
 | `x-neural-glow` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-notification-center` |  |  |  |  |  |  |  |  | 0/1 | 1/1 |  |
@@ -77,7 +77,7 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-organic-shape` |  |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-otp-input` | 8/8 | 1/1 |  | 1/1 |  | 1/1 |  | 1/1 | 1/1 |  | 2/2 |
 | `x-pagination` | 14/14 |  | 3/3 | 1/1 |  | 1/1 |  | 1/1 | 0/2 |  | 3/3 |
-| `x-particle-button` | 54/54 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 4/4 | 0/2 |  | 1/1 |
+| `x-particle-button` | 58/58 |  | 3/3 | 1/1 |  | 1/1 | 6/6 | 4/4 | 0/2 |  | 1/1 |
 | `x-popover` | 48/48 |  | 4/4 | 2/2 |  | 4/4 | 4/4 | 5/5 | 0/8 | 1/1 | 20/20 |
 | `x-progress` | 10/10 |  | 2/2 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
 | `x-progress-circle` | 8/8 |  |  | 1/1 |  |  |  | 1/1 |  |  |  |
@@ -104,7 +104,7 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-split-pane` | 5/5 |  |  |  |  |  |  | 1/1 |  |  |  |
 | `x-spotlight-card` | 6/6 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 1/1 |
 | `x-stat` | 10/10 |  | 2/2 | 2/2 |  | 1/1 |  | 2/2 | 0/2 |  | 1/1 |
-| `x-stepper` | 22/22 |  | 5/5 | 2/2 |  | 1/1 |  | 1/1 | 0/3 |  |  |
+| `x-stepper` | 24/24 |  | 5/5 | 2/2 |  | 1/1 |  | 1/1 | 0/3 |  |  |
 | `x-switch` | 8/8 |  |  |  |  | 1/1 | 1/1 | 2/2 |  |  |  |
 | `x-tab` | 10/10 |  |  |  |  | 1/1 |  | 2/2 | 0/4 |  | 1/1 |
 | `x-table` | 5/5 |  | 1/1 | 1/1 |  | 1/1 |  |  | 0/2 |  | 1/1 |
@@ -113,15 +113,15 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-tabs` |  |  |  |  |  |  |  |  | 0/2 |  |  |
 | `x-text-area` | 14/14 |  | 4/4 | 1/1 | 1/1 | 1/1 |  | 1/1 | 0/2 |  | 2/2 |
 | `x-timeline` | 1/1 |  | 1/1 | 1/1 |  |  |  |  | 0/1 |  |  |
-| `x-timeline-item` | 28/28 |  | 2/2 | 1/1 |  | 1/1 |  | 3/3 | 0/3 |  |  |
+| `x-timeline-item` | 30/30 |  | 2/2 | 1/1 |  | 1/1 |  | 3/3 | 0/3 |  |  |
 | `x-toast` | 42/42 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 4/4 | 0/5 |  | 1/1 |
 | `x-toaster` |  |  |  |  |  |  |  |  | 0/1 | 1/1 |  |
 | `x-toc` | 11/11 | 2/2 | 2/2 |  | 1/1 | 2/2 |  | 1/1 | 2/4 |  | 1/1 |
 | `x-tooltip` | 6/6 |  | 1/1 |  |  | 1/1 | 2/2 | 2/2 | 1/1 | 1/1 | 2/2 |
 | `x-typography` | 11/11 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 1/1 |
-| `x-welcome-tour` | 26/26 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 1/1 |
+| `x-welcome-tour` | 27/27 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 1/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 1002/1002 | 12/12 | 119/119 | 69/69 | 8/8 | 113/113 | 75/75 | 108/108 | 17/241 | 19/19 | 116/116 |
+| **All** | 1025/1025 | 12/12 | 119/119 | 69/69 | 8/8 | 113/113 | 75/75 | 108/108 | 17/241 | 19/19 | 116/116 |
 
 CSS not read, or not in full: x-liquid-glass.
 
@@ -195,7 +195,7 @@ A tint of the danger colour, written as a solid colour.
 
 Text or a mark on a filled colour, chosen for contrast with the fill.
 
-31 values in `x-button`, `x-calendar`, `x-cancel-dialogue`, `x-combobox`, `x-copy`, `x-date-picker`, `x-multi-combobox`, `x-particle-button`, `x-stepper`, `x-timeline-item`, `x-welcome-tour`.
+8 values in `x-particle-button`, `x-stepper`, `x-timeline-item`.
 
 A colour of the syntax palette.
 

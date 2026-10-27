@@ -103,6 +103,7 @@ x-button {
 .brand-button {
   --x-button-bg: #2563eb;
   --x-button-bg-hover: #1d4ed8;
+  --x-button-fg: #ffffff;
 }
 ```
 

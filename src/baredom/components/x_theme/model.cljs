@@ -19,6 +19,7 @@
 (def tk-color-primary          "--x-color-primary")
 (def tk-color-primary-hover    "--x-color-primary-hover")
 (def tk-color-primary-active   "--x-color-primary-active")
+(def tk-color-on-primary       "--x-color-on-primary")
 (def tk-color-secondary        "--x-color-secondary")
 (def tk-color-secondary-hover  "--x-color-secondary-hover")
 (def tk-color-secondary-active "--x-color-secondary-active")
@@ -36,6 +37,7 @@
 (def tk-color-danger           "--x-color-danger")
 (def tk-color-danger-hover     "--x-color-danger-hover")
 (def tk-color-danger-active    "--x-color-danger-active")
+(def tk-color-on-danger        "--x-color-on-danger")
 (def tk-color-success          "--x-color-success")
 (def tk-color-success-hover    "--x-color-success-hover")
 (def tk-color-success-active   "--x-color-success-active")
@@ -127,19 +129,40 @@
   {tk-opacity-disabled    "0.5"
    tk-opacity-placeholder "0.6"})
 
-(defn- shade
-  "A CSS colour that is `percent` of the colour of `token` and black for the rest."
-  [token percent]
-  (str "color-mix(in srgb,var(" token ") " percent "%,#000)"))
+(defn- mix
+  "A CSS colour that is `percent` of the colour of `token` and `partner` for the rest."
+  [token percent partner]
+  (str "color-mix(in srgb,var(" token ") " percent "%," partner ")"))
 
-(def ^:private base-status-shades
-  "The hover and the active shade of each status colour, mixed from that colour."
-  {tk-color-danger-hover   (shade tk-color-danger 85)
-   tk-color-danger-active  (shade tk-color-danger 70)
-   tk-color-success-hover  (shade tk-color-success 85)
-   tk-color-success-active (shade tk-color-success 70)
-   tk-color-warning-hover  (shade tk-color-warning 85)
-   tk-color-warning-active (shade tk-color-warning 70)})
+(def ^:private status-fills
+  "Each status colour with its hover and its active token."
+  [[tk-color-danger  tk-color-danger-hover  tk-color-danger-active]
+   [tk-color-success tk-color-success-hover tk-color-success-active]
+   [tk-color-warning tk-color-warning-hover tk-color-warning-active]])
+
+(def ^:private primary-fill [tk-color-primary tk-color-primary-hover tk-color-primary-active])
+
+(defn- fill-mix-entries
+  "The hover and the active entry of one fill, mixed with `partner`."
+  [partner [color hover active]]
+  [[hover (mix color 85 partner)] [active (mix color 70 partner)]])
+
+(defn- fill-mixes
+  "The hover and the active colour of each fill, mixed with `partner`."
+  [partner fills]
+  (into {} (mapcat (partial fill-mix-entries partner)) fills))
+
+(def ^:private base-fills-light
+  "The fill tokens that every preset shares in light mode."
+  (merge (fill-mixes "#000" status-fills)
+         {tk-color-on-primary "#ffffff"
+          tk-color-on-danger  "#ffffff"}))
+
+(def ^:private base-fills-dark
+  "The fill tokens that every preset shares in dark mode."
+  (merge (fill-mixes "#fff" (conj status-fills primary-fill))
+         {tk-color-on-primary (str "var(" tk-color-bg ")")
+          tk-color-on-danger  (str "var(" tk-color-bg ")")}))
 
 (def ^:private base-shadow-light
   {tk-shadow-sm "0 1px 2px rgba(15,23,42,0.08)"
@@ -155,7 +178,7 @@
 
 (def ^:private preset-default
   {:light (merge base-typography base-shape base-motion base-shadow-light
-                 base-spacing base-z-index base-opacity base-status-shades
+                 base-spacing base-z-index base-opacity base-fills-light
                  {tk-color-primary          "#2563eb"
                   tk-color-primary-hover    "#1d4ed8"
                   tk-color-primary-active   "#1e40af"
@@ -170,16 +193,14 @@
                   tk-color-surface-active   "#f1f5f9"
                   tk-color-bg               "#f8fafc"
                   tk-color-text             "#0f172a"
-                  tk-color-text-muted       "#64748b"
+                  tk-color-text-muted       "#606f85"
                   tk-color-border           "#cbd5e1"
-                  tk-color-focus-ring       "#60a5fa"
+                  tk-color-focus-ring       "#388ff9"
                   tk-color-danger           "#dc2626"
-                  tk-color-success          "#16a34a"
+                  tk-color-success          "#12843c"
                   tk-color-warning          "#d97706"})
-   :dark  (merge base-shadow-dark
+   :dark  (merge base-shadow-dark base-fills-dark
                  {tk-color-primary          "#3b82f6"
-                  tk-color-primary-hover    "#2563eb"
-                  tk-color-primary-active   "#1d4ed8"
                   tk-color-secondary        "#94a3b8"
                   tk-color-secondary-hover  "#64748b"
                   tk-color-secondary-active "#475569"
@@ -200,10 +221,10 @@
 
 (def ^:private preset-ocean
   {:light (merge base-typography base-shape base-motion base-shadow-light
-                 base-spacing base-z-index base-opacity base-status-shades
-                 {tk-color-primary          "#0891b2"
-                  tk-color-primary-hover    "#0e7490"
-                  tk-color-primary-active   "#155e75"
+                 base-spacing base-z-index base-opacity base-fills-light
+                 {tk-color-primary          "#077d9a"
+                  tk-color-primary-hover    "#155e75"
+                  tk-color-primary-active   "#164e63"
                   tk-color-secondary        "#0d9488"
                   tk-color-secondary-hover  "#0f766e"
                   tk-color-secondary-active "#115e59"
@@ -215,16 +236,14 @@
                   tk-color-surface-active   "#ccfbf1"
                   tk-color-bg               "#f0fdfa"
                   tk-color-text             "#134e4a"
-                  tk-color-text-muted       "#5f7a7a"
+                  tk-color-text-muted       "#587171"
                   tk-color-border           "#99f6e4"
-                  tk-color-focus-ring       "#22d3ee"
+                  tk-color-focus-ring       "#0e9db3"
                   tk-color-danger           "#e11d48"
-                  tk-color-success          "#059669"
+                  tk-color-success          "#04825b"
                   tk-color-warning          "#d97706"})
-   :dark  (merge base-shadow-dark
+   :dark  (merge base-shadow-dark base-fills-dark
                  {tk-color-primary          "#06b6d4"
-                  tk-color-primary-hover    "#0891b2"
-                  tk-color-primary-active   "#0e7490"
                   tk-color-secondary        "#14b8a6"
                   tk-color-secondary-hover  "#0d9488"
                   tk-color-secondary-active "#0f766e"
@@ -236,7 +255,7 @@
                   tk-color-surface-active   "#164e5e"
                   tk-color-bg               "#061216"
                   tk-color-text             "#ecfdf5"
-                  tk-color-text-muted       "#5eead4"
+                  tk-color-text-muted       "#95c0b9"
                   tk-color-border           "#164e63"
                   tk-color-focus-ring       "#67e8f9"
                   tk-color-danger           "#fb7185"
@@ -245,11 +264,11 @@
 
 (def ^:private preset-forest
   {:light (merge base-typography base-shape base-motion base-shadow-light
-                 base-spacing base-z-index base-opacity base-status-shades
+                 base-spacing base-z-index base-opacity base-fills-light
                  {tk-color-primary          "#15803d"
                   tk-color-primary-hover    "#166534"
                   tk-color-primary-active   "#14532d"
-                  tk-color-secondary        "#65a30d"
+                  tk-color-secondary        "#629e0d"
                   tk-color-secondary-hover  "#4d7c0f"
                   tk-color-secondary-active "#3f6212"
                   tk-color-tertiary         "#a3e635"
@@ -262,14 +281,12 @@
                   tk-color-text             "#1a2e05"
                   tk-color-text-muted       "#65753a"
                   tk-color-border           "#d9d2b0"
-                  tk-color-focus-ring       "#4ade80"
+                  tk-color-focus-ring       "#1ea44f"
                   tk-color-danger           "#dc2626"
                   tk-color-success          "#15803d"
-                  tk-color-warning          "#ca8a04"})
-   :dark  (merge base-shadow-dark
+                  tk-color-warning          "#c08304"})
+   :dark  (merge base-shadow-dark base-fills-dark
                  {tk-color-primary          "#22c55e"
-                  tk-color-primary-hover    "#16a34a"
-                  tk-color-primary-active   "#15803d"
                   tk-color-secondary        "#84cc16"
                   tk-color-secondary-hover  "#65a30d"
                   tk-color-secondary-active "#4d7c0f"
@@ -281,7 +298,7 @@
                   tk-color-surface-active   "#354020"
                   tk-color-bg               "#111408"
                   tk-color-text             "#f0fdf4"
-                  tk-color-text-muted       "#86efac"
+                  tk-color-text-muted       "#a9ccb6"
                   tk-color-border           "#3a4a24"
                   tk-color-focus-ring       "#86efac"
                   tk-color-danger           "#f87171"
@@ -290,10 +307,10 @@
 
 (def ^:private preset-sunset
   {:light (merge base-typography base-shape base-motion base-shadow-light
-                 base-spacing base-z-index base-opacity base-status-shades
-                 {tk-color-primary          "#ea580c"
-                  tk-color-primary-hover    "#c2410c"
-                  tk-color-primary-active   "#9a3412"
+                 base-spacing base-z-index base-opacity base-fills-light
+                 {tk-color-primary          "#c84b0a"
+                  tk-color-primary-hover    "#9a3412"
+                  tk-color-primary-active   "#7c2d12"
                   tk-color-secondary        "#e11d48"
                   tk-color-secondary-hover  "#be123c"
                   tk-color-secondary-active "#9f1239"
@@ -305,16 +322,14 @@
                   tk-color-surface-active   "#ffedd5"
                   tk-color-bg               "#fffbf5"
                   tk-color-text             "#431407"
-                  tk-color-text-muted       "#9a7b6b"
+                  tk-color-text-muted       "#816658"
                   tk-color-border           "#fed7aa"
-                  tk-color-focus-ring       "#fb923c"
+                  tk-color-focus-ring       "#e86b05"
                   tk-color-danger           "#be123c"
-                  tk-color-success          "#16a34a"
-                  tk-color-warning          "#ca8a04"})
-   :dark  (merge base-shadow-dark
+                  tk-color-success          "#12843c"
+                  tk-color-warning          "#c28504"})
+   :dark  (merge base-shadow-dark base-fills-dark
                  {tk-color-primary          "#f97316"
-                  tk-color-primary-hover    "#ea580c"
-                  tk-color-primary-active   "#c2410c"
                   tk-color-secondary        "#fb7185"
                   tk-color-secondary-hover  "#f43f5e"
                   tk-color-secondary-active "#e11d48"
@@ -326,7 +341,7 @@
                   tk-color-surface-active   "#3d261d"
                   tk-color-bg               "#140d0a"
                   tk-color-text             "#fff7ed"
-                  tk-color-text-muted       "#fdba74"
+                  tk-color-text-muted       "#cab9a7"
                   tk-color-border           "#4a2d1f"
                   tk-color-focus-ring       "#fdba74"
                   tk-color-danger           "#fb7185"
@@ -335,7 +350,7 @@
 
 (def ^:private preset-neo-brutalist
   {:light (merge base-typography base-motion
-                 base-spacing base-z-index base-opacity base-status-shades
+                 base-spacing base-z-index base-opacity base-fills-light
                  {tk-color-primary          "#000000"
                   tk-color-primary-hover    "#1a1a1a"
                   tk-color-primary-active   "#333333"
@@ -353,9 +368,9 @@
                   tk-color-text-muted       "#555555"
                   tk-color-border           "#000000"
                   tk-color-focus-ring       "#ff3366"
-                  tk-color-danger           "#ff0000"
-                  tk-color-success          "#00cc66"
-                  tk-color-warning          "#ffcc00"
+                  tk-color-danger           "#ed0000"
+                  tk-color-success          "#008744"
+                  tk-color-warning          "#b28f00"
                   tk-radius-sm              "0"
                   tk-radius-md              "0"
                   tk-radius-lg              "0"
@@ -368,33 +383,32 @@
                   tk-border-width           "2px"
                   tk-font-weight-semibold   "700"
                   tk-space-md               "1rem"})
-   :dark  {tk-color-primary          "#ff3366"
-           tk-color-primary-hover    "#e6004c"
-           tk-color-primary-active   "#cc0044"
-           tk-color-secondary        "#ffffff"
-           tk-color-secondary-hover  "#e5e5e5"
-           tk-color-secondary-active "#cccccc"
-           tk-color-tertiary         "#aaaaaa"
-           tk-color-tertiary-hover   "#888888"
-           tk-color-tertiary-active  "#666666"
-           tk-color-surface          "#111111"
-           tk-color-surface-hover    "#1a1a1a"
-           tk-color-surface-active   "#222222"
-           tk-color-bg               "#000000"
-           tk-color-text             "#ffffff"
-           tk-color-text-muted       "#aaaaaa"
-           tk-color-border           "#ffffff"
-           tk-color-focus-ring       "#ff3366"
-           tk-color-danger           "#ff4444"
-           tk-color-success          "#44ff88"
-           tk-color-warning          "#ffdd44"
-           tk-shadow-sm              "3px 3px 0 #ffffff"
-           tk-shadow-md              "5px 5px 0 #ffffff"
-           tk-shadow-lg              "8px 8px 0 #ffffff"}})
+   :dark  (merge base-fills-dark
+                 {tk-color-primary          "#ff3366"
+                  tk-color-secondary        "#ffffff"
+                  tk-color-secondary-hover  "#e5e5e5"
+                  tk-color-secondary-active "#cccccc"
+                  tk-color-tertiary         "#aaaaaa"
+                  tk-color-tertiary-hover   "#888888"
+                  tk-color-tertiary-active  "#666666"
+                  tk-color-surface          "#111111"
+                  tk-color-surface-hover    "#1a1a1a"
+                  tk-color-surface-active   "#222222"
+                  tk-color-bg               "#000000"
+                  tk-color-text             "#ffffff"
+                  tk-color-text-muted       "#aaaaaa"
+                  tk-color-border           "#ffffff"
+                  tk-color-focus-ring       "#ff3366"
+                  tk-color-danger           "#ff4444"
+                  tk-color-success          "#44ff88"
+                  tk-color-warning          "#ffdd44"
+                  tk-shadow-sm              "3px 3px 0 #ffffff"
+                  tk-shadow-md              "5px 5px 0 #ffffff"
+                  tk-shadow-lg              "8px 8px 0 #ffffff"})})
 
 (def ^:private preset-aurora
   {:light (merge base-typography base-shape base-motion
-                 base-spacing base-z-index base-opacity base-status-shades
+                 base-spacing base-z-index base-opacity base-fills-light
                  {tk-color-primary          "#7c3aed"
                   tk-color-primary-hover    "#6d28d9"
                   tk-color-primary-active   "#5b21b6"
@@ -409,47 +423,46 @@
                   tk-color-surface-active   "rgba(243,232,255,0.85)"
                   tk-color-bg               "#faf5ff"
                   tk-color-text             "#1e1b4b"
-                  tk-color-text-muted       "#7c7aad"
+                  tk-color-text-muted       "#66649f"
                   tk-color-border           "rgba(196,181,253,0.5)"
-                  tk-color-focus-ring       "#a78bfa"
-                  tk-color-danger           "#e11d48"
-                  tk-color-success          "#059669"
-                  tk-color-warning          "#d97706"
+                  tk-color-focus-ring       "#9675f9"
+                  tk-color-danger           "#dc1c47"
+                  tk-color-success          "#048059"
+                  tk-color-warning          "#d47406"
                   tk-shadow-sm              "0 1px 3px rgba(139,92,246,0.10)"
                   tk-shadow-md              "0 4px 15px rgba(139,92,246,0.12),0 2px 4px rgba(139,92,246,0.08)"
                   tk-shadow-lg              "0 10px 30px rgba(139,92,246,0.15),0 4px 10px rgba(139,92,246,0.10)"
                   tk-opacity-disabled       "0.45"})
-   :dark  {tk-color-primary          "#a78bfa"
-           tk-color-primary-hover    "#8b5cf6"
-           tk-color-primary-active   "#7c3aed"
-           tk-color-secondary        "#f472b6"
-           tk-color-secondary-hover  "#ec4899"
-           tk-color-secondary-active "#db2777"
-           tk-color-tertiary         "#22d3ee"
-           tk-color-tertiary-hover   "#06b6d4"
-           tk-color-tertiary-active  "#0891b2"
-           tk-color-surface          "rgba(30,20,60,0.72)"
-           tk-color-surface-hover    "rgba(45,30,80,0.78)"
-           tk-color-surface-active   "rgba(55,35,95,0.85)"
-           tk-color-bg               "#0f0720"
-           tk-color-text             "#ede9fe"
-           tk-color-text-muted       "#a5b4fc"
-           tk-color-border           "rgba(139,92,246,0.3)"
-           tk-color-focus-ring       "#c4b5fd"
-           tk-color-danger           "#fb7185"
-           tk-color-success          "#34d399"
-           tk-color-warning          "#fbbf24"
-           tk-shadow-sm              "0 1px 3px rgba(139,92,246,0.20)"
-           tk-shadow-md              "0 4px 15px rgba(139,92,246,0.25),0 2px 4px rgba(139,92,246,0.15)"
-           tk-shadow-lg              "0 10px 30px rgba(139,92,246,0.30),0 4px 10px rgba(139,92,246,0.18)"}})
+   :dark  (merge base-fills-dark
+                 {tk-color-primary          "#a78bfa"
+                  tk-color-secondary        "#f472b6"
+                  tk-color-secondary-hover  "#ec4899"
+                  tk-color-secondary-active "#db2777"
+                  tk-color-tertiary         "#22d3ee"
+                  tk-color-tertiary-hover   "#06b6d4"
+                  tk-color-tertiary-active  "#0891b2"
+                  tk-color-surface          "rgba(30,20,60,0.72)"
+                  tk-color-surface-hover    "rgba(45,30,80,0.78)"
+                  tk-color-surface-active   "rgba(55,35,95,0.85)"
+                  tk-color-bg               "#0f0720"
+                  tk-color-text             "#ede9fe"
+                  tk-color-text-muted       "#a5b4fc"
+                  tk-color-border           "rgba(139,92,246,0.3)"
+                  tk-color-focus-ring       "#c4b5fd"
+                  tk-color-danger           "#fb7185"
+                  tk-color-success          "#34d399"
+                  tk-color-warning          "#fbbf24"
+                  tk-shadow-sm              "0 1px 3px rgba(139,92,246,0.20)"
+                  tk-shadow-md              "0 4px 15px rgba(139,92,246,0.25),0 2px 4px rgba(139,92,246,0.15)"
+                  tk-shadow-lg              "0 10px 30px rgba(139,92,246,0.30),0 4px 10px rgba(139,92,246,0.18)"})})
 
 (def ^:private preset-mono-ai
   {:light (merge base-shape base-motion
-                 base-spacing base-z-index base-opacity base-status-shades
+                 base-spacing base-z-index base-opacity base-fills-light
                  {tk-color-primary          "#18181b"
                   tk-color-primary-hover    "#27272a"
                   tk-color-primary-active   "#3f3f46"
-                  tk-color-secondary        "#39ff14"
+                  tk-color-secondary        "#1aa500"
                   tk-color-secondary-hover  "#2ee00f"
                   tk-color-secondary-active "#24c00a"
                   tk-color-tertiary         "#71717a"
@@ -460,12 +473,12 @@
                   tk-color-surface-active   "#e4e4e7"
                   tk-color-bg               "#ffffff"
                   tk-color-text             "#18181b"
-                  tk-color-text-muted       "#71717a"
+                  tk-color-text-muted       "#64646b"
                   tk-color-border           "#d4d4d8"
-                  tk-color-focus-ring       "#39ff14"
-                  tk-color-danger           "#ef4444"
-                  tk-color-success          "#22c55e"
-                  tk-color-warning          "#eab308"
+                  tk-color-focus-ring       "#1aa500"
+                  tk-color-danger           "#e21313"
+                  tk-color-success          "#17843f"
+                  tk-color-warning          "#b48a06"
                   tk-font-family             "'JetBrains Mono',ui-monospace,monospace"
                   tk-font-family-mono        "'JetBrains Mono',ui-monospace,monospace"
                   tk-font-size-xs            "0.75rem"
@@ -479,33 +492,32 @@
                   tk-shadow-md              "0 4px 10px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.04)"
                   tk-shadow-lg              "0 10px 25px rgba(0,0,0,0.10),0 4px 10px rgba(0,0,0,0.06)"
                   tk-line-height-normal     "1.4"})
-   :dark  {tk-color-primary          "#15803d"
-           tk-color-primary-hover    "#166534"
-           tk-color-primary-active   "#14532d"
-           tk-color-secondary        "#e4e4e7"
-           tk-color-secondary-hover  "#d4d4d8"
-           tk-color-secondary-active "#a1a1aa"
-           tk-color-tertiary         "#52525b"
-           tk-color-tertiary-hover   "#71717a"
-           tk-color-tertiary-active  "#52525b"
-           tk-color-surface          "#09090b"
-           tk-color-surface-hover    "#18181b"
-           tk-color-surface-active   "#27272a"
-           tk-color-bg               "#000000"
-           tk-color-text             "#e4e4e7"
-           tk-color-text-muted       "#71717a"
-           tk-color-border           "#27272a"
-           tk-color-focus-ring       "#39ff14"
-           tk-color-danger           "#f87171"
-           tk-color-success          "#4ade80"
-           tk-color-warning          "#facc15"
-           tk-shadow-sm              "0 1px 2px rgba(0,0,0,0.40)"
-           tk-shadow-md              "0 4px 10px rgba(0,0,0,0.45),0 2px 4px rgba(0,0,0,0.30)"
-           tk-shadow-lg              "0 10px 25px rgba(0,0,0,0.50),0 4px 10px rgba(0,0,0,0.35)"}})
+   :dark  (merge base-fills-dark
+                 {tk-color-primary          "#178b42"
+                  tk-color-secondary        "#e4e4e7"
+                  tk-color-secondary-hover  "#d4d4d8"
+                  tk-color-secondary-active "#a1a1aa"
+                  tk-color-tertiary         "#52525b"
+                  tk-color-tertiary-hover   "#71717a"
+                  tk-color-tertiary-active  "#52525b"
+                  tk-color-surface          "#09090b"
+                  tk-color-surface-hover    "#18181b"
+                  tk-color-surface-active   "#27272a"
+                  tk-color-bg               "#000000"
+                  tk-color-text             "#e4e4e7"
+                  tk-color-text-muted       "#8f8f97"
+                  tk-color-border           "#27272a"
+                  tk-color-focus-ring       "#39ff14"
+                  tk-color-danger           "#f87171"
+                  tk-color-success          "#4ade80"
+                  tk-color-warning          "#facc15"
+                  tk-shadow-sm              "0 1px 2px rgba(0,0,0,0.40)"
+                  tk-shadow-md              "0 4px 10px rgba(0,0,0,0.45),0 2px 4px rgba(0,0,0,0.30)"
+                  tk-shadow-lg              "0 10px 25px rgba(0,0,0,0.50),0 4px 10px rgba(0,0,0,0.35)"})})
 
 (def ^:private preset-warm-mineral
   {:light (merge base-typography base-shape base-motion base-shadow-light
-                 base-spacing base-z-index base-opacity base-status-shades
+                 base-spacing base-z-index base-opacity base-fills-light
                  {tk-color-primary          "#b45309"
                   tk-color-primary-hover    "#92400e"
                   tk-color-primary-active   "#78350f"
@@ -520,16 +532,14 @@
                   tk-color-surface-active   "#f5ebe0"
                   tk-color-bg               "#fdf8f0"
                   tk-color-text             "#3b2417"
-                  tk-color-text-muted       "#8b7355"
+                  tk-color-text-muted       "#7b664b"
                   tk-color-border           "#d6c4a8"
                   tk-color-focus-ring       "#d97706"
                   tk-color-danger           "#dc2626"
                   tk-color-success          "#4d7c0f"
-                  tk-color-warning          "#ca8a04"})
-   :dark  (merge base-shadow-dark
+                  tk-color-warning          "#c08304"})
+   :dark  (merge base-shadow-dark base-fills-dark
                  {tk-color-primary          "#c2785a"
-                  tk-color-primary-hover    "#a8604a"
-                  tk-color-primary-active   "#8e4a38"
                   tk-color-secondary        "#b8976e"
                   tk-color-secondary-hover  "#a18360"
                   tk-color-secondary-active "#8a7052"
@@ -541,7 +551,7 @@
                   tk-color-surface-active   "#38352e"
                   tk-color-bg               "#14130f"
                   tk-color-text             "#e8e0d4"
-                  tk-color-text-muted       "#9c9488"
+                  tk-color-text-muted       "#a59e93"
                   tk-color-border           "#44403a"
                   tk-color-focus-ring       "#d4a574"
                   tk-color-danger           "#f87171"
@@ -595,12 +605,12 @@
     s
     default-preset))
 
-(defn- get-preset-data
-  "Look up preset data. Custom presets take precedence over built-in."
+(defn preset-tokens
+  "The `:light` and `:dark` token maps of a preset. The dark map holds what differs in dark mode."
   [preset-name]
-  (or (gobj/get custom-presets preset-name)
-      (get built-in-presets preset-name)
-      preset-default))
+  (let [preset-name (normalize-preset preset-name)]
+    (or (gobj/get custom-presets preset-name)
+        (get built-in-presets preset-name))))
 
 (defn- tokens->css
   "Build a CSS declaration block string from a token map."
@@ -613,15 +623,13 @@
 (defn preset->css
   "Generate a complete CSS string for a given preset name."
   [preset-name]
-  (let [data         (get-preset-data (normalize-preset preset-name))
-        light-tokens (:light data)
-        dark-tokens  (:dark data)]
+  (let [{:keys [light dark]} (preset-tokens preset-name)]
     (str ":host{display:contents;"
-         (tokens->css light-tokens)
+         (tokens->css light)
          "}"
          "@media(prefers-color-scheme:dark){"
          ":host{"
-         (tokens->css dark-tokens)
+         (tokens->css dark)
          "}}")))
 
 (def method-api {})

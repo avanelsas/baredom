@@ -105,7 +105,7 @@ All properties cascade from `:host` and can be overridden per-instance.
 | `--x-stepper-complete-color` | `#fff` | Completed indicator foreground |
 | `--x-stepper-complete-connector` | `var(--x-color-success,rgba(16,140,72,1))` | Completed connector colour |
 | `--x-stepper-current-bg` | `var(--x-color-primary,rgba(0,102,204,1))` | Current indicator background |
-| `--x-stepper-current-color` | `#fff` | Current indicator foreground |
+| `--x-stepper-current-color` | `var(--x-color-on-primary,#fff)` | Current indicator foreground |
 | `--x-stepper-upcoming-bg` | `color-mix(in srgb,var(--x-color-text,#000) 8%,transparent)`    | Upcoming indicator background |
 | `--x-stepper-upcoming-color` | `var(--x-color-text-muted,rgba(0,0,0,0.45))` | Upcoming indicator foreground |
 | `--x-stepper-idle-connector` | `var(--x-color-border,rgba(0,0,0,0.12))` | Current/upcoming connector colour |

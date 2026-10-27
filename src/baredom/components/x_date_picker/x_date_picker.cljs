@@ -461,7 +461,7 @@
    "--x-date-picker-day-text:inherit;"
    "--x-date-picker-day-hover:var(--x-color-surface-active,#f1f5f9);"
    "--x-date-picker-selected-bg:var(--x-color-primary,#2563eb);"
-   "--x-date-picker-selected-text:#fff;"
+   "--x-date-picker-selected-text:var(--x-color-on-primary,#fff);"
    "--x-date-picker-range-bg:var(--x-color-surface-active,#dbeafe);"
    "--x-date-picker-range-text:var(--x-color-primary-active,#1e40af);"
    "--x-date-picker-error-color:var(--x-color-danger,#dc2626);"

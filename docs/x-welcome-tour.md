@@ -149,7 +149,7 @@ Set these on `x-welcome-tour` or an ancestor to customise appearance.
 | `--x-welcome-tour-dot-color`              | `var(--x-color-border,#e2e8f0)`                |
 | `--x-welcome-tour-dot-active`             | `var(--x-color-primary,#3b82f6)`               |
 | `--x-welcome-tour-button-bg`              | `var(--x-color-primary,#3b82f6)`               |
-| `--x-welcome-tour-button-fg`              | `#ffffff`                                      |
+| `--x-welcome-tour-button-fg`              | `var(--x-color-on-primary,#ffffff)`            |
 
 ## CSS Parts
 

@@ -48,7 +48,7 @@
 
    ":host([data-status='active']){"
    "--x-timeline-item-marker-bg:var(--x-color-primary,rgba(0,102,204,1));"
-   "--x-timeline-item-marker-color:#fff;"
+   "--x-timeline-item-marker-color:var(--x-color-on-primary,#fff);"
    "--x-timeline-item-connector-color:var(--x-color-primary,rgba(0,102,204,0.4));}"
 
    ":host([data-status='complete']){"
@@ -58,7 +58,7 @@
 
    ":host([data-status='error']){"
    "--x-timeline-item-marker-bg:var(--x-color-danger,rgba(190,20,40,1));"
-   "--x-timeline-item-marker-color:#fff;"
+   "--x-timeline-item-marker-color:var(--x-color-on-danger,#fff);"
    "--x-timeline-item-connector-color:var(--x-color-danger,rgba(190,20,40,0.4));}"
 
    ":host([data-status='warning']){"

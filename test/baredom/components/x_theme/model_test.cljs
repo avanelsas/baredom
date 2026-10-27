@@ -150,11 +150,17 @@
 (deftest every-preset-has-the-six-status-shades
   (is (empty? (mapcat missing-shades model/allowed-presets))))
 
-(deftest a-status-shade-is-mixed-from-its-colour
-  (is (re-find #"--x-color-danger-hover:color-mix\(in srgb,var\(--x-color-danger\) 85%,#000\);"
-               (model/preset->css "default")))
-  (is (re-find #"--x-color-warning-active:color-mix\(in srgb,var\(--x-color-warning\) 70%,#000\);"
-               (model/preset->css "ocean"))))
+(deftest a-status-shade-is-mixed-with-black-in-light-mode
+  (is (= "color-mix(in srgb,var(--x-color-danger) 85%,#000)"
+         (get-in (model/preset-tokens "default") [:light "--x-color-danger-hover"])))
+  (is (= "color-mix(in srgb,var(--x-color-warning) 70%,#000)"
+         (get-in (model/preset-tokens "ocean") [:light "--x-color-warning-active"]))))
+
+(deftest a-fill-shade-is-mixed-with-white-in-dark-mode
+  (is (= "color-mix(in srgb,var(--x-color-danger) 85%,#fff)"
+         (get-in (model/preset-tokens "default") [:dark "--x-color-danger-hover"])))
+  (is (= "color-mix(in srgb,var(--x-color-primary) 70%,#fff)"
+         (get-in (model/preset-tokens "aurora") [:dark "--x-color-primary-active"]))))
 
 (deftest a-custom-preset-with-only-a-status-colour-has-its-shades
   (model/register-preset! "test-status" #js {:light #js {"--x-color-danger" "#ab1234"}})
@@ -198,3 +204,92 @@
   (let [css (model/preset->css "test-dark")]
     (is (re-find #"#111111" css))
     (is (re-find #"#eeeeee" css))))
+
+;; ── contrast ────────────────────────────────────────────────────────────────
+
+(def ^:private contrast-rules
+  "The least contrast that WCAG AA asks, with the pairs of colour tokens it applies to."
+  {4.5 [["text" "bg"] ["text" "surface"]
+        ["text-muted" "bg"] ["text-muted" "surface"] ["text-muted" "surface-active"]
+        ["primary" "bg"] ["primary" "surface"]
+        ["on-primary" "primary"] ["on-primary" "primary-hover"] ["on-primary" "primary-active"]
+        ["on-danger" "danger"] ["on-danger" "danger-hover"] ["on-danger" "danger-active"]
+        ["danger" "surface"] ["success" "surface"]]
+   3   [["warning" "surface"]
+        ["secondary" "bg"] ["secondary" "surface"]
+        ["focus-ring" "bg"] ["focus-ring" "surface"]]})
+
+(defn- token
+  "The custom property of the colour token `color-name`."
+  [color-name]
+  (str "--x-color-" color-name))
+
+(defn- hex->rgb
+  "The red, green and blue of a hex colour, each from 0 to 255."
+  [s]
+  (let [h (subs s 1)
+        h (if (= 3 (count h)) (apply str (mapcat #(repeat 2 %) h)) h)]
+    (mapv #(js/parseInt (subs h % (+ % 2)) 16) [0 2 4])))
+
+(defn- blend
+  "The colour that is `weight` of `a` and `b` for the rest."
+  [a b weight]
+  (mapv #(+ (* %1 weight) (* %2 (- 1 weight))) a b))
+
+(defn- rgb
+  "The rgb of the CSS colour `value`, with its tokens taken from `tokens`.
+  A translucent colour is laid over `--x-color-bg`."
+  [tokens value]
+  (condp re-find value
+    #"^#" (hex->rgb value)
+    #"^var\((--[a-z-]+)\)$"
+    :>> (fn [[_ ref]] (rgb tokens (get tokens ref)))
+    #"^color-mix\(in srgb,var\((--[a-z-]+)\) (\d+)%,(#[0-9a-f]+)\)$"
+    :>> (fn [[_ ref percent partner]]
+          (blend (rgb tokens (get tokens ref)) (hex->rgb partner) (/ (js/parseFloat percent) 100)))
+    #"^rgba\(([\d.]+),([\d.]+),([\d.]+),([\d.]+)\)$"
+    :>> (fn [[_ r g b alpha]]
+          (blend (mapv js/parseFloat [r g b]) (rgb tokens (get tokens (token "bg"))) (js/parseFloat alpha)))))
+
+(defn- linear-channel
+  "One channel of an rgb colour, from 0 to 255, as linear light from 0 to 1."
+  [c]
+  (let [c (/ c 255)]
+    (if (<= c 0.03928) (/ c 12.92) (js/Math.pow (/ (+ c 0.055) 1.055) 2.4))))
+
+(defn- luminance
+  "The relative luminance of an rgb colour, as WCAG defines it."
+  [color]
+  (let [[r g b] (map linear-channel color)]
+    (+ (* 0.2126 r) (* 0.7152 g) (* 0.0722 b))))
+
+(defn- contrast
+  "The WCAG contrast ratio of two rgb colours."
+  [a b]
+  (let [[hi lo] (sort > [(luminance a) (luminance b)])]
+    (/ (+ hi 0.05) (+ lo 0.05))))
+
+(defn- rule-failure
+  "How `fg` on `bg` in `tokens` breaks the rule of `least` contrast, or nil when it holds."
+  [tokens fg bg least]
+  (let [missing (remove #(get tokens (token %)) [fg bg])]
+    (if (seq missing)
+      [:missing missing]
+      (let [ratio (contrast (rgb tokens (get tokens (token fg)))
+                            (rgb tokens (get tokens (token bg))))]
+        (when (< ratio least)
+          [fg bg (.toFixed ratio 2)])))))
+
+(defn- contrast-failures
+  "The contrast rules that `preset` breaks, each with its mode."
+  [preset]
+  (let [{:keys [light dark]} (model/preset-tokens preset)]
+    (for [[mode tokens] {:light light :dark (merge light dark)}
+          [least pairs] contrast-rules
+          [fg bg]       pairs
+          :let  [failure (rule-failure tokens fg bg least)]
+          :when failure]
+      (into [preset mode] failure))))
+
+(deftest every-preset-meets-the-contrast-rules
+  (is (empty? (mapcat contrast-failures model/allowed-presets))))

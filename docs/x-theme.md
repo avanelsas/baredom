@@ -43,13 +43,14 @@ None.
 
 These tokens are set by `x-theme` on its `:host` and inherited by all descendant components via CSS custom property inheritance through shadow DOM.
 
-### Colors (26 tokens)
+### Colors (28 tokens)
 
 | Token                          | Description                    |
 |--------------------------------|--------------------------------|
 | `--x-color-primary`            | Primary brand color            |
 | `--x-color-primary-hover`      | Primary hover state            |
 | `--x-color-primary-active`     | Primary active/pressed state   |
+| `--x-color-on-primary`         | Text on a primary fill         |
 | `--x-color-secondary`          | Secondary accent color         |
 | `--x-color-secondary-hover`    | Secondary hover state          |
 | `--x-color-secondary-active`   | Secondary active state         |
@@ -67,6 +68,7 @@ These tokens are set by `x-theme` on its `:host` and inherited by all descendant
 | `--x-color-danger`             | Destructive/error actions      |
 | `--x-color-danger-hover`       | Danger hover state             |
 | `--x-color-danger-active`      | Danger active/pressed state    |
+| `--x-color-on-danger`          | Text on a danger fill          |
 | `--x-color-success`            | Success/positive states        |
 | `--x-color-success-hover`      | Success hover state            |
 | `--x-color-success-active`     | Success active/pressed state   |
@@ -74,8 +76,10 @@ These tokens are set by `x-theme` on its `:host` and inherited by all descendant
 | `--x-color-warning-hover`      | Warning hover state            |
 | `--x-color-warning-active`     | Warning active/pressed state   |
 
-The hover and active tokens of danger, success and warning are mixed from their colour. A preset
-that names only `--x-color-danger` gets both shades in that colour. A preset can also name a shade.
+The hover and active tokens of danger, success and warning are mixed from their colour: with black
+in light mode, with white in dark mode. In dark mode the hover and active tokens of primary are
+mixed with white too, and the text on a primary or danger fill is `--x-color-bg`. A preset that
+names only `--x-color-danger` gets both shades in that colour. A preset can also name a shade.
 A status colour set on the `x-theme` element gets its shades too. One set on an element deeper in
 the page keeps the shades of the theme.
 
@@ -168,7 +172,7 @@ All presets define both light and dark mode token values. Dark mode is activated
 Override any token directly on the element:
 
 ```html
-<x-theme preset="default" style="--x-color-primary: #e11d48;">
+<x-theme preset="default" style="--x-color-primary: #e11d48; --x-color-on-primary: #ffffff;">
   <x-button>Custom accent</x-button>
 </x-theme>
 ```
