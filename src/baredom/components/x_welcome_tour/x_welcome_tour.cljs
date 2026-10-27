@@ -139,7 +139,7 @@
 
    "[part=next-button]{"
    "background:var(--x-welcome-tour-button-bg,var(--x-color-primary,#3b82f6));"
-   "color:var(--x-welcome-tour-button-fg,#ffffff);}"
+   "color:var(--x-welcome-tour-button-fg,var(--x-color-on-primary,#ffffff));}"
    "[part=next-button]:hover{filter:brightness(1.1);}"
 
    "[part=prev-button]:focus-visible,[part=next-button]:focus-visible{"

@@ -773,6 +773,7 @@ x-button::part(label) {
 ```css
 x-button.brand {
   --x-button-bg: #2563eb;
+  --x-button-fg: #ffffff;
   --x-button-bg-hover: #1d4ed8;
   --x-button-bg-active: #1e40af;
   --x-button-focus-ring: #93c5fd;

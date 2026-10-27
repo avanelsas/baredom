@@ -120,7 +120,7 @@
    "--x-multi-combobox-option-padding:0.5rem 0.625rem;"
    "--x-multi-combobox-option-hover-bg:var(--x-color-surface-hover,#f1f5f9);"
    "--x-multi-combobox-option-active-bg:var(--x-color-primary,#3b82f6);"
-   "--x-multi-combobox-option-active-fg:#ffffff;"
+   "--x-multi-combobox-option-active-fg:var(--x-color-on-primary,#ffffff);"
    "--x-multi-combobox-transition-duration:var(--x-transition-duration,150ms);"
    "--x-multi-combobox-transition-easing:var(--x-transition-easing,ease);"
    "--x-multi-combobox-chip-gap:0.25rem;"

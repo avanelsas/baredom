@@ -159,7 +159,7 @@
    "--x-combobox-option-padding:0.5rem 0.625rem;"
    "--x-combobox-option-hover-bg:var(--x-color-surface-hover,#f1f5f9);"
    "--x-combobox-option-active-bg:var(--x-color-primary,#3b82f6);"
-   "--x-combobox-option-active-fg:#ffffff;"
+   "--x-combobox-option-active-fg:var(--x-color-on-primary,#ffffff);"
    "--x-combobox-transition-duration:var(--x-transition-duration,150ms);"
    "--x-combobox-transition-easing:var(--x-transition-easing,ease);"
    "}"

@@ -44,7 +44,7 @@
         ^js root (.-shadowRoot el)]
     (.setAttribute el "preset" "ocean")
     (let [css (.-textContent (.querySelector root "style"))]
-      (is (re-find #"#0891b2" css)))))
+      (is (= (model/preset->css "ocean") css)))))
 
 ;; ── Property accessor ───────────────────────────────────────────────────────
 (deftest preset-property-get-test
@@ -57,7 +57,7 @@
     (set! (.-preset el) "sunset")
     (is (= "sunset" (.getAttribute el "preset")))
     (let [css (.-textContent (.querySelector (.-shadowRoot el) "style"))]
-      (is (re-find #"#ea580c" css)))))
+      (is (= (model/preset->css "sunset") css)))))
 
 ;; ── Nested themes ───────────────────────────────────────────────────────────
 (deftest nested-themes-test
@@ -68,7 +68,7 @@
     (.appendChild outer inner)
     (append! outer)
     (let [inner-css (.-textContent (.querySelector (.-shadowRoot inner) "style"))]
-      (is (re-find #"#ea580c" inner-css)))))
+      (is (= (model/preset->css "sunset") inner-css)))))
 
 ;; ── Custom preset via registerPreset ────────────────────────────────────────
 (deftest custom-registered-preset-test
@@ -128,18 +128,25 @@
     (.appendChild el child)
     (.-backgroundColor (js/getComputedStyle child))))
 
+(defn- blue-shade
+  "The CSS mix of blue at `percent` that a status shade gives in the current colour scheme."
+  [percent]
+  (str "color-mix(in srgb,#0000ff " percent "%,"
+       (if (.-matches (js/matchMedia "(prefers-color-scheme: dark)")) "#fff" "#000")
+       ")"))
+
 (deftest a-status-shade-follows-the-colour-of-a-custom-preset
   (model/register-preset!
    "test-blue-danger"
    #js {:light #js {"--x-color-danger" "#0000ff"}
         :dark  #js {"--x-color-danger" "#0000ff"}})
   (let [el (themed "preset" "test-blue-danger")]
-    (is (= (background el "color-mix(in srgb,#0000ff 85%,#000)")
+    (is (= (background el (blue-shade 85))
            (background el "var(--x-color-danger-hover)")))
-    (is (= (background el "color-mix(in srgb,#0000ff 70%,#000)")
+    (is (= (background el (blue-shade 70))
            (background el "var(--x-color-danger-active)")))))
 
 (deftest a-status-shade-follows-a-colour-set-on-the-theme-element
   (let [el (themed "style" "--x-color-success:#0000ff")]
-    (is (= (background el "color-mix(in srgb,#0000ff 85%,#000)")
+    (is (= (background el (blue-shade 85))
            (background el "var(--x-color-success-hover)")))))

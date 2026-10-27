@@ -1245,10 +1245,10 @@
         "default" : "var(--x-color-danger-hover,#b91c1c)"
       }, {
         "name" : "--x-button-danger-fg",
-        "default" : "#ffffff"
+        "default" : "var(--x-color-on-danger,#ffffff)"
       }, {
         "name" : "--x-button-fg",
-        "default" : "#ffffff"
+        "default" : "var(--x-color-on-primary,#ffffff)"
       }, {
         "name" : "--x-button-fg-disabled",
         "default" : "var(--x-color-text-muted,#ffffff)"
@@ -1652,7 +1652,7 @@
         "default" : "var(--x-color-primary,#2563eb)"
       }, {
         "name" : "--x-calendar-selected-text",
-        "default" : "#fff"
+        "default" : "var(--x-color-on-primary,#fff)"
       }, {
         "name" : "--x-calendar-surface",
         "default" : "var(--x-color-surface,#fff)"
@@ -1907,7 +1907,7 @@
         "default" : "var(--x-color-primary-hover,#1d4ed8)"
       }, {
         "name" : "--x-cancel-dialogue-confirm-fg",
-        "default" : "#ffffff"
+        "default" : "var(--x-color-on-primary,#ffffff)"
       }, {
         "name" : "--x-cancel-dialogue-danger-bg",
         "default" : "var(--x-color-danger,#dc2626)"
@@ -1916,7 +1916,7 @@
         "default" : "var(--x-color-danger-hover,#b91c1c)"
       }, {
         "name" : "--x-cancel-dialogue-danger-fg",
-        "default" : "#ffffff"
+        "default" : "var(--x-color-on-danger,#ffffff)"
       }, {
         "name" : "--x-cancel-dialogue-enter-duration",
         "default" : "0ms"
@@ -4087,7 +4087,7 @@
         "default" : "var(--x-color-primary,#3b82f6)"
       }, {
         "name" : "--x-combobox-option-active-fg",
-        "default" : "#ffffff"
+        "default" : "var(--x-color-on-primary,#ffffff)"
       }, {
         "name" : "--x-combobox-option-hover-bg",
         "default" : "var(--x-color-surface-hover,#f1f5f9)"
@@ -5256,7 +5256,7 @@
         "default" : "var(--x-color-danger,#b91c1c)"
       }, {
         "name" : "--x-copy-tooltip-error-fg",
-        "default" : "#fef2f2"
+        "default" : "var(--x-color-on-danger,#fef2f2)"
       }, {
         "name" : "--x-copy-tooltip-fg",
         "default" : "var(--x-color-text,#f8fafc)"
@@ -5274,7 +5274,7 @@
         "default" : "var(--x-color-primary,#15803d)"
       }, {
         "name" : "--x-copy-tooltip-success-fg",
-        "default" : "#ffffff"
+        "default" : "var(--x-color-on-primary,#ffffff)"
       }, {
         "name" : "--x-copy-tooltip-z",
         "default" : "var(--x-z-dropdown,100)"
@@ -6058,7 +6058,7 @@
         "default" : "var(--x-color-primary,#2563eb)"
       }, {
         "name" : "--x-date-picker-selected-text",
-        "default" : "#fff"
+        "default" : "var(--x-color-on-primary,#fff)"
       }, {
         "name" : "--x-date-picker-text",
         "default" : "inherit"
@@ -11440,7 +11440,7 @@
         "default" : "var(--x-color-primary,#3b82f6)"
       }, {
         "name" : "--x-multi-combobox-option-active-fg",
-        "default" : "#ffffff"
+        "default" : "var(--x-color-on-primary,#ffffff)"
       }, {
         "name" : "--x-multi-combobox-option-hover-bg",
         "default" : "var(--x-color-surface-hover,#f1f5f9)"
@@ -13210,10 +13210,10 @@
         "default" : "var(--x-color-danger-hover,#b91c1c)"
       }, {
         "name" : "--x-particle-button-danger-fg",
-        "default" : "#ffffff"
+        "default" : "var(--x-color-on-danger,#ffffff)"
       }, {
         "name" : "--x-particle-button-fg",
-        "default" : "#ffffff"
+        "default" : "var(--x-color-on-primary,#ffffff)"
       }, {
         "name" : "--x-particle-button-fg-disabled",
         "default" : "var(--x-color-text-muted,#ffffff)"
@@ -18491,7 +18491,7 @@
         "default" : "var(--x-color-primary,rgba(0,102,204,1))"
       }, {
         "name" : "--x-stepper-current-color",
-        "default" : "#fff"
+        "default" : "var(--x-color-on-primary,#fff)"
       }, {
         "name" : "--x-stepper-desc-color",
         "default" : "var(--x-color-text-muted,rgba(0,0,0,0.4))"
@@ -20692,6 +20692,10 @@
       }, {
         "name" : "--x-color-focus-ring"
       }, {
+        "name" : "--x-color-on-danger"
+      }, {
+        "name" : "--x-color-on-primary"
+      }, {
         "name" : "--x-color-primary"
       }, {
         "name" : "--x-color-primary-active"
@@ -22465,7 +22469,7 @@
         "default" : "var(--x-color-primary,#3b82f6)"
       }, {
         "name" : "--x-welcome-tour-button-fg",
-        "default" : "#ffffff"
+        "default" : "var(--x-color-on-primary,#ffffff)"
       }, {
         "name" : "--x-welcome-tour-connector-color",
         "default" : "var(--x-color-primary,#3b82f6)"

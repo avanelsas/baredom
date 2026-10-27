@@ -16,6 +16,7 @@ All components must consume the shared design tokens defined by `x-theme` (`src/
 
 ### Colors
 - `--x-color-primary`, `--x-color-primary-hover`, `--x-color-primary-active`
+- `--x-color-on-primary`, `--x-color-on-danger`
 - `--x-color-secondary`, `--x-color-secondary-hover`, `--x-color-secondary-active`
 - `--x-color-tertiary`, `--x-color-tertiary-hover`, `--x-color-tertiary-active`
 - `--x-color-surface`, `--x-color-surface-hover`, `--x-color-surface-active`
@@ -65,6 +66,12 @@ All components must consume the shared design tokens defined by `x-theme` (`src/
 - **On a background the component does not own** (a table row, a tab, a badge, a button on a tint): mix the text colour, so the fill stays see-through and contrasts with every theme. Write `color-mix(in srgb,var(--x-color-text,#000) 6%,transparent)`, with `#fff` as the fallback in the dark block.
 - **A tint of danger, success, warning or primary**: mix its token at the strength of the tint. Write `color-mix(in srgb,var(--x-color-danger,rgb(190,20,40)) 10%,transparent)`, with the present colour as the fallback.
 
+## Text on a fill
+
+- **On a primary fill** (a button, a selected day, an active option): write `var(--x-color-on-primary,#fff)` for the text.
+- **On a danger fill**: write `var(--x-color-on-danger,#fff)`.
+- In a built-in preset the text has a contrast of 4.5:1 or more with the fill and with its hover and active shades. A test checks it. In dark mode the text is the background colour.
+
 ## Border width rules
 
 - **The edge of a component, a panel or an input, and a divider line**: write `var(--x-border-width,1px)` for the width. A size computed from that border, such as the offset of an arrow, uses it too.
@@ -80,7 +87,7 @@ All components must consume the shared design tokens defined by `x-theme` (`src/
 ## What NOT to theme
 
 - Decorative palette colours (e.g. x-liquid-fill gold)
-- White-on-coloured-button foreground
+- The text on a success or a warning fill
 - Info colours, which have no token
 - The text on a tint
 
