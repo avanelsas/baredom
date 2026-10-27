@@ -57,7 +57,7 @@ From a CDN, with no build step:
 
 ```js
 import { splitTemplate, syncPlaces, writeItem }
-  from 'https://cdn.jsdelivr.net/npm/@vanelsas/baredom@4.15.0/dist/baremirror-alpha.js';
+  from 'https://cdn.jsdelivr.net/npm/@vanelsas/baredom@4.16.0/dist/baremirror-alpha.js';
 ```
 
 **What it costs.** The module shares `base.js` with the components of BareDOM. On a page that
@@ -90,7 +90,7 @@ BareMirror is written in ClojureScript. The same functions are in the namespaces
 `com.github.avanelsas/baredom` on Clojars:
 
 ```clojure
-{:deps {com.github.avanelsas/baredom {:mvn/version "4.15.0"}}}
+{:deps {com.github.avanelsas/baredom {:mvn/version "4.16.0"}}}
 ```
 
 Start with [the first look in ClojureScript](https://github.com/avanelsas/baredom/blob/main/bare-html/first-look-cljs/src/first_look/main.cljs).

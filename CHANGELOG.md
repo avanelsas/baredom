@@ -2,6 +2,29 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.16.0] - 2026-10-27
+
+BareDOM 4.16 brings every `x-theme` preset to WCAG AA contrast. The adapters are not released
+with it, since no component gains a prop.
+
+### Added
+
+- **`--x-color-on-primary` and `--x-color-on-danger`,** the colour of text on a primary or a
+  danger fill. `x-theme` sets them in every preset, and the components that put text on those
+  fills use them: `x-button`, `x-particle-button`, `x-copy`, `x-calendar`, `x-date-picker`,
+  `x-combobox`, `x-multi-combobox`, `x-stepper`, `x-timeline-item`, `x-cancel-dialogue` and
+  `x-welcome-tour`. See [`docs/THEMING.md`](docs/THEMING.md).
+
+### Changed
+
+- **Every preset meets WCAG AA,** in light and dark mode: text, focus rings and fills have the
+  contrast they need. Some preset colours are a shade different from 4.15. A test checks the
+  contrast of every preset.
+- **In dark mode a fill lightens on hover.** The hover and active shades of primary, danger,
+  success and warning are mixed with white, and the text on a primary or danger fill is
+  `--x-color-bg`. A page that sets its own `--x-color-primary` in dark mode can set
+  `--x-color-on-primary` with it.
+
 ## [4.15.0] - 2026-10-23
 
 BareDOM 4.15 adds gradient text to `x-typography`. All five adapters are released with it:
