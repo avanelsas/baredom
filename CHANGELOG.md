@@ -2,6 +2,37 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.17.0] - 2026-10-28
+
+BareDOM 4.17 adds `x-comments` and `x-comment`, a comment thread with one form. All five adapters
+are released with it: `-react` 3.6.0, `-angular` 3.6.0, `-vue` 0.12.0, `-svelte` 0.12.0 and
+`-solid` 0.12.0. They add `XComments` and `XComment`, and each now needs `@vanelsas/baredom`
+4.17.0 or later.
+
+### Added
+
+- **`x-comments` and `x-comment`, a comment thread.** `x-comments` holds the comments of a page
+  and one form for a new comment or a reply. Reply moves the form right under the comment it
+  answers. A send dispatches `x-comments-submit` with the name, the text, the comment it answers
+  and the value of a hidden field that catches bots. The components store nothing: the page
+  renders each comment as an `x-comment`, with its depth, its status (`published`, `pending`,
+  `removed` or `expired`) and the name of the comment it answers. The date shows as given, or in
+  the language of `locale`. A `meta` slot holds what a page shows after the date. See
+  [`docs/x-comments.md`](docs/x-comments.md), [`docs/x-comment.md`](docs/x-comment.md) and the
+  [demo](https://avanelsas.github.io/baredom/demo/x-comments.html).
+- **`maxlength` on `x-form-field`,** with a `maxLength` property, as on `x-text-area`.
+- **`XComments` and `XComment` in the five adapters,** and the `maxLength` prop of `XFormField`.
+
+### Changed
+
+- **`focus()` on `x-button`, `x-form-field` and `x-text-area` moves focus to their inner
+  control.** Each attaches its shadow root with `delegatesFocus`.
+- **The shared `base.js` grows by about 10 KB gzipped.** `x-comment` and `x-comments` compose
+  `x-avatar`, `x-form-field` and `x-text-area`, so these three now load with every component.
+  Their own modules shrink to an entry of a few hundred bytes.
+- **The adapters need `@vanelsas/baredom` 4.17.0 or later.** Their index exports `XComments` and
+  `XComment`.
+
 ## [4.16.0] - 2026-10-27
 
 BareDOM 4.16 brings every `x-theme` preset to WCAG AA contrast. The adapters are not released
