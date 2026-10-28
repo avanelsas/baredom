@@ -20,6 +20,8 @@ export { default as XCollapse, type XCollapseProps, type XCollapseElement } from
 export { default as XColorPicker, type XColorPickerProps, type XColorPickerElement } from "./x-color-picker.svelte";
 export { default as XCombobox, type XComboboxProps, type XComboboxElement } from "./x-combobox.svelte";
 export { default as XCommandPalette, type XCommandPaletteProps, type XCommandPaletteElement } from "./x-command-palette.svelte";
+export { default as XComment, type XCommentProps, type XCommentElement } from "./x-comment.svelte";
+export { default as XComments, type XCommentsProps, type XCommentsElement } from "./x-comments.svelte";
 export { default as XConfetti, type XConfettiProps, type XConfettiElement } from "./x-confetti.svelte";
 export { default as XContainer, type XContainerProps, type XContainerElement } from "./x-container.svelte";
 export { default as XContextMenu, type XContextMenuProps, type XContextMenuElement } from "./x-context-menu.svelte";

@@ -25,6 +25,8 @@ declare namespace svelteHTML {
     "x-color-picker": Record<string, any>;
     "x-combobox": Record<string, any>;
     "x-command-palette": Record<string, any>;
+    "x-comment": Record<string, any>;
+    "x-comments": Record<string, any>;
     "x-confetti": Record<string, any>;
     "x-container": Record<string, any>;
     "x-context-menu": Record<string, any>;

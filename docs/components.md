@@ -1,6 +1,6 @@
 # Components
 
-The full catalogue of BareDOM components — 107 UI web components across 11 categories. Every UI component is a native Custom Element with auto-generated TypeScript declarations and is exposed in all five [framework adapters](../README.md#framework-adapters).
+The full catalogue of BareDOM components — 109 UI web components across 11 categories. Every UI component is a native Custom Element with auto-generated TypeScript declarations and is exposed in all five [framework adapters](../README.md#framework-adapters).
 
 Tag names are case-insensitive in HTML but always lowercase-kebab-case in the source. Component documentation links to deeper guides with API tables, examples, and a11y notes.
 
@@ -8,7 +8,7 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 - [Feedback (11)](#feedback-11)
 - [Navigation (9)](#navigation-9)
 - [Layout (12)](#layout-12)
-- [Data (11)](#data-11)
+- [Data (13)](#data-13)
 - [Overlay (10)](#overlay-10)
 - [Display (6)](#display-6)
 - [Animation (6)](#animation-6)
@@ -93,7 +93,7 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 | [`<x-spacer>`](./x-spacer.md) | Flexible spacing element for flexbox and grid layouts. |
 | [`<x-split-pane>`](./x-split-pane.md) | Resizable two-panel layout with draggable divider, horizontal or vertical. |
 
-## Data (11)
+## Data (13)
 
 | Tag | Description |
 |-----|-------------|
@@ -102,6 +102,8 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 | [`<x-calendar>`](./x-calendar.md) | Inline month calendar — always-visible companion to date pickers, with keyboard navigation. |
 | [`<x-carousel>`](./x-carousel.md) | Accessible carousel with swipe/drag, arrows, dot indicators, autoplay, slide/fade transitions, and horizontal/vertical orientation. |
 | [`<x-chart>`](./x-chart.md) | Data visualisation component for common chart types. |
+| [`<x-comment>`](./x-comment.md) | One comment of a thread: name, avatar, date and body, with a Reply button and pending, removed and expired states. |
+| [`<x-comments>`](./x-comments.md) | A comment thread with one form for a new comment or a reply, and a hidden field that catches bots. |
 | [`<x-stat>`](./x-stat.md) | KPI / metric card with value, label, trend, and icon slots. |
 | [`<x-table>`](./x-table.md) | Data grid using CSS subgrid. Supports sorting, single/multi-select, striping, and accessible captions. |
 | [`<x-table-cell>`](./x-table-cell.md) | Table cell for header and data modes, with sort indicator and alignment control. |

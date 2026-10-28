@@ -66,6 +66,15 @@
 (defn- click-child [selector]
   (fn [^js el] (.click (.querySelector el selector))))
 
+(defn- press-reply-of [selector]
+  (fn [^js el]
+    (let [^js reply (part-of (.querySelector el selector) "[part=reply]")]
+      (.click (part-of reply "button")))))
+
+(def ^:private thread
+  (str "<x-comment comment-id=\"a\" name=\"Ann\"></x-comment>"
+       "<x-comment comment-id=\"b\" name=\"Bo\"></x-comment>"))
+
 (def ^:private options
   "<option value=\"us\">United States</option><option value=\"uk\">United Kingdom</option>
    <option value=\"nl\">Netherlands</option><option value=\"de\">Germany</option>")
@@ -113,6 +122,8 @@
     :gesture (call "show")}
    {:event "x-command-palette-close-request" :html "<x-command-palette open></x-command-palette>"
     :gesture (call "close")}
+   {:event "x-comments-reply-request" :html (str "<x-comments>" thread "</x-comments>")
+    :gesture (press-reply-of "x-comment[comment-id=b]") :other {"reply-to" "a"}}
    {:event "x-context-menu-open-request" :html context-menu
     :watch :none :gesture (call "openAt" 100 100)}
    {:event "x-context-menu-close-request" :html context-menu

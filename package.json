@@ -96,6 +96,16 @@
       "import": "./dist/x-command-palette.js",
       "default": "./dist/x-command-palette.js"
     },
+    "./x-comment": {
+      "types": "./dist/x-comment.d.ts",
+      "import": "./dist/x-comment.js",
+      "default": "./dist/x-comment.js"
+    },
+    "./x-comments": {
+      "types": "./dist/x-comments.d.ts",
+      "import": "./dist/x-comments.js",
+      "default": "./dist/x-comments.js"
+    },
     "./x-code": {
       "types": "./dist/x-code.d.ts",
       "import": "./dist/x-code.js",

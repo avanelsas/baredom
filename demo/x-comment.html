@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-comment demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; padding: 24px; max-width: 900px; margin: 0 auto; }
+
+      .panel {
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        padding: 16px;
+        background: var(--surface-bg);
+        margin-bottom: 24px;
+      }
+
+      .controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; font-size: 13px; margin-bottom: 16px; }
+      .controls label { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+
+      .thread { display: flex; flex-direction: column; gap: 12px; }
+      .thread p { margin: 0; }
+
+      .event-log {
+        font-family: ui-monospace, monospace; font-size: 12px;
+        background: #111827; color: #f9fafb; border-radius: 8px;
+        padding: 12px; height: 96px; overflow-y: auto; margin-top: 12px;
+      }
+      .event-log p { margin: 0.1rem 0; }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+  </head>
+  <body>
+    <x-typography variant="h1">&lt;x-comment&gt;</x-typography>
+    <p style="color:var(--muted);margin:0 0 16px;">One comment of a thread. The page gives the facts, the component shows them.</p>
+
+    <x-typography variant="h2">Live comment</x-typography>
+    <div class="panel">
+      <div class="controls">
+        <label>
+          Status
+          <x-select id="ctl-status" value="published">
+            <option value="published" selected>published</option>
+            <option value="pending">pending</option>
+            <option value="removed">removed</option>
+            <option value="expired">expired</option>
+          </x-select>
+        </label>
+        <label>
+          Depth
+          <x-select id="ctl-depth" value="0">
+            <option value="0" selected>0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </x-select>
+        </label>
+        <label><x-switch id="ctl-author"></x-switch> Author</label>
+      </div>
+      <x-comment id="live" comment-id="live-1" name="Ann Lee" datetime="2026-10-27T09:30:00Z"
+                 reply-to-name="Bo Chen">
+        <p>Thanks for writing this up. The part on stateless components helped me most.</p>
+      </x-comment>
+      <div class="event-log" id="log"></div>
+    </div>
+
+    <x-typography variant="h2">A thread</x-typography>
+    <div class="panel thread">
+      <x-comment comment-id="a1" name="Ann Lee" datetime="2026-10-20">
+        <p>Is there a way to style the indent per blog?</p>
+      </x-comment>
+      <x-comment comment-id="b2" name="Alexander" datetime="2026-10-21" depth="1"
+                 reply-to-name="Ann Lee" author>
+        <p>Yes. Set <code>--x-comment-indent</code> on the comments.</p>
+      </x-comment>
+      <x-comment comment-id="c3" name="Ann Lee" datetime="2026-10-22" depth="2"
+                 reply-to-name="Alexander">
+        <p>That works, thank you.</p>
+      </x-comment>
+      <x-comment comment-id="d4" name="Cy Park" datetime="2026-10-23" depth="3"
+                 reply-to-name="Ann Lee">
+        <p>A reply past the cap stays at the third level and says whom it answers.</p>
+      </x-comment>
+      <x-comment comment-id="e5" status="removed" datetime="2026-10-24">
+      </x-comment>
+      <x-comment comment-id="f6" name="Dee Ross" datetime="2026-10-25" depth="1"
+                 reply-to-name="">
+        <p>A reply to a removed comment has no name to show.</p>
+      </x-comment>
+    </div>
+
+    <x-typography variant="h2">Pending and expired</x-typography>
+    <div class="panel thread">
+      <x-comment comment-id="p1" name="You" datetime="2026-10-28" status="pending">
+        <p>Only the browser that sent this comment sees it.</p>
+      </x-comment>
+      <x-comment comment-id="x1" datetime="2026-09-20" status="expired"></x-comment>
+    </div>
+
+    <x-typography variant="h2">Labels</x-typography>
+    <div class="panel thread">
+      <x-comment comment-id="nl1" name="Eva de Vries" datetime="2026-10-26" status="pending"
+                 pending-label="Wacht op controle" reply-label="Antwoord">
+        <p>Een reactie met Nederlandse labels.</p>
+      </x-comment>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+    <script>
+      const live = document.getElementById('live');
+      const log  = document.getElementById('log');
+
+      function write(text) {
+        const p = document.createElement('p');
+        p.textContent = text;
+        log.prepend(p);
+      }
+
+      document.getElementById('ctl-status').addEventListener('select-change', e => {
+        live.status = e.detail.value;
+      });
+      document.getElementById('ctl-depth').addEventListener('select-change', e => {
+        live.depth = Number(e.detail.value);
+      });
+      document.getElementById('ctl-author').addEventListener('x-switch-change', e => {
+        live.author = e.detail.checked;
+      });
+
+      document.addEventListener('x-comment-reply', e => {
+        write(`x-comment-reply ${JSON.stringify(e.detail)}`);
+      });
+    </script>
+  </body>
+</html>
