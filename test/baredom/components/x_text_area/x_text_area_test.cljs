@@ -40,6 +40,11 @@
     (sut/init!)
     (is (some? (.get js/customElements model/tag-name)))))
 
+(deftest focus-on-the-host-reaches-the-textarea-test
+  (let [el (mount!)]
+    (.focus el)
+    (is (identical? (get-textarea el) (.. el -shadowRoot -activeElement)))))
+
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM structure
 ;; ---------------------------------------------------------------------------

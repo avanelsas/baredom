@@ -29,6 +29,11 @@
 (deftest registration-test
   (is (some? (.get js/customElements model/tag-name))))
 
+(deftest focus-on-the-host-reaches-the-internal-button-test
+  (let [el (append! (make-el))]
+    (.focus el)
+    (is (identical? (shadow-button el) (.. el -shadowRoot -activeElement)))))
+
 (deftest boolean-property-reflection-test
   (let [el (append! (make-el))]
     (set! (.-disabled el) true)

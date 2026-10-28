@@ -127,7 +127,7 @@
 
 ;; ── Shadow DOM construction ───────────────────────────────────────────────
 (defn- make-shadow! [^js el]
-  (let [root       (.attachShadow el #js {:mode "open"})
+  (let [root       (.attachShadow el #js {:mode "open" :delegatesFocus true})
         style-el   (.createElement js/document "style")
         field-el   (.createElement js/document "div")
         label-el   (.createElement js/document "label")

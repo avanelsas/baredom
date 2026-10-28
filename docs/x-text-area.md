@@ -96,6 +96,7 @@ Dark mode values are set automatically via `@media (prefers-color-scheme: dark)`
 
 ## Accessibility
 
+- `focus()` on the host moves focus to the `<textarea>`.
 - The `<label>` is associated with the `<textarea>` via `for`/`id` and `aria-labelledby`.
 - `aria-required` is set to `"true"` when the `required` attribute is present.
 - `aria-invalid` is set to `"true"` when the `error` attribute is non-empty.
