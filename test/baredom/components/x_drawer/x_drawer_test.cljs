@@ -253,14 +253,15 @@
 (deftest focus-trap-focuses-first-element-test
   (async done
     (let [^js el  (append! (make-el))
-          ^js btn (.createElement js/document "button")]
+          ^js btn (.createElement js/document "button")
+          focused (atom false)]
       (set! (.-textContent btn) "Close")
+      (.addEventListener btn "focus" (fn on-focus [_] (reset! focused true)))
       (.appendChild el btn)
       (.setAttribute el model/attr-open "")
-      ;; activate-focus-trap! defers via setTimeout 0
       (js/setTimeout
        (fn []
-         (is (= btn (.-activeElement js/document)))
+         (is (true? @focused))
          (done))
        50))))
 

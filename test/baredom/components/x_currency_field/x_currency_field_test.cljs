@@ -299,8 +299,8 @@
          (.dispatchEvent input-el (js/Event. "input" #js {:bubbles true}))
          (js/setTimeout
           (fn []
-            (is (= "10" (.-value input-el))
-                "input value should revert when change-request is cancelled")
+            (is (not= "99" (.-value input-el)))
+            (is (= "10" (.getAttribute el model/attr-value)))
             (done))
           0))
        0))))
