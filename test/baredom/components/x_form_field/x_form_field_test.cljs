@@ -27,6 +27,11 @@
 ;; Shadow DOM structure
 ;; ---------------------------------------------------------------------------
 
+(deftest focus-on-the-host-reaches-the-input-test
+  (let [el (append! (make-el))]
+    (.focus el)
+    (is (identical? (shadow-part el "[part=input]") (.. el -shadowRoot -activeElement)))))
+
 (deftest shadow-structure-test
   (let [el (append! (make-el))]
     (is (some? (.-shadowRoot el))                       "shadow root should exist")

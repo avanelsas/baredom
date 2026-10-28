@@ -131,6 +131,7 @@ Like a native form control, `x-form-field` exposes read-only `validity`, `valida
 
 ## Accessibility
 
+- `focus()` on the host moves focus to the inner `<input>`.
 - Inner `<input>` is labelled via `aria-labelledby="label"`.
 - `aria-describedby` links to hint and/or error spans when present.
 - `aria-invalid="true"` is set on the input when an error is present.
