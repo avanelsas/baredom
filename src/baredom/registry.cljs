@@ -30,6 +30,8 @@
    [baredom.exports.x-color-picker        :as x-color-picker]
    [baredom.exports.x-combobox            :as x-combobox]
    [baredom.exports.x-command-palette     :as x-command-palette]
+   [baredom.exports.x-comment             :as x-comment]
+   [baredom.exports.x-comments            :as x-comments]
    [baredom.exports.x-confetti            :as x-confetti]
    [baredom.exports.x-container           :as x-container]
    [baredom.exports.x-context-menu        :as x-context-menu]
@@ -142,6 +144,8 @@
    x-color-picker/register!
    x-combobox/register!
    x-command-palette/register!
+   x-comment/register!
+   x-comments/register!
    x-confetti/register!
    x-container/register!
    x-context-menu/register!

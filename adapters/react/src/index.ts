@@ -20,6 +20,8 @@ export { XCollapse, type XCollapseProps } from "./x-collapse";
 export { XColorPicker, type XColorPickerProps } from "./x-color-picker";
 export { XCombobox, type XComboboxProps } from "./x-combobox";
 export { XCommandPalette, type XCommandPaletteProps } from "./x-command-palette";
+export { XComment, type XCommentProps } from "./x-comment";
+export { XComments, type XCommentsProps } from "./x-comments";
 export { XConfetti, type XConfettiProps } from "./x-confetti";
 export { XContainer, type XContainerProps } from "./x-container";
 export { XContextMenu, type XContextMenuProps } from "./x-context-menu";

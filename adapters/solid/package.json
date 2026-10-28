@@ -111,6 +111,14 @@
       "import" : "./dist/x-command-palette.jsx",
       "types" : "./dist/x-command-palette.d.ts"
     },
+    "./x-comment" : {
+      "import" : "./dist/x-comment.jsx",
+      "types" : "./dist/x-comment.d.ts"
+    },
+    "./x-comments" : {
+      "import" : "./dist/x-comments.jsx",
+      "types" : "./dist/x-comments.d.ts"
+    },
     "./x-confetti" : {
       "import" : "./dist/x-confetti.jsx",
       "types" : "./dist/x-confetti.d.ts"

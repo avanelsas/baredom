@@ -190,6 +190,16 @@
      {init baredom.exports.x-command-palette/init}
      :depends-on #{:base}}
 
+    :x-comment
+    {:exports
+     {init baredom.exports.x-comment/init}
+     :depends-on #{:base}}
+
+    :x-comments
+    {:exports
+     {init baredom.exports.x-comments/init}
+     :depends-on #{:base}}
+
     :x-code
     {:exports
      {init baredom.exports.x-code/init}

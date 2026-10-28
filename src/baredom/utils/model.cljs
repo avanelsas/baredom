@@ -27,6 +27,11 @@
   [value]
   (and (string? value) (not= "" value)))
 
+(defn merge-texts
+  "The map `defaults`, with each non-empty text of `texts` in place of its default."
+  [defaults texts]
+  (merge defaults (into {} (filter (comp non-empty-string? val)) texts)))
+
 (defn parse-positive-int
   "The positive integer an attribute says, or nil. Pass the value of `getAttribute`.
    It reads a leading integer, as HTML does."

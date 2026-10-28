@@ -20,6 +20,10 @@ set -euo pipefail
 # deduplicate into base.js. That added about 3.8 KB. Its faster reading and
 # planning at many rows then took base.js past 70 KB, so the budget is 71 KB.
 #
+# x-comment and x-comments compose x-avatar, x-form-field and x-text-area,
+# so all three are promoted into base.js. That added about 9.8 KB, and the
+# budget is 82 KB.
+#
 # COMPONENT_BUDGET is the default ceiling for an individual x-*.js
 # module. It is calibrated for a single UI component.
 #
@@ -30,7 +34,7 @@ set -euo pipefail
 # DAG tree view, and the live-element highlight overlay, so 15 KB is
 # the wrong ceiling for it. The dock is opt-in via ?baredom-trace-
 # history and never runs in production builds where the flag stays off.
-BASE_BUDGET=72704       # 71 KB for base.js (includes promoted x-copy, x-drop-zone, BareMirror)
+BASE_BUDGET=83968       # 82 KB for base.js (includes promoted x-copy, x-drop-zone, BareMirror, x-avatar, x-form-field, x-text-area)
 COMPONENT_BUDGET=15360  # 15 KB default for any x-*.js component
 
 # Per-module overrides. Looked up in module_budget() below — case

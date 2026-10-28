@@ -20,6 +20,8 @@ export { XCollapse, type XCollapseInstance, type XCollapseExposed } from "./x-co
 export { XColorPicker, type XColorPickerInstance, type XColorPickerExposed } from "./x-color-picker";
 export { XCombobox, type XComboboxInstance, type XComboboxExposed } from "./x-combobox";
 export { XCommandPalette, type XCommandPaletteInstance, type XCommandPaletteExposed } from "./x-command-palette";
+export { XComment, type XCommentInstance, type XCommentExposed } from "./x-comment";
+export { XComments, type XCommentsInstance, type XCommentsExposed } from "./x-comments";
 export { XConfetti, type XConfettiInstance, type XConfettiExposed } from "./x-confetti";
 export { XContainer, type XContainerInstance, type XContainerExposed } from "./x-container";
 export { XContextMenu, type XContextMenuInstance, type XContextMenuExposed } from "./x-context-menu";

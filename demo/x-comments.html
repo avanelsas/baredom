@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-comments demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; padding: 24px; max-width: 900px; margin: 0 auto; }
+
+      .panel {
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        padding: 16px;
+        background: var(--surface-bg);
+        margin-bottom: 24px;
+      }
+
+      .steps { margin: 0 0 16px; padding-left: 1.25rem; color: var(--muted); font-size: 14px; }
+      .steps li { margin: 2px 0; }
+
+      .controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; font-size: 13px; margin-bottom: 16px; }
+      .controls label { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+
+      x-comments p { margin: 0; }
+      .notice { font-size: 13px; color: var(--muted); }
+
+      .desk { display: flex; flex-direction: column; gap: 8px; }
+      .desk-row {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+        padding: 8px 12px; border: 1px solid var(--surface-border); border-radius: 6px; font-size: 14px;
+      }
+      .desk-row .who { font-weight: 600; }
+      .desk-row .what { flex: 1 1 12rem; min-width: 0; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .desk-row .state { font-size: 12px; color: var(--muted); }
+      .desk-empty { color: var(--muted); font-size: 14px; margin: 0; }
+
+      .event-log {
+        font-family: ui-monospace, monospace; font-size: 12px;
+        background: #111827; color: #f9fafb; border-radius: 8px;
+        padding: 12px; height: 120px; overflow-y: auto; margin-top: 12px;
+      }
+      .event-log p { margin: 0.1rem 0; }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+  </head>
+  <body>
+    <x-typography variant="h1">&lt;x-comments&gt;</x-typography>
+    <p style="color:var(--muted);margin:0 0 16px;">A comment thread with one form. The component shows the thread and the form. The page stores what a reader sends, and the author approves or removes it.</p>
+
+    <ol class="steps">
+      <li>Press <strong>Reply</strong> on a comment. The form moves under it. <strong>Cancel</strong> moves it back.</li>
+      <li>Write a reply and press <strong>Send</strong>. It shows as <em>Awaiting review</em>, only for you.</li>
+      <li>In the author's desk, press <strong>Approve</strong>. The comment is published and can be answered.</li>
+      <li>Press <strong>Remove</strong>. A comment with replies leaves a placeholder. One without replies goes.</li>
+    </ol>
+
+    <x-typography variant="h2">The reader's page</x-typography>
+    <div class="panel">
+      <div class="controls">
+        <label><x-switch id="ctl-closed"></x-switch> Comments closed</label>
+        <label><x-switch id="ctl-refuse"></x-switch> Page refuses sends</label>
+      </div>
+
+      <x-comments id="comments" commenter-name="Reader">
+        <x-comment comment-id="a1" name="Ann Lee" datetime="2026-10-20">
+          <p>Is there a way to style the indent per blog?</p>
+        </x-comment>
+        <x-comment comment-id="b2" name="Alexander" datetime="2026-10-21" depth="1"
+                   reply-to-name="Ann Lee" author>
+          <p>Yes. Set <code>--x-comment-indent</code> on the comments.</p>
+        </x-comment>
+        <x-comment comment-id="c3" name="Cy Park" datetime="2026-10-23">
+          <p>The pending mark is a nice touch.</p>
+        </x-comment>
+        <x-comment comment-id="d4" name="Dee Ross" datetime="2026-10-24" status="pending">
+          <p>A comment that waits for the author.</p>
+        </x-comment>
+        <p slot="notice" class="notice">Comments are stored until the author reviews them.</p>
+      </x-comments>
+
+      <div class="event-log" id="log"></div>
+    </div>
+
+    <x-typography variant="h2">The author's desk</x-typography>
+    <div class="panel">
+      <p class="desk-empty" style="margin-bottom:12px;">In a blog, the author does this on their own machine, and the page shows the result after the next publish.</p>
+      <div class="desk" id="desk"></div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+    <script>
+      const comments = document.getElementById('comments');
+      const desk     = document.getElementById('desk');
+      const log      = document.getElementById('log');
+      let refuse     = false;
+
+      function write(text) {
+        const p = document.createElement('p');
+        p.textContent = text;
+        log.prepend(p);
+      }
+
+      function allComments() {
+        return [...comments.querySelectorAll(':scope > x-comment')];
+      }
+
+      function byId(id) {
+        return comments.querySelector(`:scope > x-comment[comment-id="${id}"]`);
+      }
+
+      function replies(node) {
+        const found = [];
+        let next = node.nextElementSibling;
+        while (next && next.localName === 'x-comment' && next.depth > node.depth) {
+          found.push(next);
+          next = next.nextElementSibling;
+        }
+        return found;
+      }
+
+      function afterThread(node) {
+        const thread = replies(node);
+        return (thread.at(-1) ?? node).nextElementSibling;
+      }
+
+      function textOf(node) {
+        return node.textContent.trim().replace(/\s+/g, ' ');
+      }
+
+      function pending({ name, text, replyTo }) {
+        const node   = document.createElement('x-comment');
+        const target = replyTo && byId(replyTo);
+        const body   = document.createElement('p');
+        body.textContent = text;
+        node.commentId = crypto.randomUUID().slice(0, 8);
+        node.name      = name;
+        node.datetime  = new Date().toISOString();
+        node.status    = 'pending';
+        if (target) {
+          node.depth       = target.depth + 1;
+          node.replyToName = target.name;
+        }
+        node.append(body);
+        return { node, before: target ? afterThread(target) : comments.querySelector('[slot=notice]') };
+      }
+
+      comments.addEventListener('x-comments-reply-request', e => {
+        write(`x-comments-reply-request ${JSON.stringify(e.detail)}`);
+      });
+
+      comments.addEventListener('x-comments-submit', e => {
+        write(`x-comments-submit ${JSON.stringify(e.detail)}${refuse ? ' (refused)' : ''}`);
+        if (refuse) { e.preventDefault(); return; }
+        const { node, before } = pending(e.detail);
+        comments.insertBefore(node, before);
+        renderDesk();
+      });
+
+      function approve(node) {
+        node.status = 'published';
+        write(`approved ${node.commentId}`);
+      }
+
+      function dropEmptyPlaceholders() {
+        let changed = true;
+        while (changed) {
+          changed = false;
+          for (const node of allComments()) {
+            if (node.status === 'removed' && replies(node).length === 0) {
+              node.remove();
+              changed = true;
+            }
+          }
+        }
+      }
+
+      function remove(node) {
+        if (replies(node).length > 0) {
+          node.status = 'removed';
+          node.name   = '';
+          node.replaceChildren();
+        } else {
+          node.remove();
+        }
+        dropEmptyPlaceholders();
+        write(`removed ${node.commentId}`);
+      }
+
+      function deskButton(label, variant, action) {
+        const button = document.createElement('x-button');
+        button.size    = 'sm';
+        button.variant = variant;
+        button.textContent = label;
+        button.addEventListener('press', () => { action(); renderDesk(); });
+        return button;
+      }
+
+      function deskRow(node) {
+        const row   = document.createElement('div');
+        const who   = document.createElement('span');
+        const what  = document.createElement('span');
+        const state = document.createElement('span');
+        row.className   = 'desk-row';
+        who.className   = 'who';
+        what.className  = 'what';
+        state.className = 'state';
+        who.textContent   = node.name;
+        what.textContent  = textOf(node);
+        state.textContent = node.status;
+        row.append(who, state, what);
+        if (node.status === 'pending') {
+          row.append(deskButton('Approve', 'primary', () => approve(node)));
+        }
+        row.append(deskButton('Remove', 'secondary', () => remove(node)));
+        return row;
+      }
+
+      function renderDesk() {
+        const rows = allComments().filter(node => node.status !== 'removed').map(deskRow);
+        if (rows.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'desk-empty';
+          empty.textContent = 'No comments.';
+          rows.push(empty);
+        }
+        desk.replaceChildren(...rows);
+      }
+
+      document.getElementById('ctl-closed').addEventListener('x-switch-change', e => {
+        comments.closed = e.detail.checked;
+      });
+      document.getElementById('ctl-refuse').addEventListener('x-switch-change', e => {
+        refuse = e.detail.checked;
+      });
+
+      customElements.whenDefined('x-comment').then(renderDesk);
+    </script>
+  </body>
+</html>

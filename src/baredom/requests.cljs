@@ -14,6 +14,7 @@
    "x-combobox-toggle" ["open"]
    "x-command-palette-close-request" ["open"]
    "x-command-palette-open-request" ["open"]
+   "x-comments-reply-request" ["reply-to"]
    "x-context-menu-close-request" ["open"]
    "x-context-menu-open-request" ["open"]
    "x-currency-field-change-request" ["value"]
@@ -51,6 +52,7 @@
    "x-combobox-toggle" {"open" "open"}
    "x-command-palette-close-request" {"open" false}
    "x-command-palette-open-request" {"open" true}
+   "x-comments-reply-request" {"reply-to" "replyTo"}
    "x-context-menu-close-request" {"open" false}
    "x-context-menu-open-request" {"open" true}
    "x-currency-field-change-request" {"value" "value"}

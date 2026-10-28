@@ -117,7 +117,7 @@ All adapters are auto-generated from the same Custom Elements Manifest, so addin
 
 ## Components
 
-**107 UI web components across 11 categories** — from foundational UI controls to morphing animations, organic effects, and scroll-driven storytelling.
+**109 UI web components across 11 categories** — from foundational UI controls to morphing animations, organic effects, and scroll-driven storytelling.
 
 | Category | Count | Examples |
 |----------|------:|----------|
@@ -125,7 +125,7 @@ All adapters are auto-generated from the same Custom Elements Manifest, so addin
 | **Feedback**   | 11 | Alert · Toast · Spinner · Progress · Skeleton · Notification Center |
 | **Navigation** | 9  | Navbar · Sidebar · Breadcrumbs · Tabs · Pagination · Menu · Table of Contents |
 | **Layout**     | 12 | Card · Grid · Bento Grid · Split Pane · Drag Panel · Drop Zone |
-| **Data**       | 11 | Avatar · Table · Chart · Timeline · Calendar · Stat |
+| **Data**       | 13 | Avatar · Table · Chart · Timeline · Calendar · Stat |
 | **Overlay**    | 10 | Modal · Drawer · Popover · Tooltip · Floating Panel · Command Palette |
 | **Display**    | 6  | Icon · Image · Typography · Code · Kbd · Spotlight Card |
 | **Animation**  | 6  | Kinetic Canvas · Kinetic Typography · Morph Stack · Soft Body · Splash |

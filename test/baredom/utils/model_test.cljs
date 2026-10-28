@@ -153,3 +153,8 @@
   (is (nil? (model/parse-positive-int "0")))
   (is (nil? (model/parse-positive-int "-1")))
   (is (nil? (model/parse-positive-int "abc"))))
+
+(deftest merge-texts-puts-each-non-empty-text-over-its-default-test
+  (is (= {:a "given" :b "default-b" :c "default-c"}
+         (model/merge-texts {:a "default-a" :b "default-b" :c "default-c"}
+                            {:a "given" :b "" :c nil}))))

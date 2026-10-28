@@ -4478,6 +4478,498 @@
     } ]
   }, {
     "kind" : "javascript-module",
+    "path" : "dist/x-comment.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XComment",
+      "tagName" : "x-comment",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "expiredLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "locale",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "replyLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "commentId",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "author",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "replyToName",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "status",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "authorLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "datetime",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "depth",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "replyContextLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "maxDepth",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "pendingLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "removedLabel",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "comment-id",
+        "fieldName" : "commentId",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "datetime",
+        "fieldName" : "datetime",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "locale",
+        "fieldName" : "locale",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "depth",
+        "fieldName" : "depth",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "max-depth",
+        "fieldName" : "maxDepth",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "reply-to-name",
+        "fieldName" : "replyToName",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "author",
+        "fieldName" : "author",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "status",
+        "fieldName" : "status",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "reply-label",
+        "fieldName" : "replyLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "reply-context-label",
+        "fieldName" : "replyContextLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "author-label",
+        "fieldName" : "authorLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "pending-label",
+        "fieldName" : "pendingLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "removed-label",
+        "fieldName" : "removedLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "expired-label",
+        "fieldName" : "expiredLabel",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-comment-reply",
+        "type" : {
+          "text" : "CustomEvent<{ commentId: string }>"
+        },
+        "cancelable" : false,
+        "detail" : {
+          "commentId" : "string"
+        }
+      } ],
+      "slots" : [ {
+        "name" : "meta"
+      } ],
+      "cssProperties" : [ {
+        "name" : "--x-comment-author-bg",
+        "default" : "color-mix(in srgb,var(--x-color-primary,#2563eb) 8%,var(--x-comment-bg))"
+      }, {
+        "name" : "--x-comment-bg",
+        "default" : "var(--x-color-surface,#ffffff)"
+      }, {
+        "name" : "--x-comment-border",
+        "default" : "var(--x-color-border,#e5e7eb)"
+      }, {
+        "name" : "--x-comment-indent",
+        "default" : "var(--x-space-xl,2rem)"
+      }, {
+        "name" : "--x-comment-level"
+      }, {
+        "name" : "--x-comment-meta-color",
+        "default" : "var(--x-color-text-muted,#6b7280)"
+      }, {
+        "name" : "--x-comment-pending-opacity",
+        "default" : "var(--x-opacity-placeholder,0.6)"
+      }, {
+        "name" : "--x-comment-radius",
+        "default" : "var(--x-radius-md,8px)"
+      } ],
+      "cssParts" : [ {
+        "name" : "part"
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-comment",
+      "declaration" : {
+        "name" : "XComment"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-comments.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XComments",
+      "tagName" : "x-comments",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "closed",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "replyFormLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "headingLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "sendLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "formLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "nameMax",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "replyTo",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "cancelLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "textLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "nameLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "textMax",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "commenterName",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "sentLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "focus",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "closed",
+        "fieldName" : "closed",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "reply-to",
+        "fieldName" : "replyTo",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "commenter-name",
+        "fieldName" : "commenterName",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "name-max",
+        "fieldName" : "nameMax",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "text-max",
+        "fieldName" : "textMax",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "heading-label",
+        "fieldName" : "headingLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "form-label",
+        "fieldName" : "formLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "reply-form-label",
+        "fieldName" : "replyFormLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "name-label",
+        "fieldName" : "nameLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "text-label",
+        "fieldName" : "textLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "send-label",
+        "fieldName" : "sendLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "cancel-label",
+        "fieldName" : "cancelLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "sent-label",
+        "fieldName" : "sentLabel",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-comments-reply-request",
+        "type" : {
+          "text" : "CustomEvent<{ replyTo: string; previousReplyTo: string }>"
+        },
+        "cancelable" : true,
+        "requests" : {
+          "reply-to" : "replyTo"
+        },
+        "detail" : {
+          "replyTo" : "string",
+          "previousReplyTo" : "string"
+        }
+      }, {
+        "name" : "x-comments-submit",
+        "type" : {
+          "text" : "CustomEvent<{ name: string; text: string; replyTo: string; trap: string }>"
+        },
+        "cancelable" : true,
+        "detail" : {
+          "name" : "string",
+          "text" : "string",
+          "replyTo" : "string",
+          "trap" : "string"
+        }
+      } ],
+      "slots" : [ {
+        "name" : "before"
+      }, {
+        "name" : "after"
+      }, {
+        "name" : "notice"
+      } ],
+      "cssProperties" : [ {
+        "name" : "--x-comments-form-bg",
+        "default" : "var(--x-color-surface,#ffffff)"
+      }, {
+        "name" : "--x-comments-form-border",
+        "default" : "var(--x-color-border,#e5e7eb)"
+      }, {
+        "name" : "--x-comments-form-radius",
+        "default" : "var(--x-radius-md,8px)"
+      }, {
+        "name" : "--x-comments-gap",
+        "default" : "var(--x-space-md,0.75rem)"
+      }, {
+        "name" : "--x-comments-heading-font-size",
+        "default" : "var(--x-font-size-lg,1.125rem)"
+      } ],
+      "cssParts" : [ {
+        "name" : "part"
+      } ],
+      "foreignWrites" : [ {
+        "target" : "x-comment",
+        "attributes" : [ "data-comments-closed", "slot" ]
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-comments",
+      "declaration" : {
+        "name" : "XComments"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
     "path" : "dist/x-confetti.js",
     "declarations" : [ {
       "kind" : "class",

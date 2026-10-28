@@ -22,6 +22,8 @@ import type { XCollapse } from "@vanelsas/baredom/x-collapse";
 import type { XColorPicker } from "@vanelsas/baredom/x-color-picker";
 import type { XCombobox } from "@vanelsas/baredom/x-combobox";
 import type { XCommandPalette } from "@vanelsas/baredom/x-command-palette";
+import type { XComment } from "@vanelsas/baredom/x-comment";
+import type { XComments } from "@vanelsas/baredom/x-comments";
 import type { XConfetti } from "@vanelsas/baredom/x-confetti";
 import type { XContainer } from "@vanelsas/baredom/x-container";
 import type { XContextMenu } from "@vanelsas/baredom/x-context-menu";
@@ -134,6 +136,8 @@ declare module "solid-js" {
       "x-color-picker": JSX.HTMLAttributes<XColorPicker> & Record<string, any>;
       "x-combobox": JSX.HTMLAttributes<XCombobox> & Record<string, any>;
       "x-command-palette": JSX.HTMLAttributes<XCommandPalette> & Record<string, any>;
+      "x-comment": JSX.HTMLAttributes<XComment> & Record<string, any>;
+      "x-comments": JSX.HTMLAttributes<XComments> & Record<string, any>;
       "x-confetti": JSX.HTMLAttributes<XConfetti> & Record<string, any>;
       "x-container": JSX.HTMLAttributes<XContainer> & Record<string, any>;
       "x-context-menu": JSX.HTMLAttributes<XContextMenu> & Record<string, any>;

@@ -6,6 +6,7 @@
    writes. A target or attributes of \"any\" match every tag or attribute."
   {"x-avatar-group" [{:target "any", :attributes ["data-group-disabled" "data-group-size"]}]
    "x-carousel" [{:target "any", :attributes ["data-active"]}]
+   "x-comments" [{:target "x-comment", :attributes ["data-comments-closed" "slot"]}]
    "x-drop-zone" [{:target "x-drag-panel", :attributes ["pending"]}]
    "x-form" [{:target "any", :attributes ["error"]}]
    "x-i18n-provider" [{:target "any", :attributes "any"}]

@@ -33,6 +33,8 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-color-picker` | 10/10 | 1/1 | 1/1 |  |  | 2/2 | 3/3 |  | 0/5 | 1/1 | 4/4 |
 | `x-combobox` | 27/27 |  | 2/2 | 1/1 |  | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 10/10 |
 | `x-command-palette` | 11/11 |  | 4/4 | 1/1 |  | 1/1 | 2/2 |  | 0/6 | 2/2 | 1/1 |
+| `x-comment` | 11/11 | 1/1 | 3/3 | 1/1 |  | 2/2 |  |  | 8/8 |  | 1/1 |
+| `x-comments` | 6/6 | 1/1 | 1/1 | 2/2 |  | 1/1 |  |  | 4/4 |  | 1/1 |
 | `x-confetti` |  |  |  |  |  |  |  |  |  |  |  |
 | `x-container` | 2/2 |  |  |  |  |  |  |  | 0/3 |  | 1/1 |
 | `x-context-menu` | 8/8 |  |  |  |  | 1/1 | 2/2 | 1/1 | 0/1 |  | 1/1 |
@@ -121,7 +123,7 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-typography` | 11/11 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 1/1 |
 | `x-welcome-tour` | 27/27 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 1/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 1025/1025 | 12/12 | 119/119 | 69/69 | 8/8 | 113/113 | 75/75 | 108/108 | 17/241 | 19/19 | 116/116 |
+| **All** | 1042/1042 | 14/14 | 123/123 | 72/72 | 8/8 | 116/116 | 75/75 | 108/108 | 29/253 | 19/19 | 118/118 |
 
 CSS not read, or not in full: x-liquid-glass.
 
