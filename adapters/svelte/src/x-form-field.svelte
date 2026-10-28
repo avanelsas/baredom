@@ -12,6 +12,7 @@
     hint?: string;
     readOnly?: boolean;
     label?: string;
+    maxLength?: number;
     error?: string;
     autocomplete?: string;
     required?: boolean;
@@ -37,6 +38,7 @@
     hint,
     readOnly,
     label,
+    maxLength,
     error,
     autocomplete,
     required,
@@ -88,6 +90,7 @@
   {hint}
   {readOnly}
   {label}
+  {maxLength}
   {error}
   {autocomplete}
   {required}

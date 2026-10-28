@@ -27,6 +27,7 @@ A self-contained, form-associated text-input field with a label, optional hint, 
 | `readonly`     | boolean | `false` | Makes the field read-only                        |
 | `required`     | boolean | `false` | Marks required (native + ARIA)                   |
 | `autocomplete` | string  | `""`    | Passed through to inner `<input>`                |
+| `maxlength`    | integer | absent  | Most characters the field takes                  |
 
 ---
 
@@ -45,6 +46,7 @@ A self-contained, form-associated text-input field with a label, optional hint, 
 | `disabled`    | boolean | `disabled`         |
 | `readOnly`    | boolean | `readonly`         |
 | `required`    | boolean | `required`         |
+| `maxLength`   | number  | `maxlength`        |
 
 ### Value sync note
 

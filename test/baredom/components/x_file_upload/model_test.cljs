@@ -2,18 +2,6 @@
   (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-file-upload.model :as model]))
 
-;; ── parse-positive-int ──────────────────────────────────────────────────────
-(deftest parse-positive-int-valid-test
-  (is (= 5 (model/parse-positive-int "5")))
-  (is (= 1024 (model/parse-positive-int "1024"))))
-
-(deftest parse-positive-int-invalid-test
-  (is (nil? (model/parse-positive-int nil)))
-  (is (nil? (model/parse-positive-int "")))
-  (is (nil? (model/parse-positive-int "0")))
-  (is (nil? (model/parse-positive-int "-1")))
-  (is (nil? (model/parse-positive-int "abc"))))
-
 ;; ── normalize ───────────────────────────────────────────────────────────────
 (deftest normalize-defaults-test
   (let [m (model/normalize {})]

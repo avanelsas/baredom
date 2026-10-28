@@ -23,6 +23,7 @@ export const XFormField = defineComponent({
     hint: { type: String as PropType<string | undefined>, default: undefined },
     readOnly: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     label: { type: String as PropType<string | undefined>, default: undefined },
+    maxLength: { type: Number as PropType<number | undefined>, default: undefined },
     error: { type: String as PropType<string | undefined>, default: undefined },
     autocomplete: { type: String as PropType<string | undefined>, default: undefined },
     required: { type: Boolean as PropType<boolean | undefined>, default: undefined },

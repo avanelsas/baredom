@@ -15,6 +15,7 @@ export interface XFormFieldProps {
   hint?: string;
   readOnly?: boolean;
   label?: string;
+  maxLength?: number;
   error?: string;
   autocomplete?: string;
   required?: boolean;

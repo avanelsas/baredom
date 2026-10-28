@@ -1,4 +1,5 @@
-(ns baredom.components.x-form-field.model)
+(ns baredom.components.x-form-field.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-form-field")
 
@@ -14,6 +15,7 @@
 (def attr-readonly     "readonly")
 (def attr-required     "required")
 (def attr-autocomplete "autocomplete")
+(def attr-maxlength    "maxlength")
 
 ;; Event name constants
 (def event-change-request "x-form-field-change-request")
@@ -31,7 +33,8 @@
        attr-disabled
        attr-readonly
        attr-required
-       attr-autocomplete])
+       attr-autocomplete
+       attr-maxlength])
 
 (def allowed-types
   #{"text" "email" "password" "url" "number" "tel"})
@@ -53,6 +56,7 @@
    :disabled     {:type 'boolean :reflects-attribute attr-disabled}
    :readOnly     {:type 'boolean :reflects-attribute attr-readonly}
    :required     {:type 'boolean :reflects-attribute attr-required}
+   :maxLength    {:type 'number  :reflects-attribute attr-maxlength}
    :validity          {:type 'ValidityState   :readonly true}
    :validationMessage {:type 'string          :readonly true}
    :willValidate      {:type 'boolean         :readonly true}
@@ -70,7 +74,7 @@
   "Derives a complete view-model map from raw attribute values."
   [{:keys [label-raw type-raw name-raw placeholder-raw
            hint-raw error-raw disabled-present? readonly-present?
-           required-present? autocomplete-raw]}]
+           required-present? autocomplete-raw maxlength-raw]}]
   (let [error        (or error-raw "")
         hint         (or hint-raw "")
         label        (or label-raw "")]
@@ -84,6 +88,7 @@
      :readonly?    (boolean readonly-present?)
      :required?    (boolean required-present?)
      :autocomplete (or autocomplete-raw "")
+     :maxlength    (mu/parse-positive-int maxlength-raw)
      :has-error?   (and (string? error-raw) (not= error-raw "") (some? error-raw))
      :has-hint?    (and (string? hint-raw)  (not= hint-raw "")  (some? hint-raw))
      :has-label?   (and (string? label-raw) (not= label-raw "") (some? label-raw))}))

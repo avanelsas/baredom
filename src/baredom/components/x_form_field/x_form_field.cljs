@@ -193,17 +193,21 @@
     :disabled-present? (forms/disabled? el)
     :readonly-present? (du/has-attr? el model/attr-readonly)
     :required-present? (du/has-attr? el model/attr-required)
-    :autocomplete-raw  (du/get-attr el model/attr-autocomplete)}))
+    :autocomplete-raw  (du/get-attr el model/attr-autocomplete)
+    :maxlength-raw     (du/get-attr el model/attr-maxlength)}))
 
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ──────
-(defn- apply-input-native! [^js input-el {:keys [type name placeholder disabled? readonly? required? autocomplete]}]
+(defn- apply-input-native!
+  [^js input-el {:keys [type name placeholder autocomplete
+                        disabled? readonly? required? maxlength]}]
   (set! (.-type input-el)         type)
   (set! (.-name input-el)         name)
   (set! (.-placeholder input-el)  placeholder)
   (set! (.-disabled input-el)     disabled?)
   (set! (.-readOnly input-el)     readonly?)
   (set! (.-required input-el)     required?)
-  (set! (.-autocomplete input-el) autocomplete))
+  (set! (.-autocomplete input-el) autocomplete)
+  (du/set-attr-to! input-el model/attr-maxlength (some-> maxlength str)))
 
 (defn- describedby-token [{:keys [has-hint? has-error?]}]
   (cond
@@ -391,6 +395,7 @@
   (du/define-string-prop! proto "autocomplete" model/attr-autocomplete "")
   (du/define-string-prop! proto "hint"         model/attr-hint "")
   (du/define-string-prop! proto "error"        model/attr-error "")
+  (du/define-number-prop! proto "maxLength"    model/attr-maxlength nil)
   (du/define-bool-prop! proto "disabled" model/attr-disabled)
   (du/define-bool-prop! proto "readOnly" model/attr-readonly)
   (du/define-bool-prop! proto "required" model/attr-required))

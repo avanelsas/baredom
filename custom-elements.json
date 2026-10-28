@@ -8032,6 +8032,12 @@
         }
       }, {
         "kind" : "field",
+        "name" : "maxLength",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
         "name" : "error",
         "type" : {
           "text" : "string"
@@ -8144,6 +8150,12 @@
         "fieldName" : "autocomplete",
         "type" : {
           "text" : "string"
+        }
+      }, {
+        "name" : "maxlength",
+        "fieldName" : "maxLength",
+        "type" : {
+          "text" : "number"
         }
       } ],
       "events" : [ {

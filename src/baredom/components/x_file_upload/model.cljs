@@ -48,21 +48,14 @@
 ;; ---------------------------------------------------------------------------
 ;; Normalization
 ;; ---------------------------------------------------------------------------
-(defn parse-positive-int
-  "Parses string to positive integer, returns nil on failure."
-  [s]
-  (when (some? s)
-    (let [n (js/parseInt s 10)]
-      (when (and (not (js/isNaN n)) (pos? n)) n))))
-
 (defn normalize
   "Derives a complete view-model map from raw attribute values."
   [{:keys [accept-raw multiple-present? max-size-raw max-files-raw
            disabled-present? required-present? name-raw]}]
   {:accept    (or accept-raw "")
    :multiple? (boolean multiple-present?)
-   :max-size  (parse-positive-int max-size-raw)
-   :max-files (parse-positive-int max-files-raw)
+   :max-size  (mu/parse-positive-int max-size-raw)
+   :max-files (mu/parse-positive-int max-files-raw)
    :disabled? (boolean disabled-present?)
    :required? (boolean required-present?)
    :name      (or name-raw "")})

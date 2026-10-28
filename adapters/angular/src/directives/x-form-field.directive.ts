@@ -25,6 +25,7 @@ export class BaredomFormField implements OnInit, OnDestroy {
   @Input() set hint(v: string) { this.el.hint = v as any; }
   @Input() set readOnly(v: boolean) { this.el.readOnly = v as any; }
   @Input() set label(v: string) { this.el.label = v as any; }
+  @Input() set maxLength(v: number) { this.el.maxLength = v as any; }
   @Input() set error(v: string) { this.el.error = v as any; }
   @Input() set autocomplete(v: string) { this.el.autocomplete = v as any; }
   @Input() set required(v: boolean) { this.el.required = v as any; }
