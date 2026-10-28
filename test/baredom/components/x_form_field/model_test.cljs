@@ -15,6 +15,7 @@
       (is (= false (:readonly? m)))
       (is (= false (:required? m)))
       (is (= ""    (:autocomplete m)))
+      (is (nil? (:maxlength m)))
       (is (= false (:has-error? m)))
       (is (= false (:has-hint? m)))
       (is (= false (:has-label? m))))))
@@ -32,6 +33,13 @@
 
   (testing "empty string type falls back to text"
     (is (= "text" (:type (model/normalize {:type-raw ""}))))))
+
+(deftest normalize-maxlength-test
+  (testing "a positive integer is the limit"
+    (is (= 80 (:maxlength (model/normalize {:maxlength-raw "80"})))))
+  (testing "an invalid value gives no limit"
+    (is (nil? (:maxlength (model/normalize {:maxlength-raw "0"}))))
+    (is (nil? (:maxlength (model/normalize {:maxlength-raw "abc"}))))))
 
 (deftest normalize-error-test
   (testing "non-empty error sets has-error? true"

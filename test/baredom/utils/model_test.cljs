@@ -138,3 +138,18 @@
   (is (false? (model/parse-bool-attr " False ")))
   (is (true? (model/parse-bool-attr "")))
   (is (true? (model/parse-bool-attr "true"))))
+
+(deftest parse-positive-int-reads-a-positive-integer-test
+  (is (= 3 (model/parse-positive-int "3")))
+  (is (= 1024 (model/parse-positive-int "1024"))))
+
+(deftest parse-positive-int-reads-a-leading-integer-test
+  (is (= 12 (model/parse-positive-int "12abc")))
+  (is (= 1 (model/parse-positive-int "1.5"))))
+
+(deftest parse-positive-int-gives-nil-for-no-positive-integer-test
+  (is (nil? (model/parse-positive-int nil)))
+  (is (nil? (model/parse-positive-int "")))
+  (is (nil? (model/parse-positive-int "0")))
+  (is (nil? (model/parse-positive-int "-1")))
+  (is (nil? (model/parse-positive-int "abc"))))

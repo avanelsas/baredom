@@ -1,4 +1,5 @@
-(ns baredom.components.x-text-area.model)
+(ns baredom.components.x-text-area.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-text-area")
 
@@ -49,12 +50,6 @@
     raw
     default-resize))
 
-(defn parse-positive-int [raw]
-  (when (string? raw)
-    (let [n (js/parseInt raw 10)]
-      (when (and (not (js/isNaN n)) (pos? n))
-        n))))
-
 (def property-api
   {:value        {:type 'string  :reflects-attribute attr-value}
    :name         {:type 'string  :reflects-attribute attr-name}
@@ -100,9 +95,9 @@
      :disabled?    (boolean disabled-present?)
      :readonly?    (boolean readonly-present?)
      :required?    (boolean required-present?)
-     :rows         (or (parse-positive-int rows-raw) 3)
-     :maxlength    (parse-positive-int maxlength-raw)
-     :minlength    (parse-positive-int minlength-raw)
+     :rows         (or (mu/parse-positive-int rows-raw) 3)
+     :maxlength    (mu/parse-positive-int maxlength-raw)
+     :minlength    (mu/parse-positive-int minlength-raw)
      :autocomplete (or autocomplete-raw "")
      :resize       (normalize-resize resize-raw)
      :has-error?   (and (string? error-raw) (not= error-raw ""))

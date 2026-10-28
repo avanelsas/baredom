@@ -15,19 +15,6 @@
     (is (= "vertical" (model/normalize-resize "auto")))
     (is (= "vertical" (model/normalize-resize "VERTICAL")))))
 
-(deftest parse-positive-int-test
-  (testing "valid positive integers"
-    (is (= 3   (model/parse-positive-int "3")))
-    (is (= 10  (model/parse-positive-int "10")))
-    (is (= 500 (model/parse-positive-int "500"))))
-  (testing "zero and negative return nil"
-    (is (nil? (model/parse-positive-int "0")))
-    (is (nil? (model/parse-positive-int "-1"))))
-  (testing "non-numeric strings return nil"
-    (is (nil? (model/parse-positive-int "abc")))
-    (is (nil? (model/parse-positive-int "")))
-    (is (nil? (model/parse-positive-int nil)))))
-
 (deftest normalize-defaults-test
   (testing "all defaults when no attributes"
     (let [m (model/normalize {})]

@@ -98,6 +98,29 @@
         "placeholder attribute should set input placeholder")))
 
 ;; ---------------------------------------------------------------------------
+;; maxlength attribute
+;; ---------------------------------------------------------------------------
+
+(deftest maxlength-reaches-the-input-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-maxlength "80")
+    (is (= "80" (.getAttribute input-el model/attr-maxlength)))))
+
+(deftest removing-maxlength-removes-it-from-the-input-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-maxlength "80")
+    (.removeAttribute el model/attr-maxlength)
+    (is (not (.hasAttribute input-el model/attr-maxlength)))))
+
+(deftest invalid-maxlength-leaves-input-unlimited-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-maxlength "0")
+    (is (not (.hasAttribute input-el model/attr-maxlength)))))
+
+;; ---------------------------------------------------------------------------
 ;; hint attribute
 ;; ---------------------------------------------------------------------------
 
@@ -281,6 +304,13 @@
         "setting placeholder property should reflect to attribute")
     (is (= "Enter text" (.-placeholder el))
         "placeholder property getter should read from attribute")))
+
+(deftest maxlength-property-reflects-test
+  (let [el (append! (make-el))]
+    (is (nil? (.-maxLength el)))
+    (set! (.-maxLength el) 80)
+    (is (= "80" (.getAttribute el model/attr-maxlength)))
+    (is (= 80 (.-maxLength el)))))
 
 (deftest autocomplete-property-reflects-test
   (let [el (append! (make-el))]

@@ -27,6 +27,15 @@
   [value]
   (and (string? value) (not= "" value)))
 
+(defn parse-positive-int
+  "The positive integer an attribute says, or nil. Pass the value of `getAttribute`.
+   It reads a leading integer, as HTML does."
+  [s]
+  (when (string? s)
+    (let [n (js/parseInt s 10)]
+      (when (and (not (js/isNaN n)) (pos? n))
+        n))))
+
 ;; ── Security sanitizers ──────────────────────────────────────────────────
 
 (def ^:private svg-path-re

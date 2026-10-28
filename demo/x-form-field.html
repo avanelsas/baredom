@@ -66,6 +66,11 @@
       <x-form-field label="Required field" required placeholder="Must fill in" name="required-field"></x-form-field>
     </div>
 
+    <x-typography variant="overline">Maximum length</x-typography>
+    <div class="stack">
+      <x-form-field label="Name" maxlength="20" hint="At most 20 characters." name="maxlength-field"></x-form-field>
+    </div>
+
     <x-typography variant="overline">Input types</x-typography>
     <div class="stack">
       <x-form-field label="Email"    type="email"    placeholder="you@example.com" name="t-email"></x-form-field>
