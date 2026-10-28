@@ -4494,6 +4494,12 @@
         }
       }, {
         "kind" : "field",
+        "name" : "locale",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "name",
         "type" : {
           "text" : "string"
@@ -4590,6 +4596,12 @@
           "text" : "string"
         }
       }, {
+        "name" : "locale",
+        "fieldName" : "locale",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
         "name" : "depth",
         "fieldName" : "depth",
         "type" : {
@@ -4667,7 +4679,7 @@
         }
       } ],
       "slots" : [ {
-        "name" : ""
+        "name" : "meta"
       } ],
       "cssProperties" : [ {
         "name" : "--x-comment-author-bg",

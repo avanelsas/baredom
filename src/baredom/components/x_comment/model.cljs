@@ -7,6 +7,7 @@
 (def attr-comment-id          "comment-id")
 (def attr-name                "name")
 (def attr-datetime            "datetime")
+(def attr-locale              "locale")
 (def attr-depth               "depth")
 (def attr-max-depth           "max-depth")
 (def attr-reply-to-name       "reply-to-name")
@@ -27,9 +28,12 @@
   #{attr-closed})
 
 (def observed-attributes
-  #js [attr-comment-id attr-name attr-datetime attr-depth attr-max-depth attr-reply-to-name
-       attr-author attr-status attr-reply-label attr-reply-context-label attr-author-label
-       attr-pending-label attr-removed-label attr-expired-label attr-closed])
+  #js [attr-comment-id attr-name attr-datetime attr-locale attr-depth attr-max-depth
+       attr-reply-to-name attr-author attr-status attr-reply-label attr-reply-context-label
+       attr-author-label attr-pending-label attr-removed-label attr-expired-label attr-closed])
+
+;; ── Slots ─────────────────────────────────────────────────────────────────
+(def slot-meta "meta")
 
 ;; ── Event constants ───────────────────────────────────────────────────────
 (def event-reply "x-comment-reply")
@@ -85,6 +89,16 @@
   (when (and (mu/non-empty-string? s) (not (js/isNaN (js/Date.parse s))))
     s))
 
+(defn date-text
+  "The date `iso` as `locale` writes it, as its day in UTC. With no usable locale, `iso` itself."
+  [iso locale]
+  (if (mu/non-empty-string? locale)
+    (try
+      (.format (js/Intl.DateTimeFormat. locale #js {:dateStyle "medium" :timeZone "UTC"})
+               (js/Date. iso))
+      (catch :default _ iso))
+    iso))
+
 (defn- context-view [reply-to-name depth max-depth labels]
   (when (mu/non-empty-string? reply-to-name)
     {:text     (str (:reply-context labels) " " reply-to-name)
@@ -93,18 +107,20 @@
 ;; ── Normalize ─────────────────────────────────────────────────────────────
 (defn normalize
   "The view model of a comment from its raw attributes."
-  [{:keys [comment-id-raw name-raw datetime-raw depth-raw max-depth-raw reply-to-name-raw
-           author? status-raw closed? labels-raw]}]
+  [{:keys [comment-id-raw name-raw datetime-raw locale-raw depth-raw max-depth-raw
+           reply-to-name-raw author? status-raw closed? labels-raw]}]
   (let [labels    (mu/merge-texts default-labels labels-raw)
         depth     (parse-depth depth-raw)
         max-depth (parse-max-depth max-depth-raw)
         status    (parse-status status-raw)
         view      (get status-views status)
-        authored? (boolean (and author? (:author? view)))]
+        authored? (boolean (and author? (:author? view)))
+        datetime  (when (:date? view) (parse-datetime datetime-raw))]
     {:comment-id (or comment-id-raw "")
      :name       (or name-raw "")
      :identity?  (:identity? view)
-     :datetime   (when (:date? view) (parse-datetime datetime-raw))
+     :datetime   datetime
+     :date-text  (some-> datetime (date-text locale-raw))
      :level      (min depth max-depth)
      :context    (context-view reply-to-name-raw depth max-depth labels)
      :status     status
@@ -126,6 +142,7 @@
   {:commentId         {:type 'string  :reflects-attribute attr-comment-id :default ""}
    :name              {:type 'string  :reflects-attribute attr-name :default ""}
    :datetime          {:type 'string  :reflects-attribute attr-datetime :default ""}
+   :locale            {:type 'string  :reflects-attribute attr-locale :default ""}
    :depth             {:type 'number  :reflects-attribute attr-depth :default 0}
    :maxDepth          {:type 'number  :reflects-attribute attr-max-depth :default default-max-depth}
    :replyToName       {:type 'string  :reflects-attribute attr-reply-to-name :default ""}

@@ -9,6 +9,7 @@ init();
 
 export interface XCommentProps {
   expiredLabel?: string;
+  locale?: string;
   name?: string;
   replyLabel?: string;
   commentId?: string;

@@ -70,6 +70,8 @@
 
 (deftest the-trap-is-a-hidden-field-a-person-skips-test
   (let [trap (part (append! (make-el {})) "trap")]
+    (is (= "x-comments-aux" (.getAttribute trap "name")))
+    (is (not (.hasAttribute trap "id")))
     (is (= "-1" (.getAttribute trap "tabindex")))
     (is (= "off" (.getAttribute trap "autocomplete")))
     (is (= "true" (.getAttribute trap "aria-hidden")))))

@@ -10,6 +10,7 @@
     (is (= "" (:name m)))
     (is (true? (:identity? m)))
     (is (nil? (:datetime m)))
+    (is (nil? (:date-text m)))
     (is (= 0 (:level m)))
     (is (nil? (:context m)))
     (is (true? (:body? m)))
@@ -95,7 +96,20 @@
   (is (nil? (model/parse-datetime "")))
   (is (nil? (model/parse-datetime nil))))
 
+(deftest with-no-locale-the-date-shows-as-given-test
+  (is (= "2026-10-28" (:date-text (model/normalize {:datetime-raw "2026-10-28"}))))
+  (is (= "2026-10-28" (:date-text (model/normalize {:datetime-raw "2026-10-28" :locale-raw ""})))))
+
+(deftest a-locale-writes-the-date-in-its-language-as-its-day-in-utc-test
+  (is (= "28 Oct 2026" (model/date-text "2026-10-28" "en-GB")))
+  (is (= "28 okt 2026" (model/date-text "2026-10-28" "nl")))
+  (is (= "28 Oct 2026" (model/date-text "2026-10-28T23:30:00Z" "en-GB"))))
+
+(deftest an-unusable-locale-shows-the-date-as-given-test
+  (is (= "2026-10-28" (model/date-text "2026-10-28" "not a locale"))))
+
 ;; ── Closed ────────────────────────────────────────────────────────────────
+
 (deftest a-closed-comment-has-no-reply-test
   (is (false? (:reply? (model/normalize {:closed? true})))))
 

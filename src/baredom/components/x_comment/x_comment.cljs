@@ -14,6 +14,7 @@
 ;; ── String constants ──────────────────────────────────────────────────────
 (def ^:private attr-part        "part")
 (def ^:private attr-id          "id")
+(def ^:private attr-name        "name")
 (def ^:private attr-hidden      "hidden")
 (def ^:private attr-datetime    "datetime")
 (def ^:private attr-labelledby  "aria-labelledby")
@@ -23,7 +24,9 @@
 (def ^:private attr-muted       "data-muted")
 (def ^:private attr-quiet       "data-quiet")
 
-(def ^:private meta-id         "meta")
+(def ^:private name-id         "name")
+(def ^:private date-id         "date")
+(def ^:private labelled-by     (str name-id " " date-id))
 (def ^:private css-var-level   "--x-comment-level")
 (def ^:private avatar-size     "sm")
 (def ^:private button-variant  "ghost")
@@ -111,13 +114,19 @@
     (du/set-attr! node attr-part part)
     node))
 
+(defn- make-meta-slot! []
+  (let [slot (.createElement js/document "slot")]
+    (du/set-attr! slot attr-name model/slot-meta)
+    slot))
+
 (defn- make-meta-section! []
   (let [header  (make-part! "header" "meta")
         name-el (make-part! "span" "name")
         badge   (make-part! "span" "badge")
         date    (make-part! "time" "date")]
-    (du/set-attr! header attr-id meta-id)
-    (.append header name-el badge date)
+    (du/set-attr! name-el attr-id name-id)
+    (du/set-attr! date attr-id date-id)
+    (.append header name-el badge date (make-meta-slot!))
     {:header header :name-el name-el :badge badge :date date}))
 
 (defn- make-reply-button! []
@@ -146,7 +155,7 @@
         avatar  (make-part! avatar-model/tag-name "avatar")
         {:keys [main reply] :as refs} (make-main-section!)]
     (set! (.-textContent style) style-text)
-    (du/set-attr! article attr-labelledby meta-id)
+    (du/set-attr! article attr-labelledby labelled-by)
     (du/set-attr! avatar avatar-model/attr-size avatar-size)
     (du/set-attr! avatar attr-aria-hidden "true")
     (.append article avatar main)
@@ -165,6 +174,7 @@
    {:comment-id-raw    (du/get-attr el model/attr-comment-id)
     :name-raw          (du/get-attr el model/attr-name)
     :datetime-raw      (du/get-attr el model/attr-datetime)
+    :locale-raw        (du/get-attr el model/attr-locale)
     :depth-raw         (du/get-attr el model/attr-depth)
     :max-depth-raw     (du/get-attr el model/attr-max-depth)
     :reply-to-name-raw (du/get-attr el model/attr-reply-to-name)
@@ -174,12 +184,6 @@
     :labels-raw        (update-vals model/label-attributes (partial du/get-attr el))}))
 
 ;; ── DOM patching ──────────────────────────────────────────────────────────
-(def ^:private date-format
-  (delay (js/Intl.DateTimeFormat. js/undefined #js {:dateStyle "medium"})))
-
-(defn- format-date [iso]
-  (.format ^js @date-format (js/Date. iso)))
-
 (defn- show! [^js node visible?]
   (du/set-bool-attr-to! node attr-hidden (not visible?)))
 
@@ -199,9 +203,9 @@
 (defn- apply-badge! [{:keys [badge]} m]
   (apply-text! badge (:badge m)))
 
-(defn- apply-date! [{:keys [date]} {:keys [datetime]}]
+(defn- apply-date! [{:keys [date]} {:keys [datetime date-text]}]
   (du/set-attr-to! date attr-datetime datetime)
-  (apply-text! date (some-> datetime format-date)))
+  (apply-text! date date-text))
 
 (defn- apply-context! [{:keys [context]} m]
   (let [{:keys [text quiet?]} (:context m)]

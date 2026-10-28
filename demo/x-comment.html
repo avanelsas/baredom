@@ -59,6 +59,15 @@
             <option value="4">4</option>
           </x-select>
         </label>
+        <label>
+          Locale
+          <x-select id="ctl-locale" value="">
+            <option value="" selected>as given</option>
+            <option value="en-GB">en-GB</option>
+            <option value="en-US">en-US</option>
+            <option value="nl">nl</option>
+          </x-select>
+        </label>
         <label><x-switch id="ctl-author"></x-switch> Author</label>
       </div>
       <x-comment id="live" comment-id="live-1" name="Ann Lee" datetime="2026-10-27T09:30:00Z"
@@ -101,10 +110,18 @@
       <x-comment comment-id="x1" datetime="2026-09-20" status="expired"></x-comment>
     </div>
 
+    <x-typography variant="h2">A short id after the date</x-typography>
+    <div class="panel thread">
+      <x-comment comment-id="a1b2c3d4" name="Ann Lee" datetime="2026-10-21">
+        <p>The <code>meta</code> slot holds what a page shows after the date, such as a short id to copy.</p>
+        <span slot="meta"><code>a1b2</code> <x-copy text="a1b2">Copy</x-copy></span>
+      </x-comment>
+    </div>
+
     <x-typography variant="h2">Labels</x-typography>
     <div class="panel thread">
       <x-comment comment-id="nl1" name="Eva de Vries" datetime="2026-10-26" status="pending"
-                 pending-label="Wacht op controle" reply-label="Antwoord">
+                 pending-label="Wacht op controle" reply-label="Antwoord" locale="nl">
         <p>Een reactie met Nederlandse labels.</p>
       </x-comment>
     </div>
@@ -126,6 +143,9 @@
       });
       document.getElementById('ctl-depth').addEventListener('select-change', e => {
         live.depth = Number(e.detail.value);
+      });
+      document.getElementById('ctl-locale').addEventListener('select-change', e => {
+        live.locale = e.detail.value;
       });
       document.getElementById('ctl-author').addEventListener('x-switch-change', e => {
         live.author = e.detail.checked;

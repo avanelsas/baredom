@@ -44,9 +44,14 @@
       (is (some? (part el p)) p))
     (is (some? (.querySelector (part el "body") "slot")))))
 
-(deftest the-article-is-labelled-by-its-meta-test
+(deftest the-article-is-labelled-by-the-name-and-the-date-test
   (let [el (append! (make-el {}))]
-    (is (= (.-id (part el "meta")) (.getAttribute (part el "comment") "aria-labelledby")))))
+    (is (= (str (.-id (part el "name")) " " (.-id (part el "date")))
+           (.getAttribute (part el "comment") "aria-labelledby")))))
+
+(deftest the-meta-slot-stands-in-the-header-test
+  (let [el (append! (make-el {}))]
+    (is (some? (.querySelector (part el "meta") (str "slot[name=" model/slot-meta "]"))))))
 
 ;; ── Identity and date ─────────────────────────────────────────────────────
 (deftest name-reaches-the-name-and-the-avatar-test
@@ -64,6 +69,16 @@
     (is (= "2026-10-28" (.getAttribute date "datetime")))
     (is (not= "" (text date)))
     (is (shown? date))))
+
+(deftest the-date-shows-as-given-test
+  (let [el (append! (make-el {model/attr-datetime "2026-10-28"}))]
+    (is (= "2026-10-28" (text (part el "date"))))))
+
+(deftest a-change-of-locale-rewrites-the-date-test
+  (let [el (append! (make-el {model/attr-datetime "2026-10-28" model/attr-locale "en-GB"}))]
+    (is (= "28 Oct 2026" (text (part el "date"))))
+    (.setAttribute el model/attr-locale "nl")
+    (is (= "28 okt 2026" (text (part el "date"))))))
 
 (deftest an-unreadable-datetime-hides-the-date-test
   (let [el   (append! (make-el {model/attr-datetime "soon"}))

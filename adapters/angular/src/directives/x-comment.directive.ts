@@ -18,6 +18,7 @@ export class BaredomComment implements OnInit, OnDestroy {
   }
 
   @Input() set expiredLabel(v: string) { this.el.expiredLabel = v as any; }
+  @Input() set locale(v: string) { this.el.locale = v as any; }
   @Input() set name(v: string) { this.el.name = v as any; }
   @Input() set replyLabel(v: string) { this.el.replyLabel = v as any; }
   @Input() set commentId(v: string) { this.el.commentId = v as any; }

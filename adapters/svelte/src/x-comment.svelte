@@ -6,6 +6,7 @@
   export type { XCommentElement };
   export interface XCommentProps {
     expiredLabel?: string;
+    locale?: string;
     name?: string;
     replyLabel?: string;
     commentId?: string;
@@ -31,6 +32,7 @@
 <script lang="ts">
   let {
     expiredLabel,
+    locale,
     name,
     replyLabel,
     commentId,
@@ -66,6 +68,7 @@
 <x-comment
   bind:this={el}
   {expiredLabel}
+  {locale}
   {name}
   {replyLabel}
   {commentId}

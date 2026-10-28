@@ -16,6 +16,7 @@ export const XComment = defineComponent({
   inheritAttrs: false,
   props: {
     expiredLabel: { type: String as PropType<string | undefined>, default: undefined },
+    locale: { type: String as PropType<string | undefined>, default: undefined },
     name: { type: String as PropType<string | undefined>, default: undefined },
     replyLabel: { type: String as PropType<string | undefined>, default: undefined },
     commentId: { type: String as PropType<string | undefined>, default: undefined },

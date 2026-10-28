@@ -18,7 +18,8 @@ them.
 |-----------|------|---------|-------|
 | `comment-id` | string | `""` | The id of the comment. `x-comment-reply` carries it. |
 | `name` | string | `""` | The name of the commenter. The avatar shows its initials. |
-| `datetime` | string | `""` | An ISO 8601 date. A date that cannot be read is not shown. |
+| `datetime` | string | `""` | An ISO 8601 date. It shows as given. A date that cannot be read is not shown. |
+| `locale` | string | `""` | A language tag, such as `en-GB`. When set, the date shows in that language, as its day in UTC. |
 | `depth` | number | `0` | The depth in the thread. 0 is a top-level comment. |
 | `max-depth` | number | `2` | The deepest indent level. A deeper reply stands at this level. |
 | `reply-to-name` | string | `""` | The name of the comment it answers. |
@@ -40,6 +41,7 @@ A label is joined to a name as "label name". That order does not fit every langu
 | `commentId` | string | `comment-id` |
 | `name` | string | `name` |
 | `datetime` | string | `datetime` |
+| `locale` | string | `locale` |
 | `depth` | number | `depth` |
 | `maxDepth` | number | `max-depth` |
 | `replyToName` | string | `reply-to-name` |
@@ -65,6 +67,7 @@ A label is joined to a name as "label name". That order does not fit every langu
 | Slot | Description |
 |------|-------------|
 | _(default)_ | The body of the comment. |
+| `meta` | Content after the date, such as a short id. |
 
 ## States
 
@@ -113,7 +116,8 @@ the text is for screen readers only. Past it, the text shows.
 
 ## Accessibility
 
-- The comment is an `<article>` labelled by its meta header.
+- The comment is an `<article>` labelled by its name and its date. The `meta` slot is not part of
+  the label.
 - The avatar is hidden from assistive technology, since the name stands beside it.
 - `focus()` on the host moves focus to the Reply button.
 
@@ -132,6 +136,15 @@ Under 30rem the indent per level drops to `1rem`, so three levels fit in 320px.
 ```html
 <x-comment comment-id="p1" name="You" datetime="2026-10-28" status="pending">
   <p>Only the browser that sent this comment sees it.</p>
+</x-comment>
+```
+
+### A short id after the date
+
+```html
+<x-comment comment-id="a1b2c3d4" name="Ann" datetime="2026-10-21">
+  <p>The comment.</p>
+  <span slot="meta"><code>a1b2</code> <x-copy text="a1b2">Copy</x-copy></span>
 </x-comment>
 ```
 
