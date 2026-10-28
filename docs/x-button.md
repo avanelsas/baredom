@@ -641,6 +641,10 @@ Because the internal control is a native button, it supports:
 * focus via keyboard navigation
 * submit/reset behavior where applicable
 
+### Focus
+
+`focus()` on the host moves focus to the internal button.
+
 ### Focus indicator
 
 The component includes a visible focus style for keyboard-visible focus.

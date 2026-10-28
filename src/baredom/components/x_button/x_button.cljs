@@ -406,7 +406,7 @@
   "Build the shadow DOM and return the refs JS object. Stores nothing on
   the host — caller does that via `du/setv!`."
   [^js el]
-  (let [root      (.attachShadow el #js {:mode "open"})
+  (let [root      (.attachShadow el #js {:mode "open" :delegatesFocus true})
         style-el  (make-style-section!)
         {:keys [button-el icon-start-slot label-slot
                 spinner-slot icon-end-slot]} (make-button-section!)
