@@ -2,6 +2,13 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- **`x-date-picker` takes `format="short"`,** which shows each date with the short month of the
+  locale, for example `27 Jul 2026` for `en-GB`.
+
 ## [4.17.0] - 2026-10-28
 
 BareDOM 4.17 adds `x-comments` and `x-comment`, a comment thread with one form. All five adapters
