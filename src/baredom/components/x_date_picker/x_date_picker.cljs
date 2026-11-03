@@ -51,7 +51,7 @@
         month     (model/shown-month (when existing (gobj/get existing "canon"))
                                      canon
                                      (du/getv el k-month)
-                                     (js/Date.))
+                                     (dates/today))
         state     #js {:canon  canon
                        :cfg    cfg
                        :disp   disp}]
@@ -428,7 +428,7 @@
   [^js el]
   (when-not (du/has-attr? el "open")
     (let [state  (du/getv el k-state)
-          anchor (or (model/anchor (when state (gobj/get state "canon"))) (js/Date.))]
+          anchor (or (model/anchor (when state (gobj/get state "canon"))) (dates/today))]
       (du/setv! el k-month (dates/start-of-month anchor))
       (du/set-attr! el "open" "")
       (focus-grid-date! el (dates/date->iso anchor)))))

@@ -819,6 +819,35 @@
     (is (= "2026-03-10" (.getAttribute el model/attr-end)))))
 
 ;; ---------------------------------------------------------------------------
+;; Today is the local calendar day
+;; ---------------------------------------------------------------------------
+
+(defn- with-now!
+  "Run f while `Date.now` returns the instant of the local date-time; then restore it."
+  [y mo d h mi f]
+  (let [real (.-now js/Date)
+        ms   (.getTime (js/Date. y mo d h mi))]
+    (set! (.-now js/Date) (constantly ms))
+    (try (f) (finally (set! (.-now js/Date) real)))))
+
+(defn- open-empty-picker!
+  "An empty picker, opened, as a map of its first in-month day and its tab-reachable day."
+  []
+  (let [el (append! (make-el))]
+    (.click (shadow-part el "[part=btn]"))
+    (let [grid (shadow-part el "[part=grid]")]
+      {:first (.getAttribute (.querySelector grid "[part=day][data-outside=false]") "data-iso")
+       :focus (.getAttribute (.querySelector grid "[part=day][tabindex=\"0\"]") "data-iso")})))
+
+(deftest a-late-evening-opens-on-the-local-day-test
+  (is (= {:first "2026-10-01" :focus "2026-10-31"}
+         (with-now! 2026 9 31 23 30 open-empty-picker!))))
+
+(deftest an-early-morning-opens-on-the-local-day-test
+  (is (= {:first "2026-11-01" :focus "2026-11-01"}
+         (with-now! 2026 10 1 0 30 open-empty-picker!))))
+
+;; ---------------------------------------------------------------------------
 ;; The trigger button shows an SVG icon, not an emoji
 ;; ---------------------------------------------------------------------------
 

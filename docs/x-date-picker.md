@@ -91,6 +91,9 @@ Committing a blank input when nothing is committed yet is a no-op: neither event
 
 The calendar shows the month of `value`, or of `start` in range mode. When that date changes, also when a page writes it, the calendar moves to its month. Otherwise it keeps the month the user browsed to. So in range mode, picking the end in a later month keeps that month. Opening the calendar shows the month of the date again.
 
+Today is the local date of the user, from the local date fields of the clock. It is not the UTC
+date, so near midnight the calendar still opens on the day the user sees.
+
 ---
 
 ## Slots
