@@ -119,6 +119,8 @@ All consume shared `x-theme` tokens with fallbacks.
 - The grid has `role="grid"`; day cells are `<button role="gridcell">` with
   `aria-selected`, `aria-disabled`, and a localized full-date `aria-label`.
 - Today's cell carries `aria-current="date"`.
+- Today is the local date of the user, not the UTC date. It sets the today marker and, with no
+  `month`, value or start, the displayed month.
 - Roving tabindex: exactly one day cell is tab-reachable; arrow keys move it.
 - The month label has `aria-live="polite"` and `aria-expanded` for the
   quick-jump panel.

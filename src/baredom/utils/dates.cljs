@@ -1,7 +1,8 @@
 (ns baredom.utils.dates
   "Pure UTC date primitives shared by date components (x-date-picker,
    x-calendar). No DOM, no side effects — every function is a value
-   transform. Dates are JS `Date` objects pinned to UTC midnight; ISO
+   transform, except that `today` with no argument reads the clock. Dates are JS
+   `Date` objects pinned to UTC midnight; ISO
    strings are `\"YYYY-MM-DD\"`.
 
    `first-day-of-week` (`fdow`) is `0`=Sunday .. `6`=Saturday. The
@@ -27,6 +28,13 @@
   (when (and (string? s) (re-matches #"\d{4}-\d{2}-\d{2}" s))
     (let [^js d (js/Date. (str s "T00:00:00.000Z"))]
       (when-not (js/isNaN (.getTime d)) d))))
+
+(defn today
+  "The local calendar day of `now` (default: the clock), as a Date at UTC midnight.
+   It reads the local date fields, so the day is the user's day and not the UTC day."
+  ([] (today (js/Date. (js/Date.now))))
+  ([^js now]
+   (js/Date. (js/Date.UTC (.getFullYear now) (.getMonth now) (.getDate now)))))
 
 (defn compare-date
   "Returns -1, 0, or 1 comparing two UTC dates by day only."
