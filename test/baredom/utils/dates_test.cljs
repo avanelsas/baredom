@@ -15,6 +15,19 @@
     (let [d (js/Date. "2024-03-15T00:00:00.000Z")]
       (is (= "2024-03-15" (dates/date->iso d))))))
 
+(deftest today-is-the-local-day-test
+  (testing "late in the evening, the local day and not the next UTC day"
+    (is (= "2026-10-31" (dates/date->iso (dates/today (js/Date. 2026 9 31 23 30))))))
+  (testing "early in the morning, the local day and not the previous UTC day"
+    (is (= "2026-11-01" (dates/date->iso (dates/today (js/Date. 2026 10 1 0 30))))))
+  (testing "late on new year's eve, the local year and not the next UTC year"
+    (is (= "2026-12-31" (dates/date->iso (dates/today (js/Date. 2026 11 31 23 30))))))
+  (testing "early on new year's day, the local year and not the previous UTC year"
+    (is (= "2027-01-01" (dates/date->iso (dates/today (js/Date. 2027 0 1 0 30))))))
+  (testing "the result is UTC midnight of that day"
+    (is (= (.getTime (js/Date. "2026-10-31T00:00:00.000Z"))
+           (.getTime (dates/today (js/Date. 2026 9 31 23 30)))))))
+
 (deftest iso->date-test
   (testing "valid ISO string produces a Date"
     (let [d (dates/iso->date "2024-03-15")]

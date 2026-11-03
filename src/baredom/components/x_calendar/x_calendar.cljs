@@ -298,7 +298,7 @@
     :show-week-numbers?    (du/has-attr? el model/attr-show-week-numbers)
     :range-allow-same-day? (du/has-attr? el model/attr-range-allow-same)
     :auto-swap?            (du/has-attr? el model/attr-auto-swap)
-    :today                 (js/Date. (js/Date.now))}))
+    :today                 (dates/today)}))
 
 (defn- apply-host-state! [^js el m]
   (if (:disabled? m)
@@ -375,7 +375,7 @@
   "Brings the day grid to the model. A day that stays in view keeps its node."
   [^js el m]
   (let [^js grid  (gobj/get (du/getv el k-refs) rk-grid)
-        today-iso (dates/date->iso (js/Date. (js/Date.now)))
+        today-iso (dates/date->iso (dates/today))
         {:keys [cells focus-iso]} (model/shown-grid m today-iso (du/getv el k-grid-focus))
         nodes     (places/sync! {:cells {:parent grid}} {:cells (mapv :key cells)}
                                 make-grid-cell!)]
