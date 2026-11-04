@@ -4,6 +4,11 @@ All notable changes to BareDOM will be documented in this file.
 
 ## [Unreleased]
 
+## [4.18.0] - 2026-11-04
+
+BareDOM 4.18 brings three changes to `x-date-picker`: a short date format, an SVG calendar icon,
+and today taken from the local date, also in `x-calendar`. The adapters are not released with it.
+
 ### Added
 
 - **`x-date-picker` takes `format="short"`,** which shows each date with the short month of the
