@@ -4,6 +4,13 @@ All notable changes to BareDOM will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **The `x-date-picker` trigger button shows an SVG calendar icon** in place of the 📅 emoji.
+  The emoji rendered as a colour picture on each platform (on macOS a page that shows "JUL 17")
+  and ignored the theme colours. The icon is drawn in `currentColor`, scales with
+  `--x-font-size-sm`, and is `aria-hidden`. The button label stays "Open calendar".
+
 ### Fixed
 
 - **`x-date-picker` and `x-calendar` take today from the local date of the user,** not from the
