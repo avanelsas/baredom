@@ -106,6 +106,7 @@ date, so near midnight the calendar still opens on the day the user sees.
 
 ## Accessibility
 
+- The trigger button (`btn` part) has `aria-label="Open calendar"`. Its calendar icon is an SVG drawn in `currentColor` with `aria-hidden="true"`, so it takes the button text colour.
 - The text input has `role="combobox"` with `aria-expanded` (synced to open state) and `aria-haspopup="dialog"`.
 - The calendar panel has `role="dialog"` with `aria-modal="true"`.
 - The month label has `aria-live="polite"` for screen reader announcements.
