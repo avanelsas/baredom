@@ -23,7 +23,17 @@
 (deftest parse-format-test
   (is (= :iso        (model/parse-format nil)))
   (is (= :iso        (model/parse-format "iso")))
-  (is (= :localized  (model/parse-format "localized"))))
+  (is (= :localized  (model/parse-format "localized")))
+  (is (= :short      (model/parse-format "short"))))
+
+(deftest format-date-short-test
+  (is (= "27 Jul 2026"
+         (model/format-date (dates/iso->date "2026-07-27") {:format :short :locale "en-GB"}))))
+
+(deftest display-value-short-range-test
+  (is (= "27 Jul 2026 - 7 Aug 2026"
+         (model/display-value (model/canonicalize {:mode "range" :start "2026-07-27" :end "2026-08-07"})
+                              {:format :short :locale "en-GB"}))))
 
 (deftest canonicalize-keeps-a-locale-only-when-it-is-a-language-tag
   (is (= "nl-NL" (:locale (model/canonicalize {:locale "nl-NL"}))))

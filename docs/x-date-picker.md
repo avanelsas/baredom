@@ -22,7 +22,7 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 | `end`                  | string  | —          | Range end date in `YYYY-MM-DD` format (range mode)                   |
 | `min`                  | string  | —          | Minimum selectable date (`YYYY-MM-DD`)                               |
 | `max`                  | string  | —          | Maximum selectable date (`YYYY-MM-DD`)                               |
-| `format`               | enum    | `"iso"`    | Display format: `iso` (YYYY-MM-DD) or `localized` (via `Intl`)       |
+| `format`               | enum    | `"iso"`    | Display format: `iso` (YYYY-MM-DD), `localized` (long month) or `short` (short month), the last two via `Intl` |
 | `locale`               | string  | —          | BCP 47 locale tag for localized formatting (e.g. `"en-US"`)          |
 | `separator`            | string  | `" - "`    | String placed between start and end in range display                 |
 | `auto-swap`            | boolean | `false`    | Automatically swap start/end when end is selected before start       |
@@ -179,6 +179,15 @@ Like a native form control, `x-date-picker` exposes read-only `validity`, `valid
 
 ```html
 <x-date-picker format="localized" locale="en-US" placeholder="Pick a date"></x-date-picker>
+```
+
+### Short month
+
+`format="short"` shows the short month of the locale. With `locale="en-GB"` a range reads
+`27 Jul 2026 - 7 Aug 2026`.
+
+```html
+<x-date-picker mode="range" format="short" locale="en-GB"></x-date-picker>
 ```
 
 ### Disabled

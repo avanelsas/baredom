@@ -4,6 +4,11 @@ All notable changes to BareDOM will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **`x-date-picker` takes `format="short"`,** which shows each date with the short month of the
+  locale, for example `27 Jul 2026` for `en-GB`.
+
 ### Changed
 
 - **The `x-date-picker` trigger button shows an SVG calendar icon** in place of the 📅 emoji.

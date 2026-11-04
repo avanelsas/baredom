@@ -81,9 +81,12 @@
       (when (not= t "") t))))
 
 (defn parse-format
-  "Returns :iso or :localized.  Default is :iso."
+  "Returns :iso, :localized or :short.  Default is :iso."
   [s]
-  (if (= s "localized") :localized :iso))
+  (case s
+    "localized" :localized
+    "short"     :short
+    :iso))
 
 (def mode-single "single")
 (def mode-range "range")
@@ -114,9 +117,9 @@
   "Format a JS Date for display.  Uses Intl.DateTimeFormat when available."
   [^js d {:keys [format locale]}]
   (when d
-    (if (= format :localized)
-      (let [opts #js {:year "numeric" :month "long" :day "numeric"
-                      :timeZone "UTC"}
+    (if (contains? #{:localized :short} format)
+      (let [opts #js {:year "numeric" :month (if (= format :short) "short" "long")
+                      :day "numeric" :timeZone "UTC"}
             loc  (or locale "default")]
         (.format (js/Intl.DateTimeFormat. loc opts) d))
       (dates/date->iso d))))

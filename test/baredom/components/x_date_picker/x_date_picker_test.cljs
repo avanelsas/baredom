@@ -818,6 +818,14 @@
     (is (= "2026-03-08" (.getAttribute el model/attr-start)))
     (is (= "2026-03-10" (.getAttribute el model/attr-end)))))
 
+(deftest format-short-shows-the-short-month-test
+  (let [el (append! (make-el))]
+    (.setAttribute el "format" "short")
+    (.setAttribute el "locale" "en-GB")
+    (.setAttribute el model/attr-value "2026-07-27")
+    (is (= "27 Jul 2026" (.-value (shadow-part el "[part=input]"))))))
+
+;; ---------------------------------------------------------------------------
 ;; ---------------------------------------------------------------------------
 ;; Today is the local calendar day
 ;; ---------------------------------------------------------------------------
