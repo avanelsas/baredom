@@ -22800,7 +22800,7 @@
         "default" : "solid"
       }, {
         "name" : "--x-tree-guide-width",
-        "default" : "1px"
+        "default" : "var(--x-border-width,1px)"
       }, {
         "name" : "--x-tree-hover-bg",
         "default" : "color-mix(in srgb,var(--x-color-text,#000) 6%,transparent)"

@@ -198,7 +198,7 @@ tree.addEventListener('x-tree-lazy-load', async e => {
 | `--x-tree-chevron-size` | `1rem` | | Chevron size |
 | `--x-tree-checkbox-color` | `var(--x-color-primary,#2563eb)` | `var(--x-color-primary,#60a5fa)` | Checkbox fill when checked or mixed |
 | `--x-tree-checkbox-size` | `1rem` | | Checkbox size |
-| `--x-tree-guide-width` | `1px` | | Guide width |
+| `--x-tree-guide-width` | `var(--x-border-width,1px)` | | Guide width |
 | `--x-tree-guide-color` | `var(--x-color-border,#e5e7eb)` | `var(--x-color-border,#374151)` | Guide |
 | `--x-tree-guide-style` | `solid` | | Guide line style |
 | `--x-tree-guide-active-color` | `var(--x-tree-guide-color)` | | The guide of the group that holds the focused item |

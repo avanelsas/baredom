@@ -120,10 +120,11 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-toaster` |  |  |  |  |  |  |  |  | 0/1 | 1/1 |  |
 | `x-toc` | 11/11 | 2/2 | 2/2 |  | 1/1 | 2/2 |  | 1/1 | 2/4 |  | 1/1 |
 | `x-tooltip` | 6/6 |  | 1/1 |  |  | 1/1 | 2/2 | 2/2 | 1/1 | 1/1 | 2/2 |
+| `x-tree` | 17/17 | 1/1 | 1/1 |  |  | 1/1 |  | 1/1 | 1/4 |  |  |
 | `x-typography` | 11/11 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 1/1 |
 | `x-welcome-tour` | 27/27 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 1/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 1042/1042 | 14/14 | 124/124 | 72/72 | 8/8 | 116/116 | 75/75 | 108/108 | 29/253 | 19/19 | 118/118 |
+| **All** | 1059/1059 | 15/15 | 125/125 | 72/72 | 8/8 | 117/117 | 75/75 | 109/109 | 30/257 | 19/19 | 118/118 |
 
 CSS not read, or not in full: x-liquid-glass.
 
@@ -149,7 +150,7 @@ An outline or an edge drawn with a shadow. It is not an elevation.
 
 The shape of a mark. It is not a corner, a weight or a size of text.
 
-3 values in `x-checkbox`.
+4 values in `x-checkbox`, `x-tree`.
 
 A glyph that stands for an icon. Its size is the size of the icon.
 
@@ -233,7 +234,7 @@ The dashed edge of a drop target.
 
 A bar, an arrow or an outline drawn at its own width.
 
-3 values in `x-soft-body`, `x-typography`, `x-welcome-tour`.
+9 values in `x-soft-body`, `x-tree`, `x-typography`, `x-welcome-tour`.
 
 Above everything, by its purpose.
 

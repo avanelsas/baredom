@@ -175,10 +175,13 @@
 
 (defn- holds-border?
   "True when `prop` is a border or an outline shorthand, or a custom property whose `value` is
-   written as one."
+   written as one. A custom property that holds a border style alone holds no border."
   [prop value]
   (or (re-find shorthand prop)
-      (and (str/starts-with? prop "--") (some border-style (parts value)))))
+      (let [ps (parts value)]
+        (and (str/starts-with? prop "--")
+             (some border-style ps)
+             (not-every? border-style ps)))))
 
 (defn- longhand
   "The declarations a border or an outline shorthand stands for: its width and its colour. A
