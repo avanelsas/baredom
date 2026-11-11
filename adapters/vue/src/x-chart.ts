@@ -27,7 +27,7 @@ export const XChart = defineComponent({
     tooltip: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     height: { type: Number as PropType<number | undefined>, default: undefined },
     xFormat: { type: String as PropType<string | undefined>, default: undefined },
-    data: { type: Object as PropType<any | undefined>, default: undefined },
+    data: { type: null as unknown as PropType<any | undefined>, default: undefined },
   },
   emits: {
     "select": (_e: CustomEvent<{ seriesId: string; index: number; x: number; y: number; value: number }>) => true,

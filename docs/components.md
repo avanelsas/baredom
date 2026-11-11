@@ -1,6 +1,6 @@
 # Components
 
-The full catalogue of BareDOM components — 109 UI web components across 11 categories. Every UI component is a native Custom Element with auto-generated TypeScript declarations and is exposed in all five [framework adapters](../README.md#framework-adapters).
+The full catalogue of BareDOM components — 110 UI web components across 11 categories. Every UI component is a native Custom Element with auto-generated TypeScript declarations and is exposed in all five [framework adapters](../README.md#framework-adapters).
 
 Tag names are case-insensitive in HTML but always lowercase-kebab-case in the source. Component documentation links to deeper guides with API tables, examples, and a11y notes.
 
@@ -8,7 +8,7 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 - [Feedback (11)](#feedback-11)
 - [Navigation (9)](#navigation-9)
 - [Layout (12)](#layout-12)
-- [Data (13)](#data-13)
+- [Data (14)](#data-14)
 - [Overlay (10)](#overlay-10)
 - [Display (6)](#display-6)
 - [Animation (6)](#animation-6)
@@ -93,7 +93,7 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 | [`<x-spacer>`](./x-spacer.md) | Flexible spacing element for flexbox and grid layouts. |
 | [`<x-split-pane>`](./x-split-pane.md) | Resizable two-panel layout with draggable divider, horizontal or vertical. |
 
-## Data (13)
+## Data (14)
 
 | Tag | Description |
 |-----|-------------|
@@ -110,6 +110,7 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 | [`<x-table-row>`](./x-table-row.md) | Table row with interactive selection and `x-table-row-select` event. |
 | [`<x-timeline>`](./x-timeline.md) | Vertical timeline container that coordinates `<x-timeline-item>` children. |
 | [`<x-timeline-item>`](./x-timeline-item.md) | Individual timeline event with time, icon, heading, and body slots. |
+| [`<x-tree>`](./x-tree.md) | Hierarchical data as a tree. Opens and closes branches, selects one item, a leaf or many with cascading checks, and loads branches lazily. |
 
 ## Overlay (10)
 

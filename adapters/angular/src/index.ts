@@ -109,6 +109,7 @@ export { BaredomToast } from './directives/x-toast.directive';
 export { BaredomToaster } from './directives/x-toaster.directive';
 export { BaredomToc } from './directives/x-toc.directive';
 export { BaredomTooltip } from './directives/x-tooltip.directive';
+export { BaredomTree } from './directives/x-tree.directive';
 export { BaredomTypography } from './directives/x-typography.directive';
 export { BaredomWelcomeTour } from './directives/x-welcome-tour.directive';
 

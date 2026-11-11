@@ -415,6 +415,22 @@
                          (set-attr! this attr-name s)
                          (remove-attr! this attr-name))))}))
 
+(defn define-json-prop!
+  "Install a JS property that keeps a JS value as JSON in an HTML attribute.
+   `value-of` turns a written value, or the attribute text, into the value to keep, or nil.
+   The getter gives `value-of` of the attribute. The setter writes the JSON of `value-of` of
+   the value, or removes the attribute when that is nil."
+  [^js proto prop-name attr-name value-of]
+  (.defineProperty
+   js/Object proto prop-name
+   #js {:configurable true
+        :enumerable   true
+        :get (fn [] (this-as ^js this (value-of (get-attr this attr-name))))
+        :set (fn [v] (this-as ^js this
+                       (if-some [kept (value-of v)]
+                         (set-attr! this attr-name (js/JSON.stringify kept))
+                         (remove-attr! this attr-name))))}))
+
 (defn define-readonly-prop!
   "Install a read-only, enumerable JS property whose getter is `get-fn` — a
    1-arg function receiving the element (`this`). Use for computed or

@@ -463,6 +463,10 @@
       "import" : "./dist/x-tooltip.js",
       "types" : "./dist/x-tooltip.d.ts"
     },
+    "./x-tree" : {
+      "import" : "./dist/x-tree.js",
+      "types" : "./dist/x-tree.d.ts"
+    },
     "./x-typography" : {
       "import" : "./dist/x-typography.js",
       "types" : "./dist/x-typography.d.ts"

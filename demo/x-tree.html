@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-tree demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; padding: 24px; max-width: 1100px; margin: 0 auto; }
+
+      .panel {
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        padding: 16px;
+        background: var(--surface-bg);
+        margin-bottom: 24px;
+      }
+
+      .controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; font-size: 13px; }
+      .controls label { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+      .timing { font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); }
+
+      .event-log {
+        font-family: ui-monospace, monospace; font-size: 12px;
+        background: #111827; color: #f9fafb; border-radius: 8px;
+        padding: 12px; height: 120px; overflow-y: auto; margin-top: 12px;
+      }
+      .event-log p { margin: 0.1rem 0; }
+
+      .tree-box {
+        max-height: 420px;
+        overflow-y: auto;
+        padding: 8px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 24px;
+      }
+      @media (max-width: 760px) {
+        .grid { grid-template-columns: 1fr; }
+      }
+
+      h2 { font-size: 1.1rem; margin: 0 0 8px; }
+      .note { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+  </head>
+  <body>
+    <x-typography variant="h1">&lt;x-tree&gt;</x-typography>
+    <p style="color:var(--muted);margin:0 0 16px;">Hierarchical data as a tree. Open and close branches, select items, by pointer or by keyboard.</p>
+
+    <div class="panel">
+      <div class="controls">
+        <label>
+          Selection
+          <x-select id="ctl-selection" value="single">
+            <option value="none">none</option>
+            <option value="single" selected>single</option>
+            <option value="leaf">leaf</option>
+            <option value="multiple">multiple</option>
+          </x-select>
+        </label>
+        <label><x-switch id="ctl-guides" checked></x-switch> Guides</label>
+        <label><x-switch id="ctl-rtl"></x-switch> Right to left</label>
+        <x-button id="ctl-files" size="sm" variant="secondary">Files</x-button>
+        <x-button id="ctl-big" size="sm" variant="secondary">2000 items</x-button>
+        <x-button id="ctl-flat" size="sm" variant="secondary">2000 flat items</x-button>
+        <span class="timing" id="timing">Press a key in the tree to time its render.</span>
+      </div>
+      <div class="event-log" id="log"><p style="color:#9ca3af">Events appear here.</p></div>
+    </div>
+
+    <div class="grid">
+      <div class="panel" id="files-panel">
+        <h2>Files</h2>
+        <p class="note">The folder <em>remote</em> is lazy. It loads its children 600 ms after it opens.</p>
+        <div class="tree-box">
+          <x-tree id="tree" label="Files" selection="single" guides></x-tree>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Permissions</h2>
+        <p class="note">Checks cascade. <em>Delete all</em> is disabled and keeps its state.</p>
+        <x-tree id="perms" label="Permissions" selection="multiple" guides></x-tree>
+      </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+    <script>
+      const tree  = document.getElementById('tree');
+      const perms = document.getElementById('perms');
+      const log   = document.getElementById('log');
+
+      function write(text) {
+        const p = document.createElement('p');
+        p.textContent = text;
+        log.prepend(p);
+      }
+
+      // ── Data ──────────────────────────────────────────────────────────────
+      const files = [
+        { id: 'src', label: 'src', children: [
+          { id: 'core', label: 'core.cljs', meta: '12 KB' },
+          { id: 'model', label: 'model.cljs', meta: '8 KB' },
+          { id: 'utils', label: 'utils', children: [
+            { id: 'dom', label: 'dom.cljs', meta: '20 KB' },
+            { id: 'strings', label: 'strings.cljs', meta: '2 KB' } ] } ] },
+        { id: 'test', label: 'test', children: [
+          { id: 'core-test', label: 'core_test.cljs', meta: '6 KB' } ] },
+        { id: 'remote', label: 'remote', lazy: true },
+        { id: 'readme', label: 'README.md', meta: '3 KB' },
+        { id: 'deps', label: 'deps.edn', meta: '1 KB', disabled: true } ];
+
+      const remoteChildren = [
+        { id: 'remote-a', label: 'fetched-a.txt', meta: 'now' },
+        { id: 'remote-b', label: 'fetched-b.txt', meta: 'now' } ];
+
+      function nested(folders, filesPerFolder) {
+        return Array.from({ length: folders }, (_, f) => ({
+          id: `f${f}`, label: `folder ${f}`,
+          children: Array.from({ length: filesPerFolder }, (_, i) => ({
+            id: `f${f}-${i}`, label: `file ${f}.${i}`, meta: `${(i * 7) % 90 + 1} KB` })) }));
+      }
+
+      function flat(count) {
+        return Array.from({ length: count }, (_, i) => ({ id: `i${i}`, label: `item ${i}` }));
+      }
+
+      function withChildren(items, id, children) {
+        return items.map(item => {
+          if (item.id === id) {
+            const { lazy, ...rest } = item;
+            return { ...rest, children };
+          }
+          return item.children ? { ...item, children: withChildren(item.children, id, children) } : item;
+        });
+      }
+
+      tree.items = files;
+      tree.expanded = ['src'];
+
+      perms.items = [
+        { id: 'read', label: 'Read', children: [
+          { id: 'read-posts', label: 'Posts' },
+          { id: 'read-users', label: 'Users' } ] },
+        { id: 'write', label: 'Write', children: [
+          { id: 'write-posts', label: 'Posts' },
+          { id: 'write-users', label: 'Users' },
+          { id: 'delete-all', label: 'Delete all', disabled: true } ] } ];
+      perms.expanded = ['read', 'write'];
+      perms.selected = ['read-posts'];
+
+      // ── Controls ──────────────────────────────────────────────────────────
+      document.getElementById('ctl-selection').addEventListener('select-change', e => {
+        tree.selection = e.detail.value;
+      });
+      document.getElementById('ctl-guides').addEventListener('x-switch-change', e => {
+        tree.guides = e.detail.checked;
+        perms.guides = e.detail.checked;
+      });
+      document.getElementById('ctl-rtl').addEventListener('x-switch-change', e => {
+        for (const t of [tree, perms]) t.dir = e.detail.checked ? 'rtl' : '';
+      });
+      document.getElementById('ctl-files').addEventListener('click', () => {
+        tree.items = files;
+        tree.expanded = ['src'];
+        tree.selected = null;
+      });
+      document.getElementById('ctl-big').addEventListener('click', () => {
+        tree.items = nested(40, 49);
+        tree.expanded = Array.from({ length: 40 }, (_, f) => `f${f}`);
+        tree.selected = null;
+      });
+      document.getElementById('ctl-flat').addEventListener('click', () => {
+        tree.items = flat(2000);
+        tree.expanded = null;
+        tree.selected = null;
+      });
+
+      // ── Timing ────────────────────────────────────────────────────────────
+      // The tree renders inside its keydown handler, between these two listeners.
+      const timing = document.getElementById('timing');
+      let started = 0;
+      tree.addEventListener('keydown', () => { started = performance.now(); }, true);
+      tree.addEventListener('keydown', e => {
+        const ms = performance.now() - started;
+        timing.textContent = `${e.key}: ${ms.toFixed(1)} ms`;
+      });
+
+      // ── Lazy loading ──────────────────────────────────────────────────────
+      tree.addEventListener('x-tree-lazy-load', e => {
+        const id = e.detail.id;
+        setTimeout(() => { tree.items = withChildren(tree.items, id, remoteChildren); }, 600);
+      });
+
+      // ── Event log ─────────────────────────────────────────────────────────
+      for (const t of [tree, perms]) {
+        t.addEventListener('x-tree-toggle', e => {
+          write(`${t.id}  x-tree-toggle  ${e.detail.id}  ${e.detail.nextExpanded}  (${e.detail.source})`);
+        });
+        t.addEventListener('x-tree-select', e => {
+          write(`${t.id}  x-tree-select  ${e.detail.id}  changed ${JSON.stringify(e.detail.changed)}  (${e.detail.source})`);
+        });
+        t.addEventListener('x-tree-change', e => {
+          write(`${t.id}  x-tree-change  ${e.detail.attribute}`);
+        });
+        t.addEventListener('x-tree-lazy-load', e => {
+          write(`${t.id}  x-tree-lazy-load  ${e.detail.id}`);
+        });
+      }
+    </script>
+  </body>
+</html>

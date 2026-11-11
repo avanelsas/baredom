@@ -22614,6 +22614,258 @@
     } ]
   }, {
     "kind" : "javascript-module",
+    "path" : "dist/x-tree.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTree",
+      "tagName" : "x-tree",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "items",
+        "type" : {
+          "text" : "any"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "expanded",
+        "type" : {
+          "text" : "any"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "selected",
+        "type" : {
+          "text" : "any"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "selection",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "loadingText",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "guides",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "items",
+        "fieldName" : "items",
+        "type" : {
+          "text" : "any"
+        }
+      }, {
+        "name" : "expanded",
+        "fieldName" : "expanded",
+        "type" : {
+          "text" : "any"
+        }
+      }, {
+        "name" : "selected",
+        "fieldName" : "selected",
+        "type" : {
+          "text" : "any"
+        }
+      }, {
+        "name" : "selection",
+        "fieldName" : "selection",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "loading-text",
+        "fieldName" : "loadingText",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "guides",
+        "fieldName" : "guides",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-tree-toggle",
+        "type" : {
+          "text" : "CustomEvent<{ id: string; nextExpanded: string; source: string }>"
+        },
+        "cancelable" : true,
+        "requests" : {
+          "expanded" : "nextExpanded"
+        },
+        "detail" : {
+          "id" : "string",
+          "nextExpanded" : "string",
+          "source" : "string"
+        }
+      }, {
+        "name" : "x-tree-select",
+        "type" : {
+          "text" : "CustomEvent<{ id: string; changed: any; nextSelected: string; source: string }>"
+        },
+        "cancelable" : true,
+        "requests" : {
+          "selected" : "nextSelected"
+        },
+        "detail" : {
+          "id" : "string",
+          "changed" : "any",
+          "nextSelected" : "string",
+          "source" : "string"
+        }
+      }, {
+        "name" : "x-tree-change",
+        "type" : {
+          "text" : "CustomEvent<{ attribute: string }>"
+        },
+        "cancelable" : false,
+        "detail" : {
+          "attribute" : "string"
+        }
+      }, {
+        "name" : "x-tree-lazy-load",
+        "type" : {
+          "text" : "CustomEvent<{ id: string }>"
+        },
+        "cancelable" : false,
+        "detail" : {
+          "id" : "string"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ],
+      "cssProperties" : [ {
+        "name" : "--x-tree-checkbox-color",
+        "default" : "var(--x-color-primary,#2563eb)"
+      }, {
+        "name" : "--x-tree-checkbox-size",
+        "default" : "1rem"
+      }, {
+        "name" : "--x-tree-chevron-color",
+        "default" : "var(--x-color-text-muted,#6b7280)"
+      }, {
+        "name" : "--x-tree-chevron-size",
+        "default" : "1rem"
+      }, {
+        "name" : "--x-tree-color",
+        "default" : "var(--x-color-text,#1f2937)"
+      }, {
+        "name" : "--x-tree-disabled-opacity",
+        "default" : "0.5"
+      }, {
+        "name" : "--x-tree-focus-ring",
+        "default" : "var(--x-color-focus-ring,#2563eb)"
+      }, {
+        "name" : "--x-tree-font-family",
+        "default" : "var(--x-font-family,inherit)"
+      }, {
+        "name" : "--x-tree-font-size",
+        "default" : "var(--x-font-size-sm,0.875rem)"
+      }, {
+        "name" : "--x-tree-gap",
+        "default" : "0.375rem"
+      }, {
+        "name" : "--x-tree-guide-active-color",
+        "default" : "var(--x-tree-guide-color)"
+      }, {
+        "name" : "--x-tree-guide-color",
+        "default" : "var(--x-color-border,#e5e7eb)"
+      }, {
+        "name" : "--x-tree-guide-style",
+        "default" : "solid"
+      }, {
+        "name" : "--x-tree-guide-width",
+        "default" : "1px"
+      }, {
+        "name" : "--x-tree-hover-bg",
+        "default" : "color-mix(in srgb,var(--x-color-text,#000) 6%,transparent)"
+      }, {
+        "name" : "--x-tree-indent",
+        "default" : "1.25rem"
+      }, {
+        "name" : "--x-tree-meta-color",
+        "default" : "var(--x-color-text-muted,#6b7280)"
+      }, {
+        "name" : "--x-tree-row-height",
+        "default" : "2rem"
+      }, {
+        "name" : "--x-tree-row-padding",
+        "default" : "0 var(--x-space-sm,0.5rem)"
+      }, {
+        "name" : "--x-tree-row-radius",
+        "default" : "var(--x-radius-sm,4px)"
+      }, {
+        "name" : "--x-tree-selected-bg",
+        "default" : "color-mix(in srgb,var(--x-color-primary,#2563eb) 12%,transparent)"
+      }, {
+        "name" : "--x-tree-selected-color",
+        "default" : "var(--x-tree-color)"
+      }, {
+        "name" : "--x-tree-transition-duration",
+        "default" : "var(--x-transition-duration,150ms)"
+      } ],
+      "cssParts" : [ {
+        "name" : "checkbox"
+      }, {
+        "name" : "chevron"
+      }, {
+        "name" : "group"
+      }, {
+        "name" : "item"
+      }, {
+        "name" : "label"
+      }, {
+        "name" : "loading"
+      }, {
+        "name" : "meta"
+      }, {
+        "name" : "part"
+      }, {
+        "name" : "row"
+      }, {
+        "name" : "tree"
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-tree",
+      "declaration" : {
+        "name" : "XTree"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
     "path" : "dist/x-typography.js",
     "declarations" : [ {
       "kind" : "class",

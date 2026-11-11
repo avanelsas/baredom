@@ -98,6 +98,10 @@
        "<x-welcome-tour-step title=\"Two\"></x-welcome-tour-step>"
        "<x-welcome-tour-step title=\"Three\"></x-welcome-tour-step>"))
 
+(def ^:private tree-items
+  (str "[{\"id\":\"a\",\"label\":\"A\",\"children\":[{\"id\":\"a1\",\"label\":\"A1\"}]},"
+       "{\"id\":\"b\",\"label\":\"B\",\"children\":[{\"id\":\"b1\",\"label\":\"B1\"}]}]"))
+
 (def ^:private rows
   "Each request event: the markup of its component, the gesture that sends the request, and
    values other than the asked ones. `:prepare` runs before the gesture, `:settle` is how long
@@ -192,6 +196,10 @@
     :gesture (click-child "x-table-row[value=b]") :other {"value" "b"}}
    {:event "x-text-area-change-request" :html "<x-text-area value=\"keep\"></x-text-area>"
     :watch "textarea" :gesture (type-into "textarea" "typed") :other {"value" "other"}}
+   {:event "x-tree-toggle" :html (str "<x-tree items='" tree-items "'></x-tree>")
+    :gesture (click-part "[data-x-key=\"a\"] [part~='chevron']") :other {"expanded" "[\"b\"]"}}
+   {:event "x-tree-select" :html (str "<x-tree items='" tree-items "'></x-tree>")
+    :gesture (click-part "[data-x-key=\"a\"] > [part~='row']") :other {"selected" nil}}
    {:event "x-welcome-tour-step-change" :html (str "<x-welcome-tour>" tour-steps "</x-welcome-tour>")
     :prepare (call "start") :gesture (call "next") :other {"step" "2"}}])
 

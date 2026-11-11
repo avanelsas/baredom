@@ -15,7 +15,7 @@
     modal?: boolean;
     label?: string;
     closeOnEscape?: boolean;
-    items?: any;
+    items?: unknown[];
     onopenrequest?: (e: CustomEvent<{}>) => void;
     onopen?: (e: CustomEvent<{}>) => void;
     oncloserequest?: (e: CustomEvent<{}>) => void;

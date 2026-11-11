@@ -109,6 +109,7 @@
    [baredom.exports.x-toaster             :as x-toaster]
    [baredom.exports.x-toc                 :as x-toc]
    [baredom.exports.x-tooltip             :as x-tooltip]
+   [baredom.exports.x-tree                :as x-tree]
    [baredom.exports.x-typography          :as x-typography]
    [baredom.exports.x-welcome-tour        :as x-welcome-tour]))
 
@@ -222,5 +223,6 @@
    [x-toaster/register!             x-toaster/public-api]
    [x-toc/register!                 x-toc/public-api]
    [x-tooltip/register!             x-tooltip/public-api]
+   [x-tree/register!                x-tree/public-api]
    [x-typography/register!          x-typography/public-api]
    [x-welcome-tour/register!        x-welcome-tour/public-api]])

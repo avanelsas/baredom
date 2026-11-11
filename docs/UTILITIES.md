@@ -61,6 +61,7 @@ returns, so work that `f` starts and does not finish is not held.
 | `define-bool-prop!` | `[proto prop-name attr-name]` | Install a boolean property reflecting to/from an attribute |
 | `define-string-prop!` | `[proto prop-name attr-name]` or `[proto prop-name attr-name default-val]` | Install a string property with optional default |
 | `define-number-prop!` | `[proto prop-name attr-name default-val]` | Install a numeric property with default fallback |
+| `define-json-prop!` | `[proto prop-name attr-name value-of]` | Install a property that keeps a JS value as JSON. `value-of` turns a written value or the attribute text into the value, or nil to remove the attribute |
 | `install-properties!` | `[proto property-api]` | Install all property accessors from a declarative `property-api` map |
 
 ## `baredom.utils.forms` (alias `forms`)

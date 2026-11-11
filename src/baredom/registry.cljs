@@ -118,6 +118,7 @@
    [baredom.exports.x-toaster             :as x-toaster]
    [baredom.exports.x-toc                 :as x-toc]
    [baredom.exports.x-tooltip             :as x-tooltip]
+   [baredom.exports.x-tree                :as x-tree]
    [baredom.exports.x-trace-history       :as x-trace-history]
    [baredom.exports.x-typography          :as x-typography]
    [baredom.exports.x-welcome-tour        :as x-welcome-tour]))
@@ -232,6 +233,7 @@
    x-toaster/register!
    x-toc/register!
    x-tooltip/register!
+   x-tree/register!
    x-trace-history/register!
    x-typography/register!
    x-welcome-tour/register!])
