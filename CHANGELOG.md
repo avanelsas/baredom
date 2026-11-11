@@ -4,6 +4,23 @@ All notable changes to BareDOM will be documented in this file.
 
 ## [Unreleased]
 
+## [4.19.0] - 2026-11-11
+
+BareDOM 4.19 adds `x-tree`, a tree of hierarchical data. All five adapters follow it in a release
+of their own: `-react` 3.7.0, `-angular` 3.7.0, `-vue` 0.13.0, `-svelte` 0.13.0 and `-solid`
+0.13.0. They add `XTree`, type array props as arrays, and each needs `@vanelsas/baredom` 4.19.0 or
+later.
+
+### Added
+
+- **`x-tree` shows hierarchical data as a tree.** It takes its items, its open branches and its
+  selection as JSON arrays in `items`, `expanded` and `selected`, each with a property that reads
+  and writes an array. It selects in four modes, `none`, `single`, `leaf` and `multiple`, and in
+  `multiple` a check cascades through its branch. A branch can load its children when it opens,
+  indent guides are optional, and it follows the WAI-ARIA tree keyboard pattern.
+- **`du/define-json-prop!`** installs a property that keeps a JS value as JSON in an attribute.
+  `x-tree` and `x-chart` use it.
+
 ## [4.18.0] - 2026-11-04
 
 BareDOM 4.18 brings three changes to `x-date-picker`: a short date format, an SVG calendar icon,
