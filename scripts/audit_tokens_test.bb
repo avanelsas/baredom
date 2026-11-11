@@ -55,6 +55,10 @@
   (is (= [["border-width" "1px"] ["border-color" "#000"]]
          (longhand ["--x-card-ordering-border" "1px solid #000"]))))
 
+(deftest a-custom-property-that-holds-a-border-style-alone-stands-for-itself
+  (is (= [["--x-tree-guide-style" "solid"]]
+         (longhand ["--x-tree-guide-style" "solid"]))))
+
 (deftest a-custom-property-with-another-value-stands-for-itself
   (is (= [["--x-card-padding" "1px 2px"]]
          (longhand ["--x-card-padding" "1px 2px"]))))

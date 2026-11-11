@@ -435,6 +435,11 @@
      {init baredom.exports.x-tooltip/init}
      :depends-on #{:base}}
 
+    :x-tree
+    {:exports
+     {init baredom.exports.x-tree/init}
+     :depends-on #{:base}}
+
     :x-welcome-tour
     {:exports
      {init baredom.exports.x-welcome-tour/init}

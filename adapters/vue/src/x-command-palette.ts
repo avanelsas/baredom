@@ -25,7 +25,7 @@ export const XCommandPalette = defineComponent({
     modal: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     label: { type: String as PropType<string | undefined>, default: undefined },
     closeOnEscape: { type: Boolean as PropType<boolean | undefined>, default: undefined },
-    items: { type: Object as PropType<any | undefined>, default: undefined },
+    items: { type: Array as PropType<unknown[] | undefined>, default: undefined },
   },
   emits: {
     "open-request": (_e: CustomEvent<{}>) => true,

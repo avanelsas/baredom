@@ -18,7 +18,7 @@ export interface XCommandPaletteProps {
   modal?: boolean;
   label?: string;
   closeOnEscape?: boolean;
-  items?: any;
+  items?: unknown[];
   onOpenRequest?: (e: CustomEvent<{}>) => void;
   onOpen?: (e: CustomEvent<{}>) => void;
   onCloseRequest?: (e: CustomEvent<{}>) => void;

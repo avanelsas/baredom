@@ -36,6 +36,8 @@
    "x-table-cell-sort" ["sort-direction"]
    "x-table-row-select" ["value"]
    "x-text-area-change-request" ["value"]
+   "x-tree-select" ["selected"]
+   "x-tree-toggle" ["expanded"]
    "x-welcome-tour-step-change" ["step"]})
 
 (def requested-values
@@ -74,4 +76,6 @@
    "x-table-cell-sort" {"sort-direction" "direction"}
    "x-table-row-select" {"value" "value"}
    "x-text-area-change-request" {"value" "value"}
+   "x-tree-select" {"selected" "nextSelected"}
+   "x-tree-toggle" {"expanded" "nextExpanded"}
    "x-welcome-tour-step-change" {"step" "step"}})

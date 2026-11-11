@@ -27,7 +27,7 @@ export class BaredomCommandPalette implements OnInit, OnDestroy {
   @Input() set modal(v: boolean) { this.el.modal = v as any; }
   @Input() set label(v: string) { this.el.label = v as any; }
   @Input() set closeOnEscape(v: boolean) { this.el.closeOnEscape = v as any; }
-  @Input() set items(v: any) { this.el.items = v as any; }
+  @Input() set items(v: unknown[]) { this.el.items = v as any; }
 
   @Output() openRequest = new EventEmitter<CustomEvent<{}>>();
   @Output() openEvent = new EventEmitter<CustomEvent<{}>>();

@@ -787,20 +787,6 @@
                           (du/set-attr! this attr-name (str (int v)))
                           (du/remove-attr! this attr-name))))}))
 
-(defn- define-data-prop! [^js proto]
-  (.defineProperty
-   js/Object proto "data"
-   #js {:configurable true
-        :enumerable   true
-        :get (fn []
-               (this-as ^js this
-                        (model/data-value (.getAttribute this model/attr-data))))
-        :set (fn [v]
-               (this-as ^js this
-                        (if-some [d (model/chart-data-of v)]
-                          (du/set-attr! this model/attr-data (js/JSON.stringify d))
-                          (du/remove-attr! this model/attr-data))))}))
-
 ;; ---- Element class + registration ----
 
 (defn- install-property-accessors! [^js proto]
@@ -816,7 +802,7 @@
   (du/define-bool-prop!   proto "tooltip"  model/attr-tooltip)
   (du/define-bool-prop!   proto "disabled" model/attr-disabled)
   (du/define-bool-prop!   proto "loading"  model/attr-loading)
-  (define-data-prop! proto))
+  (du/define-json-prop!   proto "data"     model/attr-data model/chart-data-of))
 
 (defn init! []
   (component/register! model/tag-name

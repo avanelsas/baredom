@@ -520,6 +520,10 @@
       "import" : "./dist/directives/x-tooltip.directive.js",
       "types" : "./dist/directives/x-tooltip.directive.d.ts"
     },
+    "./x-tree" : {
+      "import" : "./dist/directives/x-tree.directive.js",
+      "types" : "./dist/directives/x-tree.directive.d.ts"
+    },
     "./x-typography" : {
       "import" : "./dist/directives/x-typography.directive.js",
       "types" : "./dist/directives/x-typography.directive.d.ts"

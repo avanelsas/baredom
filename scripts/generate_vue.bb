@@ -32,7 +32,8 @@
       event-str)))
 
 (defn prop-type->vue-runtime
-  "Vue 3 runtime prop constructor for a property metadata entry."
+  "Vue 3 runtime prop constructor for a property metadata entry. `null` accepts any value, so
+   an array or a value of any type passes Vue's runtime check."
   [prop-meta]
   (let [t (normalize-type-sym (:type prop-meta))]
     (case t
@@ -40,7 +41,17 @@
       "string"  "String"
       "number"  "Number"
       "object"  "Object"
-      "Object")))
+      "array"   "Array"
+      "null")))
+
+(defn- vue-prop-type
+  "The `type` of a Vue prop declaration for a property metadata entry, cast to its PropType."
+  [prop-meta]
+  (let [ctor (prop-type->vue-runtime prop-meta)
+        cast (str " as PropType<" (prop-type->ts prop-meta) " | undefined>")]
+    (if (= "null" ctor)
+      (str "null as unknown" cast)
+      (str ctor cast))))
 
 (defn vue-runtime-for-type
   "Vue 3 runtime constructor for a bare TS type string."
@@ -92,8 +103,7 @@
                                (str camel "Attr")
                                camel)]
                (str "    " prop-name
-                    ": { type: " (prop-type->vue-runtime m)
-                    " as PropType<" (prop-type->ts m) " | undefined>, default: undefined },")))
+                    ": { type: " (vue-prop-type m) ", default: undefined },")))
            writable-props))
     (when v-model-cfg
       [(str "    modelValue: { type: "

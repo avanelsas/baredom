@@ -108,6 +108,7 @@ export { XToast, type XToastInstance, type XToastExposed } from "./x-toast";
 export { XToaster, type XToasterInstance, type XToasterExposed } from "./x-toaster";
 export { XToc, type XTocInstance, type XTocExposed } from "./x-toc";
 export { XTooltip, type XTooltipInstance, type XTooltipExposed } from "./x-tooltip";
+export { XTree, type XTreeInstance, type XTreeExposed } from "./x-tree";
 export { XTypography, type XTypographyInstance, type XTypographyExposed } from "./x-typography";
 export { XWelcomeTour, type XWelcomeTourInstance, type XWelcomeTourExposed } from "./x-welcome-tour";
 

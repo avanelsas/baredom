@@ -34,7 +34,8 @@
  ["The shape of a mark. It is not a corner, a weight or a size of text."
   [["x-checkbox" "border-radius" "1px"]
    ["x-checkbox" "font-size" "10px"]
-   ["x-checkbox" "font-weight" "700"]]]
+   ["x-checkbox" "font-weight" "700"]
+   ["x-tree" "border-radius" "3px"]]]
  ["A glyph that stands for an icon. Its size is the size of the icon."
   [["x-chip" "font-size" "1rem"]
    ["x-combobox" "font-size" "0.875rem"]
@@ -221,6 +222,8 @@
   [["x-file-upload" "border-width" "2px"]]]
  ["A bar, an arrow or an outline drawn at its own width."
   [["x-soft-body" "--x-soft-body-border-width" "1.5"]
+   ["x-tree" "border-width" "1.5px"]
+   ["x-tree" "border-width" "2px"]
    ["x-typography" "border-width" "3px"]
    ["x-welcome-tour" "border-width" "8px"]]]
  ["Above everything, by its purpose."

@@ -110,7 +110,15 @@ Or keep it explicit when only a couple of helpers are needed:
   (custom-method! proto))
 ```
 
-Reference: `x_dropdown`, `x_combobox`, `x_pagination` (`select-keys`).
+A property that holds JSON, such as an array or a chart, uses `du/define-json-prop!` with a pure
+`value-of` from the model:
+
+```clojure
+(du/define-json-prop! proto "items" model/attr-items model/array-of)
+```
+
+Reference: `x_dropdown`, `x_combobox`, `x_pagination` (`select-keys`), `x_tree` and `x_chart`
+(`define-json-prop!`).
 
 ### Tier 2 — Hand-written `.defineProperty` (last resort)
 

@@ -37,6 +37,7 @@
       "string"  "string"
       "number"  "number"
       "object"  "Record<string, any>"
+      "array"   "unknown[]"
       "any")))
 
 ;; ── Form value write → TypeScript ───────────────────────────────────────────

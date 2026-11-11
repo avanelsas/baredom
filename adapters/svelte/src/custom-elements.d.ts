@@ -113,6 +113,7 @@ declare namespace svelteHTML {
     "x-toaster": Record<string, any>;
     "x-toc": Record<string, any>;
     "x-tooltip": Record<string, any>;
+    "x-tree": Record<string, any>;
     "x-typography": Record<string, any>;
     "x-welcome-tour": Record<string, any>;
   }
