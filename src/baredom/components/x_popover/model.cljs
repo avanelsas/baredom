@@ -92,7 +92,13 @@
 
 (defn compute-position
   "Computes viewport-relative position for the popover panel.
-   Returns {:x :y :final-placement :max-height}."
+   Returns {:x :y :final-placement :max-height}.
+
+   Every placement is top or bottom, so the flip is vertical: it is
+   decided on vertical fit alone. Horizontal overflow is left to the
+   clamp, which no flip could fix (top and bottom share an x). Requiring
+   both axes to fit kept an overflowing bottom placement and clamped it
+   up over the anchor."
   [placement offset anchor-rect panel-size viewport-size margin]
   (let [{vw :width vh :height} viewport-size
         {pw :width ph :height} panel-size
@@ -104,7 +110,7 @@
                 max-h (- vh y margin)]
             {:x x :y y
              :final-placement p
-             :fits (and (fits? cx pw vw margin) (fits? cy ph vh margin))
+             :fits (fits? cy ph vh margin)
              :max-height (max 40 max-h)}))
         primary (try-placement placement)
         flipped (try-placement (opposite-placement placement))]
