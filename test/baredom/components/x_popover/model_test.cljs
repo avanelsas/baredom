@@ -103,3 +103,23 @@
                {:width 200 :height 150}
                {:width 1024 :height 768} 8)]
       (is (= "top-start" (:final-placement pos))))))
+
+(deftest compute-position-flips-on-vertical-fit-only-test
+  (testing "an anchor near the bottom-right flips above even when the panel overflows horizontally both ways"
+    (let [pos (model/compute-position
+               "bottom-start" 4
+               {:x 1287 :y 780 :width 24 :height 20}
+               {:width 298 :height 127}
+               {:width 1440 :height 900} 8)]
+      (is (= "top-start" (:final-placement pos)))
+      (is (= 649 (:y pos)) "the panel sits above the anchor, not over it")
+      (is (= 1134 (:x pos)) "horizontal overflow is left to the clamp")))
+  (testing "a top placement flips below on vertical fit only"
+    (let [pos (model/compute-position
+               "top-end" 4
+               {:x 4 :y 20 :width 24 :height 20}
+               {:width 298 :height 127}
+               {:width 1440 :height 900} 8)]
+      (is (= "bottom-end" (:final-placement pos)))
+      (is (= 44 (:y pos)))
+      (is (= 8 (:x pos))))))
