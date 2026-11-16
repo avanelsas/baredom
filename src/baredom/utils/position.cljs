@@ -71,11 +71,8 @@
                         (:max-height panel) (min (:max-height panel)))}))
 
 (defn compute
-  "Computes the viewport position of a panel next to its anchor.
-   Takes {:placement :offset :anchor :panel :viewport :margin}, where `:panel` may carry the
-   panel's own `:max-height` as a cap, and returns
-   {:x :y :final-placement :max-height}. Flips when only the opposite placement fits.
-   When neither fits, takes the one with the larger max-height."
+  "Computes the position of a panel next to its anchor.
+   Returns {:x :y :final-placement :max-height}. A `:max-height` in `:panel` caps the result."
   [{:keys [placement] :as request}]
   (let [preferred (if (contains? placements placement) placement default-placement)
         flipped   (get-in placements [preferred :opposite])
