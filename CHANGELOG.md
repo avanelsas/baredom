@@ -4,6 +4,14 @@ All notable changes to BareDOM will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- **`x-popover` flips above or below on vertical fit only.** Near the bottom-right of the viewport
+  neither placement fitted horizontally, so the panel stayed below and was clamped up over its
+  anchor. It then covered the trigger, and a hover popover opened and closed again and again. The
+  flip now depends on vertical fit, and the existing clamp keeps the panel inside the viewport
+  sideways.
+
 ## [4.19.0] - 2026-11-11
 
 BareDOM 4.19 adds `x-tree`, a tree of hierarchical data. All five adapters follow it in a release
