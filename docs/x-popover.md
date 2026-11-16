@@ -282,6 +282,7 @@ When a popover is placed inside an element that creates a CSS stacking context (
 - Content is **moved** (not cloned) into the portal, preserving event listeners
 - On close, content is moved back to the host element
 - Positioning uses `getBoundingClientRect()` for viewport-relative coordinates
+- The panel flips above or below when only that side has room. When neither side has room, it takes the side with more room and its body scrolls, so it never covers the trigger.
 - The overlay root is placed inside the nearest `<x-theme>` element, so theme tokens cascade correctly
 
 ### Limitations

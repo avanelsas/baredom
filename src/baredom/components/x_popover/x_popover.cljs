@@ -3,6 +3,7 @@
             [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-popover.model :as model]
+            [baredom.utils.position :as position]
             [baredom.utils.overlay :as overlay]))
 
 ;; ---------------------------------------------------------------------------
@@ -90,7 +91,7 @@
    "min-width:var(--x-popover-panel-min-width);"
    "max-width:var(--x-popover-panel-max-width);"
    "max-height:var(--x-popover-panel-max-height);"
-   "overflow-y:auto;"
+   "display:flex;flex-direction:column;"
    "visibility:hidden;"
    "pointer-events:none;"
    "opacity:0;"
@@ -163,6 +164,7 @@
    "right:1rem;"
    "}"
    "[part=header]{"
+   "flex:none;"
    "display:flex;"
    "align-items:center;"
    "justify-content:space-between;"
@@ -204,12 +206,14 @@
    "[part=close-button][hidden]{display:none;}"
    "[part=header][hidden]{display:none;}"
    "[part=body]{"
+   "flex:1 1 auto;min-height:0;overflow-y:auto;"
    "padding:var(--x-popover-body-padding);"
    "color:var(--x-popover-body-color);"
    "font-size:var(--x-popover-body-font-size);"
    "font-family:inherit;"
    "}"
    "[part=footer]{"
+   "flex:none;"
    "padding:var(--x-popover-footer-padding);"
    "border-top:var(--x-popover-footer-border);"
    "}"
@@ -379,7 +383,7 @@
    "min-width:var(--x-popover-panel-min-width);"
    "max-width:calc(100vw - 1rem);"
    "max-height:var(--x-popover-panel-max-height);"
-   "overflow-y:auto;"
+   "display:flex;flex-direction:column;"
    "pointer-events:auto;"
    "opacity:0;"
    "transform:scale(0.96);"
@@ -412,6 +416,7 @@
    "}"
    ;; Header
    "[part=header]{"
+   "flex:none;"
    "display:flex;align-items:center;justify-content:space-between;"
    "padding:var(--x-popover-header-padding);"
    "border-bottom:var(--x-popover-header-border);"
@@ -444,6 +449,7 @@
    "[part=close-button][hidden]{display:none;}"
    ;; Body
    "[part=body]{"
+   "flex:1 1 auto;min-height:0;overflow-y:auto;"
    "padding:var(--x-popover-body-padding);"
    "color:var(--x-popover-body-color);"
    "font-size:var(--x-popover-body-font-size);"
@@ -451,6 +457,7 @@
    "}"
    ;; Footer
    "[part=footer]{"
+   "flex:none;"
    "padding:var(--x-popover-footer-padding);"
    "border-top:var(--x-popover-footer-border);"
    "}"
@@ -588,14 +595,16 @@
   (let [^js rect (.getBoundingClientRect trigger-el)
         anchor   {:x (.-left rect) :y (.-top rect)
                   :width (.-width rect) :height (.-height rect)}
-        pw       (.-offsetWidth panel)
-        ph       (.-offsetHeight panel)
+        {pw :width ph :height :as size} (overlay/measure-panel! panel)
         vw       (.-innerWidth js/window)
         vh       (.-innerHeight js/window)
-        pos      (model/compute-position
-                  placement model/default-offset anchor
-                  {:width (max pw 200) :height (max ph 100)}
-                  {:width vw :height vh} model/default-margin)
+        pos      (position/compute
+                  {:placement placement
+                   :offset    model/default-offset
+                   :anchor    anchor
+                   :panel     (assoc size :width (max pw 200) :height (max ph 100))
+                   :viewport  {:width vw :height vh}
+                   :margin    model/default-margin})
         fp       (:final-placement pos)]
     (set! (.. panel -style -left) (str (:x pos) "px"))
     (set! (.. panel -style -top)  (str (:y pos) "px"))

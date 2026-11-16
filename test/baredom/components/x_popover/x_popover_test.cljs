@@ -1,7 +1,8 @@
 (ns baredom.components.x-popover.x-popover-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-popover.x-popover :as x]
-            [baredom.components.x-popover.model :as model]))
+            [baredom.components.x-popover.model :as model]
+            [baredom.utils.overlay :as overlay]))
 
 (x/init!)
 
@@ -713,3 +714,34 @@
          (.hide el)
          (done))
        50))))
+
+;; ---------------------------------------------------------------------------
+;; Portal panel
+;; ---------------------------------------------------------------------------
+
+(defn- ^js portal-layer []
+  (.-lastElementChild (.getElementById js/document "__xOverlayRoot")))
+
+(deftest portal-panel-with-tall-content-test
+  (async done
+    (let [el (make-el)]
+      (.setAttribute el model/attr-portal "")
+      (set! (.. el -style -cssText) "position:fixed;top:0;left:0")
+      (set! (.-innerHTML el) "<button slot=\"trigger\">Open</button><div style=\"height:2000px\"></div>")
+      (append! el)
+      (.show el)
+      (.. (portal-layer) -style (setProperty "--x-popover-panel-max-height" "120px"))
+      (js/requestAnimationFrame
+       (fn []
+         (js/requestAnimationFrame
+          (fn []
+            (let [^js panel (overlay/get-panel (portal-layer))
+                  ^js body  (.querySelector panel "[part=body]")]
+              (is (= "120px" (.. panel -style -maxHeight))
+                  "the panel max-height is the stylesheet max-height")
+              (is (= "visible" (.-overflowY (js/getComputedStyle panel)))
+                  "the panel does not scroll")
+              (is (> (.-scrollHeight body) (.-clientHeight body))
+                  "the body scrolls")
+              (.hide el)
+              (done)))))))))

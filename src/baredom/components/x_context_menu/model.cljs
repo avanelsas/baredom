@@ -55,57 +55,6 @@
    :offset    (parse-int-pos offset-raw default-offset)
    :z-index   (parse-int-pos z-index-raw default-z-index)})
 
-;; ---- Pure position calculation ----
-
-(defn- fits? [edge size limit margin]
-  (and (>= edge margin) (<= (+ edge size) (- limit margin))))
-
-(defn- opposite-placement [placement]
-  (cond
-    (= placement "bottom-start") "top-start"
-    (= placement "bottom-end")   "top-end"
-    (= placement "top-start")    "bottom-start"
-    (= placement "top-end")      "bottom-end"
-    (= placement "right-start")  "left-start"
-    (= placement "left-start")   "right-start"
-    :else placement))
-
-(defn- candidate-xy
-  [placement offset anchor-rect panel-size]
-  (let [{ax :x ay :y aw :width ah :height} anchor-rect
-        {pw :width ph :height} panel-size]
-    (case placement
-      "bottom-start" {:x ax       :y (+ ay ah offset)}
-      "bottom-end"   {:x (- (+ ax aw) pw) :y (+ ay ah offset)}
-      "top-start"    {:x ax       :y (- ay ph offset)}
-      "top-end"      {:x (- (+ ax aw) pw) :y (- ay ph offset)}
-      "right-start"  {:x (+ ax aw offset) :y ay}
-      "left-start"   {:x (- ax pw offset) :y ay}
-      {:x ax :y (+ ay ah offset)})))
-
-(defn compute-position
-  [placement offset anchor-rect panel-size viewport-size margin]
-  (let [{vw :width vh :height} viewport-size
-        {pw :width ph :height} panel-size
-        try-placement
-        (fn [p]
-          (let [{cx :x cy :y} (candidate-xy p offset anchor-rect panel-size)
-                fits-x (fits? cx pw vw margin)
-                fits-y (fits? cy ph vh margin)
-                ;; clamp within viewport
-                x (-> cx (max margin) (min (- vw pw margin)))
-                y (-> cy (max margin) (min (- vh ph margin)))
-                max-h (- vh y margin)]
-            {:x x :y y
-             :final-placement p
-             :fits (and fits-x fits-y)
-             :max-height (max 40 max-h)}))
-        primary   (try-placement placement)
-        flipped   (try-placement (opposite-placement placement))]
-    (if (or (:fits primary) (not (:fits flipped)))
-      primary
-      flipped)))
-
 (def event-schema
   {event-open-request  {:cancelable true
                         :requests   {attr-open true}

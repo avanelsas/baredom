@@ -1,6 +1,7 @@
 (ns baredom.components.x-popover.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-popover.model :as model]))
+            [baredom.components.x-popover.model :as model]
+            [baredom.utils.position :as position]))
 
 ;; ---------------------------------------------------------------------------
 ;; normalize-placement
@@ -81,45 +82,6 @@
   (is (false? (:portal? (model/normalize {}))))
   (is (true?  (:portal? (model/normalize {:portal-present? true})))))
 
-;; ---------------------------------------------------------------------------
-;; compute-position
-;; ---------------------------------------------------------------------------
-
-(deftest compute-position-bottom-start-test
-  (let [pos (model/compute-position
-             "bottom-start" 4
-             {:x 100 :y 50 :width 100 :height 40}
-             {:width 200 :height 150}
-             {:width 1024 :height 768} 8)]
-    (is (= "bottom-start" (:final-placement pos)))
-    (is (>= (:x pos) 8))
-    (is (= 94 (:y pos)))))
-
-(deftest compute-position-flips-when-no-space-test
-  (testing "flips from bottom to top when panel would overflow viewport"
-    (let [pos (model/compute-position
-               "bottom-start" 4
-               {:x 100 :y 700 :width 100 :height 40}
-               {:width 200 :height 150}
-               {:width 1024 :height 768} 8)]
-      (is (= "top-start" (:final-placement pos))))))
-
-(deftest compute-position-flips-on-vertical-fit-only-test
-  (testing "an anchor near the bottom-right flips above even when the panel overflows horizontally both ways"
-    (let [pos (model/compute-position
-               "bottom-start" 4
-               {:x 1287 :y 780 :width 24 :height 20}
-               {:width 298 :height 127}
-               {:width 1440 :height 900} 8)]
-      (is (= "top-start" (:final-placement pos)))
-      (is (= 649 (:y pos)) "the panel sits above the anchor, not over it")
-      (is (= 1134 (:x pos)) "horizontal overflow is left to the clamp")))
-  (testing "a top placement flips below on vertical fit only"
-    (let [pos (model/compute-position
-               "top-end" 4
-               {:x 4 :y 20 :width 24 :height 20}
-               {:width 298 :height 127}
-               {:width 1440 :height 900} 8)]
-      (is (= "bottom-end" (:final-placement pos)))
-      (is (= 44 (:y pos)))
-      (is (= 8 (:x pos))))))
+(deftest placements-are-positioned-test
+  (testing "every placement the component allows has an entry in position/placements"
+    (is (every? position/placements model/allowed-placements))))

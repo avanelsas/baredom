@@ -11,6 +11,15 @@ All notable changes to BareDOM will be documented in this file.
   anchor. It then covered the trigger, and a hover popover opened and closed again and again. The
   flip now depends on vertical fit, and the existing clamp keeps the panel inside the viewport
   sideways.
+- **`x-context-menu` no longer covers its pointer or anchor near the viewport edge.** The flip now
+  depends on fit along the axis it moves, not on both.
+- **`x-popover` and `x-context-menu` no longer cover their anchor when the panel fits neither
+  above nor below.** The panel goes to the side with more room and gets a smaller max-height, so
+  its content scrolls.
+- **`x-popover` no longer shows scrollbars caused by its arrow.** The body scrolls instead of the
+  panel, so the arrow stays outside the scroll area and the header stays in view.
+- **A portal `x-popover` keeps its `--x-popover-panel-max-height`.** The height set while
+  positioning the panel replaced it.
 
 ## [4.19.0] - 2026-11-11
 

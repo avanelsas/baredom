@@ -62,7 +62,7 @@ The component does not own a trigger element. Use `openAt(x, y)` or `openForElem
 
 ## Auto-flip
 
-The panel is positioned using pure DOM geometry. When the preferred placement overflows the viewport, the panel flips to the opposite side. The position is clamped to viewport margins.
+The panel is positioned using pure DOM geometry. It flips to the opposite side when only that side has room along the flip axis. When neither side has room, it takes the side with more room. A panel above or below its anchor then gets a smaller max-height and scrolls, so it never covers the anchor. The position is clamped to viewport margins.
 
 ---
 

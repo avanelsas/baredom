@@ -58,6 +58,16 @@
   (when layer
     (.querySelector (.-shadowRoot layer) "[part=panel]")))
 
+(defn measure-panel!
+  "The size of `panel` and its stylesheet max-height, measured after its inline max-height is cleared.
+   `:max-height` is nil when the stylesheet sets none."
+  [^js panel]
+  (set! (.. panel -style -maxHeight) "")
+  (let [max-height (js/parseFloat (.-maxHeight (js/getComputedStyle panel)))]
+    {:width      (.-offsetWidth panel)
+     :height     (.-offsetHeight panel)
+     :max-height (when-not (js/isNaN max-height) max-height)}))
+
 (defn attach-listener!
   "Attach `handler` to `target` for `event-name` and remember the binding
    on `layer` so `remove-layer!` will detach it. `target` is usually the

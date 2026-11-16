@@ -2,6 +2,7 @@
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
             [baredom.components.x-context-menu.model :as model]
+            [baredom.utils.position :as position]
             [baredom.utils.overlay :as overlay]
             [goog.object :as gobj]))
 
@@ -67,6 +68,7 @@
    "}"
    "[part=panel]{"
    "position:absolute;"
+   "box-sizing:border-box;"
    "min-width:160px;"
    "max-width:calc(100vw - 1rem);"
    "border-radius:var(--x-context-menu-radius);"
@@ -143,8 +145,8 @@
   {:width (.-innerWidth js/window) :height (.-innerHeight js/window)})
 
 (defn- compute-and-place! [^js layer anchor-rect placement offset panel-size z-index]
-  (let [pos (model/compute-position placement offset anchor-rect panel-size
-                                    (viewport-size) margin-px)]
+  (let [pos (position/compute {:placement placement :offset offset :anchor anchor-rect
+                               :panel panel-size :viewport (viewport-size) :margin margin-px})]
     (position-layer! layer (:x pos) (:y pos) (assoc pos :z-index z-index))))
 
 (defn- reposition!
@@ -155,7 +157,7 @@
       (let [{:keys [placement offset z-index]} (read-model el)
             ^js panel (overlay/get-panel layer)
             panel-size (if panel
-                         {:width (.-offsetWidth panel) :height (.-offsetHeight panel)}
+                         (overlay/measure-panel! panel)
                          {:width panel-est-w :height panel-est-h})]
         (compute-and-place! layer anchor placement offset panel-size z-index)))))
 
@@ -286,7 +288,7 @@
            (fn refine-position []
              (let [^js panel (overlay/get-panel layer)]
                (when panel
-                 (let [panel-size {:width (.-offsetWidth panel) :height (.-offsetHeight panel)}]
+                 (let [panel-size (overlay/measure-panel! panel)]
                    (compute-and-place! layer anchor-rect placement offset panel-size z-index)))
                (when panel (focus-first! panel)))))
 
