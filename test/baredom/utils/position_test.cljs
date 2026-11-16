@@ -79,7 +79,8 @@
                                  :panel     {:width 200 :height 240}
                                  :viewport  {:width 1440 :height 900} :margin 8})]
       (is (= "top-start" (:final-placement pos)))
-      (is (< (+ (:y pos) 240) 850)))))
+      (is (< (+ (:y pos) 240) 850))
+      (is (= 842 (+ (:y pos) (:max-height pos))) "a taller panel ends at the offset above the pointer"))))
 
 (deftest compute-flips-horizontally-on-horizontal-fit-only-test
   (testing "right-start near the bottom-right flips left and leaves the anchor clear"
@@ -89,3 +90,35 @@
                                  :viewport  {:width 1440 :height 900} :margin 8})]
       (is (= "left-start" (:final-placement pos)))
       (is (< (+ (:x pos) 200) 1380)))))
+
+(deftest compute-keeps-the-anchor-clear-when-neither-side-fits-test
+  (testing "bottom-start stays below the anchor and gets the room below as max-height"
+    (let [pos (position/compute {:placement "bottom-start" :offset 4
+                                 :anchor    {:x 100 :y 400 :width 100 :height 20}
+                                 :panel     {:width 200 :height 600}
+                                 :viewport  {:width 1440 :height 900} :margin 8})]
+      (is (= "bottom-start" (:final-placement pos)))
+      (is (= 424 (:y pos)))
+      (is (= 468 (:max-height pos)))))
+  (testing "top-start stays above the anchor and gets the room above as max-height"
+    (let [pos (position/compute {:placement "top-start" :offset 4
+                                 :anchor    {:x 100 :y 500 :width 100 :height 20}
+                                 :panel     {:width 200 :height 600}
+                                 :viewport  {:width 1440 :height 900} :margin 8})]
+      (is (= "top-start" (:final-placement pos)))
+      (is (= 8 (:y pos)))
+      (is (= 488 (:max-height pos)))))
+  (testing "bottom-start flips above when the room above is larger"
+    (let [pos (position/compute {:placement "bottom-start" :offset 4
+                                 :anchor    {:x 100 :y 800 :width 100 :height 20}
+                                 :panel     {:width 200 :height 1000}
+                                 :viewport  {:width 1440 :height 900} :margin 8})]
+      (is (= "top-start" (:final-placement pos)))
+      (is (= 8 (:y pos)))
+      (is (= 788 (:max-height pos)))))
+  (testing "right-start keeps its side when neither side fits and the rooms are equal"
+    (let [pos (position/compute {:placement "right-start" :offset 8
+                                 :anchor    {:x 700 :y 100 :width 40 :height 20}
+                                 :panel     {:width 900 :height 100}
+                                 :viewport  {:width 1440 :height 900} :margin 8})]
+      (is (= "right-start" (:final-placement pos))))))

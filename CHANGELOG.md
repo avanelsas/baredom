@@ -13,6 +13,9 @@ All notable changes to BareDOM will be documented in this file.
   sideways.
 - **`x-context-menu` no longer covers its pointer or anchor near the viewport edge.** The flip now
   depends on fit along the axis it moves, not on both.
+- **`x-popover` and `x-context-menu` no longer cover their anchor when the panel fits neither
+  above nor below.** The panel goes to the side with more room and gets a smaller max-height, so
+  its content scrolls.
 
 ## [4.19.0] - 2026-11-11
 

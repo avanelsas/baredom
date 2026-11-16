@@ -48,22 +48,38 @@
 (defn- clamp [edge size limit margin]
   (-> edge (max margin) (min (- limit size margin))))
 
+(defn- vertical
+  "The panel's y and the height it may take, for the y rule of its placement.
+   A panel above or below its anchor never covers it. It gets a smaller max-height instead."
+  [rule cy {:keys [panel viewport margin]}]
+  (let [vh (:height viewport)
+        ph (:height panel)]
+    (case rule
+      :after  (let [y (max cy margin)] {:y y :room (- vh margin y)})
+      :before (let [y (max cy margin)] {:y y :room (- (+ cy ph) y)})
+      (let [y (clamp cy ph vh margin)] {:y y :room (- vh margin y)}))))
+
 (defn- place
-  "The panel's position at `placement`, clamped inside the viewport."
+  "The panel's position at `placement`, inside the viewport."
   [{:keys [panel viewport margin] :as request} placement]
   (let [{cx :x cy :y} (candidate request placement)
-        y (clamp cy (:height panel) (:height viewport) margin)]
+        {:keys [y room]} (vertical (get-in placements [placement :y]) cy request)]
     {:x               (clamp cx (:width panel) (:width viewport) margin)
      :y               y
      :final-placement placement
-     :max-height      (max max-height-floor (- (:height viewport) y margin))}))
+     :max-height      (max max-height-floor room)}))
 
 (defn compute
   "Computes the viewport position of a panel next to its anchor.
    Takes {:placement :offset :anchor :panel :viewport :margin} and returns
-   {:x :y :final-placement :max-height}. Flips when only the opposite placement fits."
+   {:x :y :final-placement :max-height}. Flips when only the opposite placement fits.
+   When neither fits, takes the one with the larger max-height."
   [{:keys [placement] :as request}]
   (let [preferred (if (contains? placements placement) placement default-placement)
         flipped   (get-in placements [preferred :opposite])
-        fits      (partial fits-on-flip-axis? request)]
-    (place request (if (and (not (fits preferred)) (fits flipped)) flipped preferred))))
+        fits      (partial fits-on-flip-axis? request)
+        at        (partial place request)]
+    (cond
+      (fits preferred) (at preferred)
+      (fits flipped)   (at flipped)
+      :else            (max-key :max-height (at flipped) (at preferred)))))
