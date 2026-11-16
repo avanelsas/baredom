@@ -57,18 +57,17 @@
 
 ;; ---- Pure position calculation ----
 
+(def ^:private placements
+  "Each placement, with the placement it flips to and the axis the flip moves."
+  {"bottom-start" {:opposite "top-start"    :axis :y}
+   "bottom-end"   {:opposite "top-end"      :axis :y}
+   "top-start"    {:opposite "bottom-start" :axis :y}
+   "top-end"      {:opposite "bottom-end"   :axis :y}
+   "right-start"  {:opposite "left-start"   :axis :x}
+   "left-start"   {:opposite "right-start"  :axis :x}})
+
 (defn- fits? [edge size limit margin]
   (and (>= edge margin) (<= (+ edge size) (- limit margin))))
-
-(defn- opposite-placement [placement]
-  (cond
-    (= placement "bottom-start") "top-start"
-    (= placement "bottom-end")   "top-end"
-    (= placement "top-start")    "bottom-start"
-    (= placement "top-end")      "bottom-end"
-    (= placement "right-start")  "left-start"
-    (= placement "left-start")   "right-start"
-    :else placement))
 
 (defn- candidate-xy
   [placement offset anchor-rect panel-size]
@@ -83,13 +82,6 @@
       "left-start"   {:x (- ax pw offset) :y ay}
       {:x ax :y (+ ay ah offset)})))
 
-(def ^:private side-placements #{"right-start" "left-start"})
-
-(defn- flip-fits?
-  "True when the panel fits on the axis that a flip of `placement` changes."
-  [placement fits-x fits-y]
-  (if (contains? side-placements placement) fits-x fits-y))
-
 (defn compute-position
   "Computes the viewport position of the menu panel.
    Returns {:x :y :final-placement :max-height}."
@@ -99,18 +91,17 @@
         try-placement
         (fn [p]
           (let [{cx :x cy :y} (candidate-xy p offset anchor-rect panel-size)
-                fits-x (fits? cx pw vw margin)
-                fits-y (fits? cy ph vh margin)
-                ;; clamp within viewport
                 x (-> cx (max margin) (min (- vw pw margin)))
                 y (-> cy (max margin) (min (- vh ph margin)))
                 max-h (- vh y margin)]
             {:x x :y y
              :final-placement p
-             :fits (flip-fits? p fits-x fits-y)
+             :fits (case (get-in placements [p :axis])
+                     :x (fits? cx pw vw margin)
+                     (fits? cy ph vh margin))
              :max-height (max 40 max-h)}))
         primary   (try-placement placement)
-        flipped   (try-placement (opposite-placement placement))]
+        flipped   (try-placement (get-in placements [placement :opposite] placement))]
     (if (or (:fits primary) (not (:fits flipped)))
       primary
       flipped)))
