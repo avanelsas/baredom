@@ -96,3 +96,23 @@
         pos    (model/compute-position "bottom-start" 8 anchor panel vp 8)]
     (is (>= (:max-height pos) 40)
         "max-height should be at least 40")))
+
+(deftest compute-position-flips-above-on-vertical-fit-only-test
+  (testing "a menu at the pointer near the bottom-right flips above and leaves the pointer clear"
+    (let [pos (model/compute-position
+               "bottom-start" 8
+               {:x 1400 :y 850 :width 1 :height 1}
+               {:width 200 :height 240}
+               {:width 1440 :height 900} 8)]
+      (is (= "top-start" (:final-placement pos)))
+      (is (< (+ (:y pos) 240) 850) "the panel ends above the pointer"))))
+
+(deftest compute-position-flips-left-on-horizontal-fit-only-test
+  (testing "a right-start menu near the bottom-right flips left and leaves the anchor clear"
+    (let [pos (model/compute-position
+               "right-start" 8
+               {:x 1380 :y 800 :width 40 :height 20}
+               {:width 200 :height 240}
+               {:width 1440 :height 900} 8)]
+      (is (= "left-start" (:final-placement pos)))
+      (is (< (+ (:x pos) 200) 1380) "the panel ends left of the anchor"))))

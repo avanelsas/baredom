@@ -11,6 +11,8 @@ All notable changes to BareDOM will be documented in this file.
   anchor. It then covered the trigger, and a hover popover opened and closed again and again. The
   flip now depends on vertical fit, and the existing clamp keeps the panel inside the viewport
   sideways.
+- **`x-context-menu` no longer covers its pointer or anchor near the viewport edge.** The flip now
+  depends on fit along the axis it moves, not on both.
 
 ## [4.19.0] - 2026-11-11
 

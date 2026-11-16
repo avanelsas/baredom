@@ -83,7 +83,16 @@
       "left-start"   {:x (- ax pw offset) :y ay}
       {:x ax :y (+ ay ah offset)})))
 
+(def ^:private side-placements #{"right-start" "left-start"})
+
+(defn- flip-fits?
+  "True when the panel fits on the axis that a flip of `placement` changes."
+  [placement fits-x fits-y]
+  (if (contains? side-placements placement) fits-x fits-y))
+
 (defn compute-position
+  "Computes the viewport position of the menu panel.
+   Returns {:x :y :final-placement :max-height}."
   [placement offset anchor-rect panel-size viewport-size margin]
   (let [{vw :width vh :height} viewport-size
         {pw :width ph :height} panel-size
@@ -98,7 +107,7 @@
                 max-h (- vh y margin)]
             {:x x :y y
              :final-placement p
-             :fits (and fits-x fits-y)
+             :fits (flip-fits? p fits-x fits-y)
              :max-height (max 40 max-h)}))
         primary   (try-placement placement)
         flipped   (try-placement (opposite-placement placement))]
