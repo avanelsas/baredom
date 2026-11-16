@@ -4,6 +4,11 @@ All notable changes to BareDOM will be documented in this file.
 
 ## [Unreleased]
 
+## [4.19.1] - 2026-11-16
+
+BareDOM 4.19.1 keeps the panels of `x-popover` and `x-context-menu` off their anchor. The adapters
+are not released with it.
+
 ### Fixed
 
 - **`x-popover` flips above or below on vertical fit only.** Near the bottom-right of the viewport
