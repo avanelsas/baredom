@@ -67,11 +67,13 @@
     {:x               (clamp cx (:width panel) (:width viewport) margin)
      :y               y
      :final-placement placement
-     :max-height      (max max-height-floor room)}))
+     :max-height      (cond-> (max max-height-floor room)
+                        (:max-height panel) (min (:max-height panel)))}))
 
 (defn compute
   "Computes the viewport position of a panel next to its anchor.
-   Takes {:placement :offset :anchor :panel :viewport :margin} and returns
+   Takes {:placement :offset :anchor :panel :viewport :margin}, where `:panel` may carry the
+   panel's own `:max-height` as a cap, and returns
    {:x :y :final-placement :max-height}. Flips when only the opposite placement fits.
    When neither fits, takes the one with the larger max-height."
   [{:keys [placement] :as request}]

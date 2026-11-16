@@ -595,14 +595,14 @@
   (let [^js rect (.getBoundingClientRect trigger-el)
         anchor   {:x (.-left rect) :y (.-top rect)
                   :width (.-width rect) :height (.-height rect)}
-        {pw :width ph :height} (overlay/measure-panel! panel)
+        {pw :width ph :height :as size} (overlay/measure-panel! panel)
         vw       (.-innerWidth js/window)
         vh       (.-innerHeight js/window)
         pos      (position/compute
                   {:placement placement
                    :offset    model/default-offset
                    :anchor    anchor
-                   :panel     {:width (max pw 200) :height (max ph 100)}
+                   :panel     (assoc size :width (max pw 200) :height (max ph 100))
                    :viewport  {:width vw :height vh}
                    :margin    model/default-margin})
         fp       (:final-placement pos)]

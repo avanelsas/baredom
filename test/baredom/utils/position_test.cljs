@@ -122,3 +122,17 @@
                                  :panel     {:width 900 :height 100}
                                  :viewport  {:width 1440 :height 900} :margin 8})]
       (is (= "right-start" (:final-placement pos))))))
+
+(deftest compute-caps-max-height-at-the-panel-max-height-test
+  (testing "max-height is capped at the panel's own max-height"
+    (let [pos (position/compute {:placement "bottom-start" :offset 4
+                                 :anchor    {:x 100 :y 50 :width 100 :height 40}
+                                 :panel     {:width 200 :height 150 :max-height 384}
+                                 :viewport  {:width 1024 :height 768} :margin 8})]
+      (is (= 384 (:max-height pos)))))
+  (testing "max-height is the room on the side when the panel sets no max-height"
+    (let [pos (position/compute {:placement "bottom-start" :offset 4
+                                 :anchor    {:x 100 :y 50 :width 100 :height 40}
+                                 :panel     {:width 200 :height 150}
+                                 :viewport  {:width 1024 :height 768} :margin 8})]
+      (is (= 666 (:max-height pos))))))

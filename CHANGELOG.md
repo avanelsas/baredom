@@ -18,6 +18,8 @@ All notable changes to BareDOM will be documented in this file.
   its content scrolls.
 - **`x-popover` no longer shows scrollbars caused by its arrow.** The body scrolls instead of the
   panel, so the arrow stays outside the scroll area and the header stays in view.
+- **A portal `x-popover` keeps its `--x-popover-panel-max-height`.** The height set while
+  positioning the panel replaced it.
 
 ## [4.19.0] - 2026-11-11
 
