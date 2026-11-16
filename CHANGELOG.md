@@ -16,6 +16,8 @@ All notable changes to BareDOM will be documented in this file.
 - **`x-popover` and `x-context-menu` no longer cover their anchor when the panel fits neither
   above nor below.** The panel goes to the side with more room and gets a smaller max-height, so
   its content scrolls.
+- **`x-popover` no longer shows scrollbars caused by its arrow.** The body scrolls instead of the
+  panel, so the arrow stays outside the scroll area and the header stays in view.
 
 ## [4.19.0] - 2026-11-11
 
