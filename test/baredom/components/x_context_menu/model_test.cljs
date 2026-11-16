@@ -1,6 +1,7 @@
 (ns baredom.components.x-context-menu.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-context-menu.model :as model]))
+            [baredom.components.x-context-menu.model :as model]
+            [baredom.utils.position :as position]))
 
 ;; ---- parse-placement ----
 
@@ -56,63 +57,6 @@
     (is (false? (:open? m)))
     (is (false? (:disabled? m)))))
 
-;; ---- compute-position ----
-
-(deftest compute-position-bottom-start-test
-  (let [anchor {:x 100 :y 200 :width 120 :height 40}
-        panel  {:width 160 :height 200}
-        vp     {:width 1440 :height 900}
-        pos    (model/compute-position "bottom-start" 8 anchor panel vp 8)]
-    ;; Should place below anchor
-    (is (>= (:y pos) (+ 200 40))
-        "y should be at or below bottom of anchor")
-    (is (= "bottom-start" (:final-placement pos)))
-    (is (number? (:x pos)))
-    (is (number? (:max-height pos)))))
-
-(deftest compute-position-flip-top-test
-  ;; Anchor near bottom of viewport: bottom-start should flip to top-start
-  (let [anchor {:x 100 :y 800 :width 120 :height 40}
-        panel  {:width 160 :height 200}
-        vp     {:width 1440 :height 900}
-        pos    (model/compute-position "bottom-start" 8 anchor panel vp 8)]
-    ;; Panel (200px tall) below anchor at y=840 doesn't fit in 900px viewport with 8px margin
-    (is (= "top-start" (:final-placement pos))
-        "should flip to top-start when bottom doesn't fit")))
-
-(deftest compute-position-clamped-to-viewport-test
-  ;; Anchor far to the right — x should be clamped
-  (let [anchor {:x 1400 :y 100 :width 10 :height 10}
-        panel  {:width 200 :height 100}
-        vp     {:width 1440 :height 900}
-        pos    (model/compute-position "bottom-start" 8 anchor panel vp 8)]
-    (is (<= (:x pos) (- 1440 200 8))
-        "x should be clamped so panel stays within viewport")))
-
-(deftest compute-position-max-height-test
-  (let [anchor {:x 100 :y 100 :width 120 :height 40}
-        panel  {:width 160 :height 200}
-        vp     {:width 1440 :height 900}
-        pos    (model/compute-position "bottom-start" 8 anchor panel vp 8)]
-    (is (>= (:max-height pos) 40)
-        "max-height should be at least 40")))
-
-(deftest compute-position-flips-above-on-vertical-fit-only-test
-  (testing "a menu at the pointer near the bottom-right flips above and leaves the pointer clear"
-    (let [pos (model/compute-position
-               "bottom-start" 8
-               {:x 1400 :y 850 :width 1 :height 1}
-               {:width 200 :height 240}
-               {:width 1440 :height 900} 8)]
-      (is (= "top-start" (:final-placement pos)))
-      (is (< (+ (:y pos) 240) 850) "the panel ends above the pointer"))))
-
-(deftest compute-position-flips-left-on-horizontal-fit-only-test
-  (testing "a right-start menu near the bottom-right flips left and leaves the anchor clear"
-    (let [pos (model/compute-position
-               "right-start" 8
-               {:x 1380 :y 800 :width 40 :height 20}
-               {:width 200 :height 240}
-               {:width 1440 :height 900} 8)]
-      (is (= "left-start" (:final-placement pos)))
-      (is (< (+ (:x pos) 200) 1380) "the panel ends left of the anchor"))))
+(deftest placements-are-positioned-test
+  (testing "every placement the component allows has an entry in position/placements"
+    (is (every? position/placements model/valid-placements))))

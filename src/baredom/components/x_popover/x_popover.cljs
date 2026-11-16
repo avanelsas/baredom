@@ -3,6 +3,7 @@
             [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-popover.model :as model]
+            [baredom.utils.position :as position]
             [baredom.utils.overlay :as overlay]))
 
 ;; ---------------------------------------------------------------------------
@@ -592,7 +593,7 @@
         ph       (.-offsetHeight panel)
         vw       (.-innerWidth js/window)
         vh       (.-innerHeight js/window)
-        pos      (model/compute-position
+        pos      (position/compute
                   placement model/default-offset anchor
                   {:width (max pw 200) :height (max ph 100)}
                   {:width vw :height vh} model/default-margin)

@@ -126,6 +126,16 @@ them and the `.d.ts` marks them `readonly`) and the two methods in `method-api`.
 | `safe-url?` | `[url]` | Check if URL uses an allowed protocol or is relative |
 | `sanitize-url` | `[url]` | Return URL if safe, empty string otherwise |
 
+## `baredom.utils.position` (alias `position`)
+
+**Pure.** Places a panel next to an anchor, inside the viewport. Used by `x-popover` and `x-context-menu`.
+
+| Name | Signature | Description |
+|------|-----------|-------------|
+| `placements` | | Each placement, with the placement it flips to and the axis the flip moves |
+| `min-max-height` | | The smallest max-height a panel gets, in pixels |
+| `compute` | `[placement offset anchor-rect panel-size viewport-size margin]` | `{:x :y :final-placement :max-height}`. Flips to the opposite placement when only that one fits on the axis the flip moves |
+
 ## Usage patterns (following x-button golden sample)
 
 **Instance fields:** Use `gobj/get` / `gobj/set` directly with private string keys (e.g. `"__xAlertModel"`, `"__xAlertRefs"`).

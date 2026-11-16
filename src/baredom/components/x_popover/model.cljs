@@ -68,56 +68,6 @@
 (def default-offset 4)
 (def default-margin 8)
 
-(defn- opposite-placement [placement]
-  (case placement
-    "bottom-start" "top-start"
-    "bottom-end"   "top-end"
-    "top-start"    "bottom-start"
-    "top-end"      "bottom-end"
-    placement))
-
-(defn- candidate-xy
-  [placement offset anchor-rect panel-size]
-  (let [{ax :x ay :y aw :width ah :height} anchor-rect
-        {pw :width ph :height} panel-size]
-    (case placement
-      "bottom-start" {:x ax                 :y (+ ay ah offset)}
-      "bottom-end"   {:x (- (+ ax aw) pw)  :y (+ ay ah offset)}
-      "top-start"    {:x ax                 :y (- ay ph offset)}
-      "top-end"      {:x (- (+ ax aw) pw)  :y (- ay ph offset)}
-      {:x ax :y (+ ay ah offset)})))
-
-(defn- fits? [edge size limit margin]
-  (and (>= edge margin) (<= (+ edge size) (- limit margin))))
-
-(defn compute-position
-  "Computes viewport-relative position for the popover panel.
-   Returns {:x :y :final-placement :max-height}.
-
-   Every placement is top or bottom, so the flip is vertical: it is
-   decided on vertical fit alone. Horizontal overflow is left to the
-   clamp, which no flip could fix (top and bottom share an x). Requiring
-   both axes to fit kept an overflowing bottom placement and clamped it
-   up over the anchor."
-  [placement offset anchor-rect panel-size viewport-size margin]
-  (let [{vw :width vh :height} viewport-size
-        {pw :width ph :height} panel-size
-        try-placement
-        (fn [p]
-          (let [{cx :x cy :y} (candidate-xy p offset anchor-rect panel-size)
-                x (-> cx (max margin) (min (- vw pw margin)))
-                y (-> cy (max margin) (min (- vh ph margin)))
-                max-h (- vh y margin)]
-            {:x x :y y
-             :final-placement p
-             :fits (fits? cy ph vh margin)
-             :max-height (max 40 max-h)}))
-        primary (try-placement placement)
-        flipped (try-placement (opposite-placement placement))]
-    (if (or (:fits primary) (not (:fits flipped)))
-      primary
-      flipped)))
-
 (def method-api
   {:show   {:args [] :returns 'void}
    :hide   {:args [] :returns 'void}

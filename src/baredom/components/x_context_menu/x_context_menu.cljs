@@ -2,6 +2,7 @@
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
             [baredom.components.x-context-menu.model :as model]
+            [baredom.utils.position :as position]
             [baredom.utils.overlay :as overlay]
             [goog.object :as gobj]))
 
@@ -143,8 +144,8 @@
   {:width (.-innerWidth js/window) :height (.-innerHeight js/window)})
 
 (defn- compute-and-place! [^js layer anchor-rect placement offset panel-size z-index]
-  (let [pos (model/compute-position placement offset anchor-rect panel-size
-                                    (viewport-size) margin-px)]
+  (let [pos (position/compute placement offset anchor-rect panel-size
+                             (viewport-size) margin-px)]
     (position-layer! layer (:x pos) (:y pos) (assoc pos :z-index z-index))))
 
 (defn- reposition!
