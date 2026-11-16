@@ -144,8 +144,8 @@
   {:width (.-innerWidth js/window) :height (.-innerHeight js/window)})
 
 (defn- compute-and-place! [^js layer anchor-rect placement offset panel-size z-index]
-  (let [pos (position/compute placement offset anchor-rect panel-size
-                             (viewport-size) margin-px)]
+  (let [pos (position/compute {:placement placement :offset offset :anchor anchor-rect
+                               :panel panel-size :viewport (viewport-size) :margin margin-px})]
     (position-layer! layer (:x pos) (:y pos) (assoc pos :z-index z-index))))
 
 (defn- reposition!

@@ -2,58 +2,68 @@
   "Positions a panel next to an anchor, inside the viewport.")
 
 (def placements
-  "Each placement, with the placement it flips to and the axis the flip moves."
-  {"bottom-start" {:opposite "top-start"    :axis :y}
-   "bottom-end"   {:opposite "top-end"      :axis :y}
-   "top-start"    {:opposite "bottom-start" :axis :y}
-   "top-end"      {:opposite "bottom-end"   :axis :y}
-   "right-start"  {:opposite "left-start"   :axis :x}
-   "left-start"   {:opposite "right-start"  :axis :x}})
+  "Each placement: the edge rule on each axis, the placement it flips to and the axis the flip moves.
+   `:after` and `:before` put the panel past the anchor, `:start` and `:end` align it with the anchor."
+  {"bottom-start" {:x :start  :y :after  :opposite "top-start"    :axis :y}
+   "bottom-end"   {:x :end    :y :after  :opposite "top-end"      :axis :y}
+   "top-start"    {:x :start  :y :before :opposite "bottom-start" :axis :y}
+   "top-end"      {:x :end    :y :before :opposite "bottom-end"   :axis :y}
+   "right-start"  {:x :after  :y :start  :opposite "left-start"   :axis :x}
+   "left-start"   {:x :before :y :start  :opposite "right-start"  :axis :x}})
 
-(def min-max-height
+(def default-placement "bottom-start")
+
+(def max-height-floor
   "The smallest max-height a panel gets, in pixels."
   40)
+
+(def ^:private extent {:x :width :y :height})
+
+(defn- edge
+  "The panel's leading edge on one axis."
+  [rule anchor-start anchor-size panel-size offset]
+  (case rule
+    :start  anchor-start
+    :end    (- (+ anchor-start anchor-size) panel-size)
+    :after  (+ anchor-start anchor-size offset)
+    :before (- anchor-start panel-size offset)))
+
+(defn- candidate
+  "The panel's top-left corner at `placement`, before clamping."
+  [{:keys [anchor panel offset]} placement]
+  (let [rules (placements placement)]
+    {:x (edge (:x rules) (:x anchor) (:width anchor) (:width panel) offset)
+     :y (edge (:y rules) (:y anchor) (:height anchor) (:height panel) offset)}))
 
 (defn- fits? [edge size limit margin]
   (and (>= edge margin) (<= (+ edge size) (- limit margin))))
 
+(defn- fits-on-flip-axis?
+  "True when the panel at `placement` fits on the axis its flip moves."
+  [{:keys [panel viewport margin] :as request} placement]
+  (let [axis (get-in placements [placement :axis])
+        size (extent axis)]
+    (fits? (axis (candidate request placement)) (size panel) (size viewport) margin)))
+
 (defn- clamp [edge size limit margin]
   (-> edge (max margin) (min (- limit size margin))))
 
-(defn- candidate-xy
-  [placement offset anchor-rect panel-size]
-  (let [{ax :x ay :y aw :width ah :height} anchor-rect
-        {pw :width ph :height} panel-size]
-    (case placement
-      "bottom-start" {:x ax                 :y (+ ay ah offset)}
-      "bottom-end"   {:x (- (+ ax aw) pw)  :y (+ ay ah offset)}
-      "top-start"    {:x ax                 :y (- ay ph offset)}
-      "top-end"      {:x (- (+ ax aw) pw)  :y (- ay ph offset)}
-      "right-start"  {:x (+ ax aw offset)  :y ay}
-      "left-start"   {:x (- ax pw offset)  :y ay}
-      {:x ax :y (+ ay ah offset)})))
-
-(defn- try-placement
-  "The clamped position at `placement`, with `:fits` true when it fits on the axis its flip moves."
-  [offset anchor-rect panel-size viewport-size margin placement]
-  (let [{vw :width vh :height} viewport-size
-        {pw :width ph :height} panel-size
-        {cx :x cy :y} (candidate-xy placement offset anchor-rect panel-size)
-        y (clamp cy ph vh margin)]
-    {:x               (clamp cx pw vw margin)
+(defn- place
+  "The panel's position at `placement`, clamped inside the viewport."
+  [{:keys [panel viewport margin] :as request} placement]
+  (let [{cx :x cy :y} (candidate request placement)
+        y (clamp cy (:height panel) (:height viewport) margin)]
+    {:x               (clamp cx (:width panel) (:width viewport) margin)
      :y               y
      :final-placement placement
-     :fits            (case (get-in placements [placement :axis])
-                        :x (fits? cx pw vw margin)
-                        (fits? cy ph vh margin))
-     :max-height      (max min-max-height (- vh y margin))}))
+     :max-height      (max max-height-floor (- (:height viewport) y margin))}))
 
 (defn compute
-  "Computes the viewport position of a panel at `placement` next to `anchor-rect`.
-   Returns {:x :y :final-placement :max-height}, at the opposite placement when only that one fits."
-  [placement offset anchor-rect panel-size viewport-size margin]
-  (let [at       (partial try-placement offset anchor-rect panel-size viewport-size margin)
-        primary  (at placement)
-        flipped  (at (get-in placements [placement :opposite] placement))]
-    (dissoc (if (or (:fits primary) (not (:fits flipped))) primary flipped)
-            :fits)))
+  "Computes the viewport position of a panel next to its anchor.
+   Takes {:placement :offset :anchor :panel :viewport :margin} and returns
+   {:x :y :final-placement :max-height}. Flips when only the opposite placement fits."
+  [{:keys [placement] :as request}]
+  (let [preferred (if (contains? placements placement) placement default-placement)
+        flipped   (get-in placements [preferred :opposite])
+        fits      (partial fits-on-flip-axis? request)]
+    (place request (if (and (not (fits preferred)) (fits flipped)) flipped preferred))))

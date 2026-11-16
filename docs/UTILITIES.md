@@ -132,9 +132,9 @@ them and the `.d.ts` marks them `readonly`) and the two methods in `method-api`.
 
 | Name | Signature | Description |
 |------|-----------|-------------|
-| `placements` | | Each placement, with the placement it flips to and the axis the flip moves |
-| `min-max-height` | | The smallest max-height a panel gets, in pixels |
-| `compute` | `[placement offset anchor-rect panel-size viewport-size margin]` | `{:x :y :final-placement :max-height}`. Flips to the opposite placement when only that one fits on the axis the flip moves |
+| `placements` | | Each placement: the edge rule on each axis, the placement it flips to and the axis the flip moves |
+| `max-height-floor` | | The smallest max-height a panel gets, in pixels |
+| `compute` | `[{:keys [placement offset anchor panel viewport margin]}]` | `{:x :y :final-placement :max-height}`. Flips when only the opposite placement fits |
 
 ## Usage patterns (following x-button golden sample)
 

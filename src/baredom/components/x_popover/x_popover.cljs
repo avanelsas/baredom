@@ -594,9 +594,12 @@
         vw       (.-innerWidth js/window)
         vh       (.-innerHeight js/window)
         pos      (position/compute
-                  placement model/default-offset anchor
-                  {:width (max pw 200) :height (max ph 100)}
-                  {:width vw :height vh} model/default-margin)
+                  {:placement placement
+                   :offset    model/default-offset
+                   :anchor    anchor
+                   :panel     {:width (max pw 200) :height (max ph 100)}
+                   :viewport  {:width vw :height vh}
+                   :margin    model/default-margin})
         fp       (:final-placement pos)]
     (set! (.. panel -style -left) (str (:x pos) "px"))
     (set! (.. panel -style -top)  (str (:y pos) "px"))
