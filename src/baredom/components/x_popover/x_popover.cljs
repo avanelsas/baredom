@@ -589,8 +589,7 @@
   (let [^js rect (.getBoundingClientRect trigger-el)
         anchor   {:x (.-left rect) :y (.-top rect)
                   :width (.-width rect) :height (.-height rect)}
-        pw       (.-offsetWidth panel)
-        ph       (.-offsetHeight panel)
+        {pw :width ph :height} (overlay/measure-panel! panel)
         vw       (.-innerWidth js/window)
         vh       (.-innerHeight js/window)
         pos      (position/compute
