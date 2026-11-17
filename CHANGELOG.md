@@ -4,6 +4,36 @@ All notable changes to BareDOM will be documented in this file.
 
 ## [Unreleased]
 
+## [4.20.0] - 2026-11-17
+
+BareDOM 4.20 lets `x-command-palette` show the items as given and fixes focus in
+`x-command-palette` and `x-modal` and the `x-tab` underline. All five adapters follow it in a
+release of their own: `-react` 3.8.0, `-angular` 3.8.0, `-vue` 0.14.0, `-svelte` 0.14.0 and
+`-solid` 0.14.0. They add the `filter` prop of `XCommandPalette`, and each needs
+`@vanelsas/baredom` 4.20.0 or later.
+
+### Added
+
+- **`x-command-palette` takes `filter="none"`,** which shows every item in the order given,
+  whatever the query. A caller that ranks the items itself gives its ranking as it is. The
+  `filter` property reflects the attribute, and `default` keeps the filter of before.
+- **`x-modal` focuses an element marked `autofocus` when it opens,** or the first control inside
+  it. Without one, it focuses the first tabbable element as before.
+
+### Fixed
+
+- **The selected `x-tab` of the `underline` variant shows only a bottom border.** In dark mode
+  the other three sides kept the focus ring colour, and with the radius the tab looked like a
+  button. Underline tabs now have no radius.
+- **An `x-command-palette` created with `open` focuses its input.** Before, the input took the
+  focus only through `show()`, the `open` property or a later change of the attribute. Changing
+  the value of `open` while open no longer takes the focus again.
+- **The `x-modal` focus trap reaches BareDOM controls.** It finds the controls in open shadow
+  roots, such as those of `x-form-field`, `x-checkbox` or `x-select`, in the order of the composed
+  tree. Before, a modal with only such controls focused its dialog.
+- **The `x-modal` focus trap wraps from a control in a shadow root,** and it includes content
+  added after the modal opened.
+
 ## [4.19.1] - 2026-11-16
 
 BareDOM 4.19.1 keeps the panels of `x-popover` and `x-context-menu` off their anchor. The adapters
