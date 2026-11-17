@@ -183,6 +183,9 @@ Navigation between tabs is coordinated by `x-tabs`.
 
 Host variables override component defaults.
 
+The `underline` variant draws only a bottom border in `--x-tab-selected-color`, with no radius.
+`--x-tab-selected-border-color` and `--x-tab-radius` have no effect on it.
+
 ---
 
 # Motion
