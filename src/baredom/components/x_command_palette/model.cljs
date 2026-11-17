@@ -14,6 +14,7 @@
 (def attr-label "label")
 (def attr-placeholder "placeholder")
 (def attr-empty-text "empty-text")
+(def attr-filter "filter")
 
 (def event-open-request "x-command-palette-open-request")
 (def event-open "x-command-palette-open")
@@ -26,9 +27,26 @@
 (def default-placeholder "Search\u2026")
 (def default-empty-text "No results")
 
+(def filter-default "default")
+(def filter-none "none")
+
+(defn- contains-every-token?
+  "True when the search text of `item` contains every token."
+  [item tokens]
+  (every? (fn contains-token? [tok] (str/includes? (:search-str item) (.toLowerCase tok)))
+          tokens))
+
+(defn- any-item? [_item _tokens] true)
+
+(def ^:private matchers
+  {filter-default contains-every-token?
+   filter-none    any-item?})
+
+(def filter-values (set (keys matchers)))
+
 (def observed-attributes
   #js ["open" "modal" "dismissible" "disabled" "no-scrim" "close-on-scrim"
-       "close-on-escape" "label" "placeholder" "empty-text"])
+       "close-on-escape" "label" "placeholder" "empty-text" "filter"])
 
 (def property-api
   {:items {:type 'array
@@ -44,7 +62,9 @@
    :closeOnScrim  {:type 'boolean :reflects-attribute attr-close-on-scrim}
    :label         {:type 'string  :reflects-attribute attr-label}
    :placeholder   {:type 'string  :reflects-attribute attr-placeholder}
-   :emptyText     {:type 'string  :reflects-attribute attr-empty-text}})
+   :emptyText     {:type 'string  :reflects-attribute attr-empty-text}
+   :filter        {:type 'string  :reflects-attribute attr-filter
+                   :default filter-default :enum filter-values}})
 
 (def event-schema
   {event-open-request {:cancelable true
@@ -101,24 +121,21 @@
                                 :disabled? disabled?
                                 :search-str search-str}))))))))
 
+(defn normalize-filter
+  "The filter mode for a raw `filter` attribute. An unknown value gives the default."
+  [raw]
+  (if (contains? matchers raw) raw filter-default))
+
+(defn- query-tokens [query]
+  (keep normalize-str (str/split (if (string? query) query "") #"\s+")))
+
 (defn filter-items
-  "Filter items by query string. Each space-separated token must appear
-  in the item's search-str. Returns {:visible [...] :groups #{...}}."
-  [items query]
-  (let [q (if (string? query) (.trim query) "")
-        tokens (when (not= q "")
-                 (keep normalize-str (str/split q #"\s+")))]
-    (if (empty? tokens)
-      {:visible items
-       :groups (into #{} (keep :group items))}
-      (let [visible (filterv
-                     (fn [item]
-                       (every? (fn [tok]
-                                 (not= -1 (.indexOf (:search-str item) (.toLowerCase tok))))
-                               tokens))
-                     items)]
-        {:visible visible
-         :groups (into #{} (keep :group visible))}))))
+  "The items that match `query` in `filter-mode`. In the default mode, each word of the query
+   must appear in the search text of an item. In the mode `none`, every item matches."
+  [items query filter-mode]
+  (let [matches? (get matchers (normalize-filter filter-mode))
+        tokens   (query-tokens query)]
+    (filterv (fn matching? [item] (matches? item tokens)) items)))
 
 ;; ── Shown list ───────────────────────────────────────────────────────────────
 (def ^:private item-id-prefix "x-cp-item-")
@@ -152,13 +169,13 @@
     (cons {:key (str header-key-prefix item-key) :text group})))
 
 (defn shown-list
-  "What the list shows for the normalized `items` that match `query`: `:entries`, the group
-   headers and the items in order, each with its key and the text of what it shows, and
-   `:active-id`, the id of the active item, or nil for an empty list. The key of an item is
-   made of its id, and the key of a header of the id of the item it leads."
-  [items query active-idx]
-  (let [{:keys [visible]} (filter-items (mu/with-unique-keys :id items) query)
-        groups-before     (reductions last-group nil (map :group visible))]
+  "What the list shows for the normalized `items` that match `:query` in `:filter-mode`:
+   `:entries`, the group headers and the items in order, each with its key and the text of what
+   it shows, and `:active-id`, the id of the active item, or nil for an empty list. The key of an
+   item is made of its id, and the key of a header of the id of the item it leads."
+  [items {:keys [query active-idx filter-mode]}]
+  (let [visible       (filter-items (mu/with-unique-keys :id items) query filter-mode)
+        groups-before (reductions last-group nil (map :group visible))]
     {:entries   (into [] cat (map (partial shown-entries active-idx)
                                   (range) visible groups-before))
      :active-id (when (seq visible) (str item-id-prefix active-idx))}))
@@ -192,7 +209,7 @@
   "Canonicalize raw attr strings to a stable model map."
   [{:keys [open-present? modal-raw dismissible-raw disabled-raw
            no-scrim-raw close-on-scrim-raw close-on-escape-raw
-           label-raw placeholder-raw empty-text-raw]}]
+           label-raw placeholder-raw empty-text-raw filter-raw]}]
   (let [modal?          (mu/parse-bool-default-true modal-raw)
         dismissible?    (mu/parse-bool-default-true dismissible-raw)
         no-scrim?       (mu/parse-bool-present no-scrim-raw)
@@ -210,7 +227,8 @@
      :close-on-escape? close-on-escape?
      :label            (normalize-str label-raw)
      :placeholder      (or (normalize-str placeholder-raw) default-placeholder)
-     :empty-text       (or (normalize-str empty-text-raw) default-empty-text)}))
+     :empty-text       (or (normalize-str empty-text-raw) default-empty-text)
+     :filter           (normalize-filter filter-raw)}))
 
 (def method-api
   {:show   {:args [] :returns 'void}

@@ -25,6 +25,7 @@ A searchable command list overlay (⌘K pattern). Opens as a modal with a text i
 | `disabled`        | boolean | `false`       | Disables the palette and all interactions                           |
 | `placeholder`     | string  | `"Search…"`   | Input placeholder text                                              |
 | `empty-text`      | string  | `"No results"`| Text shown when no items match the query                            |
+| `filter`          | string  | `"default"`   | `default` shows the items that match the query. `none` shows every item, in the order given |
 | `label`           | string  | —             | `aria-label` on the dialog element                                  |
 
 †Default-true boolean: absent = `true`; `attribute="false"` = `false`.
@@ -46,6 +47,7 @@ A searchable command list overlay (⌘K pattern). Opens as a modal with a text i
 | `label`    | string  | Reflects `label`                                                         |
 | `placeholder` | string | Reflects `placeholder`, default `"Search…"`                            |
 | `emptyText` | string | Reflects `empty-text`, default `"No results"`                            |
+| `filter`   | string  | Reflects `filter`, default `"default"`                                   |
 
 ### Item shape
 
@@ -91,6 +93,7 @@ A searchable command list overlay (⌘K pattern). Opens as a modal with a text i
 ## Accessibility
 
 - Renders a `<div>` with `role="dialog"` and `aria-modal="true"`.
+- The input takes the focus when the palette opens, including a palette created open.
 - Input has `role="combobox"` with `aria-expanded`, `aria-controls` (linked to the listbox), and `aria-activedescendant` (tracks the highlighted item).
 - The list has `role="listbox"`; each item has `role="option"`.
 - Disabled items have `aria-disabled="true"`.

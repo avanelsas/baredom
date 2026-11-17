@@ -15,6 +15,7 @@ export interface XCommandPaletteProps {
   closeOnScrim?: boolean;
   dismissible?: boolean;
   modal?: boolean;
+  filter?: string;
   label?: string;
   closeOnEscape?: boolean;
   items?: unknown[];

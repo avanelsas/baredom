@@ -262,3 +262,37 @@
       (unchecked-set el prop "false"))
     (is (= [false false false false]
            [(.-modal el) (.-dismissible el) (.-closeOnEscape el) (.-closeOnScrim el)]))))
+
+;; ── Filter mode ────────────────────────────────────────────────────────────
+
+(deftest filter-none-shows-every-item-for-any-query-test
+  (let [el (palette!)]
+    (.setAttribute el model/attr-filter model/filter-none)
+    (type! el "zzz")
+    (is (= ["new" "open" "copy"]
+           (mapv (fn [^js node] (.getAttribute node "data-id")) (item-nodes el))))
+    (is (.hasAttribute (shadow-part el "[part=empty]") "hidden"))))
+
+(deftest filter-property-reflects-the-attribute-test
+  (let [^js el (append! (make-el))]
+    (is (= model/filter-default (.-filter el)))
+    (set! (.-filter el) model/filter-none)
+    (is (= model/filter-none (.getAttribute el model/attr-filter)))))
+
+;; ── Focus when created open ────────────────────────────────────────────────
+
+(deftest palette-created-open-focuses-its-input-test
+  (async done
+    (let [^js el (make-el)]
+      (.setAttribute el model/attr-open "")
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (is (= (shadow-part el "[part=input]") (.-activeElement (.-shadowRoot el))))
+         (done))
+       50))))
+
+(deftest show-focuses-the-input-test
+  (let [^js el (append! (make-el))]
+    (.show el)
+    (is (= (shadow-part el "[part=input]") (.-activeElement (.-shadowRoot el))))))

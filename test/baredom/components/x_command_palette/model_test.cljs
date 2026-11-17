@@ -39,21 +39,31 @@
                     #js {:id "2" :label "Save document"}
                     #js {:id "3" :label "Close tab"}])]
     (testing "empty query returns all"
-      (is (= 3 (count (:visible (model/filter-items items ""))))))
+      (is (= 3 (count (model/filter-items items "" model/filter-default)))))
 
     (testing "single token filter"
-      (let [{:keys [visible]} (model/filter-items items "open")]
+      (let [visible (model/filter-items items "open" model/filter-default)]
         (is (= 1 (count visible)))
         (is (= "1" (:id (first visible))))))
 
     (testing "multi-token filter (AND)"
-      (let [{:keys [visible]} (model/filter-items items "save doc")]
+      (let [visible (model/filter-items items "save doc" model/filter-default)]
         (is (= 1 (count visible)))
         (is (= "2" (:id (first visible))))))
 
     (testing "no match returns empty"
-      (let [{:keys [visible]} (model/filter-items items "zzznomatch")]
-        (is (= 0 (count visible)))))))
+      (let [visible (model/filter-items items "zzznomatch" model/filter-default)]
+        (is (= 0 (count visible)))))
+
+    (testing "filter mode none returns all items in order"
+      (let [visible (model/filter-items items "zzznomatch" model/filter-none)]
+        (is (= ["1" "2" "3"] (mapv :id visible)))))))
+
+(deftest normalize-filter-test
+  (is (= "none" (model/normalize-filter "none")))
+  (is (= "default" (model/normalize-filter "default")))
+  (is (= "default" (model/normalize-filter "fuzzy")))
+  (is (= "default" (model/normalize-filter nil))))
 
 (deftest next-prev-active-idx-test
   (let [items (model/normalize-items
@@ -79,7 +89,8 @@
       (is (= true (:scrim? m)))
       (is (= true (:close-on-escape? m)))
       (is (= model/default-placeholder (:placeholder m)))
-      (is (= model/default-empty-text (:empty-text m)))))
+      (is (= model/default-empty-text (:empty-text m)))
+      (is (= model/filter-default (:filter m)))))
 
   (testing "open-present? reflects as open?"
     (let [m (model/normalize {:open-present? true})]
@@ -102,7 +113,7 @@
         #js {:id "help" :label "Help"}]))
 
 (deftest shown-list-gives-the-headers-and-the-items-in-order-test
-  (let [{:keys [entries active-id]} (model/shown-list commands "" 1)]
+  (let [{:keys [entries active-id]} (model/shown-list commands {:query "" :active-idx 1 :filter-mode model/filter-default})]
     (is (= ["group-new|0" "item-new|0" "item-open|0" "group-copy|0" "item-copy|0" "item-help|0"]
            (mapv :key entries)))
     (is (= {:key "group-new|0" :text "File"} (first entries)))
@@ -113,10 +124,14 @@
     (is (= "x-cp-item-1" active-id))))
 
 (deftest shown-list-keeps-the-key-of-an-item-while-the-query-changes-test
-  (let [{:keys [entries]} (model/shown-list commands "copy" 0)]
+  (let [{:keys [entries]} (model/shown-list commands {:query "copy" :active-idx 0 :filter-mode model/filter-default})]
     (is (= ["group-copy|0" "item-copy|0"] (mapv :key entries)) "the key is made of the id")
     (is (= "0" (:position (second entries))) "the position is among the visible ones")))
 
 (deftest shown-list-of-no-match-is-empty-test
-  (is (= {:entries [] :active-id nil} (model/shown-list commands "zzz" 0))))
+  (is (= {:entries [] :active-id nil} (model/shown-list commands {:query "zzz" :active-idx 0 :filter-mode model/filter-default}))))
 
+
+(deftest filter-items-uses-the-default-mode-for-nil-test
+  (let [items (model/normalize-items #js [#js {:id "1" :label "Open"} #js {:id "2" :label "Save"}])]
+    (is (= ["1"] (mapv :id (model/filter-items items "open" nil))))))

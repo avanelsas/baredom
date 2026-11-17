@@ -68,6 +68,12 @@
           <option value="false">false</option>
         </x-select>
       </label>
+      <label>filter
+        <x-select id="ctrl-filter" value="">
+          <option value="">default</option>
+          <option value="none">none</option>
+        </x-select>
+      </label>
       <label>no-scrim <x-switch id="ctrl-no-scrim"></x-switch></label>
       <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
     </div>
@@ -128,6 +134,8 @@
         livePal.setAttribute("empty-text",  document.getElementById("ctrl-empty").value);
         const dis = document.getElementById("ctrl-dismissible").value;
         if (dis) livePal.setAttribute("dismissible", dis); else livePal.removeAttribute("dismissible");
+        const filter = document.getElementById("ctrl-filter").value;
+        if (filter) livePal.setAttribute("filter", filter); else livePal.removeAttribute("filter");
         if (document.getElementById("ctrl-no-scrim").checked)
           livePal.setAttribute("no-scrim", "");
         else livePal.removeAttribute("no-scrim");
