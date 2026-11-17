@@ -105,7 +105,8 @@
     :close-on-escape-raw (du/get-attr el model/attr-close-on-escape)
     :label-raw           (du/get-attr el model/attr-label)
     :placeholder-raw     (du/get-attr el model/attr-placeholder)
-    :empty-text-raw      (du/get-attr el model/attr-empty-text)}))
+    :empty-text-raw      (du/get-attr el model/attr-empty-text)
+    :filter-raw          (du/get-attr el model/attr-filter)}))
 
 ;; ── Style ──────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -328,16 +329,18 @@
       (apply-item! node entry))))
 
 (defn- render-items!
-  "Brings the list to the items that match the query. An item that stays keeps its node."
-  [^js el]
+  "Brings the list to the items that match the query in the model `m`. An item that stays keeps
+   its node."
+  [^js el m]
   (when-let [refs (du/getv el k-refs)]
     (let [^js list-el  (gobj/get refs rk-list)
           ^js empty-el (gobj/get refs rk-empty)
           ^js input-el (gobj/get refs rk-input)
           {:keys [entries active-id]}
           (model/shown-list (model/normalize-items (du/getv el k-items))
-                            (or (du/getv el k-query) "")
-                            (or (du/getv el k-active-idx) 0))
+                            {:query       (or (du/getv el k-query) "")
+                             :active-idx  (or (du/getv el k-active-idx) 0)
+                             :filter-mode (:filter m)})
           nodes (places/sync! {:list {:parent list-el}} {:list (mapv :key entries)} make-entry!)]
       (run! (partial apply-entry! nodes) entries)
       (du/set-attr-to! empty-el attr-hidden (when (seq entries) ""))
@@ -365,7 +368,14 @@
 (defn- apply-empty-text! [^js empty-el {:keys [empty-text]}]
   (set! (.-textContent empty-el) empty-text))
 
-(defn- apply-model! [^js el m]
+(defn- opened? [old-m new-m]
+  (and (not (:open? old-m)) (:open? new-m)))
+
+(defn- apply-focus! [^js input old-m new-m]
+  (when (opened? old-m new-m)
+    (.focus input)))
+
+(defn- apply-model! [^js el old-m m]
   (when-let [refs (du/getv el k-refs)]
     (let [^js panel    (gobj/get refs rk-panel)
           ^js overlay  (gobj/get refs rk-overlay)
@@ -375,7 +385,8 @@
       (apply-scrim!        overlay m)
       (apply-input-state!  input m)
       (apply-empty-text!   empty-el m)
-      (render-items! el)
+      (render-items!       el m)
+      (apply-focus!        input old-m m)
       (du/setv! el k-model m))))
 
 (defn- update-from-attrs! [^js el]
@@ -383,14 +394,14 @@
     (let [new-m (read-model el)
           old-m (du/getv el k-model)]
       (when (not= old-m new-m)
-        (apply-model! el new-m)))))
+        (apply-model! el old-m new-m)))))
+
+(defn- render-cached-items! [^js el]
+  (render-items! el (du/getv el k-model)))
 
 ;; ── Open / close ───────────────────────────────────────────────────────────
 (defn- do-open! [^js el]
   (du/set-attr! el model/attr-open "")
-  (let [refs      (du/getv el k-refs)
-        ^js input (when refs (gobj/get refs rk-input))]
-    (when input (.focus input)))
   (update-from-attrs! el)
   (du/dispatch! el model/event-open #js {}))
 
@@ -417,8 +428,8 @@
   (let [items-js (du/getv el k-items)
         query    (or (du/getv el k-query) "")
         items    (model/normalize-items items-js)
-        {:keys [visible]} (model/filter-items items query)]
-    visible))
+        filter-mode (:filter (du/getv el k-model))]
+    (model/filter-items items query filter-mode)))
 
 (defn- move-active! [^js el direction]
   (let [visible (active-visible el)
@@ -427,7 +438,7 @@
                   (model/next-active-idx visible cur-idx)
                   (model/prev-active-idx visible cur-idx))]
     (du/setv! el k-active-idx new-idx)
-    (render-items! el)
+    (render-cached-items! el)
     (let [refs        (du/getv el k-refs)
           ^js list-el (when refs (gobj/get refs rk-list))
           ^js item-el (when list-el
@@ -460,7 +471,7 @@
         (du/remove-attr! clr attr-hidden)
         (du/set-attr! clr attr-hidden "")))
     (du/dispatch! el model/event-query-change #js {:query (or q "")})
-    (render-items! el)))
+    (render-cached-items! el)))
 
 (defn- on-input-keydown [^js el ^js e]
   (let [k (.-key e)]
@@ -494,7 +505,7 @@
     (du/setv! el k-query "")
     (du/setv! el k-active-idx 0)
     (du/dispatch! el model/event-query-change #js {:query ""})
-    (render-items! el)
+    (render-cached-items! el)
     (when inp (.focus inp))))
 
 (defn- add-listeners! [^js el]
@@ -545,16 +556,9 @@
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el attr-name old-val new-val]
+(defn- attribute-changed! [^js el _attr-name old-val new-val]
   (when (not= old-val new-val)
-    (update-from-attrs! el)
-    ;; Focus the input on every transition into "open" (whether via property,
-    ;; method, or setAttribute).
-    (when (and (= attr-name model/attr-open) (some? new-val))
-      (let [refs      (du/getv el k-refs)
-            ^js input (when refs (gobj/get refs rk-input))]
-        (when input
-          (js/requestAnimationFrame (fn focus-input-after-raf [] (.focus input))))))))
+    (update-from-attrs! el)))
 
 ;; ── Property API ───────────────────────────────────────────────────────────
 (defn- define-items-prop! [^js proto]
@@ -568,7 +572,7 @@
                                (this-as ^js this
                                  (du/setv! this k-items v)
                                  (du/setv! this k-active-idx 0)
-                                 (render-items! this)))}))
+                                 (render-cached-items! this)))}))
 
 (defn- define-methods! [^js proto]
   ;; `show()` matches the HTMLDialogElement imperative-open convention.
@@ -619,6 +623,8 @@
                                      model/default-placeholder)
   (du/define-string-prop!            proto "emptyText"     model/attr-empty-text
                                      model/default-empty-text)
+  (du/define-string-prop!            proto "filter"        model/attr-filter
+                                     model/filter-default)
   (define-close-on-scrim-prop! proto)
   (define-items-prop! proto)
   (define-methods!    proto))

@@ -297,3 +297,16 @@
     (is (not= -1 (.indexOf css-text "data-disabled='true'")))
     (is (not= -1 (.indexOf css-text ":focus-visible")))
     (is (not= -1 (.indexOf css-text "@media (prefers-reduced-motion: reduce)")))))
+
+(deftest selected-underline-tab-shows-only-a-bottom-border-test
+  (let [el (make-el)]
+    (.setAttribute el "variant" "underline")
+    (.setAttribute el "selected" "")
+    (.setProperty (.-style el) "--x-tab-selected-border-color" "rgb(255, 0, 0)")
+    (append! el)
+    (let [s (.getComputedStyle js/window (shadow-part el ".base"))]
+      (is (= "rgba(0, 0, 0, 0)" (.-borderTopColor s)))
+      (is (= "rgba(0, 0, 0, 0)" (.-borderLeftColor s)))
+      (is (= "rgba(0, 0, 0, 0)" (.-borderRightColor s)))
+      (is (= "2px" (.-borderBottomWidth s)))
+      (is (= "0px" (.-borderTopLeftRadius s))))))

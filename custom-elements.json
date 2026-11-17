@@ -4224,6 +4224,12 @@
         }
       }, {
         "kind" : "field",
+        "name" : "filter",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "label",
         "type" : {
           "text" : "string"
@@ -4322,6 +4328,12 @@
       }, {
         "name" : "empty-text",
         "fieldName" : "emptyText",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "filter",
+        "fieldName" : "filter",
         "type" : {
           "text" : "string"
         }

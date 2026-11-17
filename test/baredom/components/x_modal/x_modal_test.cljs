@@ -318,3 +318,91 @@
          (.remove trigger)
          (done))
        50))))
+
+;; ── Focus trap: controls in open shadow roots ─────────────────────────────────
+(defn- ^js shadow-host-with-input []
+  (let [^js host  (.createElement js/document "div")
+        ^js input (.createElement js/document "input")]
+    (.appendChild (.attachShadow host #js {:mode "open"}) input)
+    host))
+
+(defn- ^js shadow-input [^js host]
+  (.querySelector (.-shadowRoot host) "input"))
+
+(deftest focus-trap-focuses-control-in-slotted-shadow-root-test
+  (async done
+    (let [^js el   (append! (make-el))
+          ^js host (shadow-host-with-input)]
+      (.appendChild el host)
+      (.setAttribute el model/attr-open "")
+      (js/setTimeout
+       (fn []
+         (is (= (shadow-input host) (.-activeElement (.-shadowRoot host))))
+         (done))
+       50))))
+
+(deftest focus-trap-focuses-autofocus-element-test
+  (async done
+    (let [^js el   (append! (make-el))
+          ^js btn  (.createElement js/document "button")
+          ^js host (shadow-host-with-input)]
+      (.setAttribute host "autofocus" "")
+      (.appendChild el btn)
+      (.appendChild el host)
+      (.setAttribute el model/attr-open "")
+      (js/setTimeout
+       (fn []
+         (is (= (shadow-input host) (.-activeElement (.-shadowRoot host))))
+         (done))
+       50))))
+
+(deftest focus-trap-tab-wraps-from-control-in-shadow-root-test
+  (async done
+    (let [^js el   (append! (make-el))
+          ^js btn  (.createElement js/document "button")
+          ^js host (shadow-host-with-input)]
+      (.appendChild el btn)
+      (.appendChild el host)
+      (.setAttribute el model/attr-open "")
+      (js/setTimeout
+       (fn []
+         (.focus (shadow-input host))
+         (let [^js dialog (shadow-part el "[part=dialog]")
+               ^js ev     (js/KeyboardEvent. "keydown" #js {:key "Tab" :shiftKey false :bubbles true :cancelable true})]
+           (.dispatchEvent dialog ev))
+         (is (= btn (.-activeElement js/document)))
+         (done))
+       50))))
+
+(deftest focus-trap-wraps-to-a-control-added-after-open-test
+  (async done
+    (let [^js el   (append! (make-el))
+          ^js btn1 (.createElement js/document "button")
+          ^js btn2 (.createElement js/document "button")]
+      (.appendChild el btn1)
+      (.setAttribute el model/attr-open "")
+      (js/setTimeout
+       (fn []
+         (.appendChild el btn2)
+         (.focus btn2)
+         (let [^js dialog (shadow-part el "[part=dialog]")
+               ^js ev     (js/KeyboardEvent. "keydown" #js {:key "Tab" :shiftKey false :bubbles true :cancelable true})]
+           (.dispatchEvent dialog ev))
+         (is (= btn1 (.-activeElement js/document)))
+         (done))
+       50))))
+
+(deftest focus-trap-follows-the-order-of-the-slots-test
+  (async done
+    (let [^js el     (append! (make-el))
+          ^js footer (.createElement js/document "button")
+          ^js body   (.createElement js/document "button")]
+      (.setAttribute footer "slot" "footer")
+      (.appendChild el footer)
+      (.appendChild el body)
+      (.setAttribute el model/attr-open "")
+      (js/setTimeout
+       (fn []
+         (is (= body (.-activeElement js/document)))
+         (done))
+       50))))

@@ -9,7 +9,6 @@
 (def ^:private k-model      "__xModalModel")
 (def ^:private k-handlers   "__xModalHandlers")
 (def ^:private k-restore    "__xModalRestore")
-(def ^:private k-tabbables  "__xModalTabbables")
 (def ^:private k-dialog-tab "__xModalDialogTab")
 
 ;; ── String-literal constants ──────────────────────────────────────────────
@@ -223,51 +222,78 @@
     :label-raw     (du/get-attr el model/attr-label)}))
 
 ;; ── Focus trap ────────────────────────────────────────────────────────────────
-(defn- collect-tabbables [^js refs]
-  (let [sel      (str "a[href],button:not([disabled]),input:not([disabled]),"
-                      "select:not([disabled]),textarea:not([disabled]),"
-                      "[tabindex]:not([tabindex='-1'])")
-        ^js root   (gobj/get refs rk-root)
-        ^js dialog (gobj/get refs rk-dialog)
-        visible?   (fn [^js node]
-                     (let [^js s (.getComputedStyle js/window node)]
-                       (and (not= "none" (.-display s))
-                            (not= "hidden" (.-visibility s))
-                            (pos? (.-offsetWidth node))
-                            (pos? (.-offsetHeight node)))))
-        shadow-els (filter visible? (array-seq (.querySelectorAll dialog sel)))
-        slots      (array-seq (.querySelectorAll root "slot"))
-        slotted-els (->> slots
-                         (mapcat (fn [^js slot]
-                                   (->> (array-seq (.assignedElements slot #js {:flatten true}))
-                                        (mapcat (fn [^js ae]
-                                                  (let [children (array-seq (.querySelectorAll ae sel))]
-                                                    (if (.matches ae sel)
-                                                      (cons ae children)
-                                                      children))))
-                                        (filter visible?)))))]
-    (vec (concat shadow-els slotted-els))))
+(def ^:private tabbable-selector
+  (str "a[href],button:not([disabled]),input:not([disabled]),"
+       "select:not([disabled]),textarea:not([disabled]),"
+       "[tabindex]:not([tabindex='-1'])"))
+
+(def ^:private autofocus-selector "[autofocus]")
+
+(defn- visible? [^js node]
+  (let [^js s (.getComputedStyle js/window node)]
+    (and (not= "none" (.-display s))
+         (not= "hidden" (.-visibility s))
+         (pos? (.-offsetWidth node))
+         (pos? (.-offsetHeight node)))))
+
+(defn- slot? [^js node]
+  (= "SLOT" (.-tagName node)))
+
+(defn- composed-children
+  "The children of `node` in the composed tree: those of its open shadow root, or its own."
+  [^js node]
+  (array-seq (.-children (or (.-shadowRoot node) node))))
+
+(defn- composed-elements
+  "`node` and the elements below it, in the order of the composed tree. A slot stands for the
+   elements assigned to it, or its fallback content."
+  [^js node]
+  (if (slot? node)
+    (mapcat composed-elements (array-seq (.assignedElements node #js {:flatten true})))
+    (cons node (mapcat composed-elements (composed-children node)))))
+
+(defn- tabbable? [^js node]
+  (and (.matches node tabbable-selector) (visible? node)))
+
+(defn- autofocus? [^js node]
+  (.matches node autofocus-selector))
+
+(defn- tabbables-in
+  "The visible tabbables in `node` and below it, in the order of the composed tree."
+  [^js node]
+  (filterv tabbable? (composed-elements node)))
+
+(defn- autofocus-target
+  "The first tabbable in the first element marked `autofocus` in the dialog, or nil."
+  [^js dialog]
+  (some (fn first-tabbable [^js node] (first (tabbables-in node)))
+        (filter autofocus? (composed-elements dialog))))
+
+(defn- focus-target
+  "The element to focus when the dialog opens, or nil when the dialog holds no tabbable."
+  [^js dialog]
+  (or (autofocus-target dialog) (first (tabbables-in dialog))))
+
+(defn- focus-dialog! [^js el ^js dialog]
+  (when-not (.hasAttribute dialog attr-tabindex)
+    (du/set-attr! dialog attr-tabindex tab-stop)
+    (du/setv! el k-dialog-tab true))
+  (.focus dialog))
 
 (defn- activate-focus-trap! [^js el]
   (let [refs       (du/getv el k-refs)
         ^js dialog (when refs (gobj/get refs rk-dialog))
-        tabbables  (when refs (collect-tabbables refs))]
+        ^js target (when dialog (focus-target dialog))]
     (du/setv! el k-restore (.-activeElement js/document))
-    (du/setv! el k-tabbables (when tabbables (clj->js tabbables)))
-    (if (seq tabbables)
-      (.focus (first tabbables))
-      (when dialog
-        (when-not (.hasAttribute dialog attr-tabindex)
-          (du/set-attr! dialog attr-tabindex tab-stop)
-          (du/setv! el k-dialog-tab true))
-        (.focus dialog)))))
+    (cond
+      target (.focus target)
+      dialog (focus-dialog! el dialog))))
 
 (defn- deactivate-focus-trap! [^js el]
   (let [refs              (du/getv el k-refs)
         ^js dialog        (when refs (gobj/get refs rk-dialog))
         restore           (du/getv el k-restore)
         dialog-tab-added  (true? (du/getv el k-dialog-tab))]
-    (du/setv! el k-tabbables nil)
     (du/setv! el k-restore nil)
     (when (and dialog dialog-tab-added)
       (du/remove-attr! dialog attr-tabindex)
@@ -275,26 +301,32 @@
     (when (and restore (.-isConnected restore))
       (.focus restore))))
 
+(defn- deep-active-element
+  "The focused element, followed through open shadow roots."
+  []
+  (loop [^js active (.-activeElement js/document)]
+    (if-let [^js inner (some-> active .-shadowRoot .-activeElement)]
+      (recur inner)
+      active)))
+
+(defn- wrap-target
+  "The tabbable that Tab or Shift+Tab wraps to from `active`, or nil when it does not wrap."
+  [tabbables active shift?]
+  (cond
+    (and shift? (= active (first tabbables)))       (last tabbables)
+    (and (not shift?) (= active (last tabbables)))  (first tabbables)
+    :else                                           nil))
+
 (defn- cycle-focus! [^js el ^js e]
-  (let [tabbables-js (du/getv el k-tabbables)
-        tabbables    (if tabbables-js (vec (array-seq tabbables-js)) [])
-        refs         (du/getv el k-refs)
-        ^js dialog   (when refs (gobj/get refs rk-dialog))]
+  (let [refs       (du/getv el k-refs)
+        ^js dialog (when refs (gobj/get refs rk-dialog))
+        tabbables  (if dialog (tabbables-in dialog) [])]
     (if (empty? tabbables)
       (do (.preventDefault e)
           (when dialog (.focus dialog)))
-      (let [active   (.-activeElement js/document)
-            first-el (first tabbables)
-            last-el  (last tabbables)
-            shift?   (.-shiftKey e)]
-        (cond
-          (and shift? (= active first-el))
-          (do (.preventDefault e) (.focus last-el))
-
-          (and (not shift?) (= active last-el))
-          (do (.preventDefault e) (.focus first-el))
-
-          :else nil)))))
+      (when-let [^js target (wrap-target tabbables (deep-active-element) (.-shiftKey e))]
+        (.preventDefault e)
+        (.focus target)))))
 
 ;; ── Dismiss (user-initiated close) ───────────────────────────────────────────
 (defn- do-dismiss! [^js el reason]

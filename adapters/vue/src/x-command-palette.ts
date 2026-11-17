@@ -23,6 +23,7 @@ export const XCommandPalette = defineComponent({
     closeOnScrim: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     dismissible: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     modal: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    filter: { type: String as PropType<string | undefined>, default: undefined },
     label: { type: String as PropType<string | undefined>, default: undefined },
     closeOnEscape: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     items: { type: Array as PropType<unknown[] | undefined>, default: undefined },

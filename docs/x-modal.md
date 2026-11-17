@@ -83,7 +83,8 @@ Centered overlay dialog with backdrop. Traps focus, dismisses on Escape or backd
 
 - `[part=dialog]` has `role="dialog"` and `aria-modal="true"`.
 - `aria-label` is set from the `label` attribute (default: `"Modal"`).
-- Focus is trapped inside the open dialog. Tab and Shift+Tab cycle through tabbable elements.
+- Focus is trapped inside the open dialog. Tab and Shift+Tab cycle through tabbable elements in the order of the composed tree, including the controls in open shadow roots, such as those of `x-form-field` or `x-checkbox`.
+- On open, the modal focuses the first element marked `autofocus`, or the first control inside it. Without one, it focuses the first tabbable element, or the dialog when there is none.
 - Focus is restored to the previously focused element on close.
 - Escape key closes the modal and fires `x-modal-dismiss` with `reason: "escape"`.
 - Respects `prefers-reduced-motion: reduce` — disables all transitions.

@@ -25,6 +25,7 @@ export class BaredomCommandPalette implements OnInit, OnDestroy {
   @Input() set closeOnScrim(v: boolean) { this.el.closeOnScrim = v as any; }
   @Input() set dismissible(v: boolean) { this.el.dismissible = v as any; }
   @Input() set modal(v: boolean) { this.el.modal = v as any; }
+  @Input() set filter(v: string) { this.el.filter = v as any; }
   @Input() set label(v: string) { this.el.label = v as any; }
   @Input() set closeOnEscape(v: boolean) { this.el.closeOnEscape = v as any; }
   @Input() set items(v: unknown[]) { this.el.items = v as any; }
