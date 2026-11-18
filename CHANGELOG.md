@@ -4,6 +4,38 @@ All notable changes to BareDOM will be documented in this file.
 
 ## [Unreleased]
 
+## [4.21.0] - 2026-11-18
+
+BareDOM 4.21 gives code its own colours in every theme, and shows shortcuts in
+`x-command-palette`. `x-theme` gains seven syntax tokens, and `x-code` reads them. The adapters
+are not released with it.
+
+### Added
+
+- **Every `x-theme` preset has seven syntax colours,** in light and in dark:
+  `--x-color-syntax-comment`, `-keyword`, `-string`, `-constant`, `-function`, `-type` and
+  `-tag`. Each has a contrast of at least 4.5:1 with `--x-color-surface` and `--x-color-bg`. The
+  names are the top-level capture names of tree-sitter, so an editor maps its own highlight names
+  onto them. A preset made with `registerPreset()` takes those of `default`.
+- **`x-code` marks constants and the name a definition gives.** `true`, `false`, `nil`, `null`,
+  `undefined`, `NaN` and `Infinity` are of the type `constant`. The name after `def`, `defn` and
+  the other definition forms, and after `function` and `class`, is of the type `function-name`.
+  Each has a custom property of its own: `--x-code-token-constant` and
+  `--x-code-token-function-name`.
+- **An `x-command-palette` item takes an optional `shortcut`.** The palette shows its text in an
+  `x-kbd` at the end of the row, so `Mod+S` reads `⌘S` on a Mac. It is documentation only: the
+  palette does not bind the shortcut and does not search its text. Two new parts,
+  `item-label` and `item-shortcut`, style a row.
+
+### Changed
+
+- **`x-code` takes its token colours from the syntax tokens of `x-theme`.** Without a theme it
+  falls back to the colours of the `default` preset. Some colours change: `true`, `false` and
+  `nil` take the constant colour instead of the keyword colour, HTML attribute values take the
+  string colour, HTML tags are teal, and in dark mode strings are green instead of light blue.
+- **`x-kbd` moves into the shared `base.js`,** because `x-command-palette` composes it. The
+  budget of `base.js` rises to 84 KB.
+
 ## [4.20.0] - 2026-11-17
 
 BareDOM 4.20 lets `x-command-palette` show the items as given and fixes focus in
