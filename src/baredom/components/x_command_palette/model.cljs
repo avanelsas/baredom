@@ -50,7 +50,7 @@
 
 (def property-api
   {:items {:type 'array
-           :description "Array of command items with shape {id, label, keywords?, group?, value?, icon?, disabled?}"}
+           :description "Array of command items with shape {id, label, keywords?, group?, value?, icon?, shortcut?, disabled?}"}
    :open {:type 'boolean
           :reflects-attribute attr-open}
    :disabled {:type 'boolean
@@ -89,7 +89,7 @@
 (defn normalize-items
   "Takes a JS array of item objects and returns a ClojureScript vector of
   normalized maps. Each item receives: :id :label :group :value :icon
-  :disabled? :search-str."
+  :shortcut :disabled? :search-str. The shortcut is not searched."
   [^js items]
   (if (or (nil? items) (not (array? items)))
     []
@@ -103,6 +103,7 @@
                 group (normalize-str (.-group raw))
                 value (.-value raw)
                 icon (.-icon raw)
+                shortcut (normalize-str (.-shortcut raw))
                 disabled? (= true (.-disabled raw))
                 keywords (.-keywords raw)
                 kw-str (if (array? keywords)
@@ -118,6 +119,7 @@
                                 :group group
                                 :value value
                                 :icon icon
+                                :shortcut shortcut
                                 :disabled? disabled?
                                 :search-str search-str}))))))))
 
@@ -150,15 +152,19 @@
   (or group previous))
 
 (defn- shown-item
-  "What the item at `position` among the visible ones shows."
-  [active-idx position {item-key :key :keys [id label disabled?]}]
-  {:key           (str "item-" item-key)
-   :id            (str item-id-prefix position)
-   :data-id       (str id)
-   :position      (str position)
-   :text          label
-   :aria-disabled (when disabled? "true")
-   :aria-selected (when (= position active-idx) "true")})
+  "What the item at `position` among the visible ones shows. `:shortcut-id` is the id of its
+   shortcut, or nil when it has none."
+  [active-idx position {item-key :key :keys [id label disabled? shortcut]}]
+  (let [item-id (str item-id-prefix position)]
+    {:key           (str "item-" item-key)
+     :id            item-id
+     :data-id       (str id)
+     :position      (str position)
+     :text          label
+     :shortcut      shortcut
+     :shortcut-id   (when shortcut (str item-id "-shortcut"))
+     :aria-disabled (when disabled? "true")
+     :aria-selected (when (= position active-idx) "true")}))
 
 (defn- shown-entries
   "The entries of one item: the item, led by the header of its group when that group differs

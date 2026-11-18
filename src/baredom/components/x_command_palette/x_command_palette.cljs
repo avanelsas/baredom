@@ -5,6 +5,8 @@
    [baredom.utils.model :as mu]
    [baremirror.alpha.places :as places]
    [goog.object :as gobj]
+   [baredom.components.x-kbd.x-kbd :as x-kbd]
+   [baredom.components.x-kbd.model :as kbd-model]
    [baredom.components.x-command-palette.model :as model]))
 
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
@@ -53,6 +55,8 @@
 (def ^:private attr-tabindex        "tabindex")
 (def ^:private attr-data-id         "data-id")
 (def ^:private attr-data-idx        "data-idx")
+(def ^:private attr-aria-describedby "aria-describedby")
+(def ^:private val-sm     "sm")
 
 (def ^:private part-overlay      "overlay")
 (def ^:private part-panel        "panel")
@@ -63,6 +67,8 @@
 (def ^:private part-list-wrap    "list-wrap")
 (def ^:private part-list         "list")
 (def ^:private part-item         "item")
+(def ^:private part-item-label   "item-label")
+(def ^:private part-item-shortcut "item-shortcut")
 (def ^:private part-group-header "group-header")
 (def ^:private part-empty        "empty")
 
@@ -165,6 +171,7 @@
    "}"
    "[part=list]{display:flex;flex-direction:column;}"
    "[part=item]{"
+   "display:flex;align-items:center;gap:var(--x-space-md,12px);"
    "padding:10px 16px;cursor:default;"
    "font-size:var(--x-font-size-sm,0.9375rem);line-height:1.4;"
    "color:var(--x-command-palette-item-text,inherit);"
@@ -179,6 +186,8 @@
    "color:var(--x-command-palette-item-active-text,#3730a3);"
    "}"
    "[part=item][aria-disabled=true]{opacity:0.45;cursor:default;pointer-events:none;}"
+   "[part=item-label]{flex:1;min-width:0;}"
+   "[part=item-shortcut]{flex:none;}"
    "[part=group-header]{"
    "padding:8px 16px 4px;"
    "font-size:var(--x-font-size-xs,0.75rem);"
@@ -299,12 +308,29 @@
     (du/set-attr! header attr-aria-hidden val-true)
     header))
 
+(defn- make-item-shortcut! []
+  (let [^js kbd (.createElement js/document kbd-model/tag-name)]
+    (du/set-attr! kbd attr-part        part-item-shortcut)
+    (du/set-attr! kbd kbd-model/attr-size val-sm)
+    (du/set-attr! kbd attr-aria-hidden val-true)
+    kbd))
+
 (defn- make-item! []
-  (let [^js div (.createElement js/document "div")]
-    (du/set-attr! div attr-part     part-item)
-    (du/set-attr! div attr-role     val-option)
-    (du/set-attr! div attr-tabindex "-1")
+  (let [^js div   (.createElement js/document "div")
+        ^js label (.createElement js/document "span")]
+    (du/set-attr! div   attr-part     part-item)
+    (du/set-attr! div   attr-role     val-option)
+    (du/set-attr! div   attr-tabindex "-1")
+    (du/set-attr! label attr-part     part-item-label)
+    (.appendChild div label)
     div))
+
+(defn- item-parts
+  "The parts of the item `div` by name. `:shortcut` is nil when the item shows none."
+  [^js div]
+  (let [[label shortcut] (array-seq (.-children div))]
+    {:label    label
+     :shortcut shortcut}))
 
 (defn- make-entry!
   "The node of a list entry: its fixed structure. `apply-entry!` gives it its values."
@@ -313,19 +339,36 @@
     (make-group-header!)
     (make-item!)))
 
-(defn- apply-item! [^js div {:keys [id data-id position aria-disabled aria-selected]}]
-  (du/set-attr-to! div attr-id            id)
-  (du/set-attr-to! div attr-data-id       data-id)
-  (du/set-attr-to! div attr-data-idx      position)
-  (du/set-attr-to! div attr-aria-disabled aria-disabled)
-  (du/set-attr-to! div attr-aria-selected aria-selected))
+(defn- write-item-shortcut! [^js kbd {:keys [shortcut shortcut-id]}]
+  (du/set-attr-to! kbd attr-id             shortcut-id)
+  (du/set-attr-to! kbd kbd-model/attr-keys shortcut))
+
+(defn- apply-item-shortcut!
+  "Gives the item `div` an x-kbd with its shortcut, or takes the x-kbd away when it has none."
+  [^js div ^js kbd {:keys [shortcut] :as entry}]
+  (cond
+    (and shortcut kbd) (write-item-shortcut! kbd entry)
+    shortcut           (.appendChild div (doto (make-item-shortcut!) (write-item-shortcut! entry)))
+    kbd                (.remove kbd)))
+
+(defn- apply-item!
+  [^js div {:keys [id data-id position text aria-disabled aria-selected shortcut-id] :as entry}]
+  (du/set-attr-to! div attr-id               id)
+  (du/set-attr-to! div attr-data-id          data-id)
+  (du/set-attr-to! div attr-data-idx         position)
+  (du/set-attr-to! div attr-aria-disabled    aria-disabled)
+  (du/set-attr-to! div attr-aria-selected    aria-selected)
+  (du/set-attr-to! div attr-aria-describedby shortcut-id)
+  (let [{:keys [label shortcut]} (item-parts div)]
+    (du/set-text-to! label text)
+    (apply-item-shortcut! div shortcut entry)))
 
 (defn- apply-entry!
   "Writes what `entry` shows onto its node in `nodes`."
   [nodes {entry-key :key :keys [text] :as entry}]
   (let [^js node (nodes entry-key)]
-    (du/set-text-to! node text)
-    (when-not (model/header-key? entry-key)
+    (if (model/header-key? entry-key)
+      (du/set-text-to! node text)
       (apply-item! node entry))))
 
 (defn- render-items!
@@ -631,6 +674,7 @@
 
 ;; ── Public API ─────────────────────────────────────────────────────────────
 (defn init! []
+  (x-kbd/init!)
   (component/register! model/tag-name
                        {:observed-attributes  model/observed-attributes
                         :connected-fn         connected!
