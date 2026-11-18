@@ -59,9 +59,15 @@ A searchable command list overlay (⌘K pattern). Opens as a modal with a text i
   group?:    string           // group heading
   value?:    any              // arbitrary payload in select event detail
   icon?:     string           // icon glyph or URL
+  shortcut?: string           // text shown in an x-kbd at the end of the row
   disabled?: boolean          // greys out item, skips in keyboard nav
 }
 ```
+
+`shortcut` is documentation only. The palette shows it with `x-kbd`, so `"Mod+S"` reads `⌘S` on a
+Mac and `Ctrl+S` elsewhere, and any other text shows as it is. The palette does not bind the
+shortcut and does not search its text. A page that wants the key to run the command binds it
+itself.
 
 ---
 
@@ -97,7 +103,28 @@ A searchable command list overlay (⌘K pattern). Opens as a modal with a text i
 - Input has `role="combobox"` with `aria-expanded`, `aria-controls` (linked to the listbox), and `aria-activedescendant` (tracks the highlighted item).
 - The list has `role="listbox"`; each item has `role="option"`.
 - Disabled items have `aria-disabled="true"`.
+- The name of an item is its label. Its shortcut describes it through `aria-describedby`.
 - Group headers are hidden from the accessibility tree via `aria-hidden="true"`.
+
+---
+
+## Parts
+
+| Part            | Description                                          |
+|-----------------|------------------------------------------------------|
+| `overlay`       | The scrim behind the panel.                          |
+| `panel`         | The dialog.                                          |
+| `search-wrap`   | The row that holds the search icon, input and clear button. |
+| `search-icon`   | The search glyph.                                    |
+| `input`         | The search input.                                    |
+| `clear-btn`     | The button that clears the query.                    |
+| `list-wrap`     | The scrolling area of the list.                      |
+| `list`          | The listbox.                                         |
+| `group-header`  | The heading of a group.                              |
+| `item`          | An option.                                           |
+| `item-label`    | The label of an item.                                |
+| `item-shortcut` | The `x-kbd` that shows the shortcut of an item.      |
+| `empty`         | The text shown when nothing matches.                 |
 
 ---
 

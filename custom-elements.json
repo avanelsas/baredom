@@ -4466,6 +4466,10 @@
       }, {
         "name" : "item"
       }, {
+        "name" : "item-label"
+      }, {
+        "name" : "item-shortcut"
+      }, {
         "name" : "list"
       }, {
         "name" : "list-wrap"

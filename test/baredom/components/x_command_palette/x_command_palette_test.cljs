@@ -296,3 +296,51 @@
   (let [^js el (append! (make-el))]
     (.show el)
     (is (= (shadow-part el "[part=input]") (.-activeElement (.-shadowRoot el))))))
+
+;; ── Shortcuts ──────────────────────────────────────────────────────────────
+
+(defn- shortcut-palette! []
+  (let [el (append! (make-el))]
+    (set! (.-items el) #js [#js {:id "save" :label "Save file" :shortcut "Mod+S"}
+                            #js {:id "open" :label "Open file"}])
+    el))
+
+(defn- ^js shortcut-of [^js item]
+  (.querySelector item "[part=item-shortcut]"))
+
+(deftest a-row-with-a-shortcut-shows-it-in-an-x-kbd-test
+  (let [[save] (item-nodes (shortcut-palette!))
+        ^js kbd (shortcut-of save)]
+    (is (= "x-kbd" (.toLowerCase (.-tagName kbd))))
+    (is (= "Mod+S" (.getAttribute kbd "keys")))
+    (is (= "Save file" (.-textContent (.querySelector save "[part=item-label]"))))))
+
+(deftest a-row-without-a-shortcut-has-no-x-kbd-test
+  (let [[_ open] (item-nodes (shortcut-palette!))]
+    (is (nil? (shortcut-of open)))
+    (is (not (.hasAttribute open "aria-describedby")))))
+
+(deftest a-row-gains-and-loses-its-x-kbd-with-its-shortcut-test
+  (let [el     (shortcut-palette!)
+        [_ open] (item-nodes el)]
+    (set! (.-items el) #js [#js {:id "save" :label "Save file"}
+                            #js {:id "open" :label "Open file" :shortcut "Mod+O"}])
+    (let [[save open-again] (item-nodes el)]
+      (is (identical? open open-again) "the row keeps its node")
+      (is (= "Mod+O" (.getAttribute (shortcut-of open-again) "keys")))
+      (is (nil? (shortcut-of save))))))
+
+(deftest the-shortcut-describes-its-row-test
+  (let [[save] (item-nodes (shortcut-palette!))
+        ^js kbd (shortcut-of save)]
+    (is (= "true" (.getAttribute kbd "aria-hidden")))
+    (is (= (.-id kbd) (.getAttribute save "aria-describedby")))))
+
+(deftest a-row-keeps-its-x-kbd-when-the-query-changes-test
+  (let [el      (shortcut-palette!)
+        [save]  (item-nodes el)
+        kbd     (shortcut-of save)]
+    (type! el "save")
+    (is (identical? save (first (item-nodes el))))
+    (is (identical? kbd (shortcut-of (first (item-nodes el)))))
+    (is (= "Mod+S" (.getAttribute kbd "keys")))))

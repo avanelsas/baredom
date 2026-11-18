@@ -118,7 +118,7 @@
            (mapv :key entries)))
     (is (= {:key "group-new|0" :text "File"} (first entries)))
     (is (= {:key "item-open|0" :id "x-cp-item-1" :data-id "open" :position "1" :text "Open file"
-            :aria-disabled nil :aria-selected "true"}
+            :shortcut nil :shortcut-id nil :aria-disabled nil :aria-selected "true"}
            (nth entries 2)))
     (is (= "true" (:aria-disabled (nth entries 4))))
     (is (= "x-cp-item-1" active-id))))
@@ -135,3 +135,26 @@
 (deftest filter-items-uses-the-default-mode-for-nil-test
   (let [items (model/normalize-items #js [#js {:id "1" :label "Open"} #js {:id "2" :label "Save"}])]
     (is (= ["1"] (mapv :id (model/filter-items items "open" nil))))))
+
+;; ── shortcut ────────────────────────────────────────────────────────────────
+
+(deftest an-item-keeps-its-shortcut-as-text-test
+  (let [[save other blank] (model/normalize-items
+                            #js [#js {:id "save" :label "Save" :shortcut " Mod+S "}
+                                 #js {:id "x" :label "X" :shortcut "abracadabra"}
+                                 #js {:id "y" :label "Y" :shortcut "  "}])]
+    (is (= "Mod+S" (:shortcut save)))
+    (is (= "abracadabra" (:shortcut other)))
+    (is (nil? (:shortcut blank)))))
+
+(deftest the-shortcut-is-not-searched-test
+  (let [items (model/normalize-items #js [#js {:id "save" :label "Save" :shortcut "Mod+S"}])]
+    (is (empty? (model/filter-items items "mod" model/filter-default)))))
+
+(deftest a-shown-item-names-the-id-of-its-shortcut-test
+  (let [items   (model/normalize-items #js [#js {:id "save" :label "Save" :shortcut "Mod+S"}
+                                            #js {:id "open" :label "Open"}])
+        entries (:entries (model/shown-list items {:query "" :active-idx 0
+                                                   :filter-mode model/filter-default}))]
+    (is (= ["Mod+S" "x-cp-item-0-shortcut"] ((juxt :shortcut :shortcut-id) (first entries))))
+    (is (= [nil nil] ((juxt :shortcut :shortcut-id) (second entries))))))
