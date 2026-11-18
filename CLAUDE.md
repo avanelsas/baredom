@@ -250,6 +250,7 @@ All components must consume shared design tokens from `x-theme`. Wrap hardcoded 
 - **Inline surfaces** (cards, fieldsets, collapse panels): use `--x-color-surface`
 - **Text on a primary or danger fill** uses `--x-color-on-primary` or `--x-color-on-danger`, with `#fff` as the fallback
 - **Do not theme** decorative palette colours, the text on a success or warning fill, info colours, or the text on a tint
+- **Code** is coloured with the `--x-color-syntax-*` tokens, and nothing else uses them
 - **Hover fills and tints** follow the rules in `docs/THEMING.md`: a surface token on a surface the component paints, a mix of the text colour elsewhere, and a mix of its token for a tint of a status or primary colour
 
 See [`docs/THEMING.md`](docs/THEMING.md) for the full token catalogue and demo page requirements.

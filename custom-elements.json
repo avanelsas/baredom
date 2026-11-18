@@ -21236,6 +21236,20 @@
       }, {
         "name" : "--x-color-surface-hover"
       }, {
+        "name" : "--x-color-syntax-comment"
+      }, {
+        "name" : "--x-color-syntax-constant"
+      }, {
+        "name" : "--x-color-syntax-function"
+      }, {
+        "name" : "--x-color-syntax-keyword"
+      }, {
+        "name" : "--x-color-syntax-string"
+      }, {
+        "name" : "--x-color-syntax-tag"
+      }, {
+        "name" : "--x-color-syntax-type"
+      }, {
         "name" : "--x-color-tertiary"
       }, {
         "name" : "--x-color-tertiary-active"

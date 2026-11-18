@@ -83,6 +83,21 @@ names only `--x-color-danger` gets both shades in that colour. A preset can also
 A status colour set on the `x-theme` element gets its shades too. One set on an element deeper in
 the page keeps the shades of the theme.
 
+### Syntax (7 tokens)
+
+| Token                        | Colours                                                        |
+|------------------------------|----------------------------------------------------------------|
+| `--x-color-syntax-comment`   | Comments                                                       |
+| `--x-color-syntax-keyword`   | Reserved words, special forms, at-rules                        |
+| `--x-color-syntax-string`    | Strings, templates, regular expressions, attribute values      |
+| `--x-color-syntax-constant`  | Numbers, booleans, nil, Clojure keywords, property names       |
+| `--x-color-syntax-function`  | The name of a function or a definition                         |
+| `--x-color-syntax-type`      | Types and classes                                              |
+| `--x-color-syntax-tag`       | Markup tags                                                    |
+
+Use them only to colour code. `x-code` reads them. A preset made with `registerPreset()` that
+names no syntax colour gets those of `default`.
+
 ### Typography (11 tokens)
 
 | Token                      | Default                                    |
