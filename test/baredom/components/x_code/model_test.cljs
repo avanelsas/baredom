@@ -75,7 +75,7 @@
   (let [toks (model/tokenize "json" "{\"a\": 1, \"b\": true}")]
     (is (contains? (types-of toks) :key))
     (is (contains? (types-of toks) :number))
-    (is (contains? (types-of toks) :keyword))
+    (is (contains? (types-of toks) :constant))
     (is (contains? (types-of toks) :punct))))
 
 (deftest tokenize-css-test
@@ -92,7 +92,7 @@
 
 (deftest tokenize-clojure-test
   (testing "a special form, a symbol, a keyword, a number and the brackets"
-    (is (= [[:punct "("] [:keyword "defn"] [:plain " greeting "] [:punct "["] [:plain "name"] [:punct "]"]
+    (is (= [[:punct "("] [:keyword "defn"] [:plain " "] [:function-name "greeting"] [:plain " "] [:punct "["] [:plain "name"] [:punct "]"]
             [:plain "\n  "] [:punct "("] [:plain "str "] [:string "\"Hello, \""] [:plain " name "]
             [:key ":loud"] [:plain " "] [:number "42"] [:punct ")"] [:punct ")"]]
            (model/tokenize "clojure" "(defn greeting [name]\n  (str \"Hello, \" name :loud 42))"))))
@@ -125,9 +125,40 @@
   (testing "data in EDN is tokenized the same way"
     (is (= [[:punct "{"] [:key ":title"] [:plain " "] [:string "\"Bare notes\""] [:plain " "]
             [:key ":per-page"] [:plain " "] [:number "3"] [:plain " "] [:key ":draft?"] [:plain " "]
-            [:keyword "false"] [:punct "}"]]
+            [:constant "false"] [:punct "}"]]
            (model/tokenize (model/parse-language "edn")
                            "{:title \"Bare notes\" :per-page 3 :draft? false}")))))
+
+(deftest tokenize-js-constants-and-defined-names-test
+  (testing "true, false, null, undefined, NaN and Infinity are constants"
+    (is (= [:constant :constant :constant :constant :constant :constant]
+           (remove #{:plain :punct} (map first (model/tokenize "js" "true false null undefined NaN Infinity"))))))
+  (testing "the name after function or class is a function name"
+    (is (= [[:keyword "function"] [:plain " "] [:function-name "greet"] [:punct "("] [:punct ")"]]
+           (model/tokenize "js" "function greet()")))
+    (is (= [[:keyword "class"] [:plain " "] [:function-name "Card"]]
+           (model/tokenize "js" "class Card")))
+    (is (= [:function-name "gen"] (nth (model/tokenize "js" "function* gen()") 3))))
+  (testing "a name after another keyword is plain text"
+    (is (= [[:keyword "const"] [:plain " greet"]] (model/tokenize "js" "const greet")))))
+
+(deftest tokenize-clojure-constants-and-defined-names-test
+  (testing "true, false and nil are constants, but not inside a symbol"
+    (is (= [[:constant "true"] [:plain " "] [:constant "false"] [:plain " "] [:constant "nil"]
+            [:plain " nil? falsey"]]
+           (model/tokenize "clojure" "true false nil nil? falsey"))))
+  (testing "the name after a definition form is a function name"
+    (is (= [:function-name "f"] (nth (model/tokenize "clojure" "(defn- f [])") 3)))
+    (is (= [:function-name "x"] (nth (model/tokenize "clojure" "(def x 1)") 3)))
+    (is (= [:function-name "handle"] (nth (model/tokenize "clojure" "(defmethod handle :a [_])") 3))))
+  (testing "the name after metadata is a function name"
+    (is (= [[:punct "("] [:keyword "defn"] [:plain " "] [:punct "^"] [:key ":private"] [:plain " "]
+            [:function-name "helper"] [:plain " "] [:punct "["] [:punct "]"] [:punct ")"]]
+           (model/tokenize "clojure" "(defn ^:private helper [])"))))
+  (testing "the name after a form that defines nothing is plain"
+    (is (= [[:punct "("] [:keyword "let"] [:plain " "] [:punct "["] [:plain "a "] [:number "1"]
+            [:punct "]"] [:punct ")"]]
+           (model/tokenize "clojure" "(let [a 1])")))))
 
 (deftest tokenize-plain-match-test
   (testing "what a language matches as plain is joined with the text around it"

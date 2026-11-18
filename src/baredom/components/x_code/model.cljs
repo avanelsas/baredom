@@ -167,7 +167,9 @@
   [[:comment  #"/\*[\s\S]*?\*/|//[^\n]*"]
    [:template #"`(?:[^`\\]|\\[\s\S])*`"]
    [:string   #"\"(?:[^\"\\\n]|\\.)*\"|'(?:[^'\\\n]|\\.)*'"]
-   [:keyword  #"\b(?:const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|new|delete|typeof|instanceof|class|extends|super|this|import|export|from|as|default|try|catch|finally|throw|async|await|yield|void|null|undefined|true|false|NaN|Infinity)\b"]
+   [:constant #"\b(?:null|undefined|true|false|NaN|Infinity)\b"]
+   [:keyword  #"\b(?:const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|new|delete|typeof|instanceof|class|extends|super|this|import|export|from|as|default|try|catch|finally|throw|async|await|yield|void)\b"]
+   [:function-name #"(?<=\b(?:function\*?|class)\s+)[A-Za-z_$][\w$]*"]
    [:number   #"0[xX][0-9a-fA-F]+|(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?"]
    [:punct    #"[-+*/%=<>!&|?:;,.~^{}()\[\]]"]])
 
@@ -175,7 +177,7 @@
   [[:key     #"\"(?:[^\"\\]|\\.)*\"(?=\s*:)"]
    [:string  #"\"(?:[^\"\\]|\\.)*\""]
    [:number  #"-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?"]
-   [:keyword #"\b(?:true|false|null)\b"]
+   [:constant #"\b(?:true|false|null)\b"]
    [:punct   #"[{}\[\]:,]"]])
 
 (def ^:private css-spec
@@ -209,16 +211,19 @@
    character class."
   "[A-Za-z_*+!?<>=.$&%-]")
 
-(def ^:private clojure-forms
-  "The special forms, and the macros that define or branch, that are coloured
-   as keywords."
+(def ^:private clojure-definitions
+  "The forms whose first argument is the name they define."
   ["def" "defn" "defn-" "defmacro" "defmulti" "defmethod" "defonce"
-   "defprotocol" "defrecord" "deftype" "deftest"
-   "fn" "let" "letfn" "loop" "recur" "do" "quote" "var" "new" "set!" "binding"
-   "if" "if-not" "if-let" "if-some" "when" "when-not" "when-let" "when-some"
-   "when-first" "cond" "condp" "case" "and" "or" "not"
-   "doseq" "dotimes" "for" "while" "try" "catch" "finally" "throw" "ns"
-   "true" "false" "nil"])
+   "defprotocol" "defrecord" "deftype" "deftest"])
+
+(def ^:private clojure-forms
+  "The special forms and macros that are coloured as keywords: the definitions,
+   and the forms that bind or branch."
+  (into clojure-definitions
+        ["fn" "let" "letfn" "loop" "recur" "do" "quote" "var" "new" "set!" "binding"
+         "if" "if-not" "if-let" "if-some" "when" "when-not" "when-let" "when-some"
+         "when-first" "cond" "condp" "case" "and" "or" "not"
+         "doseq" "dotimes" "for" "while" "try" "catch" "finally" "throw" "ns"]))
 
 (defn- pattern
   "A regex from the sources `parts`, joined."
@@ -234,6 +239,9 @@
    [:key     (pattern "::?" clojure-symbol-char "+")]
    [:number  (pattern "[+-]?(?:0[xX][0-9a-fA-F]+|\\d+/\\d+|\\d+\\.?\\d*(?:[eE][+-]?\\d+)?)[MN]?" not-in-a-symbol)]
    [:keyword (pattern "(?:" (str/join "|" clojure-forms) ")" not-in-a-symbol)]
+   [:constant (pattern "(?:true|false|nil)" not-in-a-symbol)]
+   [:function-name (pattern "(?<=\\((?:" (str/join "|" clojure-definitions) ")\\s+(?:\\^\\S+\\s+)*)"
+                            clojure-symbol-start clojure-symbol-char "*")]
    [:plain   (pattern clojure-symbol-start clojure-symbol-char "*")]
    [:punct   #"[()\[\]{}'`~@^#]"]])
 

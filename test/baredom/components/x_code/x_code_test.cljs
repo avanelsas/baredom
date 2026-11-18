@@ -2,7 +2,8 @@
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [clojure.string :as str]
             [baredom.components.x-code.x-code :as x]
-            [baredom.components.x-code.model :as model]))
+            [baredom.components.x-code.model :as model]
+            [baredom.components.x-theme.model :as theme]))
 
 (x/init!)
 
@@ -272,3 +273,48 @@
     (is (= "const stable = true;"
            (.-textContent (part el "[part=line-content]")))
         "code stays rendered after a disconnect/reconnect cycle")))
+
+;; ── Syntax colours ──────────────────────────────────────────────────────────
+
+(def ^:private type-tokens
+  "The syntax token of x-theme that each token type of x-code reads."
+  {"comment"       theme/tk-color-syntax-comment
+   "string"        theme/tk-color-syntax-string
+   "template"      theme/tk-color-syntax-string
+   "attr-value"    theme/tk-color-syntax-string
+   "keyword"       theme/tk-color-syntax-keyword
+   "atrule"        theme/tk-color-syntax-keyword
+   "number"        theme/tk-color-syntax-constant
+   "constant"      theme/tk-color-syntax-constant
+   "key"           theme/tk-color-syntax-constant
+   "property"      theme/tk-color-syntax-constant
+   "entity"        theme/tk-color-syntax-constant
+   "function-name" theme/tk-color-syntax-function
+   "tag"           theme/tk-color-syntax-tag})
+
+(defn- host-styles
+  "The declarations of the host of `el` in its style sheet: `:light` from the first `:host`
+   rule, `:dark` from the `:host` rule in the dark scheme."
+  [^js el]
+  (let [rules (array-seq (.-cssRules (.-sheet (part el "style"))))
+        ^js light (first (filter (fn light? [^js r] (= ":host" (.-selectorText r))) rules))
+        ^js media (first (filter (fn dark? [^js r] (some-> (.-conditionText r) (str/includes? "dark")))
+                                 rules))]
+    {:light (.-style light)
+     :dark  (.-style (aget (.-cssRules media) 0))}))
+
+(defn- token-and-fallback
+  "The syntax token and the fallback colour that `token-type` reads in `style`."
+  [^js style token-type]
+  (vec (rest (re-find #"^var\((--x-color-syntax-[a-z]+),\s*(#[0-9a-f]+)\)$"
+                      (str/trim (.getPropertyValue style (str "--x-code-token-" token-type)))))))
+
+(deftest each-token-type-reads-its-syntax-token-with-the-default-colour-as-fallback-test
+  (let [styles               (host-styles (append! (make-el)))
+        {:keys [light dark]} (theme/preset-tokens "default")
+        colours              {:light light :dark (merge light dark)}]
+    (doseq [mode                [:light :dark]
+            [token-type token] type-tokens]
+      (is (= [token (get-in colours [mode token])]
+             (token-and-fallback (get styles mode) token-type))
+          (str (name mode) " " token-type)))))

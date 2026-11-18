@@ -28,7 +28,7 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-chart` | 14/14 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 1/1 | 0/6 |  | 2/2 |
 | `x-checkbox` | 15/15 |  |  |  |  | 1/1 |  | 3/3 |  |  |  |
 | `x-chip` | 7/7 |  | 1/1 |  |  | 1/1 |  | 1/1 | 0/4 |  | 1/1 |
-| `x-code` | 9/9 | 1/1 | 3/3 | 1/1 |  | 2/2 |  | 1/1 | 0/8 |  | 4/4 |
+| `x-code` | 37/37 | 1/1 | 3/3 | 1/1 |  | 2/2 |  | 1/1 | 0/8 |  | 4/4 |
 | `x-collapse` | 14/14 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  | 2/2 |
 | `x-color-picker` | 10/10 | 1/1 | 1/1 |  |  | 2/2 | 3/3 |  | 0/5 | 1/1 | 4/4 |
 | `x-combobox` | 27/27 |  | 2/2 | 1/1 |  | 4/4 | 4/4 | 3/3 | 0/7 | 1/1 | 10/10 |
@@ -124,7 +124,7 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-typography` | 11/11 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 1/1 |
 | `x-welcome-tour` | 27/27 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 1/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 1059/1059 | 15/15 | 125/125 | 72/72 | 8/8 | 117/117 | 75/75 | 109/109 | 30/257 | 19/19 | 118/118 |
+| **All** | 1087/1087 | 15/15 | 125/125 | 72/72 | 8/8 | 117/117 | 75/75 | 109/109 | 30/257 | 19/19 | 118/118 |
 
 CSS not read, or not in full: x-liquid-glass.
 
@@ -199,10 +199,6 @@ A tint of the danger colour, written as a solid colour.
 Text or a mark on a filled colour, chosen for contrast with the fill.
 
 8 values in `x-particle-button`, `x-stepper`, `x-timeline-item`.
-
-A colour of the syntax palette.
-
-24 values in `x-code`.
 
 A colour that an effect or a tool draws with. The theme has no role for it.
 

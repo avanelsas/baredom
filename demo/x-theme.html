@@ -252,6 +252,9 @@
 
     </div>
 
+    <x-typography variant="overline">Syntax Colours</x-typography>
+    <div class="preset-grid" id="syntax-grid"></div>
+
     <x-typography variant="overline">Nested Themes</x-typography>
     <x-theme preset="ocean">
       <div class="preset-card" style="margin-bottom: 16px;">
@@ -400,6 +403,37 @@
     <div id="event-log">Theme events will appear here...</div>
 
     <script>
+      const syntaxPresets = ["default", "ocean", "forest", "sunset",
+                             "neo-brutalist", "aurora", "mono-ai", "warm-mineral"];
+      const clojureSample = [
+        ";; Greets by name",
+        "(defn ^:private greet",
+        "  [{:keys [name n]}]",
+        "  (if (nil? name)",
+        "    \"Hello\"",
+        "    (str name n true)))"].join("\n");
+      const htmlSample = '<a href="/d">A &amp; B</a>';
+
+      function syntaxCard(preset) {
+        const card = document.createElement("div");
+        card.className = "preset-card";
+        const title = document.createElement("h3");
+        title.textContent = preset;
+        const theme = document.createElement("x-theme");
+        theme.setAttribute("preset", preset);
+        for (const [language, code] of [["clojure", clojureSample], ["html", htmlSample]]) {
+          const block = document.createElement("x-code");
+          block.setAttribute("language", language);
+          block.setAttribute("code", code);
+          block.setAttribute("wrap", "");
+          theme.appendChild(block);
+        }
+        card.append(title, theme);
+        return card;
+      }
+
+      document.getElementById("syntax-grid").append(...syntaxPresets.map(syntaxCard));
+
       const picker = document.getElementById('preset-picker');
       const theme  = document.getElementById('live-theme');
       const log    = document.getElementById('event-log');
