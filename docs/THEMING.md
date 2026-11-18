@@ -26,6 +26,17 @@ All components must consume the shared design tokens defined by `x-theme` (`src/
 - `--x-color-focus-ring`
 - `--x-color-danger`, `--x-color-success`, `--x-color-warning`, each with `-hover` and `-active`
 
+### Syntax
+- `--x-color-syntax-comment`, `--x-color-syntax-keyword`, `--x-color-syntax-string`
+- `--x-color-syntax-constant`, `--x-color-syntax-function`, `--x-color-syntax-type`
+- `--x-color-syntax-tag`
+
+Use the syntax tokens only to colour code. The names are the top-level capture names of
+tree-sitter. A highlighter with a more specific name uses the token of its first part:
+`constant.builtin` uses `--x-color-syntax-constant`. Variables, operators and punctuation use
+`--x-color-text` or `--x-color-text-muted`. Each value has a contrast of at least 4.5:1 with
+`--x-color-surface` and with `--x-color-bg`.
+
 ### Typography
 - `--x-font-family`, `--x-font-family-mono`
 - `--x-font-size-xs`, `--x-font-size-sm`, `--x-font-size-base`, `--x-font-size-lg`

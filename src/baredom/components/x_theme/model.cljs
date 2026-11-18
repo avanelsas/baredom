@@ -45,6 +45,14 @@
 (def tk-color-warning-hover    "--x-color-warning-hover")
 (def tk-color-warning-active   "--x-color-warning-active")
 
+(def tk-color-syntax-comment   "--x-color-syntax-comment")
+(def tk-color-syntax-keyword   "--x-color-syntax-keyword")
+(def tk-color-syntax-string    "--x-color-syntax-string")
+(def tk-color-syntax-constant  "--x-color-syntax-constant")
+(def tk-color-syntax-function  "--x-color-syntax-function")
+(def tk-color-syntax-type      "--x-color-syntax-type")
+(def tk-color-syntax-tag       "--x-color-syntax-tag")
+
 (def tk-font-family            "--x-font-family")
 (def tk-font-family-mono       "--x-font-family-mono")
 (def tk-font-size-sm           "--x-font-size-sm")
@@ -179,7 +187,14 @@
 (def ^:private preset-default
   {:light (merge base-typography base-shape base-motion base-shadow-light
                  base-spacing base-z-index base-opacity base-fills-light
-                 {tk-color-primary          "#2563eb"
+                 {tk-color-syntax-comment   "#6a737d"
+                  tk-color-syntax-keyword   "#cf222e"
+                  tk-color-syntax-string    "#0a7d33"
+                  tk-color-syntax-constant  "#0550ae"
+                  tk-color-syntax-function  "#8250df"
+                  tk-color-syntax-type      "#953800"
+                  tk-color-syntax-tag       "#0e7490"
+                  tk-color-primary          "#2563eb"
                   tk-color-primary-hover    "#1d4ed8"
                   tk-color-primary-active   "#1e40af"
                   tk-color-secondary        "#64748b"
@@ -200,7 +215,14 @@
                   tk-color-success          "#12843c"
                   tk-color-warning          "#d97706"})
    :dark  (merge base-shadow-dark base-fills-dark
-                 {tk-color-primary          "#3b82f6"
+                 {tk-color-syntax-comment   "#8b949e"
+                  tk-color-syntax-keyword   "#ff7b72"
+                  tk-color-syntax-string    "#7ee787"
+                  tk-color-syntax-constant  "#79c0ff"
+                  tk-color-syntax-function  "#d2a8ff"
+                  tk-color-syntax-type      "#ffa657"
+                  tk-color-syntax-tag       "#56d4dd"
+                  tk-color-primary          "#3b82f6"
                   tk-color-secondary        "#94a3b8"
                   tk-color-secondary-hover  "#64748b"
                   tk-color-secondary-active "#475569"
@@ -222,7 +244,14 @@
 (def ^:private preset-ocean
   {:light (merge base-typography base-shape base-motion base-shadow-light
                  base-spacing base-z-index base-opacity base-fills-light
-                 {tk-color-primary          "#077d9a"
+                 {tk-color-syntax-comment   "#587171"
+                  tk-color-syntax-keyword   "#be123c"
+                  tk-color-syntax-string    "#047857"
+                  tk-color-syntax-constant  "#1d4ed8"
+                  tk-color-syntax-function  "#7e22ce"
+                  tk-color-syntax-type      "#b45309"
+                  tk-color-syntax-tag       "#0e7490"
+                  tk-color-primary          "#077d9a"
                   tk-color-primary-hover    "#155e75"
                   tk-color-primary-active   "#164e63"
                   tk-color-secondary        "#0d9488"
@@ -243,7 +272,14 @@
                   tk-color-success          "#04825b"
                   tk-color-warning          "#d97706"})
    :dark  (merge base-shadow-dark base-fills-dark
-                 {tk-color-primary          "#06b6d4"
+                 {tk-color-syntax-comment   "#95c0b9"
+                  tk-color-syntax-keyword   "#fda4af"
+                  tk-color-syntax-string    "#6ee7b7"
+                  tk-color-syntax-constant  "#93c5fd"
+                  tk-color-syntax-function  "#d8b4fe"
+                  tk-color-syntax-type      "#fcd34d"
+                  tk-color-syntax-tag       "#22d3ee"
+                  tk-color-primary          "#06b6d4"
                   tk-color-secondary        "#14b8a6"
                   tk-color-secondary-hover  "#0d9488"
                   tk-color-secondary-active "#0f766e"
@@ -265,7 +301,14 @@
 (def ^:private preset-forest
   {:light (merge base-typography base-shape base-motion base-shadow-light
                  base-spacing base-z-index base-opacity base-fills-light
-                 {tk-color-primary          "#15803d"
+                 {tk-color-syntax-comment   "#65753a"
+                  tk-color-syntax-keyword   "#b91c1c"
+                  tk-color-syntax-string    "#15803d"
+                  tk-color-syntax-constant  "#1d4ed8"
+                  tk-color-syntax-function  "#7e22ce"
+                  tk-color-syntax-type      "#a16207"
+                  tk-color-syntax-tag       "#0e7490"
+                  tk-color-primary          "#15803d"
                   tk-color-primary-hover    "#166534"
                   tk-color-primary-active   "#14532d"
                   tk-color-secondary        "#629e0d"
@@ -286,7 +329,14 @@
                   tk-color-success          "#15803d"
                   tk-color-warning          "#c08304"})
    :dark  (merge base-shadow-dark base-fills-dark
-                 {tk-color-primary          "#22c55e"
+                 {tk-color-syntax-comment   "#a9ccb6"
+                  tk-color-syntax-keyword   "#fca5a5"
+                  tk-color-syntax-string    "#86efac"
+                  tk-color-syntax-constant  "#93c5fd"
+                  tk-color-syntax-function  "#d8b4fe"
+                  tk-color-syntax-type      "#fcd34d"
+                  tk-color-syntax-tag       "#67e8f9"
+                  tk-color-primary          "#22c55e"
                   tk-color-secondary        "#84cc16"
                   tk-color-secondary-hover  "#65a30d"
                   tk-color-secondary-active "#4d7c0f"
@@ -308,7 +358,14 @@
 (def ^:private preset-sunset
   {:light (merge base-typography base-shape base-motion base-shadow-light
                  base-spacing base-z-index base-opacity base-fills-light
-                 {tk-color-primary          "#c84b0a"
+                 {tk-color-syntax-comment   "#816658"
+                  tk-color-syntax-keyword   "#be123c"
+                  tk-color-syntax-string    "#15803d"
+                  tk-color-syntax-constant  "#1d4ed8"
+                  tk-color-syntax-function  "#7e22ce"
+                  tk-color-syntax-type      "#b45309"
+                  tk-color-syntax-tag       "#0e7490"
+                  tk-color-primary          "#c84b0a"
                   tk-color-primary-hover    "#9a3412"
                   tk-color-primary-active   "#7c2d12"
                   tk-color-secondary        "#e11d48"
@@ -329,7 +386,14 @@
                   tk-color-success          "#12843c"
                   tk-color-warning          "#c28504"})
    :dark  (merge base-shadow-dark base-fills-dark
-                 {tk-color-primary          "#f97316"
+                 {tk-color-syntax-comment   "#cab9a7"
+                  tk-color-syntax-keyword   "#fb7185"
+                  tk-color-syntax-string    "#86efac"
+                  tk-color-syntax-constant  "#93c5fd"
+                  tk-color-syntax-function  "#d8b4fe"
+                  tk-color-syntax-type      "#fdba74"
+                  tk-color-syntax-tag       "#67e8f9"
+                  tk-color-primary          "#f97316"
                   tk-color-secondary        "#fb7185"
                   tk-color-secondary-hover  "#f43f5e"
                   tk-color-secondary-active "#e11d48"
@@ -351,7 +415,14 @@
 (def ^:private preset-neo-brutalist
   {:light (merge base-typography base-motion
                  base-spacing base-z-index base-opacity base-fills-light
-                 {tk-color-primary          "#000000"
+                 {tk-color-syntax-comment   "#555555"
+                  tk-color-syntax-keyword   "#d6003a"
+                  tk-color-syntax-string    "#008744"
+                  tk-color-syntax-constant  "#0033cc"
+                  tk-color-syntax-function  "#6600cc"
+                  tk-color-syntax-type      "#b34700"
+                  tk-color-syntax-tag       "#006b6b"
+                  tk-color-primary          "#000000"
                   tk-color-primary-hover    "#1a1a1a"
                   tk-color-primary-active   "#333333"
                   tk-color-secondary        "#ff3366"
@@ -384,7 +455,14 @@
                   tk-font-weight-semibold   "700"
                   tk-space-md               "1rem"})
    :dark  (merge base-fills-dark
-                 {tk-color-primary          "#ff3366"
+                 {tk-color-syntax-comment   "#aaaaaa"
+                  tk-color-syntax-keyword   "#ff3366"
+                  tk-color-syntax-string    "#44ff88"
+                  tk-color-syntax-constant  "#66aaff"
+                  tk-color-syntax-function  "#cc88ff"
+                  tk-color-syntax-type      "#ffdd44"
+                  tk-color-syntax-tag       "#44dddd"
+                  tk-color-primary          "#ff3366"
                   tk-color-secondary        "#ffffff"
                   tk-color-secondary-hover  "#e5e5e5"
                   tk-color-secondary-active "#cccccc"
@@ -409,7 +487,14 @@
 (def ^:private preset-aurora
   {:light (merge base-typography base-shape base-motion
                  base-spacing base-z-index base-opacity base-fills-light
-                 {tk-color-primary          "#7c3aed"
+                 {tk-color-syntax-comment   "#66649f"
+                  tk-color-syntax-keyword   "#be185d"
+                  tk-color-syntax-string    "#047857"
+                  tk-color-syntax-constant  "#1d4ed8"
+                  tk-color-syntax-function  "#6d28d9"
+                  tk-color-syntax-type      "#b45309"
+                  tk-color-syntax-tag       "#0e7490"
+                  tk-color-primary          "#7c3aed"
                   tk-color-primary-hover    "#6d28d9"
                   tk-color-primary-active   "#5b21b6"
                   tk-color-secondary        "#ec4899"
@@ -434,7 +519,14 @@
                   tk-shadow-lg              "0 10px 30px rgba(139,92,246,0.15),0 4px 10px rgba(139,92,246,0.10)"
                   tk-opacity-disabled       "0.45"})
    :dark  (merge base-fills-dark
-                 {tk-color-primary          "#a78bfa"
+                 {tk-color-syntax-comment   "#a5b4fc"
+                  tk-color-syntax-keyword   "#f472b6"
+                  tk-color-syntax-string    "#6ee7b7"
+                  tk-color-syntax-constant  "#7dd3fc"
+                  tk-color-syntax-function  "#d8b4fe"
+                  tk-color-syntax-type      "#fcd34d"
+                  tk-color-syntax-tag       "#5eead4"
+                  tk-color-primary          "#a78bfa"
                   tk-color-secondary        "#f472b6"
                   tk-color-secondary-hover  "#ec4899"
                   tk-color-secondary-active "#db2777"
@@ -459,7 +551,14 @@
 (def ^:private preset-mono-ai
   {:light (merge base-shape base-motion
                  base-spacing base-z-index base-opacity base-fills-light
-                 {tk-color-primary          "#18181b"
+                 {tk-color-syntax-comment   "#64646b"
+                  tk-color-syntax-keyword   "#be123c"
+                  tk-color-syntax-string    "#15803d"
+                  tk-color-syntax-constant  "#1d4ed8"
+                  tk-color-syntax-function  "#6d28d9"
+                  tk-color-syntax-type      "#a16207"
+                  tk-color-syntax-tag       "#0e7490"
+                  tk-color-primary          "#18181b"
                   tk-color-primary-hover    "#27272a"
                   tk-color-primary-active   "#3f3f46"
                   tk-color-secondary        "#1aa500"
@@ -493,7 +592,14 @@
                   tk-shadow-lg              "0 10px 25px rgba(0,0,0,0.10),0 4px 10px rgba(0,0,0,0.06)"
                   tk-line-height-normal     "1.4"})
    :dark  (merge base-fills-dark
-                 {tk-color-primary          "#178b42"
+                 {tk-color-syntax-comment   "#8f8f97"
+                  tk-color-syntax-keyword   "#fda4af"
+                  tk-color-syntax-string    "#39ff14"
+                  tk-color-syntax-constant  "#93c5fd"
+                  tk-color-syntax-function  "#c4b5fd"
+                  tk-color-syntax-type      "#fde047"
+                  tk-color-syntax-tag       "#5eead4"
+                  tk-color-primary          "#178b42"
                   tk-color-secondary        "#e4e4e7"
                   tk-color-secondary-hover  "#d4d4d8"
                   tk-color-secondary-active "#a1a1aa"
@@ -518,7 +624,14 @@
 (def ^:private preset-warm-mineral
   {:light (merge base-typography base-shape base-motion base-shadow-light
                  base-spacing base-z-index base-opacity base-fills-light
-                 {tk-color-primary          "#b45309"
+                 {tk-color-syntax-comment   "#7b664b"
+                  tk-color-syntax-keyword   "#9f1239"
+                  tk-color-syntax-string    "#4d7c0f"
+                  tk-color-syntax-constant  "#1e40af"
+                  tk-color-syntax-function  "#6b21a8"
+                  tk-color-syntax-type      "#92400e"
+                  tk-color-syntax-tag       "#0f766e"
+                  tk-color-primary          "#b45309"
                   tk-color-primary-hover    "#92400e"
                   tk-color-primary-active   "#78350f"
                   tk-color-secondary        "#a16207"
@@ -539,7 +652,14 @@
                   tk-color-success          "#4d7c0f"
                   tk-color-warning          "#c08304"})
    :dark  (merge base-shadow-dark base-fills-dark
-                 {tk-color-primary          "#c2785a"
+                 {tk-color-syntax-comment   "#a59e93"
+                  tk-color-syntax-keyword   "#f2a07b"
+                  tk-color-syntax-string    "#b5cc7a"
+                  tk-color-syntax-constant  "#93b4e0"
+                  tk-color-syntax-function  "#c9a8e0"
+                  tk-color-syntax-type      "#e0b870"
+                  tk-color-syntax-tag       "#7cc4b8"
+                  tk-color-primary          "#c2785a"
                   tk-color-secondary        "#b8976e"
                   tk-color-secondary-hover  "#a18360"
                   tk-color-secondary-active "#8a7052"

@@ -207,14 +207,25 @@
 
 ;; ── contrast ────────────────────────────────────────────────────────────────
 
+(def ^:private syntax-roles
+  "The roles of code that the syntax tokens colour."
+  ["comment" "keyword" "string" "constant" "function" "type" "tag"])
+
+(def ^:private syntax-contrast-pairs
+  "Each syntax colour on the surface and on the background."
+  (vec (for [role syntax-roles
+             bg   ["surface" "bg"]]
+         [(str "syntax-" role) bg])))
+
 (def ^:private contrast-rules
   "The least contrast that WCAG AA asks, with the pairs of colour tokens it applies to."
-  {4.5 [["text" "bg"] ["text" "surface"]
-        ["text-muted" "bg"] ["text-muted" "surface"] ["text-muted" "surface-active"]
-        ["primary" "bg"] ["primary" "surface"]
-        ["on-primary" "primary"] ["on-primary" "primary-hover"] ["on-primary" "primary-active"]
-        ["on-danger" "danger"] ["on-danger" "danger-hover"] ["on-danger" "danger-active"]
-        ["danger" "surface"] ["success" "surface"]]
+  {4.5 (into [["text" "bg"] ["text" "surface"]
+              ["text-muted" "bg"] ["text-muted" "surface"] ["text-muted" "surface-active"]
+              ["primary" "bg"] ["primary" "surface"]
+              ["on-primary" "primary"] ["on-primary" "primary-hover"] ["on-primary" "primary-active"]
+              ["on-danger" "danger"] ["on-danger" "danger-hover"] ["on-danger" "danger-active"]
+              ["danger" "surface"] ["success" "surface"]]
+             syntax-contrast-pairs)
    3   [["warning" "surface"]
         ["secondary" "bg"] ["secondary" "surface"]
         ["focus-ring" "bg"] ["focus-ring" "surface"]]})
@@ -293,3 +304,19 @@
 
 (deftest every-preset-meets-the-contrast-rules
   (is (empty? (mapcat contrast-failures model/allowed-presets))))
+
+;; ── syntax ──────────────────────────────────────────────────────────────────
+
+(def ^:private syntax-tokens
+  (mapv (fn syntax-token [role] (token (str "syntax-" role))) syntax-roles))
+
+(deftest every-preset-sets-each-syntax-token-in-light-and-in-dark-mode
+  (doseq [preset model/allowed-presets
+          mode   [:light :dark]]
+    (testing (str preset " " mode)
+      (is (every? (get (model/preset-tokens preset) mode) syntax-tokens)))))
+
+(deftest a-custom-preset-takes-the-syntax-colours-of-the-default-preset
+  (model/register-preset! "syntax-test" #js {:light #js {"--x-color-primary" "#ff0000"}})
+  (is (= (select-keys (:light (model/preset-tokens "default")) syntax-tokens)
+         (select-keys (:light (model/preset-tokens "syntax-test")) syntax-tokens))))

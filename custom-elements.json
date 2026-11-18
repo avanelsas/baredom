@@ -3300,40 +3300,46 @@
         "default" : "2"
       }, {
         "name" : "--x-code-token-atrule",
-        "default" : "#cf222e"
+        "default" : "var(--x-color-syntax-keyword,#cf222e)"
       }, {
         "name" : "--x-code-token-attr-value",
-        "default" : "#0a3069"
+        "default" : "var(--x-color-syntax-string,#0a7d33)"
       }, {
         "name" : "--x-code-token-comment",
-        "default" : "#6a737d"
+        "default" : "var(--x-color-syntax-comment,#6a737d)"
+      }, {
+        "name" : "--x-code-token-constant",
+        "default" : "var(--x-color-syntax-constant,#0550ae)"
       }, {
         "name" : "--x-code-token-entity",
-        "default" : "#0550ae"
+        "default" : "var(--x-color-syntax-constant,#0550ae)"
+      }, {
+        "name" : "--x-code-token-function-name",
+        "default" : "var(--x-color-syntax-function,#8250df)"
       }, {
         "name" : "--x-code-token-key",
-        "default" : "#0550ae"
+        "default" : "var(--x-color-syntax-constant,#0550ae)"
       }, {
         "name" : "--x-code-token-keyword",
-        "default" : "#cf222e"
+        "default" : "var(--x-color-syntax-keyword,#cf222e)"
       }, {
         "name" : "--x-code-token-number",
-        "default" : "#0550ae"
+        "default" : "var(--x-color-syntax-constant,#0550ae)"
       }, {
         "name" : "--x-code-token-property",
-        "default" : "#0550ae"
+        "default" : "var(--x-color-syntax-constant,#0550ae)"
       }, {
         "name" : "--x-code-token-punct",
-        "default" : "#57606a"
+        "default" : "var(--x-color-text-muted,#57606a)"
       }, {
         "name" : "--x-code-token-string",
-        "default" : "#0a7d33"
+        "default" : "var(--x-color-syntax-string,#0a7d33)"
       }, {
         "name" : "--x-code-token-tag",
-        "default" : "#116329"
+        "default" : "var(--x-color-syntax-tag,#0e7490)"
       }, {
         "name" : "--x-code-token-template",
-        "default" : "#0a7d33"
+        "default" : "var(--x-color-syntax-string,#0a7d33)"
       } ],
       "cssParts" : [ {
         "name" : "body"
@@ -21235,6 +21241,20 @@
         "name" : "--x-color-surface-active"
       }, {
         "name" : "--x-color-surface-hover"
+      }, {
+        "name" : "--x-color-syntax-comment"
+      }, {
+        "name" : "--x-color-syntax-constant"
+      }, {
+        "name" : "--x-color-syntax-function"
+      }, {
+        "name" : "--x-color-syntax-keyword"
+      }, {
+        "name" : "--x-color-syntax-string"
+      }, {
+        "name" : "--x-color-syntax-tag"
+      }, {
+        "name" : "--x-color-syntax-type"
       }, {
         "name" : "--x-color-tertiary"
       }, {

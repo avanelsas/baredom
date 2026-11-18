@@ -98,7 +98,7 @@ and bubble through); listen for the `x-code-*` events for a stable API.
 | `expander`     | "Show more" / "Show less" button.                        |
 
 Token spans inside `line-content` carry classes `tok-comment`, `tok-string`,
-`tok-keyword`, `tok-number`, `tok-punct`, `tok-tag`, etc.
+`tok-keyword`, `tok-number`, `tok-constant`, `tok-function-name`, `tok-punct`, `tok-tag`, etc.
 
 ## CSS custom properties
 
@@ -113,18 +113,21 @@ Token spans inside `line-content` carry classes `tok-comment`, `tok-string`,
 | `--x-code-font-size`        | `var(--x-font-size-sm,0.8125rem)`  | Code font size.              |
 | `--x-code-line-height`      | `1.6`                            | Code line height.            |
 | `--x-code-tab-size`         | `2`                              | Tab width.                   |
-| `--x-code-token-comment`    | `#6a737d`                        | Comment colour.              |
-| `--x-code-token-string`     | `#0a7d33`                        | String / template colour.    |
-| `--x-code-token-keyword`    | `#cf222e`                        | Keyword / at-rule colour.    |
-| `--x-code-token-number`     | `#0550ae`                        | Number colour.               |
-| `--x-code-token-punct`      | `#57606a`                        | Punctuation colour.          |
-| `--x-code-token-tag`        | `#116329`                        | HTML tag colour.             |
-| `--x-code-token-property`   | `#0550ae`                        | CSS property / JSON key.     |
-| `--x-code-token-attr-value` | `#0a3069`                        | HTML attribute value.        |
-| `--x-code-token-entity`     | `#0550ae`                        | HTML entity colour.          |
+| `--x-code-token-comment` | `var(--x-color-syntax-comment,#6a737d)` | Comment colour. |
+| `--x-code-token-string` | `var(--x-color-syntax-string,#0a7d33)` | String / template colour. |
+| `--x-code-token-keyword` | `var(--x-color-syntax-keyword,#cf222e)` | Keyword / at-rule colour. |
+| `--x-code-token-number` | `var(--x-color-syntax-constant,#0550ae)` | Number colour. |
+| `--x-code-token-constant` | `var(--x-color-syntax-constant,#0550ae)` | `true`, `false`, `nil`, `null`, `undefined`, `NaN`, `Infinity`. |
+| `--x-code-token-function-name` | `var(--x-color-syntax-function,#8250df)` | The name a definition gives: after `defn`, `def` …, `function` or `class`. |
+| `--x-code-token-punct` | `var(--x-color-text-muted,#57606a)` | Punctuation colour. |
+| `--x-code-token-tag` | `var(--x-color-syntax-tag,#0e7490)` | HTML tag colour. |
+| `--x-code-token-property` | `var(--x-color-syntax-constant,#0550ae)` | CSS property. |
+| `--x-code-token-key` | `var(--x-color-syntax-constant,#0550ae)` | Clojure keyword / JSON key. |
+| `--x-code-token-attr-value` | `var(--x-color-syntax-string,#0a7d33)` | HTML attribute value. |
+| `--x-code-token-entity` | `var(--x-color-syntax-constant,#0550ae)` | HTML entity colour. |
 
-All token colours have separate light and dark fallbacks via
-`@media (prefers-color-scheme: dark)` and can be overridden per instance.
+Each token colour reads a syntax token of `x-theme`, shown in its default, and falls back to a
+light or a dark colour without one. Each can be overridden per instance.
 
 ## Tokenizer & languages
 
@@ -142,6 +145,8 @@ as plain monospace text. `clj`, `cljs`, `cljc`, `edn` and `bb` are aliases of
   coloured as keywords, a `:keyword` as a key, and a regex and a character as
   strings. A symbol in the place of a function is plain, and so is what a `#_`
   discards.
+- The name after a definition form is marked when only `^:key` or `^Type` metadata stands
+  before it. After map metadata such as `^{:doc "…"}` it is plain.
 
 These trade-offs keep the highlighter small and dependency-free.
 
