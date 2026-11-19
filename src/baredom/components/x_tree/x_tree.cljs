@@ -303,28 +303,30 @@
     li))
 
 (defn- apply-loading!
-  "Shows the loading row in `group` while `loading?`, with `text`."
-  [^js group loading? text]
-  (let [loading (.querySelector group sel-loading)]
+  "Shows the loading row in `group` while `loading?`, with `text`. `was-loading?` says whether
+   the row was loading before. The group is not searched when neither is true."
+  [^js group was-loading? loading? text]
+  (let [loading (when (or was-loading? loading?) (.querySelector group sel-loading))]
     (cond
       (and loading? loading) (du/set-text-to! loading text)
       loading?               (.appendChild group (make-loading! text))
       loading                (.remove loading))))
 
 (defn- apply-item!
-  "Brings the node of `id` in `nodes` to its row and its item in `m`."
-  [nodes m id]
+  "Brings the node of `id` in `nodes` from its row in `old-m` to its row and its item in `m`."
+  [nodes old-m m id]
   (let [^js li                              (nodes id)
         {:keys [checkbox label meta group]} (item-parts li)
         row                                 (model/row m id)
         item                                (get-in m [:item id])
-        attrs                               (model/row->attrs row)]
+        attrs                               (model/row->attrs row)
+        was-loading?                        (model/loading? old-m id)]
     (set-attrs-to! li (:item attrs))
     (set-attrs-to! checkbox (:checkbox attrs))
     (set-attrs-to! group (:group attrs))
     (du/set-text-to! label (:label item))
     (du/set-text-to! meta (str (:meta item "")))
-    (apply-loading! group (:loading? row) (:loading-text m))))
+    (apply-loading! group was-loading? (:loading? row) (:loading-text m))))
 
 (defn- synced-nodes
   "The node of each key of the places of `m`. Syncs the tree only when they differ from the
@@ -348,7 +350,7 @@
   "Brings each visible node whose row may have changed to its row."
   [^js el ^js tree old-m m]
   (let [nodes (synced-nodes el tree old-m m)]
-    (run! (partial apply-item! nodes m) (rows-to-apply old-m m))
+    (run! (partial apply-item! nodes old-m m) (rows-to-apply old-m m))
     ;; Render cache: the node of each key. It has no display value.
     (du/setv-untraced! el k-rendered nodes)))
 

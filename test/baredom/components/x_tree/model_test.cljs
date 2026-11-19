@@ -30,7 +30,8 @@
 
 (deftest index-of-no-items-has-an-empty-top-level
   (doseq [items [nil [] "not a list"]]
-    (is (= {:item {} :children {nil []} :parent {} :position {} :order [] :rank {} :dropped []}
+    (is (= {:item {} :children {nil []} :parent {} :position {} :order [] :rank {} :ends {}
+            :enabled-ends {} :dropped []}
            (model/index items)))))
 
 (deftest index-gives-each-item-its-position-among-its-siblings
@@ -85,6 +86,18 @@
                 {:id "loaded" :label "loaded" :lazy true :children [{:id "x" :label "x"}]}
                 {:id "empty" :label "empty" :children []}
                 {:id "odd" :label "odd" :lazy "yes"}]))
+
+(deftest index-counts-the-end-items-under-each-branch
+  (let [ix (model/index [{:id "a" :label "a"
+                          :children [{:id "a1" :label "a1"
+                                      :children [{:id "x" :label "x"}
+                                                 {:id "y" :label "y" :disabled true}]}
+                                     {:id "a2" :label "a2" :lazy true}]}
+                         {:id "b" :label "b"}])]
+    (testing "all end items"
+      (is (= {"a" 3 "a1" 2} (:ends ix))))
+    (testing "the enabled ones"
+      (is (= {"a" 2 "a1" 1} (:enabled-ends ix))))))
 
 (deftest branch-is-an-item-with-children-or-lazy
   (is (true? (model/branch? kinds "dir")))
@@ -268,7 +281,9 @@
   (let [m (merge perms (model/counted perms {:selection selection
                                              :expanded  expanded
                                              :selected  selected}))]
-    (model/with-places (assoc m :selection selection :focused focused))))
+    (-> (assoc m :selection selection :focused focused)
+        model/with-places
+        model/with-selected-counts)))
 
 (deftest row-gives-the-place-of-an-item
   (let [r (model/row (model-of :single ["all"] [] "write") "write")]
@@ -401,6 +416,19 @@
     (let [m' (model/step (model-of :none ["all"] [] "all") {:op op :id id})]
       (is (= (select-keys (model/with-places m') [:places :visible :visible-at])
              (select-keys m' [:places :visible :visible-at]))
+          (str op " " id)))))
+
+(deftest with-selected-counts-counts-the-selected-end-items-under-each-branch
+  (let [m (model-of :multiple [] ["read" "root" "l1"] "all")]
+    (is (= {"all" 2 "locked" 1} (:selected-ends m)))
+    (is (= {"all" 1} (:selected-enabled-ends m)))))
+
+(deftest step-gives-the-counts-of-its-selected-ids
+  (doseq [[selection op id] [[:multiple :check "all"] [:multiple :check "read"]
+                             [:single :select "write"]]]
+    (let [m' (model/step (model-of selection ["all"] ["read"] "all") {:op op :id id})
+          ks [:selected-ends :selected-enabled-ends]]
+      (is (= (select-keys (model/with-selected-counts m') ks) (select-keys m' ks))
           (str op " " id)))))
 
 (deftest step-expand-siblings-opens-every-branch-under-the-same-parent
@@ -715,3 +743,52 @@
                   (every-step-keeps-its-rows? mode items changes))
                 :seed 20261119)]
     (is (:pass? result) (pr-str (get-in result [:shrunk :smallest])))))
+
+(defn- walked-ends
+  "The end items under `id` in `m`, found by walking its children."
+  [m id]
+  (if-some [kids (get-in m [:children id])]
+    (mapcat (partial walked-ends m) kids)
+    [id]))
+
+(defn- walked-check
+  "The check state of the branch `id` of `m`, from a walk over its end items."
+  [m id]
+  (let [ends    (walked-ends m id)
+        enabled (remove (fn disabled? [e] (true? (get-in m [:item e :disabled]))) ends)
+        ids     (if (seq enabled) enabled ends)
+        n       (count (filter (:selected m) ids))]
+    (cond (= n (count ids)) :checked
+          (zero? n)         :unchecked
+          :else             :mixed)))
+
+(defn- every-check-is-walked? [items changes]
+  (let [models (reductions (partial changed :multiple)
+                           (model/normalize {:items-raw     (json-items items)
+                                             :selection-raw "multiple"})
+                           changes)]
+    (every? (fn walked? [m]
+              (every? (fn same-check? [id]
+                        (= (walked-check m id) (:check (model/row m id))))
+                      (remove nil? (keys (:children m)))))
+            models)))
+
+(deftest check-state-from-counts-is-the-one-a-walk-over-the-end-items-gives
+  (let [result (tc/quick-check
+                300
+                (prop/for-all [items   (gen/fmap named gen-items)
+                               changes (gen/vector gen-change 1 12)]
+                  (every-check-is-walked? items changes))
+                :seed 20261119)]
+    (is (:pass? result) (pr-str (get-in result [:shrunk :smallest])))))
+
+(deftest normalize-keeps-the-lists-of-the-model-before-while-their-texts-are-the-same
+  (let [prev (model/normalize raw)]
+    (testing "the same texts keep the same selected ids and counts"
+      (let [m (model/normalize (assoc raw :focused "src") prev)]
+        (is (identical? (:selected prev) (:selected m)))
+        (is (identical? (:selected-ends prev) (:selected-ends m)))))
+    (testing "another selected text counts again"
+      (let [m (model/normalize (assoc raw :selected-raw "[]") prev)]
+        (is (= #{} (:selected m)))
+        (is (= {} (:selected-ends m)))))))
