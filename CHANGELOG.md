@@ -4,6 +4,12 @@ All notable changes to BareDOM will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **A gesture in `x-tree` costs the same at any folder size.** Selecting, checking or moving the
+  focus updates only the rows it changes, and no longer works through every visible row. In a
+  folder of 5000 entries an arrow key takes under a millisecond, where it took about 27.
+
 ### Fixed
 
 - **Scrollbars are dark in dark mode.** `x-theme`, `x-command-palette` and `x-toc` set

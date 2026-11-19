@@ -311,56 +311,46 @@
       loading?               (.appendChild group (make-loading! text))
       loading                (.remove loading))))
 
-(defn- item-view
-  "What the node of `id` shows in `m`: its row, its item and the loading text."
-  [m id]
-  {:row          (model/row m id)
-   :item         (get-in m [:item id])
-   :loading-text (:loading-text m)})
-
 (defn- apply-item!
-  "Brings the node of `id` in `nodes` to its view in `views`."
-  [nodes views id]
+  "Brings the node of `id` in `nodes` to its row and its item in `m`."
+  [nodes m id]
   (let [^js li                              (nodes id)
         {:keys [checkbox label meta group]} (item-parts li)
-        {:keys [row item loading-text]}     (views id)
+        row                                 (model/row m id)
+        item                                (get-in m [:item id])
         attrs                               (model/row->attrs row)]
     (set-attrs-to! li (:item attrs))
     (set-attrs-to! checkbox (:checkbox attrs))
     (set-attrs-to! group (:group attrs))
     (du/set-text-to! label (:label item))
     (du/set-text-to! meta (str (:meta item "")))
-    (apply-loading! group (:loading? row) loading-text)))
-
-(defn- stale?
-  "True when the node of `id` is new, or its view differs from the one `rendered` holds."
-  [rendered nodes views id]
-  (not (and (identical? (nodes id) (get-in rendered [:nodes id]))
-            (= (views id) (get-in rendered [:views id])))))
+    (apply-loading! group (:loading? row) (:loading-text m))))
 
 (defn- synced-nodes
-  "The node of each key of the places `pl`. Syncs the tree only when `pl` differs from the
-   places that `rendered` holds."
-  [^js tree rendered pl]
-  (if (= pl (:places rendered))
-    (:nodes rendered)
+  "The node of each key of the places of `m`. Syncs the tree only when they differ from the
+   places of `old-m`."
+  [^js el ^js tree old-m m]
+  (if (= (:places old-m) (:places m))
+    (du/getv el k-rendered)
     (places/sync! {:tree   {:parent tree}
                    :groups {:part part-group}}
-                  pl
+                  (:places m)
                   make-item!)))
 
+(defn- rows-to-apply
+  "The visible ids of `m` whose row may differ from the one of `old-m`."
+  [old-m m]
+  (if-some [stale (model/stale-ids old-m m)]
+    (filter (:visible-at m) stale)
+    (:visible m)))
+
 (defn- render-items!
-  "Brings each visible node to its view. A node whose view did not change is not touched."
-  [^js el ^js tree m]
-  (let [rendered (du/getv el k-rendered)
-        pl       (model/places m)
-        nodes    (synced-nodes tree rendered pl)
-        visible  (model/places->visible pl)
-        views    (into {} (map (juxt identity (partial item-view m))) visible)]
-    (run! (partial apply-item! nodes views)
-          (filter (partial stale? rendered nodes views) visible))
-    ;; Render cache: the places, nodes and views of this render. It has no display value.
-    (du/setv-untraced! el k-rendered {:places pl :nodes nodes :views views})))
+  "Brings each visible node whose row may have changed to its row."
+  [^js el ^js tree old-m m]
+  (let [nodes (synced-nodes el tree old-m m)]
+    (run! (partial apply-item! nodes m) (rows-to-apply old-m m))
+    ;; Render cache: the node of each key. It has no display value.
+    (du/setv-untraced! el k-rendered nodes)))
 
 (defn- apply-tree! [^js el ^js tree m]
   (du/set-attr-to! tree attr-aria-label (:label m))
@@ -376,7 +366,7 @@
 
 (defn- apply-model! [^js el {:keys [tree]} old-m m]
   (apply-tree! el tree m)
-  (render-items! el tree m)
+  (render-items! el tree old-m m)
   (warn-dropped! old-m m)
   (du/setv! el k-model m))
 
@@ -417,7 +407,7 @@
   "Moves DOM focus to the item of the focused id."
   [^js el]
   (let [id (:focused (du/getv el k-model))]
-    (some-> ^js (get-in (du/getv el k-rendered) [:nodes id])
+    (some-> ^js (get (du/getv el k-rendered) id)
             (.focus))))
 
 (defn- run-action!

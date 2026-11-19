@@ -58,13 +58,17 @@
   (true? (get-in m [:item id :disabled])))
 
 (defn- in-tree-order
-  "The ids of `ids` that name an item of `m`, in tree order."
+  "The ids of `ids` that name an item of `m`, once each, in tree order."
   [m ids]
-  (filterv (set ids) (:order m)))
+  (->> ids
+       (filter (partial known? m))
+       distinct
+       (sort-by (:rank m))
+       vec))
 
 ;; ── Index ─────────────────────────────────────────────────────────────────
 (def ^:private empty-index
-  {:item {} :children {nil []} :parent {} :position {} :order [] :dropped []})
+  {:item {} :children {nil []} :parent {} :position {} :order [] :rank {} :dropped []})
 
 (defn- text? [v]
   (and (string? v) (not= "" v)))
@@ -89,6 +93,7 @@
         (assoc-in [:position id] (count (children-of acc parent)))
         (update-in [:children parent] (fnil conj []) id)
         (cond-> (some? parent) (assoc-in [:parent id] parent))
+        (assoc-in [:rank id] (count (:order acc)))
         (update :order conj id)
         (add-items id children))))
 
@@ -97,7 +102,8 @@
 
 (defn index
   "The items of `items` keyed by id: `:item`, `:children` (nil for the top level), `:parent`,
-   `:position` among its siblings, and `:order`, in tree order. An item with no id or label, or
+   `:position` among its siblings, `:order`, in tree order, and the `:rank` of each id in
+   `:order`. An item with no id or label, or
    with the id of an earlier item, is left out with its children and listed in `:dropped`."
   [items]
   (add-items empty-index nil items))
@@ -163,15 +169,17 @@
 (defn- add-visible [pl acc id]
   (reduce (partial add-visible pl) (conj acc id) (get pl id)))
 
-(defn places->visible
+(defn- places->visible
   "The visible ids of the places `pl`, in tree order."
   [pl]
   (reduce (partial add-visible pl) [] (:tree pl)))
 
-(defn visible
-  "The visible ids of `m`, in tree order."
+(defn with-places
+  "`m` with its `:places`, its `:visible` ids and the index of each in `:visible-at`."
   [m]
-  (places->visible (places m)))
+  (let [pl  (places m)
+        vis (places->visible pl)]
+    (assoc m :places pl :visible vis :visible-at (zipmap vis (range)))))
 
 ;; ── Focus ─────────────────────────────────────────────────────────────────
 (defn- nearest-visible
@@ -181,13 +189,13 @@
 
 (defn resolve-focus
   "The id that takes focus in `m`: `focused` or its nearest visible ancestor, else the first
-   selected id or its nearest visible ancestor, else the first visible id. Nil with no items."
+   selected id or its nearest visible ancestor, else the first visible id. Nil with no items.
+   `m` holds its places (see `with-places`)."
   [m focused]
-  (let [vis  (visible m)
-        lift (partial nearest-visible m (set vis))]
+  (let [lift (partial nearest-visible m (:visible-at m))]
     (or (some-> focused lift)
         (some-> (first (in-tree-order m (:selected m))) lift)
-        (first vis))))
+        (first (:visible m)))))
 
 ;; ── Row ───────────────────────────────────────────────────────────────────
 (defn- end-items-under
@@ -274,13 +282,50 @@
    :group    {"hidden"      (flag (not= :open expanded))
               "data-active" (flag guide-active?)}})
 
+;; ── Stale rows ────────────────────────────────────────────────────────────
+(def ^:private whole-tree-keys
+  "The keys of a model whose change may change every row."
+  [:item :children :parent :position :selection :loading-text :places])
+
+(defn- toggled [a b]
+  (set/union (set/difference a b) (set/difference b a)))
+
+(defn- selection-stale
+  "The ids whose select or check state may differ between `old-m` and `m`."
+  [old-m m]
+  (let [ids (toggled (:selected old-m) (:selected m))]
+    (if (= :multiple (:selection m))
+      (set (mapcat (partial lineage m) ids))
+      ids)))
+
+(defn- focus-stale
+  "The old and the new focused id of `old-m` and `m`, and their parents when they differ."
+  [old-m m]
+  (let [focused [(:focused old-m) (:focused m)]
+        parents (map (partial parent-of m) focused)]
+    (cond-> (set (remove nil? focused))
+      (apply not= parents) (into (remove nil?) parents))))
+
+(defn stale-ids
+  "The ids whose row may differ between `old-m` and `m`, or nil when every row may."
+  [old-m m]
+  (when (= (select-keys old-m whole-tree-keys) (select-keys m whole-tree-keys))
+    (set/union (selection-stale old-m m)
+               (toggled (:expanded old-m) (:expanded m))
+               (focus-stale old-m m))))
+
 ;; ── Step ──────────────────────────────────────────────────────────────────
 (defn- unchanged [m _id]
   m)
 
+(defn- with-expanded
+  "`m` with the expanded ids `ids` and the places they give."
+  [m ids]
+  (with-places (assoc m :expanded ids)))
+
 (defn- toggle [m id]
   (if (branch? m id)
-    (update m :expanded (if (open? m id) disj conj) id)
+    (with-expanded m ((if (open? m id) disj conj) (:expanded m) id))
     m))
 
 (defn- select-only [m id]
@@ -303,7 +348,7 @@
         (update m :selected into targets)))))
 
 (defn- expand-siblings [m id]
-  (update m :expanded into (filter (partial branch? m) (siblings m id))))
+  (with-expanded m (into (:expanded m) (filter (partial branch? m) (siblings m id)))))
 
 (def ^:private ops
   {:focus           unchanged
@@ -338,26 +383,20 @@
    " "          {:any :activate}
    "*"          {:any :expand-siblings}})
 
-(defn- position
-  "The index of `id` in `ids`, or nil."
-  [ids id]
-  (let [n (count (take-while (partial not= id) ids))]
-    (when (< n (count ids)) n)))
-
-(defn- neighbour [vis id offset]
-  (some->> (position vis id) (+ offset) (get vis)))
+(defn- neighbour [m id offset]
+  (some->> (get-in m [:visible-at id]) (+ offset) (get (:visible m))))
 
 (defn- next-visible [m id]
-  (neighbour (visible m) id 1))
+  (neighbour m id 1))
 
 (defn- prev-visible [m id]
-  (neighbour (visible m) id -1))
+  (neighbour m id -1))
 
 (defn- first-visible [m _id]
-  (first (visible m)))
+  (first (:visible m)))
 
 (defn- last-visible [m _id]
-  (peek (visible m)))
+  (peek (:visible m)))
 
 (defn- first-child [m id]
   (when (open? m id)
@@ -404,8 +443,8 @@
 (defn- typeahead
   "The next visible id after `id` whose label starts with `ch`, wrapping, or nil."
   [m id ch]
-  (let [vis   (visible m)
-        after (inc (or (position vis id) -1))]
+  (let [vis   (:visible m)
+        after (inc (get-in m [:visible-at id] -1))]
     (->> (concat (subvec vis after) (subvec vis 0 after))
          (filter (partial label-starts-with? m (str/lower-case ch)))
          first)))
@@ -517,10 +556,19 @@
     (select-keys prev (keys empty-index))
     (index (parse-list items-raw))))
 
+(defn- places-of
+  "`m` with its places: the ones of `prev` while its index and its expanded ids are the same."
+  [m prev]
+  (if (and (some? prev)
+           (identical? (:order prev) (:order m))
+           (= (:expanded prev) (:expanded m)))
+    (merge m (select-keys prev [:places :visible :visible-at]))
+    (with-places m)))
+
 (defn normalize
   "The model of the attribute texts in the `-raw` keys of `raw`, and the focused id in
    `:focused`. With `prev`, the model before, it keeps the index of `prev` while `items` is
-   the same text."
+   the same text, and its places while `expanded` also holds the same ids."
   ([raw]
    (normalize raw nil))
   ([{:keys [items-raw expanded-raw selected-raw selection-raw label loading-text guides
@@ -528,15 +576,16 @@
     prev]
    (let [mode (parse-selection selection-raw)
          ix   (index-of items-raw prev)
-         m    (merge ix
-                     (counted ix {:selection mode
-                                  :expanded  (parse-list expanded-raw)
-                                  :selected  (parse-list selected-raw)})
-                     {:items-raw    items-raw
-                      :selection    mode
-                      :label        label
-                      :loading-text (or loading-text default-loading-text)
-                      :guides       (boolean guides)})]
+         m    (-> (merge ix
+                         (counted ix {:selection mode
+                                      :expanded  (parse-list expanded-raw)
+                                      :selected  (parse-list selected-raw)})
+                         {:items-raw    items-raw
+                          :selection    mode
+                          :label        label
+                          :loading-text (or loading-text default-loading-text)
+                          :guides       (boolean guides)})
+                  (places-of prev))]
      (assoc m :focused (resolve-focus m focused)))))
 
 ;; ── API metadata ──────────────────────────────────────────────────────────
