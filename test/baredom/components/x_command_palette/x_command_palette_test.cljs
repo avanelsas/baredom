@@ -344,3 +344,8 @@
     (is (identical? save (first (item-nodes el))))
     (is (identical? kbd (shortcut-of (first (item-nodes el)))))
     (is (= "Mod+S" (.getAttribute kbd "keys")))))
+
+(deftest the-list-has-the-light-and-dark-color-scheme
+  (let [el (append! (make-el))]
+    (is (= "light dark"
+           (.-colorScheme (js/getComputedStyle (shadow-part el "[part=list-wrap]")))))))

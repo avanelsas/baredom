@@ -178,7 +178,7 @@ names no syntax colour gets those of `default`.
 | `mono-ai`       | Monochrome + neon cyan accent, monospace font.                     | `line-height-normal:1.4`                       |
 | `warm-mineral`  | Earthy terracotta/sand/clay, digital naturalism.                   | —                                              |
 
-All presets define both light and dark mode token values. Dark mode is activated automatically via `@media (prefers-color-scheme: dark)`.
+All presets define both light and dark mode token values. Dark mode is activated automatically via `@media (prefers-color-scheme: dark)`. The theme sets `color-scheme: light dark`, so scrollbars and native controls inside it follow the mode.
 
 ## Custom Themes
 

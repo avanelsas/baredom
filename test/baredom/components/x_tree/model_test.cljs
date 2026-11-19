@@ -1,5 +1,8 @@
 (ns baredom.components.x-tree.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
+            [clojure.test.check :as tc]
+            [clojure.test.check.generators :as gen]
+            [clojure.test.check.properties :as prop :include-macros true]
             [baredom.components.x-tree.model :as model]))
 
 (def ^:private files
@@ -27,7 +30,7 @@
 
 (deftest index-of-no-items-has-an-empty-top-level
   (doseq [items [nil [] "not a list"]]
-    (is (= {:item {} :children {nil []} :parent {} :position {} :order [] :dropped []}
+    (is (= {:item {} :children {nil []} :parent {} :position {} :order [] :rank {} :dropped []}
            (model/index items)))))
 
 (deftest index-gives-each-item-its-position-among-its-siblings
@@ -156,14 +159,22 @@
   (testing "no items gives an empty top level"
     (is (= {:tree []} (model/places (opened (model/index []) []))))))
 
-(deftest visible-gives-the-visible-ids-in-tree-order
-  (is (= ["a" "b"] (model/visible (opened deep []))))
-  (is (= ["a" "a1" "a1x" "a2" "b"] (model/visible (opened deep ["a" "a1"]))))
-  (is (= ["a" "b"] (model/visible (opened deep ["a1"])))))
+(defn- visible [m]
+  (:visible (model/with-places m)))
+
+(deftest with-places-gives-the-visible-ids-in-tree-order
+  (is (= ["a" "b"] (visible (opened deep []))))
+  (is (= ["a" "a1" "a1x" "a2" "b"] (visible (opened deep ["a" "a1"]))))
+  (is (= ["a" "b"] (visible (opened deep ["a1"])))))
+
+(deftest with-places-gives-the-index-of-each-visible-id
+  (is (= {"a" 0 "a1" 1 "a1x" 2 "a2" 3 "b" 4}
+         (:visible-at (model/with-places (opened deep ["a" "a1"]))))))
 
 ;; ── Focus ─────────────────────────────────────────────────────────────────
 (defn- state [expanded selected]
-  (merge deep (model/counted deep {:selection :multiple :expanded expanded :selected selected})))
+  (model/with-places
+   (merge deep (model/counted deep {:selection :multiple :expanded expanded :selected selected}))))
 
 (deftest resolve-focus-keeps-a-visible-focused-id
   (is (= "a1x" (model/resolve-focus (state ["a" "a1"] ["b"]) "a1x"))))
@@ -184,7 +195,7 @@
 
 (deftest resolve-focus-of-no-items-is-nil
   (let [ix (model/index [])]
-    (is (nil? (model/resolve-focus (merge ix (model/counted ix {})) "a")))))
+    (is (nil? (model/resolve-focus (model/with-places (merge ix (model/counted ix {}))) "a")))))
 
 ;; ── Normalize ─────────────────────────────────────────────────────────────
 (deftest parse-selection-gives-the-mode-or-single
@@ -257,7 +268,7 @@
   (let [m (merge perms (model/counted perms {:selection selection
                                              :expanded  expanded
                                              :selected  selected}))]
-    (assoc m :selection selection :focused focused)))
+    (model/with-places (assoc m :selection selection :focused focused))))
 
 (deftest row-gives-the-place-of-an-item
   (let [r (model/row (model-of :single ["all"] [] "write") "write")]
@@ -384,6 +395,13 @@
       (is (= #{"l1"} (checked ["l1"] "locked"))))
     (testing "an unloaded lazy branch checks itself"
       (is (= #{"later"} (checked [] "later"))))))
+
+(deftest step-gives-the-places-of-its-expanded-ids
+  (doseq [[op id] [[:toggle "all"] [:toggle "locked"] [:expand-siblings "all"]]]
+    (let [m' (model/step (model-of :none ["all"] [] "all") {:op op :id id})]
+      (is (= (select-keys (model/with-places m') [:places :visible :visible-at])
+             (select-keys m' [:places :visible :visible-at]))
+          (str op " " id)))))
 
 (deftest step-expand-siblings-opens-every-branch-under-the-same-parent
   (testing "the branches at the top level, its own included"
@@ -571,3 +589,129 @@
     (testing "the model is the one a fresh normalize gives"
       (is (= (model/normalize (assoc raw :selected-raw "[]"))
              (model/normalize (assoc raw :selected-raw "[]") prev))))))
+
+(deftest normalize-keeps-the-places-of-the-model-before-while-expanded-holds-the-same-ids
+  (let [prev (model/normalize raw)]
+    (testing "the same items and expanded ids keep the same places"
+      (let [m (model/normalize (assoc raw :selected-raw "[]" :expanded-raw "[\"later\",\"src\"]")
+                               prev)]
+        (is (identical? (:places prev) (:places m)))
+        (is (identical? (:visible-at prev) (:visible-at m)))))
+    (testing "other expanded ids build the places again"
+      (let [m (model/normalize (assoc raw :expanded-raw "[]") prev)]
+        (is (= ["src" "readme"] (:visible m)))))))
+
+;; ── Stale rows ────────────────────────────────────────────────────────────
+(deftest stale-ids-of-a-new-selection-are-the-changed-ids-and-the-focus
+  (let [m  (model-of :single ["all"] ["read"] "read")
+        m' (model-of :single ["all"] ["write"] "write")]
+    (is (= #{"read" "write"} (model/stale-ids m m')))))
+
+(deftest stale-ids-add-the-parents-of-the-focus-when-they-differ
+  (let [m  (model-of :none ["all"] [] "read")
+        m' (model-of :none ["all"] [] "locked")]
+    (is (= #{"read" "locked" "all"} (model/stale-ids m m')))))
+
+(deftest stale-ids-in-multiple-add-the-ancestors-of-the-changed-ids
+  (let [m  (model-of :multiple ["all"] [] "all")
+        m' (model-of :multiple ["all"] ["read"] "all")]
+    (is (= #{"read" "all"} (model/stale-ids m m')))))
+
+(deftest stale-ids-is-nil-when-every-row-may-change
+  (let [m (model-of :single ["all"] [] "all")]
+    (testing "other places"
+      (is (nil? (model/stale-ids m (model-of :single [] [] "all")))))
+    (testing "another selection mode"
+      (is (nil? (model/stale-ids m (model-of :multiple ["all"] [] "all")))))
+    (testing "another loading text"
+      (is (nil? (model/stale-ids m (assoc m :loading-text "Wait")))))
+    (testing "no model before"
+      (is (nil? (model/stale-ids nil m))))))
+
+(def ^:private gen-flags
+  (gen/hash-map :lazy gen/boolean :disabled (gen/frequency [[4 (gen/return false)]
+                                                            [1 (gen/return true)]])))
+
+(def ^:private gen-items
+  "Up to four items with up to three children, each with up to two children of their own."
+  (let [leaf   (gen/fmap #(assoc % :children []) gen-flags)
+        middle (gen/fmap (partial apply assoc) (gen/tuple gen-flags (gen/return :children)
+                                                          (gen/vector leaf 0 2)))
+        top    (gen/fmap (partial apply assoc) (gen/tuple gen-flags (gen/return :children)
+                                                          (gen/vector middle 0 3)))]
+    (gen/vector top 1 4)))
+
+(defn- name-item
+  "Adds `item` to the items of `acc` with the id `n`, and its children with the ids after it."
+  [[acc n] item]
+  (let [id          (str n)
+        [kids next] (reduce name-item [[] (inc n)] (:children item))]
+    [(conj acc (assoc item :id id :label (str "item " id) :children kids)) next]))
+
+(defn- named
+  "`items` with the ids and labels 0, 1, 2 and on, in tree order."
+  [items]
+  (first (reduce name-item [[] 0] items)))
+
+(def ^:private gen-change
+  "A gesture on an item, or a new list of ids for an attribute. Ids are picked by index."
+  (gen/one-of
+   [(gen/hash-map :op (gen/elements [:focus :toggle :select :check :expand-siblings])
+                  :at gen/nat)
+    (gen/hash-map :op (gen/elements [:set-selected :set-expanded])
+                  :ats (gen/vector gen/nat 0 4))]))
+
+(defn- json [ids]
+  (js/JSON.stringify (clj->js (vec ids))))
+
+(defn- raw-of
+  "The attributes of the model `m` and its focus."
+  [m mode]
+  {:items-raw     (:items-raw m)
+   :selection-raw (name mode)
+   :expanded-raw  (json (:expanded m))
+   :selected-raw  (json (:selected m))
+   :focused       (:focused m)})
+
+(defn- id-at [m n]
+  (let [order (:order m)]
+    (nth order (mod n (count order)))))
+
+(defn- changed
+  "The model that `change` gives from `m`, through the attributes as in the element."
+  [mode m {:keys [op at ats]}]
+  (let [m' (case op
+             :set-selected (assoc m :selected (set (map (partial id-at m) ats)))
+             :set-expanded (assoc m :expanded (set (map (partial id-at m) ats)))
+             (model/step m {:op op :id (id-at m at)}))]
+    (model/normalize (raw-of m' mode) m)))
+
+(defn- rows-kept?
+  "True when each visible row of `m'` that `stale-ids` leaves out equals its row in `m`."
+  [m m']
+  (let [stale (model/stale-ids m m')]
+    (or (nil? stale)
+        (every? (fn same-row? [id]
+                  (and (= (model/row m id) (model/row m' id))
+                       (= (get-in m [:item id]) (get-in m' [:item id]))))
+                (remove stale (:visible m'))))))
+
+(defn- json-items [items]
+  (js/JSON.stringify (clj->js items)))
+
+(defn- every-step-keeps-its-rows? [mode items changes]
+  (let [models (reductions (partial changed mode)
+                           (model/normalize {:items-raw (json-items items)
+                                             :selection-raw (name mode)})
+                           changes)]
+    (every? true? (map rows-kept? models (rest models)))))
+
+(deftest stale-ids-names-every-visible-row-that-a-change-changes
+  (let [result (tc/quick-check
+                300
+                (prop/for-all [mode    (gen/elements [:none :single :leaf :multiple])
+                               items   (gen/fmap named gen-items)
+                               changes (gen/vector gen-change 1 12)]
+                  (every-step-keeps-its-rows? mode items changes))
+                :seed 20261119)]
+    (is (:pass? result) (pr-str (get-in result [:shrunk :smallest])))))

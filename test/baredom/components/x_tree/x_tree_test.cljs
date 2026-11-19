@@ -138,3 +138,32 @@
     (set! (.-selected el) "not json")
     (is (not (.hasAttribute el "selected")))
     (is (nil? (.-selected el)))))
+
+;; ── Stale rows ────────────────────────────────────────────────────────────
+(defn- shape
+  "The node `n` as data: its tag, its attributes as a map, and its children. Text is a string."
+  [^js n]
+  (if (= 3 (.-nodeType n))
+    (.-data n)
+    [(.-tagName n)
+     (into {} (map (fn attr [^js a] [(.-name a) (.-value a)])) (array-seq (.-attributes n)))
+     (mapv shape (array-seq (.-childNodes n)))]))
+
+(defn- markup [^js el]
+  (shape (.querySelector (.-shadowRoot el) "[part~='tree']")))
+
+(deftest a-tree-after-gestures-shows-what-a-new-tree-with-its-attributes-shows
+  (let [^js el (mount! {"guides" ""})]
+    (click! (.querySelector (row el "src") "[part~='chevron']"))
+    (press! el "ArrowDown")
+    (click! (row el "util"))
+    (click! (row el "readme"))
+    (press! el "ArrowUp")
+    (click! (.querySelector (row el "src") "[part~='chevron']"))
+    (click! (.querySelector (row el "src") "[part~='chevron']"))
+    (click! (row el "main"))
+    (let [fresh (mount! {"guides"   ""
+                         "expanded" (.getAttribute el "expanded")
+                         "selected" (.getAttribute el "selected")})]
+      (is (= "[\"main\"]" (.getAttribute el "selected")))
+      (is (= (markup fresh) (markup el))))))

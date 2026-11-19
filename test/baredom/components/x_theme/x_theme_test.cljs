@@ -150,3 +150,9 @@
   (let [el (themed "style" "--x-color-success:#0000ff")]
     (is (= (background el (blue-shade 85))
            (background el "var(--x-color-success-hover)")))))
+
+(deftest a-child-of-the-theme-has-the-light-and-dark-color-scheme
+  (let [^js el    (append! (make-el))
+        ^js child (.createElement js/document "div")]
+    (.appendChild el child)
+    (is (= "light dark" (.-colorScheme (js/getComputedStyle child))))))

@@ -4,6 +4,21 @@ All notable changes to BareDOM will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **A gesture in `x-tree` costs the same at any folder size.** Selecting, checking or moving the
+  focus updates only the rows it changes, and no longer works through every visible row. In a
+  folder of 5000 entries an arrow key takes under a millisecond, where it took about 27.
+- **The spacing of `x-command-palette` follows the theme.** Its paddings and gaps read the
+  `--x-space-*` tokens, with rem fallbacks, so they scale with the root font size. Under the
+  default preset they are the same as before. Under `neo-brutalist` the search bar is taller.
+
+### Fixed
+
+- **Scrollbars are dark in dark mode.** `x-theme`, `x-command-palette` and `x-toc` set
+  `color-scheme: light dark`, so the browser draws their scrollbars and native controls in the
+  colours of the mode. Everything inside an `x-theme` inherits it.
+
 ## [4.21.0] - 2026-11-18
 
 BareDOM 4.21 gives code its own colours in every theme, and shows shortcuts in
