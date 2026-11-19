@@ -36,6 +36,7 @@
   (str
    ":host{"
    "display:block;"
+   "color-scheme:light dark;"
    "--x-toc-font-family:var(--x-font-family,inherit);"
    "--x-toc-font-size:var(--x-font-size-sm,0.875rem);"
    "--x-toc-color:var(--x-color-text,#1f2937);"

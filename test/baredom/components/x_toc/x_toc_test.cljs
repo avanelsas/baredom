@@ -413,3 +413,8 @@
                         (is (= "section-0" (.-activeId el)))
                         (is (= 40 (.-scrollTop body)))
                         (done))))))))
+
+(deftest the-host-has-the-light-and-dark-color-scheme
+  (let [^js el (.createElement js/document model/tag-name)]
+    (.appendChild (.-body js/document) el)
+    (is (= "light dark" (.-colorScheme (js/getComputedStyle el))))))

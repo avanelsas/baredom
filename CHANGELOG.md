@@ -4,6 +4,12 @@ All notable changes to BareDOM will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Scrollbars are dark in dark mode.** `x-theme`, `x-command-palette` and `x-toc` set
+  `color-scheme: light dark`, so the browser draws their scrollbars and native controls in the
+  colours of the mode. Everything inside an `x-theme` inherits it.
+
 ## [4.21.0] - 2026-11-18
 
 BareDOM 4.21 gives code its own colours in every theme, and shows shortcuts in

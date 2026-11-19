@@ -117,7 +117,7 @@
 ;; ── Style ──────────────────────────────────────────────────────────────────
 (def ^:private style-text
   (str
-   ":host{display:contents;}"
+   ":host{display:contents;color-scheme:light dark;}"
    du/control-font-rule
    du/hidden-rule
    "[part=overlay]{"

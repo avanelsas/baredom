@@ -744,7 +744,7 @@
   "Generate a complete CSS string for a given preset name."
   [preset-name]
   (let [{:keys [light dark]} (preset-tokens preset-name)]
-    (str ":host{display:contents;"
+    (str ":host{display:contents;color-scheme:light dark;"
          (tokens->css light)
          "}"
          "@media(prefers-color-scheme:dark){"
