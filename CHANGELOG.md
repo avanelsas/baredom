@@ -4,6 +4,12 @@ All notable changes to BareDOM will be documented in this file.
 
 ## [Unreleased]
 
+## [4.21.1] - 2026-11-20
+
+BareDOM 4.21.1 makes a gesture in `x-tree` cost the same at any folder size, draws scrollbars
+dark in dark mode, and lets `x-command-palette` take its spacing from the theme. The adapters are
+not released with it.
+
 ### Changed
 
 - **A gesture in `x-tree` costs the same at any folder size.** Selecting, checking or moving the
