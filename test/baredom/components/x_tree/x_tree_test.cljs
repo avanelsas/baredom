@@ -127,6 +127,16 @@
     (is (= "true" (.getAttribute (item el "remote") "aria-busy")))
     (is (= "Wait" (.-textContent (.querySelector (item el "remote") "[part~='loading']"))))))
 
+(deftest a-lazy-branch-that-gets-its-children-drops-the-loading-row
+  (let [^js el (mount! {"expanded" "[\"remote\"]"})]
+    (set! (.-items el) #js [#js {:id "remote" :label "remote" :lazy true}])
+    (is (some? (.querySelector (item el "remote") "[part~='loading']")))
+    (set! (.-items el) #js [#js {:id "remote" :label "remote" :lazy true
+                                 :children #js [#js {:id "one" :label "one"}]}])
+    (is (nil? (.querySelector (item el "remote") "[part~='loading']")))
+    (is (not (.hasAttribute (item el "remote") "aria-busy")))
+    (is (= ["remote" "one"] (visible-ids el)))))
+
 ;; ── Properties ────────────────────────────────────────────────────────────
 (deftest array-properties-read-and-write-json
   (let [^js el (mount! {})]

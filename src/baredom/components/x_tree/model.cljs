@@ -68,7 +68,8 @@
 
 ;; ── Index ─────────────────────────────────────────────────────────────────
 (def ^:private empty-index
-  {:item {} :children {nil []} :parent {} :position {} :order [] :rank {} :dropped []})
+  {:item {} :children {nil []} :parent {} :position {} :order [] :rank {} :ends {}
+   :enabled-ends {} :dropped []})
 
 (defn- text? [v]
   (and (string? v) (not= "" v)))
@@ -100,13 +101,30 @@
 (defn- add-items [acc parent items]
   (reduce (partial add-item parent) acc (when (sequential? items) items)))
 
+(defn- inc-count [counts id]
+  (update counts id (fnil inc 0)))
+
+(defn- add-under
+  "`counts` with one more under each ancestor of the item `id` of `m`."
+  [m counts id]
+  (reduce inc-count counts (rest (lineage m id))))
+
+(defn- count-under
+  "`acc` with the item `id` of `m` counted under its ancestors in `all-k`, and in `enabled-k`
+   when it is enabled."
+  [m [all-k enabled-k] acc id]
+  (cond-> (update acc all-k (partial add-under m) id)
+    (not (disabled? m id)) (update enabled-k (partial add-under m) id)))
+
 (defn index
   "The items of `items` keyed by id: `:item`, `:children` (nil for the top level), `:parent`,
-   `:position` among its siblings, `:order`, in tree order, and the `:rank` of each id in
-   `:order`. An item with no id or label, or
-   with the id of an earlier item, is left out with its children and listed in `:dropped`."
+   `:position`, `:order`, `:rank`, and the end items under each branch in `:ends` and
+   `:enabled-ends`. An invalid or repeated item is left out and listed in `:dropped`."
   [items]
-  (add-items empty-index nil items))
+  (let [ix (add-items empty-index nil items)]
+    (reduce (partial count-under ix [:ends :enabled-ends])
+            ix
+            (remove (partial children-of ix) (:order ix)))))
 
 ;; ── Kinds of item ─────────────────────────────────────────────────────────
 (defn branch?
@@ -197,6 +215,20 @@
         (some-> (first (in-tree-order m (:selected m))) lift)
         (first (:visible m)))))
 
+;; ── Selected counts ───────────────────────────────────────────────────────
+(defn with-selected-counts
+  "`m` with the number of selected end items under each branch, in `:selected-ends`, and of
+   enabled ones, in `:selected-enabled-ends`."
+  [m]
+  (reduce (partial count-under m [:selected-ends :selected-enabled-ends])
+          (assoc m :selected-ends {} :selected-enabled-ends {})
+          (filter (partial end-item? m) (:selected m))))
+
+(defn- with-selected
+  "`m` with the selected ids `ids` and their counts."
+  [m ids]
+  (with-selected-counts (assoc m :selected ids)))
+
 ;; ── Row ───────────────────────────────────────────────────────────────────
 (defn- end-items-under
   "The end items below the branch `id` of `m`."
@@ -205,23 +237,34 @@
        (filter (partial end-item? m))))
 
 (defn- share-state
-  "`:checked` when every id of `ids` is in `selected`, `:mixed` when some are, else `:unchecked`."
-  [selected ids]
-  (let [n (count (filter selected ids))]
-    (cond
-      (= n (count ids)) :checked
-      (zero? n)         :unchecked
-      :else             :mixed)))
+  "`:checked` when `n` is `total`, `:unchecked` when it is zero, else `:mixed`."
+  [n total]
+  (cond
+    (= n total) :checked
+    (zero? n)   :unchecked
+    :else       :mixed))
+
+(defn- count-of [m k id]
+  (get-in m [k id] 0))
 
 (defn- check-state
   "The check state of `id` in `m`. A branch counts its enabled end items, or all of them when
    none is enabled."
   [m id]
-  (if (end-item? m id)
+  (cond
+    (end-item? m id)
     (if (contains? (:selected m) id) :checked :unchecked)
-    (let [ends    (end-items-under m id)
-          enabled (remove (partial disabled? m) ends)]
-      (share-state (:selected m) (if (seq enabled) enabled ends)))))
+
+    (pos? (count-of m :enabled-ends id))
+    (share-state (count-of m :selected-enabled-ends id) (count-of m :enabled-ends id))
+
+    :else
+    (share-state (count-of m :selected-ends id) (count-of m :ends id))))
+
+(defn loading?
+  "True when the item `id` of `m` is open and has no children."
+  [m id]
+  (and (open? m id) (end-item? m id)))
 
 (defn- selectable? [m id]
   (case (:selection m)
@@ -242,7 +285,7 @@
              :branch?       branch
              :disabled?     (disabled? m id)
              :focused?      (= id (:focused m))
-             :loading?      (and open (end-item? m id))
+             :loading?      (loading? m id)
              :guide-active? (= id (parent-of m (:focused m)))}
       branch                       (assoc :expanded (if open :open :closed))
       (selectable? m id)           (assoc :select (if (contains? (:selected m) id)
@@ -287,8 +330,12 @@
   "The keys of a model whose change may change every row."
   [:item :children :parent :position :selection :loading-text :places])
 
-(defn- toggled [a b]
-  (set/union (set/difference a b) (set/difference b a)))
+(defn- toggled
+  "The ids in one of the sets `a` and `b` but not in both."
+  [a b]
+  (if (identical? a b)
+    #{}
+    (set/union (set/difference a b) (set/difference b a))))
 
 (defn- selection-stale
   "The ids whose select or check state may differ between `old-m` and `m`."
@@ -331,7 +378,7 @@
 (defn- select-only [m id]
   (if (disabled? m id)
     m
-    (assoc m :selected #{id})))
+    (with-selected m #{id})))
 
 (defn- check-targets
   "The enabled end items that checking `id` adds or removes."
@@ -344,8 +391,8 @@
     m
     (let [targets (check-targets m id)]
       (if (= :checked (check-state m id))
-        (update m :selected (partial reduce disj) targets)
-        (update m :selected into targets)))))
+        (with-selected m (reduce disj (:selected m) targets))
+        (with-selected m (into (:selected m) targets))))))
 
 (defn- expand-siblings [m id]
   (with-expanded m (into (:expanded m) (filter (partial branch? m) (siblings m id)))))
@@ -565,22 +612,48 @@
     (merge m (select-keys prev [:places :visible :visible-at]))
     (with-places m)))
 
+(def ^:private list-keys
+  "The keys of a model that its `expanded` and `selected` lists give."
+  [:expanded :selected :unknown :selected-ends :selected-enabled-ends])
+
+(defn- same-lists?
+  "True when `prev` has the items, the selection mode and the lists of `raw`."
+  [mode {:keys [items-raw expanded-raw selected-raw]} prev]
+  (and (some? prev)
+       (= mode (:selection prev))
+       (= items-raw (:items-raw prev))
+       (= expanded-raw (:expanded-raw prev))
+       (= selected-raw (:selected-raw prev))))
+
+(defn- lists-of
+  "The counted lists of `raw` under the index `ix`, with the selected counts: the ones of
+   `prev` while the items, the selection mode and both lists are the same text."
+  [ix mode {:keys [expanded-raw selected-raw] :as raw} prev]
+  (if (same-lists? mode raw prev)
+    (select-keys prev list-keys)
+    (-> (merge ix (counted ix {:selection mode
+                               :expanded  (parse-list expanded-raw)
+                               :selected  (parse-list selected-raw)}))
+        with-selected-counts
+        (select-keys list-keys))))
+
 (defn normalize
   "The model of the attribute texts in the `-raw` keys of `raw`, and the focused id in
-   `:focused`. With `prev`, the model before, it keeps the index of `prev` while `items` is
-   the same text, and its places while `expanded` also holds the same ids."
+   `:focused`. With `prev`, the model before, it keeps what each attribute text gives while
+   that text is the same."
   ([raw]
    (normalize raw nil))
   ([{:keys [items-raw expanded-raw selected-raw selection-raw label loading-text guides
-            focused]}
+            focused]
+     :as raw}
     prev]
    (let [mode (parse-selection selection-raw)
          ix   (index-of items-raw prev)
          m    (-> (merge ix
-                         (counted ix {:selection mode
-                                      :expanded  (parse-list expanded-raw)
-                                      :selected  (parse-list selected-raw)})
+                         (lists-of ix mode raw prev)
                          {:items-raw    items-raw
+                          :expanded-raw expanded-raw
+                          :selected-raw selected-raw
                           :selection    mode
                           :label        label
                           :loading-text (or loading-text default-loading-text)
