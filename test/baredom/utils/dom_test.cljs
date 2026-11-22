@@ -100,6 +100,14 @@
     (du/set-attr-to! el "value" nil)
     (is (= 0 (attribute-writes el (fn [] (du/set-attr-to! el "value" nil)))))))
 
+(deftest set-attrs-to-sets-and-removes-each-attribute-test
+  (let [el (make-el)]
+    (.setAttribute el "title" "old")
+    (du/set-attrs-to! el {"value" "a" "title" nil})
+    (is (= "a" (.getAttribute el "value")))
+    (is (not (.hasAttribute el "title")))
+    (is (= 0 (attribute-writes el (fn [] (du/set-attrs-to! el {"value" "a" "title" nil})))))))
+
 (deftest set-tab-index-to-writes-only-where-the-tabindex-differs-test
   (let [el (make-el)]
     (du/set-tab-index-to! el -1)

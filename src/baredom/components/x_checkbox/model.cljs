@@ -1,4 +1,5 @@
-(ns baredom.components.x-checkbox.model)
+(ns baredom.components.x-checkbox.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-checkbox")
 
@@ -71,19 +72,6 @@
   [required? checked?]
   (if required? checked? true))
 
-;; The id of the label span in the shadow root.
-(def label-id "label")
-
-(defn control-labelledby
-  "Returns the id list for aria-labelledby on the control, or nil.
-   A host aria-labelledby wins, then a host aria-label, then the slotted label."
-  [{:keys [aria-labelledby aria-label labelled?]}]
-  (cond
-    aria-labelledby aria-labelledby
-    aria-label      nil
-    labelled?       label-id
-    :else           nil))
-
 (defn normalize
   "Derives a complete view-model map from raw attribute presence/values."
   [{:keys [checked-present?
@@ -103,25 +91,26 @@
         readonly?      (boolean readonly-present?)
         required?      (boolean required-present?)
         value          (checkbox-value value-raw)
-        labelled?      (boolean label-slotted?)]
-    {:checked?       checked?
-     :indeterminate? indeterminate?
-     :disabled?      disabled?
-     :readonly?      readonly?
-     :required?      required?
-     :valid?         (valid? required? checked?)
-     :name           name-raw
-     :value          value
-     :labelled?      labelled?
-     :aria-label     aria-label-raw
-     :aria-describedby aria-describedby-raw
-     :control-labelledby (control-labelledby {:aria-labelledby aria-labelledby-raw
-                                              :aria-label      aria-label-raw
-                                              :labelled?       labelled?})
-     :aria-checked   (cond
-                       indeterminate? "mixed"
-                       checked?       "true"
-                       :else          "false")}))
+        labelled?      (boolean label-slotted?)
+        m              {:checked?       checked?
+                       :indeterminate? indeterminate?
+                       :disabled?      disabled?
+                       :readonly?      readonly?
+                       :required?      required?
+                       :valid?         (valid? required? checked?)
+                       :name           name-raw
+                       :value          value
+                       :labelled?      labelled?
+                       :aria-label     aria-label-raw
+                       :aria-describedby aria-describedby-raw
+                       :control-labelledby (mu/control-labelledby {:aria-labelledby aria-labelledby-raw
+                                                                   :aria-label      aria-label-raw
+                                                                   :labelled?       labelled?})
+                       :aria-checked   (cond
+                                         indeterminate? "mixed"
+                                         checked?       "true"
+                                         :else          "false")}]
+    (assoc m :control-aria (mu/control-aria m))))
 
 (def method-api
   {:checkValidity  {:args [] :returns 'boolean}

@@ -44,7 +44,7 @@
                               :aria-labelledby-raw  "lbl-2"})]
       (is (= "Dark mode" (:aria-label m)))
       (is (= "hint-2"    (:aria-describedby m)))
-      (is (= "lbl-2"     (:aria-labelledby m)))))
+      (is (= "lbl-2"     (:control-labelledby m)))))
 
   (testing "required + unchecked → valid? false"
     (let [m (model/normalize {:required-present? true})]

@@ -2,7 +2,8 @@
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-radio.x-radio :as x]
             [baredom.components.x-radio.model :as model]
-            [baredom.test-writes :as writes]))
+            [baredom.test-writes :as writes]
+            [baredom.test-label :as label]))
 
 (x/init!)
 
@@ -472,3 +473,12 @@
     (.setAttribute r1 model/attr-checked "")
     (let [written (writes/foreign-writes! r2 #(.click (shadow-part r2 "[part=control]")))]
       (is (= {:undeclared #{} :unexercised #{}} (writes/audit model/foreign-writes written))))))
+
+;; ── Slotted label ────────────────────────────────────────────────────────────
+
+(deftest slotted-label-test
+  (label/check-label! model/tag-name))
+
+(deftest slotted-label-changes-test
+  (async done
+    (label/check-label-changes! model/tag-name done)))

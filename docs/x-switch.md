@@ -1,6 +1,6 @@
 # x-switch
 
-A toggle switch form control. Semantically a `role="switch"` button that reflects its state via the `checked` attribute. Form-associated (participates in `<form>` submission and reset).
+A toggle switch form control. Semantically a `role="switch"` button that reflects its state via the `checked` attribute. Form-associated (participates in `<form>` submission and reset). Text in the default slot is the label next to the switch, and a click on it toggles the switch.
 
 ## Tag
 
@@ -67,6 +67,12 @@ el.addEventListener('x-switch-change', (e) => {
 | `value`      | string  | Form value             |
 | `checked`    | boolean | New checked state      |
 
+## Slots
+
+| Slot      | Description |
+|-----------|-------------|
+| (default) | The label next to the switch. Text, links and other inline content are allowed. |
+
 ## Shadow Parts
 
 | Part      | Element  | Description           |
@@ -74,6 +80,13 @@ el.addEventListener('x-switch-change', (e) => {
 | `control` | `button` | Interactive switch root |
 | `track`   | `span`   | The pill-shaped track  |
 | `thumb`   | `span`   | The sliding thumb      |
+| `label`   | `span`   | The label next to the switch. It is hidden when there is no label. |
+
+## Label
+
+- A click on the switch, on the label, on a wrapping `<label>` or on a `<label for>` toggles the switch.
+- A click on a link, a button or a form control inside the slot does not toggle the switch. That element keeps its own click.
+- When disabled, the label is dimmed like the switch.
 
 ## CSS Custom Properties
 
@@ -89,6 +102,7 @@ el.addEventListener('x-switch-change', (e) => {
 | `--x-switch-thumb-bg`           | `var(--x-color-bg,#ffffff)` | Thumb background                    |
 | `--x-switch-focus-ring`         | `var(--x-color-focus-ring,#60a5fa)` | Focus ring color                    |
 | `--x-switch-disabled-opacity`   | `0.45`        | Opacity when disabled               |
+| `--x-switch-label-gap`          | `var(--x-space-sm,0.5rem)` | Space between the switch and the label |
 
 Dark-mode overrides are applied automatically via `@media (prefers-color-scheme: dark)`.
 
@@ -97,7 +111,7 @@ Dark-mode overrides are applied automatically via `@media (prefers-color-scheme:
 - Inner `button` carries `role="switch"` and `aria-checked`.
 - `aria-disabled`, `aria-required`, `aria-readonly` are kept in sync.
 - `aria-label`, `aria-labelledby`, `aria-describedby` are forwarded to the inner button.
-- A `<label for="...">` in the document is automatically wired via `aria-labelledby`.
+- The inner button takes its accessible name from the slotted label through `aria-labelledby`. A host `aria-labelledby` or `aria-label` takes priority.
 - Keyboard: Space and Enter toggle the switch.
 - Animations respect `@media (prefers-reduced-motion: reduce)`.
 
@@ -119,8 +133,7 @@ Like a native form control, `x-switch` exposes read-only `validity`, `validation
 <x-switch name="dark-mode" checked></x-switch>
 
 <!-- With label -->
-<label for="sw1">Enable alerts</label>
-<x-switch id="sw1" name="alerts"></x-switch>
+<x-switch name="alerts">Enable alerts</x-switch>
 
 <!-- Disabled -->
 <x-switch name="feature" disabled checked></x-switch>

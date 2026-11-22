@@ -48,7 +48,7 @@
                               :aria-labelledby-raw  "lbl-1"})]
       (is (= "Option A" (:aria-label m)))
       (is (= "hint-1"   (:aria-describedby m)))
-      (is (= "lbl-1"    (:aria-labelledby m)))))
+      (is (= "lbl-1"    (:control-labelledby m)))))
 
   (testing "required + unchecked → valid? false"
     (let [m (model/normalize {:required-present? true})]

@@ -1,6 +1,7 @@
 (ns baredom.components.x-checkbox.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-checkbox.model :as model]))
+            [baredom.components.x-checkbox.model :as model]
+            [baredom.utils.model :as mu]))
 
 (deftest checkbox-value-test
   (testing "nil yields \"on\""
@@ -77,16 +78,6 @@
   (testing "slotted label gives labelled? true"
     (is (true? (:labelled? (model/normalize {:label-slotted? true}))))))
 
-(deftest control-labelledby-test
-  (testing "host aria-labelledby wins"
-    (is (= "ext" (model/control-labelledby {:aria-labelledby "ext" :labelled? true}))))
-  (testing "host aria-label suppresses the slotted label"
-    (is (nil? (model/control-labelledby {:aria-label "Accept" :labelled? true}))))
-  (testing "slotted label gives the label id"
-    (is (= model/label-id (model/control-labelledby {:labelled? true}))))
-  (testing "no label gives nil"
-    (is (nil? (model/control-labelledby {})))))
-
 (deftest normalize-control-labelledby-test
-  (is (= model/label-id
+  (is (= mu/label-id
          (:control-labelledby (model/normalize {:label-slotted? true})))))

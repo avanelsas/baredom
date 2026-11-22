@@ -22,6 +22,45 @@
   [s]
   (and (some? s) (not (false-text? s))))
 
+;; ── Slotted labels ────────────────────────────────────────────────────────────
+(def label-id
+  "The id of the label span in the shadow root of a form control with a slotted label."
+  "label")
+
+(defn control-labelledby
+  "The aria-labelledby value of a control with a slotted label, or nil.
+   A host aria-labelledby wins, then a host aria-label, then the slotted label."
+  [{:keys [aria-labelledby aria-label labelled?]}]
+  (cond
+    aria-labelledby aria-labelledby
+    aria-label      nil
+    labelled?       label-id
+    :else           nil))
+
+;; The attributes `control-aria` sets on a control.
+(def ^:private attr-aria-checked     "aria-checked")
+(def ^:private attr-aria-disabled    "aria-disabled")
+(def ^:private attr-aria-required    "aria-required")
+(def ^:private attr-aria-readonly    "aria-readonly")
+(def ^:private attr-aria-label       "aria-label")
+(def ^:private attr-aria-labelledby  "aria-labelledby")
+(def ^:private attr-aria-describedby "aria-describedby")
+
+(defn- bool-text [b] (if b "true" "false"))
+
+(defn control-aria
+  "The ARIA attributes of a checkable control, as a map from name to text, or nil to remove it.
+   Takes the model of an x-checkbox, an x-switch or an x-radio."
+  [{:keys [aria-checked disabled? required? readonly?
+           aria-label control-labelledby aria-describedby]}]
+  {attr-aria-checked     aria-checked
+   attr-aria-disabled    (bool-text disabled?)
+   attr-aria-required    (bool-text required?)
+   attr-aria-readonly    (bool-text readonly?)
+   attr-aria-label       aria-label
+   attr-aria-labelledby  control-labelledby
+   attr-aria-describedby aria-describedby})
+
 (defn non-empty-string?
   "True when value is a string with at least one character."
   [value]

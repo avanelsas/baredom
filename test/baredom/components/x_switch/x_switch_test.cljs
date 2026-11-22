@@ -1,7 +1,8 @@
 (ns baredom.components.x-switch.x-switch-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-switch.x-switch :as x]
-            [baredom.components.x-switch.model    :as model]))
+            [baredom.components.x-switch.model    :as model]
+            [baredom.test-label :as label]))
 
 (x/init!)
 
@@ -312,3 +313,12 @@
     (let [control (shadow-part el "[part=control]")]
       (is (= "true" (.getAttribute control "aria-checked"))
           "state should be preserved after reconnect"))))
+
+;; ── Slotted label ────────────────────────────────────────────────────────────
+
+(deftest slotted-label-test
+  (label/check-label! model/tag-name))
+
+(deftest slotted-label-changes-test
+  (async done
+    (label/check-label-changes! model/tag-name done)))

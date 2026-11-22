@@ -12,7 +12,8 @@
    *empty*, which element is the validity *anchor*, its *value* projection, any
    non-default *missing message*, and (for describedby) any author-supplied id —
    and composes this policy."
-  (:require [baredom.utils.dom :as du]))
+  (:require [baredom.utils.dom :as du]
+            [baredom.utils.model :as mu]))
 
 (def default-value-missing "Please fill in this field.")
 
@@ -160,3 +161,81 @@
   (if describedby
     (du/set-attr!    anchor attr-aria-describedby describedby)
     (du/remove-attr! anchor attr-aria-describedby)))
+
+;; ── Slotted labels ───────────────────────────────────────────────────────────
+;; Elements in a slotted label that keep their own click.
+(def ^:private interactive-selector
+  "a[href],button,input,select,textarea,summary,[contenteditable='true'],[contenteditable='']")
+
+(def ^:private ev-slotchange "slotchange")
+(def ^:private attr-part     "part")
+(def ^:private attr-id       "id")
+
+(defn label-rules
+  "The CSS of a slotted label in part `part`, dimmed by `opacity-var` when disabled.
+   The host sets `data-labelled` and `data-disabled`."
+  [part opacity-var]
+  (str
+   "[part=" part "]{"
+   "cursor:pointer;"
+   "}"
+   ":host(:not([data-labelled])) [part=" part "]{"
+   "display:none;"
+   "}"
+   ":host([data-disabled]) [part=" part "]{"
+   "cursor:default;"
+   "opacity:var(" opacity-var ");"
+   "}"))
+
+(defn make-label-section!
+  "Creates the label span of part `part` with a default slot in it.
+   Returns `{:label span :slot slot}`. The caller appends the span to its shadow root."
+  [part]
+  (let [label-el (.createElement js/document "span")
+        slot-el  (.createElement js/document "slot")]
+    (du/set-attr! label-el attr-part part)
+    (du/set-attr! label-el attr-id   mu/label-id)
+    (.appendChild label-el slot-el)
+    {:label label-el :slot slot-el}))
+
+(defn watch-label-slot!
+  "Calls `on-change` when the content of `slot-el` changes. Call once per slot."
+  [^js slot-el on-change]
+  (.addEventListener slot-el ev-slotchange (fn handle-slotchange [_evt] (on-change))))
+
+(defn- content-node?
+  "True for an element, or for a text node with visible text."
+  [^js node]
+  (let [t (.-nodeType node)]
+    (or (= t js/Node.ELEMENT_NODE)
+        (and (= t js/Node.TEXT_NODE)
+             (not= "" (.trim (.-textContent node)))))))
+
+(defn slot-has-content?
+  "True when the light DOM assigns content to `slot-el`."
+  [^js slot-el]
+  (boolean (some content-node? (array-seq (.assignedNodes slot-el)))))
+
+(defn- path-inside-host
+  "The nodes of the event path that come before the host."
+  [^js el ^js evt]
+  (take-while (fn before-host? [node] (not (identical? node el)))
+              (array-seq (.composedPath evt))))
+
+(defn- interactive-node?
+  "True for an interactive element other than the control."
+  [^js control ^js node]
+  (and (= (.-nodeType node) js/Node.ELEMENT_NODE)
+       (not (identical? node control))
+       (.matches node interactive-selector)))
+
+(defn label-activation?
+  "True when a click on the host `el` acts on `control`, as a click on a native label does.
+   A click from a link, a button or a form control in the label does not."
+  [^js el ^js control ^js evt]
+  (not (some (partial interactive-node? control) (path-inside-host el evt))))
+
+(defn focus-quietly!
+  "Focuses `control` without a focus ring."
+  [^js control]
+  (.focus control #js {:focusVisible false}))
