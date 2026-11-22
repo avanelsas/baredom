@@ -26,7 +26,7 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-card` | 14/14 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 1/1 |
 | `x-carousel` | 12/12 |  |  |  |  | 1/1 | 1/1 | 3/3 | 0/3 |  |  |
 | `x-chart` | 14/14 |  | 2/2 | 1/1 |  | 2/2 | 2/2 | 1/1 | 0/6 |  | 2/2 |
-| `x-checkbox` | 15/15 |  |  |  |  | 1/1 |  | 3/3 |  |  |  |
+| `x-checkbox` | 15/15 |  |  |  |  | 1/1 |  | 3/3 | 1/1 |  |  |
 | `x-chip` | 7/7 |  | 1/1 |  |  | 1/1 |  | 1/1 | 0/4 |  | 1/1 |
 | `x-code` | 37/37 | 1/1 | 3/3 | 1/1 |  | 2/2 |  | 1/1 | 0/8 |  | 4/4 |
 | `x-collapse` | 14/14 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  | 2/2 |
@@ -124,7 +124,7 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-typography` | 11/11 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 1/1 |
 | `x-welcome-tour` | 27/27 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 1/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 1087/1087 | 15/15 | 125/125 | 72/72 | 8/8 | 117/117 | 75/75 | 109/109 | 37/258 | 19/19 | 118/118 |
+| **All** | 1087/1087 | 15/15 | 125/125 | 72/72 | 8/8 | 117/117 | 75/75 | 109/109 | 38/259 | 19/19 | 118/118 |
 
 CSS not read, or not in full: x-liquid-glass.
 

@@ -50,11 +50,19 @@
       <div class="item"><x-checkbox required aria-label="Required"></x-checkbox> Required (unchecked = invalid)</div>
     </div>
 
-    <x-typography variant="overline">Interactive — click to toggle</x-typography>
+    <x-typography variant="overline">Label: click the text to toggle</x-typography>
     <div class="row">
       <div class="item">
-        <x-checkbox id="toggle-cb" aria-label="Toggle me"></x-checkbox>
-        Toggle me
+        <x-checkbox id="toggle-cb">Click this text to toggle</x-checkbox>
+      </div>
+      <div class="item">
+        <x-checkbox>A label with a <a href="#terms" onclick="event.preventDefault()">link</a> that keeps its own click</x-checkbox>
+      </div>
+      <div class="item">
+        <label><x-checkbox></x-checkbox> Wrapped in a native label</label>
+      </div>
+      <div class="item">
+        <x-checkbox disabled>Disabled label</x-checkbox>
       </div>
     </div>
 
@@ -76,11 +84,13 @@
       <label>value
         <x-form-field type="text" id="ctrl-value" value="on" style="width:80px"></x-form-field>
       </label>
+      <label>label
+        <x-form-field type="text" id="ctrl-label" value="Live checkbox" style="width:140px"></x-form-field>
+      </label>
     </div>
     <div class="row">
       <div class="item">
-        <x-checkbox id="live-cb" aria-label="Live checkbox"></x-checkbox>
-        Live checkbox
+        <x-checkbox id="live-cb">Live checkbox</x-checkbox>
       </div>
     </div>
 
@@ -120,12 +130,14 @@
         const readonly= document.getElementById("ctrl-readonly").checked;
         const required= document.getElementById("ctrl-required").checked;
         const value   = document.getElementById("ctrl-value").value.trim();
+        const label   = document.getElementById("ctrl-label").value;
         if (checked)  liveCb.setAttribute("checked", "");        else liveCb.removeAttribute("checked");
         if (indet)    liveCb.setAttribute("indeterminate", "");  else liveCb.removeAttribute("indeterminate");
         if (disabled) liveCb.setAttribute("disabled", "");       else liveCb.removeAttribute("disabled");
         if (readonly) liveCb.setAttribute("readonly", "");       else liveCb.removeAttribute("readonly");
         if (required) liveCb.setAttribute("required", "");       else liveCb.removeAttribute("required");
         if (value)    liveCb.setAttribute("value", value);       else liveCb.removeAttribute("value");
+        liveCb.textContent = label;
       }
       document.querySelectorAll(".controls input, .controls x-switch, .controls x-form-field").forEach(el => {
         el.addEventListener("change", updateLive);

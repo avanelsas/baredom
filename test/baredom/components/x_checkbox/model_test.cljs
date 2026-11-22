@@ -60,7 +60,7 @@
                               :aria-labelledby-raw  "lbl-1"})]
       (is (= "Accept terms" (:aria-label m)))
       (is (= "hint-1"       (:aria-describedby m)))
-      (is (= "lbl-1"        (:aria-labelledby m)))))
+      (is (= "lbl-1"        (:control-labelledby m)))))
 
   (testing "required + unchecked → valid? false"
     (let [m (model/normalize {:required-present? true})]
@@ -70,3 +70,23 @@
     (let [m (model/normalize {:required-present? true
                               :checked-present?  true})]
       (is (= true (:valid? m))))))
+
+(deftest normalize-label-test
+  (testing "no slotted label gives labelled? false"
+    (is (false? (:labelled? (model/normalize {})))))
+  (testing "slotted label gives labelled? true"
+    (is (true? (:labelled? (model/normalize {:label-slotted? true}))))))
+
+(deftest control-labelledby-test
+  (testing "host aria-labelledby wins"
+    (is (= "ext" (model/control-labelledby {:aria-labelledby "ext" :labelled? true}))))
+  (testing "host aria-label suppresses the slotted label"
+    (is (nil? (model/control-labelledby {:aria-label "Accept" :labelled? true}))))
+  (testing "slotted label gives the label id"
+    (is (= model/label-id (model/control-labelledby {:labelled? true}))))
+  (testing "no label gives nil"
+    (is (nil? (model/control-labelledby {})))))
+
+(deftest normalize-control-labelledby-test
+  (is (= model/label-id
+         (:control-labelledby (model/normalize {:label-slotted? true})))))

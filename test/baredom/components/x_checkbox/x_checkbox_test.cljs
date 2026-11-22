@@ -246,3 +246,128 @@
     (let [control (shadow-part el "[part=control]")]
       (is (= "true" (.getAttribute control "aria-checked"))
           "state should be preserved after reconnect"))))
+
+;; ---------------------------------------------------------------------------
+;; Label
+;; ---------------------------------------------------------------------------
+
+(defn ^js make-labelled-el [text]
+  (let [el (make-el)]
+    (set! (.-textContent el) text)
+    el))
+
+(deftest slotted-label-marks-labelled-test
+  (let [el      (append! (make-labelled-el "I agree"))
+        control (shadow-part el "[part=control]")]
+    (is (.hasAttribute el "data-labelled"))
+    (is (= model/label-id (.getAttribute control "aria-labelledby")))
+    (is (not= "none" (.-display (js/getComputedStyle (shadow-part el "[part=label]")))))))
+
+(deftest no-label-hides-label-part-test
+  (let [el      (append! (make-el))
+        control (shadow-part el "[part=control]")]
+    (is (not (.hasAttribute el "data-labelled")))
+    (is (= "none" (.-display (js/getComputedStyle (shadow-part el "[part=label]")))))
+    (is (not (.hasAttribute control "aria-labelledby")))))
+
+(deftest host-aria-label-wins-over-slotted-label-test
+  (let [el      (make-labelled-el "I agree")
+        _       (.setAttribute el model/attr-aria-label "Accept terms")
+        _       (append! el)
+        control (shadow-part el "[part=control]")]
+    (is (= "Accept terms" (.getAttribute control "aria-label")))
+    (is (not (.hasAttribute control "aria-labelledby")))))
+
+(deftest host-aria-labelledby-wins-over-slotted-label-test
+  (let [el      (make-labelled-el "I agree")
+        _       (.setAttribute el model/attr-aria-labelledby "ext")
+        _       (append! el)
+        control (shadow-part el "[part=control]")]
+    (is (= "ext" (.getAttribute control "aria-labelledby")))))
+
+(deftest added-label-marks-labelled-test
+  (async done
+    (let [el (append! (make-el))]
+      (set! (.-textContent el) "I agree")
+      (js/setTimeout
+       (fn []
+         (is (.hasAttribute el "data-labelled"))
+         (done))
+       0))))
+
+(deftest removed-label-clears-labelled-test
+  (async done
+    (let [el (append! (make-labelled-el "I agree"))]
+      (set! (.-textContent el) "")
+      (js/setTimeout
+       (fn []
+         (is (not (.hasAttribute el "data-labelled")))
+         (is (not (.hasAttribute (shadow-part el "[part=control]") "aria-labelledby")))
+         (done))
+       0))))
+
+(deftest whitespace-only-content-is-no-label-test
+  (let [el (append! (make-labelled-el "  "))]
+    (is (not (.hasAttribute el "data-labelled")))))
+
+(deftest control-click-toggles-once-test
+  (let [el (append! (make-el))]
+    (.click (shadow-part el "[part=control]"))
+    (is (true? (.-checked el)))))
+
+(deftest label-part-click-toggles-test
+  (let [el (append! (make-labelled-el "I agree"))]
+    (.click (shadow-part el "[part=label]"))
+    (is (true? (.-checked el)))))
+
+(deftest slotted-element-click-toggles-test
+  (let [el   (make-el)
+        span (.createElement js/document "span")]
+    (set! (.-textContent span) "I agree")
+    (.appendChild el span)
+    (append! el)
+    (.click span)
+    (is (true? (.-checked el)))))
+
+(deftest slotted-link-click-does-not-toggle-test
+  (let [el   (make-el)
+        link (.createElement js/document "a")]
+    (.setAttribute link "href" "#terms")
+    (set! (.-textContent link) "terms")
+    (.addEventListener link "click" (fn [^js ev] (.preventDefault ev)))
+    (.appendChild el link)
+    (append! el)
+    (.click link)
+    (is (false? (.-checked el)))))
+
+(deftest disabled-label-click-does-not-toggle-test
+  (let [el (make-labelled-el "I agree")]
+    (.setAttribute el model/attr-disabled "")
+    (append! el)
+    (.click (shadow-part el "[part=label]"))
+    (is (false? (.-checked el)))))
+
+(deftest wrapping-label-click-toggles-test
+  (let [lbl  (.createElement js/document "label")
+        el   (make-el)
+        text (.createElement js/document "span")]
+    (set! (.-textContent text) "I agree")
+    (.appendChild lbl el)
+    (.appendChild lbl text)
+    (.appendChild (.-body js/document) lbl)
+    (.click text)
+    (is (true? (.-checked el)))
+    (.remove lbl)))
+
+(deftest label-for-click-toggles-test
+  (let [lbl (.createElement js/document "label")
+        el  (make-el)]
+    (.setAttribute lbl "for" "x-cb-for-test")
+    (set! (.-textContent lbl) "I agree")
+    (.setAttribute el "id" "x-cb-for-test")
+    (.appendChild (.-body js/document) lbl)
+    (append! el)
+    (.click lbl)
+    (is (true? (.-checked el)))
+    (is (not (.hasAttribute lbl "id")))
+    (.remove lbl)))
