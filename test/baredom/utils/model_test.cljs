@@ -158,3 +158,37 @@
   (is (= {:a "given" :b "default-b" :c "default-c"}
          (model/merge-texts {:a "default-a" :b "default-b" :c "default-c"}
                             {:a "given" :b "" :c nil}))))
+
+;; ── control-labelledby ──────────────────────────────────────────────────────
+
+(deftest control-labelledby-test
+  (testing "host aria-labelledby wins"
+    (is (= "ext" (model/control-labelledby {:aria-labelledby "ext" :labelled? true}))))
+  (testing "host aria-label suppresses the slotted label"
+    (is (nil? (model/control-labelledby {:aria-label "Accept" :labelled? true}))))
+  (testing "slotted label gives the label id"
+    (is (= model/label-id (model/control-labelledby {:labelled? true}))))
+  (testing "no label gives nil"
+    (is (nil? (model/control-labelledby {})))))
+
+;; ── control-aria ────────────────────────────────────────────────────────────
+
+(deftest control-aria-test
+  (testing "states become true or false text"
+    (is (= {"aria-checked"     "mixed"
+            "aria-disabled"    "true"
+            "aria-required"    "false"
+            "aria-readonly"    "true"
+            "aria-label"       nil
+            "aria-labelledby"  "label"
+            "aria-describedby" "hint"}
+           (model/control-aria {:aria-checked       "mixed"
+                                :disabled?          true
+                                :readonly?          true
+                                :control-labelledby "label"
+                                :aria-describedby   "hint"}))))
+  (testing "absent names are nil, so the attributes are removed"
+    (let [aria (model/control-aria {})]
+      (is (nil? (get aria "aria-label")))
+      (is (nil? (get aria "aria-labelledby")))
+      (is (nil? (get aria "aria-describedby"))))))

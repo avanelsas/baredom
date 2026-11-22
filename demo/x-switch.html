@@ -74,36 +74,36 @@
 <x-typography variant="overline">States</x-typography>
 <div class="panel">
   <div class="row">
-    <x-switch id="sw-default" name="default"></x-switch>
-    <label for="sw-default">Default (unchecked)</label>
+    <x-switch id="sw-default" name="default">Default (unchecked)</x-switch>
   </div>
   <div class="row">
-    <x-switch id="sw-checked" name="checked" checked></x-switch>
-    <label for="sw-checked">Pre-checked</label>
+    <x-switch id="sw-checked" name="checked" checked>Pre-checked</x-switch>
   </div>
   <div class="row">
-    <x-switch id="sw-disabled" name="disabled" disabled></x-switch>
-    <label for="sw-disabled">Disabled (off)</label>
+    <x-switch id="sw-disabled" name="disabled" disabled>Disabled (off)</x-switch>
   </div>
   <div class="row">
-    <x-switch id="sw-disabled-on" name="disabled-on" disabled checked></x-switch>
-    <label for="sw-disabled-on">Disabled (on)</label>
+    <x-switch id="sw-disabled-on" name="disabled-on" disabled checked>Disabled (on)</x-switch>
   </div>
   <div class="row">
-    <x-switch id="sw-readonly" name="readonly" readonly checked></x-switch>
-    <label for="sw-readonly">Readonly (on, not toggleable)</label>
+    <x-switch id="sw-readonly" name="readonly" readonly checked>Readonly (on, not toggleable)</x-switch>
+  </div>
+</div>
+
+<x-typography variant="overline">Label with a link</x-typography>
+<div class="panel">
+  <div class="row">
+    <x-switch name="terms">Accept the <a href="#terms" onclick="event.preventDefault()">terms</a></x-switch>
   </div>
 </div>
 
 <x-typography variant="overline">Custom size &amp; colour</x-typography>
 <div class="panel">
   <div class="row">
-    <x-switch class="large" name="large"></x-switch>
-    <label>Large</label>
+    <x-switch class="large" name="large">Large</x-switch>
   </div>
   <div class="row">
-    <x-switch class="green" name="green" checked></x-switch>
-    <label>Green accent</label>
+    <x-switch class="green" name="green" checked>Green accent</x-switch>
   </div>
 </div>
 

@@ -11,13 +11,45 @@
 (def ^:private k-internals "__xSwitchInternals")
 (def ^:private k-handlers  "__xSwitchHandlers")
 
+;; ── String constants ─────────────────────────────────────────────────────────
+(def ^:private attr-part             "part")
+(def ^:private attr-type             "type")
+(def ^:private attr-role             "role")
+(def ^:private attr-disabled         "disabled")
+(def ^:private attr-data-checked     "data-checked")
+(def ^:private attr-data-disabled    "data-disabled")
+(def ^:private attr-data-labelled    "data-labelled")
+
+(def ^:private part-control "control")
+(def ^:private part-track   "track")
+(def ^:private part-thumb   "thumb")
+(def ^:private part-label   "label")
+
+(def ^:private val-button "button")
+(def ^:private val-switch "switch")
+
+(def ^:private ev-click   "click")
+(def ^:private ev-keydown "keydown")
+
+(def ^:private key-space " ")
+(def ^:private key-enter "Enter")
+
+(def ^:private rk-control "control")
+(def ^:private rk-slot    "slot")
+
+(def ^:private hk-click   "click")
+(def ^:private hk-keydown "keydown")
+
 ;; ── Styles ───────────────────────────────────────────────────────────────────
 (def ^:private style-text
   (str
    ":host{"
-   "display:inline-block;"
+   "display:inline-flex;"
+   "align-items:center;"
+   "gap:var(--x-switch-label-gap);"
    "vertical-align:middle;"
    "color-scheme:light dark;"
+   "--x-switch-label-gap:var(--x-space-sm,0.5rem);"
    "--x-switch-track-width:44px;"
    "--x-switch-track-height:24px;"
    "--x-switch-thumb-size:18px;"
@@ -50,6 +82,8 @@
    "padding:0;"
    "cursor:pointer;"
    "}"
+
+   (forms/label-rules part-label "--x-switch-disabled-opacity")
 
    "[part=control][disabled]{"
    "cursor:default;"
@@ -98,30 +132,32 @@
    "[part=thumb]{transition:none;}"
    "}"))
 
-;; ── DOM helpers ──────────────────────────────────────────────────────────────
-
 ;; ── Shadow DOM construction ───────────────────────────────────────────────────
 (defn- make-shadow! [^js el]
   (let [root       (.attachShadow el #js {:mode "open"})
         style-el   (.createElement js/document "style")
         control-el (.createElement js/document "button")
         track-el   (.createElement js/document "span")
-        thumb-el   (.createElement js/document "span")]
+        thumb-el   (.createElement js/document "span")
+        {:keys [label slot]} (forms/make-label-section! part-label)]
 
     (set! (.-textContent style-el) style-text)
 
-    (du/set-attr! control-el "part" "control")
-    (du/set-attr! control-el "type" "button")
-    (du/set-attr! control-el "role" "switch")
-    (du/set-attr! track-el   "part" "track")
-    (du/set-attr! thumb-el   "part" "thumb")
+    (du/set-attr! control-el attr-part part-control)
+    (du/set-attr! control-el attr-type val-button)
+    (du/set-attr! control-el attr-role val-switch)
+    (du/set-attr! track-el   attr-part part-track)
+    (du/set-attr! thumb-el   attr-part part-thumb)
 
     (.appendChild track-el thumb-el)
     (.appendChild control-el track-el)
     (.appendChild root style-el)
     (.appendChild root control-el)
+    (.appendChild root label)
 
-    (let [refs #js {:root root :control control-el :track track-el :thumb thumb-el}]
+    (let [refs #js {}]
+      (gobj/set refs rk-control control-el)
+      (gobj/set refs rk-slot    slot)
       (du/setv! el k-refs refs)
       refs)))
 
@@ -136,42 +172,26 @@
     :value-raw             (du/get-attr el model/attr-value)
     :aria-label-raw        (du/get-attr el model/attr-aria-label)
     :aria-describedby-raw  (du/get-attr el model/attr-aria-describedby)
-    :aria-labelledby-raw   (du/get-attr el model/attr-aria-labelledby)}))
+    :aria-labelledby-raw   (du/get-attr el model/attr-aria-labelledby)
+    :label-slotted?        (some-> (du/getv el k-refs) (gobj/get rk-slot) forms/slot-has-content?)}))
 
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────────
-(defn- apply-aria! [^js control-el {:keys [aria-checked disabled? required? readonly?
-                                          aria-label aria-labelledby aria-describedby]}]
-  (du/set-attr! control-el "aria-checked"  aria-checked)
-  (du/set-attr! control-el "aria-disabled" (if disabled? "true" "false"))
-  (du/set-attr! control-el "aria-required" (if required? "true" "false"))
-  (du/set-attr! control-el "aria-readonly" (if readonly? "true" "false"))
-  (if-let [v aria-label]
-    (du/set-attr! control-el "aria-label" v)
-    (du/remove-attr! control-el "aria-label"))
-  (if-let [v aria-labelledby]
-    (du/set-attr! control-el "aria-labelledby" v)
-    (du/remove-attr! control-el "aria-labelledby"))
-  (if-let [v aria-describedby]
-    (du/set-attr! control-el "aria-describedby" v)
-    (du/remove-attr! control-el "aria-describedby")))
-
 (defn- apply-disabled! [^js control-el {:keys [disabled?]}]
   (du/set-tab-index-to! control-el (if disabled? -1 0))
-  (if disabled?
-    (du/set-attr! control-el "disabled" "")
-    (du/remove-attr! control-el "disabled")))
+  (du/set-bool-attr! control-el attr-disabled disabled?))
 
-(defn- apply-host-data! [^js el {:keys [checked? disabled?]}]
-  (du/set-bool-attr! el "data-checked"  checked?)
-  (du/set-bool-attr! el "data-disabled" disabled?))
+(defn- apply-host-data! [^js el {:keys [checked? disabled? labelled?]}]
+  (du/set-bool-attr! el attr-data-checked  checked?)
+  (du/set-bool-attr! el attr-data-disabled disabled?)
+  (du/set-bool-attr! el attr-data-labelled labelled?))
 
 (defn- apply-form-value! [^js el {:keys [checked? value]}]
   (when-let [^js internals (du/getv el k-internals)]
     (.setFormValue internals (when checked? value))))
 
 (defn- apply-model! [^js el ^js refs m]
-  (let [^js control-el (gobj/get refs "control")]
-    (apply-aria!       control-el m)
+  (let [^js control-el (gobj/get refs rk-control)]
+    (du/set-attrs-to! control-el (:control-aria m))
     (apply-disabled!   control-el m)
     (apply-host-data!  el m)
     (apply-form-value! el m)
@@ -213,41 +233,45 @@
                      #js {:value   value
                           :checked next-checked}))))))
 
-;; ── External label association ────────────────────────────────────────────────
-(defn- wire-external-label! [^js el]
-  (let [id (du/get-attr el "id")]
-    (when id
-      (let [^js lbl (.querySelector js/document (str "label[for='" id "']"))]
-        (when lbl
-          (let [lid (or (du/get-attr lbl "id")
-                        (let [gen-id (str "x-sw-lbl-" id)]
-                          (du/set-attr! lbl "id" gen-id)
-                          gen-id))]
-            (when-let [refs (du/getv el k-refs)]
-              (du/set-attr! (gobj/get refs "control") "aria-labelledby" lid))))))))
+;; ── Event handlers ───────────────────────────────────────────────────────────
+(defn- on-host-click [^js el ^js evt]
+  (let [^js control (gobj/get (du/getv el k-refs) rk-control)]
+    (when (forms/label-activation? el control evt)
+      (forms/focus-quietly! control)
+      (try-toggle! el))))
+
+(defn- on-control-keydown [^js el ^js evt]
+  (let [k (.-key evt)]
+    (when (or (= k key-space) (= k key-enter))
+      (.preventDefault evt)
+      (try-toggle! el))))
 
 ;; ── Listener management ───────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (when-let [refs (du/getv el k-refs)]
-    (let [^js control-el (gobj/get refs "control")
-          click-h   (fn handle-control-click   [^js _e] (try-toggle! el))
-          keydown-h (fn handle-control-keydown [^js e]
-                      (let [key (.-key e)]
-                        (when (or (= key " ") (= key "Enter"))
-                          (.preventDefault e)
-                          (try-toggle! el))))
-          handlers  #js {:click click-h :keydown keydown-h}]
-      (.addEventListener control-el "click"   click-h)
-      (.addEventListener control-el "keydown" keydown-h)
+    (let [^js control-el (gobj/get refs rk-control)
+          click-h        (fn handle-host-click      [evt] (on-host-click      el evt))
+          keydown-h      (fn handle-control-keydown [evt] (on-control-keydown el evt))
+          handlers       #js {}]
+      (.addEventListener el         ev-click   click-h)
+      (.addEventListener control-el ev-keydown keydown-h)
+      (gobj/set handlers hk-click   click-h)
+      (gobj/set handlers hk-keydown keydown-h)
       (du/setv! el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs     (du/getv el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (when-let [handlers (du/getv el k-handlers)]
-      (let [^js control-el (gobj/get refs "control")]
-        (.removeEventListener control-el "click"   (gobj/get handlers "click"))
-        (.removeEventListener control-el "keydown" (gobj/get handlers "keydown")))
+      (let [^js control-el (gobj/get refs rk-control)]
+        (.removeEventListener el         ev-click   (gobj/get handlers hk-click))
+        (.removeEventListener control-el ev-keydown (gobj/get handlers hk-keydown)))
       (du/setv! el k-handlers nil))))
+
+(defn- watch-label-slot!
+  "Re-renders when the slotted label changes. Call once, after the shadow root exists."
+  [^js el]
+  (forms/watch-label-slot! (gobj/get (du/getv el k-refs) rk-slot)
+                           (fn label-changed [] (update-from-attrs! el))))
 
 ;; ── Form-associated callbacks ─────────────────────────────────────────────────
 (defn- form-reset! [^js el]
@@ -258,11 +282,11 @@
 (defn- connected! [^js el]
   (when-not (du/getv el k-refs)
     (make-shadow! el)
+    (watch-label-slot! el)
     (when (.-attachInternals el)
       (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   (add-listeners! el)
-  (wire-external-label! el)
   (render! el))
 
 (defn- disconnected! [^js el]
@@ -272,9 +296,7 @@
   (when (not= old-val new-val)
     (update-from-attrs! el)))
 
-;; ── Property helpers ──────────────────────────────────────────────────────────
 ;; ── Element class and registration ───────────────────────────────────────────
-
 (defn- install-property-accessors! [^js proto]
   (forms/install-validity-api! proto k-internals)
   (du/install-properties! proto model/property-api))

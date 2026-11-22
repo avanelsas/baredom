@@ -168,6 +168,13 @@
       (set-attr! el attr-name value)
       (remove-attr! el attr-name))))
 
+(defn set-attrs-to!
+  "Brings each attribute of the map `attrs` on `el` to its value with `set-attr-to!`.
+   A nil value removes the attribute."
+  [^js el attrs]
+  (doseq [[attr-name value] attrs]
+    (set-attr-to! el attr-name value)))
+
 (defn set-tab-index-to!
   "Sets the tabindex of `el` to `n`, only where it differs."
   [^js el n]

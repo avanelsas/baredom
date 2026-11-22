@@ -14820,6 +14820,9 @@
         "name" : "--x-radio-focus-ring",
         "default" : "var(--x-color-focus-ring,#60a5fa)"
       }, {
+        "name" : "--x-radio-label-gap",
+        "default" : "var(--x-space-sm,0.5rem)"
+      }, {
         "name" : "--x-radio-size",
         "default" : "16px"
       }, {
@@ -14830,6 +14833,10 @@
         "name" : "control"
       }, {
         "name" : "dot"
+      }, {
+        "name" : "label"
+      }, {
+        "name" : "part"
       } ],
       "foreignWrites" : [ {
         "target" : "x-radio",
@@ -19293,6 +19300,9 @@
         "name" : "--x-switch-focus-ring",
         "default" : "var(--x-color-focus-ring,#60a5fa)"
       }, {
+        "name" : "--x-switch-label-gap",
+        "default" : "var(--x-space-sm,0.5rem)"
+      }, {
         "name" : "--x-switch-thumb-bg",
         "default" : "var(--x-color-bg,#ffffff)"
       }, {
@@ -19322,6 +19332,10 @@
       } ],
       "cssParts" : [ {
         "name" : "control"
+      }, {
+        "name" : "label"
+      }, {
+        "name" : "part"
       }, {
         "name" : "thumb"
       }, {

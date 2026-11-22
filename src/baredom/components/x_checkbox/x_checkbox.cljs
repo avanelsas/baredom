@@ -17,15 +17,7 @@
 (def ^:private attr-part              "part")
 (def ^:private attr-type              "type")
 (def ^:private attr-role              "role")
-(def ^:private attr-id                "id")
 (def ^:private attr-disabled          "disabled")
-(def ^:private attr-aria-label        "aria-label")
-(def ^:private attr-aria-labelledby   "aria-labelledby")
-(def ^:private attr-aria-describedby  "aria-describedby")
-(def ^:private attr-aria-checked      "aria-checked")
-(def ^:private attr-aria-disabled     "aria-disabled")
-(def ^:private attr-aria-required     "aria-required")
-(def ^:private attr-aria-readonly     "aria-readonly")
 (def ^:private attr-data-checked      "data-checked")
 (def ^:private attr-data-indeterminate "data-indeterminate")
 (def ^:private attr-data-disabled     "data-disabled")
@@ -36,18 +28,11 @@
 (def ^:private part-check   "check")
 (def ^:private part-label   "label")
 
-;; Elements whose own click a slotted label keeps.
-(def ^:private interactive-selector
-  "a[href],button,input,select,textarea,summary,[contenteditable='true'],[contenteditable='']")
-
 (def ^:private val-button   "button")
 (def ^:private val-checkbox "checkbox")
-(def ^:private val-true     "true")
-(def ^:private val-false    "false")
 
 (def ^:private ev-click   "click")
 (def ^:private ev-keydown "keydown")
-(def ^:private ev-slotchange "slotchange")
 
 (def ^:private hk-click   "click")
 (def ^:private hk-keydown "keydown")
@@ -108,16 +93,7 @@
    "padding:0;"
    "cursor:pointer;"
    "}"
-   "[part=label]{"
-   "cursor:pointer;"
-   "}"
-   ":host(:not([data-labelled])) [part=label]{"
-   "display:none;"
-   "}"
-   ":host([data-disabled]) [part=label]{"
-   "cursor:default;"
-   "opacity:var(--x-checkbox-disabled-opacity);"
-   "}"
+   (forms/label-rules part-label "--x-checkbox-disabled-opacity")
    "[part=control][disabled]{"
    "cursor:default;"
    "opacity:var(--x-checkbox-disabled-opacity);"
@@ -202,8 +178,7 @@
         control-el  (.createElement js/document "button")
         box-el      (.createElement js/document "span")
         check-el    (.createElement js/document "span")
-        label-el    (.createElement js/document "span")
-        slot-el     (.createElement js/document "slot")]
+        {:keys [label slot]} (forms/make-label-section! part-label)]
 
     (set! (.-textContent style-el) style-text)
 
@@ -212,42 +187,21 @@
     (du/set-attr! control-el attr-role val-checkbox)
     (du/set-attr! box-el     attr-part part-box)
     (du/set-attr! check-el   attr-part part-check)
-    (du/set-attr! label-el   attr-part part-label)
-    (du/set-attr! label-el   attr-id   model/label-id)
 
     (.appendChild box-el check-el)
     (.appendChild control-el box-el)
     (.appendChild root style-el)
     (.appendChild root control-el)
-    (.appendChild label-el slot-el)
-    (.appendChild root label-el)
+    (.appendChild root label)
 
     (let [refs #js {}]
       (gobj/set refs "root"    root)
       (gobj/set refs rk-control control-el)
       (gobj/set refs rk-box     box-el)
       (gobj/set refs rk-check   check-el)
-      (gobj/set refs rk-slot    slot-el)
+      (gobj/set refs rk-slot    slot)
       (du/setv! el k-refs refs)
       refs)))
-
-;; ---------------------------------------------------------------------------
-;; Slot probing
-;; ---------------------------------------------------------------------------
-(defn- meaningful-node?
-  "Returns true for an element, or for a text node with visible text."
-  [^js node]
-  (let [t (.-nodeType node)]
-    (or (= t js/Node.ELEMENT_NODE)
-        (and (= t js/Node.TEXT_NODE)
-             (not= "" (.trim (.-textContent node)))))))
-
-(defn- label-slotted?
-  "Returns true when the light DOM gives the label slot content."
-  [^js el]
-  (when-let [refs (du/getv el k-refs)]
-    (let [^js slot-el (gobj/get refs rk-slot)]
-      (boolean (some meaningful-node? (array-seq (.assignedNodes slot-el)))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Read element state from attributes
@@ -261,7 +215,7 @@
     :required-present?      (du/has-attr? el model/attr-required)
     :name-raw               (du/get-attr el model/attr-name)
     :value-raw              (du/get-attr el model/attr-value)
-    :label-slotted?         (label-slotted? el)
+    :label-slotted?         (some-> (du/getv el k-refs) (gobj/get rk-slot) forms/slot-has-content?)
     :aria-label-raw         (du/get-attr el model/attr-aria-label)
     :aria-describedby-raw   (du/get-attr el model/attr-aria-describedby)
     :aria-labelledby-raw    (du/get-attr el model/attr-aria-labelledby)}))
@@ -269,24 +223,6 @@
 ;; ---------------------------------------------------------------------------
 ;; DOM patching (render-orchestrator: phase list of named helpers)
 ;; ---------------------------------------------------------------------------
-(defn- apply-control-aria! [^js control-el m]
-  (let [{:keys [disabled? required? readonly?
-                aria-label aria-describedby aria-checked
-                control-labelledby]} m]
-    (du/set-attr! control-el attr-aria-checked  aria-checked)
-    (du/set-attr! control-el attr-aria-disabled (if disabled? val-true val-false))
-    (du/set-attr! control-el attr-aria-required (if required? val-true val-false))
-    (du/set-attr! control-el attr-aria-readonly (if readonly? val-true val-false))
-    (if aria-label
-      (du/set-attr! control-el attr-aria-label aria-label)
-      (du/remove-attr! control-el attr-aria-label))
-    (if control-labelledby
-      (du/set-attr! control-el attr-aria-labelledby control-labelledby)
-      (du/remove-attr! control-el attr-aria-labelledby))
-    (if aria-describedby
-      (du/set-attr! control-el attr-aria-describedby aria-describedby)
-      (du/remove-attr! control-el attr-aria-describedby))))
-
 (defn- apply-control-disabled! [^js control-el {:keys [disabled?]}]
   (du/set-tab-index-to! control-el (if disabled? -1 0))
   (if disabled?
@@ -307,7 +243,7 @@
 (defn- apply-model! [^js el m]
   (when-let [refs (du/getv el k-refs)]
     (let [^js control-el (gobj/get refs rk-control)]
-      (apply-control-aria!     control-el m)
+      (du/set-attrs-to! control-el (:control-aria m))
       (apply-control-disabled! control-el m)
       (apply-host-data!        el m)
       (apply-form-value!       el m)
@@ -351,28 +287,11 @@
 ;; ---------------------------------------------------------------------------
 ;; Event handlers (named — listener-spec style)
 ;; ---------------------------------------------------------------------------
-(defn- path-inside-host
-  "Returns the nodes of the event path that come before the host."
-  [^js el ^js evt]
-  (take-while (fn before-host? [node] (not (identical? node el)))
-              (array-seq (.composedPath evt))))
-
-(defn- interactive-node?
-  "Returns true for an interactive element other than the control."
-  [^js control ^js node]
-  (and (= (.-nodeType node) js/Node.ELEMENT_NODE)
-       (not (identical? node control))
-       (.matches node interactive-selector)))
-
-(defn- interactive-in-label?
-  "Returns true when the click came from an interactive element in the label."
-  [^js el ^js evt]
-  (let [^js control (gobj/get (du/getv el k-refs) rk-control)]
-    (boolean (some (partial interactive-node? control) (path-inside-host el evt)))))
-
 (defn- on-host-click [^js el ^js evt]
-  (when-not (interactive-in-label? el evt)
-    (try-toggle! el)))
+  (let [^js control (gobj/get (du/getv el k-refs) rk-control)]
+    (when (forms/label-activation? el control evt)
+      (forms/focus-quietly! control)
+      (try-toggle! el))))
 
 (defn- on-control-keydown [^js el ^js evt]
   (let [k (.-key evt)]
@@ -403,9 +322,8 @@
 (defn- watch-label-slot!
   "Re-renders when the slotted label changes. Call once, after the shadow root exists."
   [^js el]
-  (let [^js slot-el (gobj/get (du/getv el k-refs) rk-slot)]
-    (.addEventListener slot-el ev-slotchange
-                       (fn handle-slotchange [_evt] (update-from-attrs! el)))))
+  (forms/watch-label-slot! (gobj/get (du/getv el k-refs) rk-slot)
+                           (fn label-changed [] (update-from-attrs! el))))
 
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks

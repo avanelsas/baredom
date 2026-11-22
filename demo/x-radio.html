@@ -93,23 +93,14 @@
 <fieldset>
   <legend>Favourite fruit</legend>
   <div class="row">
-    <label>
-      <x-radio name="fruit" value="apple" aria-label="Apple"></x-radio>
-      Apple
-    </label>
-    <label>
-      <x-radio name="fruit" value="banana" checked aria-label="Banana"></x-radio>
-      Banana
-    </label>
-    <label>
-      <x-radio name="fruit" value="cherry" aria-label="Cherry"></x-radio>
-      Cherry
-    </label>
+    <x-radio name="fruit" value="apple">Apple</x-radio>
+    <x-radio name="fruit" value="banana" checked>Banana</x-radio>
+    <x-radio name="fruit" value="cherry">Cherry</x-radio>
   </div>
 </fieldset>
-<pre>&lt;x-radio name="fruit" value="apple" aria-label="Apple"&gt;&lt;/x-radio&gt;
-&lt;x-radio name="fruit" value="banana" checked aria-label="Banana"&gt;&lt;/x-radio&gt;
-&lt;x-radio name="fruit" value="cherry" aria-label="Cherry"&gt;&lt;/x-radio&gt;</pre>
+<pre>&lt;x-radio name="fruit" value="apple"&gt;Apple&lt;/x-radio&gt;
+&lt;x-radio name="fruit" value="banana" checked&gt;Banana&lt;/x-radio&gt;
+&lt;x-radio name="fruit" value="cherry"&gt;Cherry&lt;/x-radio&gt;</pre>
 
 <!-- ------------------------------------------------------------------ -->
 <x-typography variant="overline">Disabled (whole group + individual)</x-typography>

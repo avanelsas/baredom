@@ -45,6 +45,7 @@ returns, so work that `f` starts and does not finish is not held.
 | `remove-attr!` | `[el attr-name]` | Remove an attribute |
 | `set-bool-attr!` | `[el attr-name value]` | Set or remove a boolean attribute based on truthiness |
 | `set-attr-to!` | `[el attr-name value]` | Set an attribute to a value, or remove it for nil, only where it differs |
+| `set-attrs-to!` | `[el attrs]` | `set-attr-to!` for each entry of the map `attrs`, from attribute name to value or nil |
 | `set-text-to!` | `[node text]` | Set the text of a node, only where it differs |
 
 ### Event dispatch
@@ -100,6 +101,19 @@ them and the `.d.ts` marks them `readonly`) and the two methods in `method-api`.
 | `error-describedby` | `[has-error? author]` | **Pure.** The `aria-describedby` token — the error id, appended after any author-supplied ids |
 | `apply-error-display!` | `[el anchor error-el {:keys [error has-error?]} describedby]` | Render the `[part=error]` text + `error-hidden`, `data-invalid` on the host, `aria-invalid` / `aria-describedby` on the anchor |
 
+### Slotted labels
+
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `make-label-section!` | `[part]` | Create the label span of part `part`, with the id `mu/label-id` and a default slot in it. Returns `{:label :slot}` |
+| `label-rules` | `[part opacity-var]` | The CSS of the label part: a pointer cursor, hidden without `data-labelled` on the host, dimmed by `opacity-var` with `data-disabled` |
+| `watch-label-slot!` | `[slot-el on-change]` | Call `on-change` when the slotted content changes. Bind once per slot |
+| `slot-has-content?` | `[slot-el]` | True when the light DOM assigns an element, or text that is not only white space, to the slot |
+| `label-activation?` | `[el control evt]` | True when a click on the host acts on the control, as a click on a native label does. A click from a link, a button or a form control in the label does not |
+| `focus-quietly!` | `[control]` | Focus `control` without a focus ring |
+
+`x-checkbox`, `x-switch` and `x-radio` compose these. A host click that passes `label-activation?` calls `focus-quietly!` and then toggles or selects. The shared tests are in `test/baredom/test_label.cljs`.
+
 ## `baredom.utils.model` (alias `mu`)
 
 ### Parsers
@@ -110,6 +124,14 @@ them and the `.d.ts` marks them `readonly`) and the two methods in `method-api`.
 | `parse-bool-default-true` | `[s]` | An attribute that is on by default: `true` when absent, `false` only for `"false"` |
 | `parse-bool-attr` | `[s]` | An attribute that says true or false with no default of its own: `false` when absent or `"false"` |
 | `non-empty-string?` | `[value]` | String predicate — `true` for non-blank strings |
+
+### Slotted labels
+
+| Name | Signature | Description |
+|------|-----------|-------------|
+| `label-id` | | The id of the label span in the shadow root of a control with a slotted label |
+| `control-labelledby` | `[{:keys [aria-labelledby aria-label labelled?]}]` | **Pure.** The `aria-labelledby` of the control: a host `aria-labelledby`, else nil for a host `aria-label`, else `label-id` when labelled |
+| `control-aria` | `[model]` | **Pure.** The ARIA attributes of a checkable control as a map from name to text or nil: `aria-checked`, `aria-disabled`, `aria-required`, `aria-readonly`, `aria-label`, `aria-labelledby` and `aria-describedby`. The models of `x-checkbox`, `x-switch` and `x-radio` keep it as `:control-aria`, and each component applies it with `du/set-attrs-to!` |
 
 ### Keys
 

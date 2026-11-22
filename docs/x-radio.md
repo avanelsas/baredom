@@ -1,6 +1,6 @@
 # x-radio
 
-A form-associated native Web Component that renders a radio button. Radios with the same `name` attribute form a mutually exclusive group: selecting one automatically deselects all others. Keyboard navigation follows the roving-tabindex pattern — Arrow keys move focus and selection within the group.
+A form-associated native Web Component that renders a radio button. Radios with the same `name` attribute form a mutually exclusive group: selecting one automatically deselects all others. Keyboard navigation follows the roving-tabindex pattern — Arrow keys move focus and selection within the group. Text in the default slot is the label next to the radio, and a click on it selects the radio.
 
 ## Tag name
 
@@ -68,7 +68,20 @@ el.addEventListener('x-radio-change', (e) => {
 <button part="control" role="radio" tabindex="0|−1">
   <span part="dot"></span>
 </button>
+<span part="label" id="label"><slot></slot></span>
 ```
+
+## Slots
+
+| Slot | Description |
+|---|---|
+| (default) | The label next to the radio. Text, links and other inline content are allowed. |
+
+## Label
+
+- A click on the radio, on the label, on a wrapping `<label>` or on a `<label for>` selects the radio.
+- A click on a link, a button or a form control inside the slot does not select the radio. That element keeps its own click.
+- When disabled, the label is dimmed like the radio.
 
 ## CSS custom properties
 
@@ -82,6 +95,7 @@ el.addEventListener('x-radio-change', (e) => {
 | `--x-radio-dot-size` | `6px` | Inner dot diameter |
 | `--x-radio-focus-ring` | `var(--x-color-focus-ring,#60a5fa)` | Focus ring color |
 | `--x-radio-disabled-opacity` | `0.45` | Opacity when disabled |
+| `--x-radio-label-gap` | `var(--x-space-sm,0.5rem)` | Space between the radio and the label |
 | `--x-radio-transition` | `background var(--x-transition-duration,120ms) var(--x-transition-easing,ease),border-color var(--x-transition-duration,120ms) var(--x-transition-easing,ease)` | Transition for state changes |
 
 Dark mode overrides are applied automatically via `@media (prefers-color-scheme: dark)`.
@@ -93,6 +107,7 @@ Animations are suppressed when `@media (prefers-reduced-motion: reduce)` is acti
 |---|---|---|
 | `control` | `<button>` | The circular radio control |
 | `dot` | `<span>` | The inner filled dot shown when checked |
+| `label` | `<span>` | The label next to the radio. It is hidden when there is no label. |
 
 ## Writes on other nodes
 
@@ -105,6 +120,7 @@ Animations are suppressed when `@media (prefers-reduced-motion: reduce)` is acti
 - `role="radio"` is set explicitly on `[part=control]`.
 - `aria-checked` reflects the checked state (`"true"` / `"false"`).
 - `aria-disabled`, `aria-required`, `aria-readonly` are kept in sync.
+- The control takes its accessible name from the slotted label through `aria-labelledby`. A host `aria-labelledby` or `aria-label` takes priority.
 - Roving tabindex: the checked radio in a group receives `tabindex="0"`; all others receive `tabindex="-1"`. If no radio is checked, the first in DOM order receives `tabindex="0"`.
 - Arrow keys move focus and selection within the group (wrapping).
 - `Space` / `Enter` select the focused radio.
@@ -115,9 +131,9 @@ Animations are suppressed when `@media (prefers-reduced-motion: reduce)` is acti
 ### Basic group
 
 ```html
-<x-radio name="size" value="small" aria-label="Small"></x-radio>
-<x-radio name="size" value="medium" aria-label="Medium" checked></x-radio>
-<x-radio name="size" value="large" aria-label="Large"></x-radio>
+<x-radio name="size" value="small">Small</x-radio>
+<x-radio name="size" value="medium" checked>Medium</x-radio>
+<x-radio name="size" value="large">Large</x-radio>
 ```
 
 ### Disabled

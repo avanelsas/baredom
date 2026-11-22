@@ -15,14 +15,51 @@
 (def ^:private k-handlers  "__xRadioHandlers")
 
 ;; ---------------------------------------------------------------------------
+;; String constants
+;; ---------------------------------------------------------------------------
+(def ^:private attr-part             "part")
+(def ^:private attr-type             "type")
+(def ^:private attr-role             "role")
+(def ^:private attr-disabled         "disabled")
+(def ^:private attr-data-checked     "data-checked")
+(def ^:private attr-data-disabled    "data-disabled")
+(def ^:private attr-data-labelled    "data-labelled")
+
+(def ^:private part-control "control")
+(def ^:private part-dot     "dot")
+(def ^:private part-label   "label")
+
+(def ^:private val-button "button")
+(def ^:private val-radio  "radio")
+
+(def ^:private ev-click   "click")
+(def ^:private ev-keydown "keydown")
+
+(def ^:private key-space       " ")
+(def ^:private key-enter       "Enter")
+(def ^:private key-arrow-down  "ArrowDown")
+(def ^:private key-arrow-right "ArrowRight")
+(def ^:private key-arrow-up    "ArrowUp")
+(def ^:private key-arrow-left  "ArrowLeft")
+
+(def ^:private rk-control "control")
+(def ^:private rk-slot    "slot")
+
+(def ^:private hk-click   "click")
+(def ^:private hk-keydown "keydown")
+
+;; ---------------------------------------------------------------------------
 ;; Style
 ;; ---------------------------------------------------------------------------
 (def ^:private style-text
   (str
    ":host{"
-   "display:inline-block;"
+   "display:inline-flex;"
+   "align-items:center;"
+   "gap:var(--x-radio-label-gap);"
    "vertical-align:middle;"
    "color-scheme:light dark;"
+   "--x-radio-label-gap:var(--x-space-sm,0.5rem);"
    "--x-radio-size:16px;"
    "--x-radio-border-width:2px;"
    "--x-radio-border-color:var(--x-color-border,#6b7280);"
@@ -59,6 +96,7 @@
    "flex-shrink:0;"
    "position:relative;"
    "}"
+   (forms/label-rules part-label "--x-radio-disabled-opacity")
    "[part=control][disabled]{"
    "cursor:default;"
    "opacity:var(--x-radio-disabled-opacity);"
@@ -88,30 +126,30 @@
    "}"))
 
 ;; ---------------------------------------------------------------------------
-;; DOM helpers
-;; ---------------------------------------------------------------------------
-
-;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
 (defn- make-shadow! [^js el]
   (let [root       (.attachShadow el #js {:mode "open"})
         style-el   (.createElement js/document "style")
         control-el (.createElement js/document "button")
-        dot-el     (.createElement js/document "span")]
+        dot-el     (.createElement js/document "span")
+        {:keys [label slot]} (forms/make-label-section! part-label)]
 
     (set! (.-textContent style-el) style-text)
 
-    (du/set-attr! control-el "part" "control")
-    (du/set-attr! control-el "type" "button")
-    (du/set-attr! control-el "role" "radio")
-    (du/set-attr! dot-el     "part" "dot")
+    (du/set-attr! control-el attr-part part-control)
+    (du/set-attr! control-el attr-type val-button)
+    (du/set-attr! control-el attr-role val-radio)
+    (du/set-attr! dot-el     attr-part part-dot)
 
     (.appendChild control-el dot-el)
     (.appendChild root style-el)
     (.appendChild root control-el)
+    (.appendChild root label)
 
-    (let [refs #js {:root root :control control-el :dot dot-el}]
+    (let [refs #js {}]
+      (gobj/set refs rk-control control-el)
+      (gobj/set refs rk-slot    slot)
       (du/setv! el k-refs refs)
       refs)))
 
@@ -128,46 +166,28 @@
     :value-raw            (du/get-attr el model/attr-value)
     :aria-label-raw       (du/get-attr el model/attr-aria-label)
     :aria-describedby-raw (du/get-attr el model/attr-aria-describedby)
-    :aria-labelledby-raw  (du/get-attr el model/attr-aria-labelledby)}))
+    :aria-labelledby-raw  (du/get-attr el model/attr-aria-labelledby)
+    :label-slotted?       (some-> (du/getv el k-refs) (gobj/get rk-slot) forms/slot-has-content?)}))
 
 ;; ---------------------------------------------------------------------------
-;; Apply model + render-pipeline
+;; Apply model + render-pipeline (render-orchestrator)
 ;; ---------------------------------------------------------------------------
+(defn- apply-host-data! [^js el {:keys [checked? disabled? labelled?]}]
+  (du/set-bool-attr! el attr-data-checked  checked?)
+  (du/set-bool-attr! el attr-data-disabled disabled?)
+  (du/set-bool-attr! el attr-data-labelled labelled?))
+
+(defn- apply-form-value! [^js el {:keys [checked? value]}]
+  (when-let [^js internals (du/getv el k-internals)]
+    (.setFormValue internals (when checked? value))))
+
 (defn- apply-model! [^js el m]
   (when-let [refs (du/getv el k-refs)]
-    (let [^js control-el (gobj/get refs "control")
-          disabled?      (:disabled? m)
-          checked?       (:checked? m)]
-
-      ;; ARIA on button[part=control]
-      (du/set-attr! control-el "aria-checked"  (:aria-checked m))
-      (du/set-attr! control-el "aria-disabled"  (if disabled? "true" "false"))
-      (du/set-attr! control-el "aria-required"  (if (:required? m) "true" "false"))
-      (du/set-attr! control-el "aria-readonly"  (if (:readonly? m) "true" "false"))
-
-      (if-let [v (:aria-label m)]
-        (du/set-attr! control-el "aria-label" v)
-        (du/remove-attr! control-el "aria-label"))
-
-      (if-let [v (:aria-labelledby m)]
-        (du/set-attr! control-el "aria-labelledby" v)
-        (du/remove-attr! control-el "aria-labelledby"))
-
-      (if-let [v (:aria-describedby m)]
-        (du/set-attr! control-el "aria-describedby" v)
-        (du/remove-attr! control-el "aria-describedby"))
-
-      (if disabled?
-        (du/set-attr! control-el "disabled" "")
-        (du/remove-attr! control-el "disabled"))
-
-      ;; Data attributes on host for CSS hooks
-      (du/set-bool-attr! el "data-checked"  checked?)
-      (du/set-bool-attr! el "data-disabled" disabled?)
-
-      ;; Form value via ElementInternals
-      (when-let [^js internals (du/getv el k-internals)]
-        (.setFormValue internals (when checked? (:value m))))
+    (let [^js control-el (gobj/get refs rk-control)]
+      (du/set-attrs-to! control-el (:control-aria m))
+      (du/set-bool-attr! control-el attr-disabled (:disabled? m))
+      (apply-host-data!  el m)
+      (apply-form-value! el m)
       (du/setv! el k-model m))))
 
 ;; render! is the direct-write entry — try-select! / form-* call it after
@@ -205,7 +225,7 @@
     (.forEach radios
               (fn [^js r]
                 (when-let [refs (du/getv r k-refs)]
-                  (let [^js ctrl (gobj/get refs "control")
+                  (let [^js ctrl (gobj/get refs rk-control)
                         tab      (cond
                                    checked (if (= r checked) 0 -1)
                                    :else   (if (= r first-r) 0 -1))]
@@ -262,7 +282,7 @@
 ;; ---------------------------------------------------------------------------
 (defn- focus-control! [^js r]
   (when-let [refs (du/getv r k-refs)]
-    (let [^js ctrl (gobj/get refs "control")]
+    (let [^js ctrl (gobj/get refs rk-control)]
       (.focus ctrl))))
 
 (defn- make-keydown-handler [^js el]
@@ -272,11 +292,11 @@
           n      (.-length radios)
           idx    (.indexOf radios el)]
       (cond
-        (or (= key " ") (= key "Enter"))
+        (or (= key key-space) (= key key-enter))
         (do (.preventDefault evt)
             (try-select! el))
 
-        (or (= key "ArrowDown") (= key "ArrowRight"))
+        (or (= key key-arrow-down) (= key key-arrow-right))
         (do (.preventDefault evt)
             (when (pos? n)
               (let [next-idx (mod (inc idx) n)
@@ -284,7 +304,7 @@
                 (try-select! next-r)
                 (focus-control! next-r))))
 
-        (or (= key "ArrowUp") (= key "ArrowLeft"))
+        (or (= key key-arrow-up) (= key key-arrow-left))
         (do (.preventDefault evt)
             (when (pos? n)
               (let [prev-idx (mod (dec idx) n)
@@ -295,27 +315,37 @@
 ;; ---------------------------------------------------------------------------
 ;; Listener management
 ;; ---------------------------------------------------------------------------
-(defn- make-click-handler [^js el]
-  (fn [^js _evt]
-    (try-select! el)))
+(defn- on-host-click [^js el ^js evt]
+  (let [^js control (gobj/get (du/getv el k-refs) rk-control)]
+    (when (forms/label-activation? el control evt)
+      (forms/focus-quietly! control)
+      (try-select! el))))
 
 (defn- add-listeners! [^js el]
   (when-let [refs (du/getv el k-refs)]
-    (let [^js control-el (gobj/get refs "control")
-          click-h        (make-click-handler el)
+    (let [^js control-el (gobj/get refs rk-control)
+          click-h        (fn handle-host-click [evt] (on-host-click el evt))
           keydown-h      (make-keydown-handler el)
-          handlers       #js {:click click-h :keydown keydown-h}]
-      (.addEventListener el "click" click-h)
-      (.addEventListener control-el "keydown" keydown-h)
+          handlers       #js {}]
+      (.addEventListener el         ev-click   click-h)
+      (.addEventListener control-el ev-keydown keydown-h)
+      (gobj/set handlers hk-click   click-h)
+      (gobj/set handlers hk-keydown keydown-h)
       (du/setv! el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs     (du/getv el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (when-let [handlers (du/getv el k-handlers)]
-      (let [^js control-el (gobj/get refs "control")]
-        (.removeEventListener el "click" (gobj/get handlers "click"))
-        (.removeEventListener control-el "keydown" (gobj/get handlers "keydown")))
+      (let [^js control-el (gobj/get refs rk-control)]
+        (.removeEventListener el         ev-click   (gobj/get handlers hk-click))
+        (.removeEventListener control-el ev-keydown (gobj/get handlers hk-keydown)))
       (du/setv! el k-handlers nil))))
+
+(defn- watch-label-slot!
+  "Re-renders when the slotted label changes. Call once, after the shadow root exists."
+  [^js el]
+  (forms/watch-label-slot! (gobj/get (du/getv el k-refs) rk-slot)
+                           (fn label-changed [] (update-from-attrs! el))))
 
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
@@ -330,6 +360,7 @@
 (defn- connected! [^js el]
   (when-not (du/getv el k-refs)
     (make-shadow! el)
+    (watch-label-slot! el)
     (when (.-attachInternals el)
       (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)

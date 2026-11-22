@@ -1,4 +1,5 @@
-(ns baredom.components.x-radio.model)
+(ns baredom.components.x-radio.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-radio")
 
@@ -75,23 +76,29 @@
            value-raw
            aria-label-raw
            aria-describedby-raw
-           aria-labelledby-raw]}]
+           aria-labelledby-raw
+           label-slotted?]}]
   (let [checked?  (boolean checked-present?)
         disabled? (boolean disabled-present?)
         readonly? (boolean readonly-present?)
         required? (boolean required-present?)
-        value     (radio-value value-raw)]
-    {:checked?  checked?
-     :disabled? disabled?
-     :readonly? readonly?
-     :required? required?
-     :valid?    (valid? required? checked?)
-     :name      name-raw
-     :value     value
-     :aria-label       aria-label-raw
-     :aria-describedby aria-describedby-raw
-     :aria-labelledby  aria-labelledby-raw
-     :aria-checked     (if checked? "true" "false")}))
+        value     (radio-value value-raw)
+        labelled? (boolean label-slotted?)
+        m         {:checked?  checked?
+                  :disabled? disabled?
+                  :readonly? readonly?
+                  :required? required?
+                  :valid?    (valid? required? checked?)
+                  :name      name-raw
+                  :value     value
+                  :aria-label       aria-label-raw
+                  :aria-describedby aria-describedby-raw
+                  :labelled?        labelled?
+                  :control-labelledby (mu/control-labelledby {:aria-labelledby aria-labelledby-raw
+                                                              :aria-label      aria-label-raw
+                                                              :labelled?       labelled?})
+                  :aria-checked     (if checked? "true" "false")}]
+    (assoc m :control-aria (mu/control-aria m))))
 
 (def method-api
   {:checkValidity  {:args [] :returns 'boolean}

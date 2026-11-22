@@ -84,7 +84,7 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-progress` | 10/10 |  | 2/2 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
 | `x-progress-circle` | 8/8 |  |  | 1/1 |  |  |  | 1/1 |  |  |  |
 | `x-proximity-list` | 1/1 |  |  |  |  |  |  |  | 0/1 |  |  |
-| `x-radio` | 8/8 |  |  |  |  |  |  | 2/2 |  |  |  |
+| `x-radio` | 8/8 |  |  |  |  |  |  | 2/2 | 1/1 |  |  |
 | `x-range-slider` | 11/11 |  | 2/2 | 1/1 |  | 1/1 | 1/1 | 1/1 | 0/1 |  |  |
 | `x-rating` | 7/7 |  | 1/1 | 1/1 |  | 1/1 |  | 1/1 | 0/1 |  |  |
 | `x-ripple-effect` |  |  |  |  |  |  |  |  |  |  |  |
@@ -107,7 +107,7 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-spotlight-card` | 6/6 |  |  |  |  | 4/4 | 2/2 | 2/2 | 0/3 |  | 1/1 |
 | `x-stat` | 10/10 |  | 2/2 | 2/2 |  | 1/1 |  | 2/2 | 0/2 |  | 1/1 |
 | `x-stepper` | 24/24 |  | 5/5 | 2/2 |  | 1/1 |  | 1/1 | 0/3 |  |  |
-| `x-switch` | 8/8 |  |  |  |  | 1/1 | 1/1 | 2/2 |  |  |  |
+| `x-switch` | 8/8 |  |  |  |  | 1/1 | 1/1 | 2/2 | 1/1 |  |  |
 | `x-tab` | 10/10 |  |  |  |  | 1/1 |  | 2/2 | 0/4 |  | 1/1 |
 | `x-table` | 5/5 |  | 1/1 | 1/1 |  | 1/1 |  |  | 0/2 |  | 1/1 |
 | `x-table-cell` | 13/13 |  |  | 1/1 |  | 1/1 |  | 1/1 | 0/3 |  | 1/1 |
@@ -124,9 +124,9 @@ Closed families, in which CI allows no value that follows no token: border-width
 | `x-typography` | 11/11 | 3/3 | 9/9 | 16/16 | 4/4 | 2/2 |  |  | 0/3 |  | 1/1 |
 | `x-welcome-tour` | 27/27 | 1/1 | 4/4 | 2/2 | 1/1 | 4/4 | 2/2 | 8/8 | 8/9 |  | 1/1 |
 | `x-welcome-tour-step` |  |  |  |  |  |  |  |  |  |  |  |
-| **All** | 1087/1087 | 15/15 | 125/125 | 72/72 | 8/8 | 117/117 | 75/75 | 109/109 | 38/259 | 19/19 | 118/118 |
+| **All** | 1087/1087 | 15/15 | 125/125 | 72/72 | 8/8 | 117/117 | 75/75 | 109/109 | 40/261 | 19/19 | 118/118 |
 
-CSS not read, or not in full: x-liquid-glass.
+CSS not read, or not in full: x-checkbox (style-text), x-liquid-glass, x-radio (style-text), x-switch (style-text).
 
 ## Not themed by design
 
