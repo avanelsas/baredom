@@ -1,6 +1,6 @@
 # x-checkbox
 
-An accessible, themeable checkbox control that supports checked, indeterminate, disabled, read-only, and required states. Fires cancelable request events before state changes, allowing host code to intercept.
+An accessible, themeable checkbox control that supports checked, indeterminate, disabled, read-only, and required states. Fires cancelable request events before state changes, allowing host code to intercept. Text in the default slot is the label next to the box, and a click on it toggles the checkbox.
 
 ---
 
@@ -54,6 +54,28 @@ Both events bubble and are composed.
 
 ---
 
+## Slots
+
+| Slot      | Description |
+|-----------|-------------|
+| (default) | The label next to the box. Text, links and other inline content are allowed. |
+
+## Shadow parts
+
+| Part      | Description |
+|-----------|-------------|
+| `control` | The `<button>` with `role="checkbox"`. |
+| `box`     | The square that shows the state. |
+| `check`   | The check mark and the indeterminate bar. |
+| `label`   | The label next to the box. It is hidden when there is no label. |
+
+## Label
+
+- A click on the box, on the label, on a wrapping `<label>` or on a `<label for>` toggles the checkbox.
+- A click on a link, a button or a form control inside the slot does not toggle the checkbox. That element keeps its own click.
+- `--x-checkbox-label-gap` sets the space between the box and the label. The default is `var(--x-space-sm, 0.5rem)`.
+- When disabled, the label is dimmed like the box.
+
 ## Toggle logic
 
 - When `indeterminate` is set, clicking always transitions to `checked=true, indeterminate=false`.
@@ -80,6 +102,7 @@ Like a native form control, `x-checkbox` exposes read-only `validity`, `validati
 - `aria-required="true"` on the control when required.
 - `aria-readonly="true"` on the control when readonly.
 - `aria-label`, `aria-labelledby`, and `aria-describedby` are forwarded from the host attribute to the control.
+- The control takes its accessible name from the slotted label through `aria-labelledby`. A host `aria-labelledby` or `aria-label` takes priority.
 - Keyboard: `Space` toggles; `Enter` toggles (unless readonly/disabled).
 
 ---
@@ -99,6 +122,12 @@ Like a native form control, `x-checkbox` exposes read-only `validity`, `validati
 ### With a label
 
 ```html
+<x-checkbox name="agree" value="yes">I agree to the terms</x-checkbox>
+
+<x-checkbox name="agree" value="yes">
+  I agree to the <a href="/terms">terms</a>
+</x-checkbox>
+
 <label>
   <x-checkbox name="agree" value="yes" required></x-checkbox>
   I agree to the terms

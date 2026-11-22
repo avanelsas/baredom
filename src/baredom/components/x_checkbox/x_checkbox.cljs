@@ -29,10 +29,16 @@
 (def ^:private attr-data-checked      "data-checked")
 (def ^:private attr-data-indeterminate "data-indeterminate")
 (def ^:private attr-data-disabled     "data-disabled")
+(def ^:private attr-data-labelled     "data-labelled")
 
 (def ^:private part-control "control")
 (def ^:private part-box     "box")
 (def ^:private part-check   "check")
+(def ^:private part-label   "label")
+
+;; Elements whose own click a slotted label keeps.
+(def ^:private interactive-selector
+  "a[href],button,input,select,textarea,summary,[contenteditable='true'],[contenteditable='']")
 
 (def ^:private val-button   "button")
 (def ^:private val-checkbox "checkbox")
@@ -41,6 +47,7 @@
 
 (def ^:private ev-click   "click")
 (def ^:private ev-keydown "keydown")
+(def ^:private ev-slotchange "slotchange")
 
 (def ^:private hk-click   "click")
 (def ^:private hk-keydown "keydown")
@@ -51,6 +58,7 @@
 (def ^:private rk-control "control")
 (def ^:private rk-box     "box")
 (def ^:private rk-check   "check")
+(def ^:private rk-slot    "slot")
 
 ;; ---------------------------------------------------------------------------
 ;; Style
@@ -58,10 +66,13 @@
 (def ^:private style-text
   (str
    ":host{"
-   "display:inline-block;"
+   "display:inline-flex;"
+   "align-items:center;"
+   "gap:var(--x-checkbox-label-gap);"
    "vertical-align:middle;"
    "color-scheme:light dark;"
    "--x-checkbox-size:16px;"
+   "--x-checkbox-label-gap:var(--x-space-sm,0.5rem);"
    "--x-checkbox-border-width:2px;"
    "--x-checkbox-border-color:var(--x-color-border,#6b7280);"
    "--x-checkbox-border-radius:var(--x-radius-sm,4px);"
@@ -96,6 +107,16 @@
    "justify-content:center;"
    "padding:0;"
    "cursor:pointer;"
+   "}"
+   "[part=label]{"
+   "cursor:pointer;"
+   "}"
+   ":host(:not([data-labelled])) [part=label]{"
+   "display:none;"
+   "}"
+   ":host([data-disabled]) [part=label]{"
+   "cursor:default;"
+   "opacity:var(--x-checkbox-disabled-opacity);"
    "}"
    "[part=control][disabled]{"
    "cursor:default;"
@@ -180,7 +201,9 @@
         style-el    (.createElement js/document "style")
         control-el  (.createElement js/document "button")
         box-el      (.createElement js/document "span")
-        check-el    (.createElement js/document "span")]
+        check-el    (.createElement js/document "span")
+        label-el    (.createElement js/document "span")
+        slot-el     (.createElement js/document "slot")]
 
     (set! (.-textContent style-el) style-text)
 
@@ -189,19 +212,42 @@
     (du/set-attr! control-el attr-role val-checkbox)
     (du/set-attr! box-el     attr-part part-box)
     (du/set-attr! check-el   attr-part part-check)
+    (du/set-attr! label-el   attr-part part-label)
+    (du/set-attr! label-el   attr-id   model/label-id)
 
     (.appendChild box-el check-el)
     (.appendChild control-el box-el)
     (.appendChild root style-el)
     (.appendChild root control-el)
+    (.appendChild label-el slot-el)
+    (.appendChild root label-el)
 
     (let [refs #js {}]
       (gobj/set refs "root"    root)
       (gobj/set refs rk-control control-el)
       (gobj/set refs rk-box     box-el)
       (gobj/set refs rk-check   check-el)
+      (gobj/set refs rk-slot    slot-el)
       (du/setv! el k-refs refs)
       refs)))
+
+;; ---------------------------------------------------------------------------
+;; Slot probing
+;; ---------------------------------------------------------------------------
+(defn- meaningful-node?
+  "Returns true for an element, or for a text node with visible text."
+  [^js node]
+  (let [t (.-nodeType node)]
+    (or (= t js/Node.ELEMENT_NODE)
+        (and (= t js/Node.TEXT_NODE)
+             (not= "" (.trim (.-textContent node)))))))
+
+(defn- label-slotted?
+  "Returns true when the light DOM gives the label slot content."
+  [^js el]
+  (when-let [refs (du/getv el k-refs)]
+    (let [^js slot-el (gobj/get refs rk-slot)]
+      (boolean (some meaningful-node? (array-seq (.assignedNodes slot-el)))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Read element state from attributes
@@ -215,6 +261,7 @@
     :required-present?      (du/has-attr? el model/attr-required)
     :name-raw               (du/get-attr el model/attr-name)
     :value-raw              (du/get-attr el model/attr-value)
+    :label-slotted?         (label-slotted? el)
     :aria-label-raw         (du/get-attr el model/attr-aria-label)
     :aria-describedby-raw   (du/get-attr el model/attr-aria-describedby)
     :aria-labelledby-raw    (du/get-attr el model/attr-aria-labelledby)}))
@@ -224,8 +271,8 @@
 ;; ---------------------------------------------------------------------------
 (defn- apply-control-aria! [^js control-el m]
   (let [{:keys [disabled? required? readonly?
-                aria-label aria-labelledby aria-describedby
-                aria-checked]} m]
+                aria-label aria-describedby aria-checked
+                control-labelledby]} m]
     (du/set-attr! control-el attr-aria-checked  aria-checked)
     (du/set-attr! control-el attr-aria-disabled (if disabled? val-true val-false))
     (du/set-attr! control-el attr-aria-required (if required? val-true val-false))
@@ -233,8 +280,8 @@
     (if aria-label
       (du/set-attr! control-el attr-aria-label aria-label)
       (du/remove-attr! control-el attr-aria-label))
-    (if aria-labelledby
-      (du/set-attr! control-el attr-aria-labelledby aria-labelledby)
+    (if control-labelledby
+      (du/set-attr! control-el attr-aria-labelledby control-labelledby)
       (du/remove-attr! control-el attr-aria-labelledby))
     (if aria-describedby
       (du/set-attr! control-el attr-aria-describedby aria-describedby)
@@ -246,10 +293,11 @@
     (du/set-attr! control-el attr-disabled "")
     (du/remove-attr! control-el attr-disabled)))
 
-(defn- apply-host-data! [^js el {:keys [checked? indeterminate? disabled?]}]
+(defn- apply-host-data! [^js el {:keys [checked? indeterminate? disabled? labelled?]}]
   (du/set-bool-attr! el attr-data-checked       checked?)
   (du/set-bool-attr! el attr-data-indeterminate indeterminate?)
-  (du/set-bool-attr! el attr-data-disabled      disabled?))
+  (du/set-bool-attr! el attr-data-disabled      disabled?)
+  (du/set-bool-attr! el attr-data-labelled      labelled?))
 
 (defn- apply-form-value! [^js el {:keys [checked? value]}]
   (when-let [^js internals (du/getv el k-internals)]
@@ -301,27 +349,30 @@
                           :checked next-checked}))))))
 
 ;; ---------------------------------------------------------------------------
-;; External label association
-;; ---------------------------------------------------------------------------
-(defn- wire-external-label! [^js el]
-  (let [id (du/get-attr el attr-id)]
-    (when id
-      (let [^js lbl (.querySelector js/document (str "label[for='" id "']"))]
-        (when lbl
-          (let [lid (or (du/get-attr lbl attr-id)
-                        (let [gen-id (str "x-cb-lbl-" id)]
-                          (du/set-attr! lbl attr-id gen-id)
-                          gen-id))]
-            (when-let [refs (du/getv el k-refs)]
-              (let [^js control (gobj/get refs rk-control)]
-                (when-not (du/has-attr? el model/attr-aria-labelledby)
-                  (du/set-attr! control attr-aria-labelledby lid))))))))))
-
-;; ---------------------------------------------------------------------------
 ;; Event handlers (named — listener-spec style)
 ;; ---------------------------------------------------------------------------
-(defn- on-control-click [^js el ^js _evt]
-  (try-toggle! el))
+(defn- path-inside-host
+  "Returns the nodes of the event path that come before the host."
+  [^js el ^js evt]
+  (take-while (fn before-host? [node] (not (identical? node el)))
+              (array-seq (.composedPath evt))))
+
+(defn- interactive-node?
+  "Returns true for an interactive element other than the control."
+  [^js control ^js node]
+  (and (= (.-nodeType node) js/Node.ELEMENT_NODE)
+       (not (identical? node control))
+       (.matches node interactive-selector)))
+
+(defn- interactive-in-label?
+  "Returns true when the click came from an interactive element in the label."
+  [^js el ^js evt]
+  (let [^js control (gobj/get (du/getv el k-refs) rk-control)]
+    (boolean (some (partial interactive-node? control) (path-inside-host el evt)))))
+
+(defn- on-host-click [^js el ^js evt]
+  (when-not (interactive-in-label? el evt)
+    (try-toggle! el)))
 
 (defn- on-control-keydown [^js el ^js evt]
   (let [k (.-key evt)]
@@ -332,10 +383,10 @@
 (defn- add-listeners! [^js el]
   (when-let [refs (du/getv el k-refs)]
     (let [^js control-el (gobj/get refs rk-control)
-          click-h        (fn handle-control-click   [evt] (on-control-click   el evt))
+          click-h        (fn handle-host-click      [evt] (on-host-click      el evt))
           keydown-h      (fn handle-control-keydown [evt] (on-control-keydown el evt))
           handlers       #js {}]
-      (.addEventListener control-el ev-click   click-h)
+      (.addEventListener el         ev-click   click-h)
       (.addEventListener control-el ev-keydown keydown-h)
       (gobj/set handlers hk-click   click-h)
       (gobj/set handlers hk-keydown keydown-h)
@@ -345,9 +396,16 @@
   (when-let [refs (du/getv el k-refs)]
     (when-let [handlers (du/getv el k-handlers)]
       (let [^js control-el (gobj/get refs rk-control)]
-        (.removeEventListener control-el ev-click   (gobj/get handlers hk-click))
+        (.removeEventListener el         ev-click   (gobj/get handlers hk-click))
         (.removeEventListener control-el ev-keydown (gobj/get handlers hk-keydown)))
       (du/setv! el k-handlers nil))))
+
+(defn- watch-label-slot!
+  "Re-renders when the slotted label changes. Call once, after the shadow root exists."
+  [^js el]
+  (let [^js slot-el (gobj/get (du/getv el k-refs) rk-slot)]
+    (.addEventListener slot-el ev-slotchange
+                       (fn handle-slotchange [_evt] (update-from-attrs! el)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
@@ -363,11 +421,11 @@
 (defn- connected! [^js el]
   (when-not (du/getv el k-refs)
     (make-shadow! el)
+    (watch-label-slot! el)
     (when (.-attachInternals el)
       (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   (add-listeners! el)
-  (wire-external-label! el)
   (update-from-attrs! el))
 
 (defn- disconnected! [^js el]

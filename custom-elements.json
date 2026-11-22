@@ -2960,6 +2960,9 @@
         "name" : "--x-checkbox-focus-ring",
         "default" : "var(--x-color-focus-ring,#60a5fa)"
       }, {
+        "name" : "--x-checkbox-label-gap",
+        "default" : "var(--x-space-sm,0.5rem)"
+      }, {
         "name" : "--x-checkbox-size",
         "default" : "16px"
       }, {
@@ -2972,6 +2975,8 @@
         "name" : "check"
       }, {
         "name" : "control"
+      }, {
+        "name" : "label"
       }, {
         "name" : "part"
       } ]
