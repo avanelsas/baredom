@@ -4,6 +4,38 @@ All notable changes to BareDOM will be documented in this file.
 
 ## [Unreleased]
 
+## [4.22.0] - 2026-11-22
+
+BareDOM 4.22 gives `x-checkbox`, `x-switch` and `x-radio` a label. Text inside the element shows
+next to the control, and a click on it acts as a click on a native label. The adapters are not
+released with it.
+
+### Added
+
+- **`x-checkbox`, `x-switch` and `x-radio` show the text in their default slot as a label.** A
+  click on the label focuses the control without a focus ring, then toggles or selects it. A
+  link, a button or a form control in the label keeps its own click. The control takes its
+  accessible name from the label, and a host `aria-label` or `aria-labelledby` takes priority.
+  An empty label is hidden, and a disabled label is dimmed with its control.
+- **Each of the three has a new part and a new custom property:** the `label` part, and
+  `--x-checkbox-label-gap`, `--x-switch-label-gap` and `--x-radio-label-gap` for the space
+  between the control and the label. Each gap defaults to `var(--x-space-sm,0.5rem)`.
+
+### Changed
+
+- **Text inside these three elements now shows.** Before, a shadow root without a slot hid it.
+  A page that put text inside one of them and labelled it some other way now shows both.
+- **The host of each of the three is `inline-flex`,** where it was `inline-block`.
+- **The budget of `base.js` rises to 85 KB,** because `x-checkbox` is part of it.
+
+### Fixed
+
+- **A wrapping `<label>` or a `<label for>` toggles `x-checkbox` and `x-switch`.** Before, a
+  click on such a label did nothing.
+- **`x-checkbox` and `x-switch` no longer write an `id` on a `<label for>`.** The
+  `aria-labelledby` they set from it could not reach the label from the shadow root, and the next
+  render removed it.
+
 ## [4.21.1] - 2026-11-20
 
 BareDOM 4.21.1 makes a gesture in `x-tree` cost the same at any folder size, draws scrollbars
